@@ -8,6 +8,14 @@ keywords = ["cuda", "sass", "ptx", "compiler", "gpu", "nvidia"]
 requires-python = ">=3.12"
 dependencies = []
 
+[project.optional-dependencies]
+# The compiler itself is stdlib-only. These extras make the optional remote
+# application/runtime clients explicit for pip users; the Homebrew formula
+# installs the Modal CLI through Homebrew instead.
+modal = ["modal>=1.6,<2"]
+torch = ["torch>=2.7,<2.8"]
+all = ["modal>=1.6,<2", "torch>=2.7,<2.8"]
+
 [project.scripts]
 openassembler = "openassembler.cli:main"
 
@@ -34,6 +42,7 @@ markers = ["oracle: needs the NVIDIA tools via env/cuda.sh (colima VM)"]
 "env/fetch_cuda.sh" = "env/fetch_cuda.sh"
 "corpus/sm_80/machine_model.json" = "corpus/sm_80/machine_model.json"
 "specs/sm_80" = "specs/sm_80"
+"specs/fastmm" = "specs/fastmm"
 "third_party/alphatensor" = "third_party/alphatensor"
 "examples" = "examples"
 "docs" = "docs"

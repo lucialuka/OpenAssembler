@@ -33,6 +33,11 @@ pip install -e .
 pip install pytest
 ```
 
+For an end-user installation, use the Homebrew formula documented in
+[HOMEBREW.md](HOMEBREW.md). It installs the CLI, compiler data, Modal client
+and repository-relative resources together. The editable Python setup above
+remains the development path for running tests against a checkout.
+
 On macOS, install Colima if needed and start it. The wrapper runs NVIDIA's
 Linux tools inside the VM:
 

@@ -41,6 +41,21 @@ its new candidates remain experimental and its failed gates remain excluded.
 
 ## Quick start
 
+On macOS or Linux with Homebrew, install the complete CLI and its Modal
+transport with:
+
+```sh
+brew tap Qingyang-Lucas-Fang/openassembler \
+  https://github.com/Qingyang-Lucas-Fang/OpenAssembler
+brew install openassembler
+```
+
+The formula installs Python 3.12, the compiler/data tree, examples,
+documentation and the Modal CLI. See [Homebrew installation](docs/HOMEBREW.md)
+for the CUDA toolkit and SSH runtime requirements. If the formula is not yet
+available from the tap, install the local formula from a checkout with
+`brew install --build-from-source ./Formula/openassembler.rb`.
+
 Use Python **3.12 or newer**:
 
 ```sh

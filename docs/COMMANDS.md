@@ -192,6 +192,7 @@ contract, and the N tile count must fit CUDA's grid-y limit.
 | `--cta-order ORDER` | `m_fast` | `m_fast` or `morton8`; Morton requires M/N multiples of 1024, giving complete 8×8 output-tile groups. |
 | `--epilogue MODE` | `none` | `none`, `bias_residual`, `bias_residual_relu`. Nonempty modes require `stagepair` and append FP32 bias/residual pointers. |
 | `--pointer-mode MODE` | `legacy` | `legacy` or explicit `direct` pointer homes. Direct requires `stagepair`, `m_fast`, and `--epilogue none`. |
+| `--pointer-advance MODE` | `late` | `late` (default), `early`, or shape-specific `auto` placement for the validated stagepair/m_fast/unfused pointer-update candidate. |
 | `--out-dir DIR` | `output` | Output root. |
 | `-o NAME`, `--out NAME` | `gemm` | Artifact basename; entry name remains `gemm`. |
 | `--no-sass` | Off | Skip the readable listing. |
