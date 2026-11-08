@@ -22,12 +22,15 @@ class TensorConfig:
     epoch_drain: int = 15
     reuse: bool = True
     pointer_mode: str = "legacy"
+    pointer_advance: str = "late"
 
     def __post_init__(self):
         if self.issue_gap != 8 or self.epoch_drain != 15:
             raise ValueError("the production SM80 tensor path requires HMMA8 and drain15")
         if self.pointer_mode not in ("legacy", "direct"):
             raise ValueError("tensor pointer mode must be legacy or direct")
+        if self.pointer_advance not in ("late", "early", "auto"):
+            raise ValueError("tensor pointer advance must be late, early or auto")
 
 
 def needs_tensor(kernel) -> bool:
@@ -418,7 +421,8 @@ def policy(config=None) -> dict:
     return {"backend": "sm80-tensor", "schedule": "source-order-hmma8-epoch-drain15",
             "copy_group_scoreboard": 0, "protected_scoreboard_recycling": True,
             "ldsm_address_war_uses_write_completion": True,
-            "tensor_reuse_hints": config.reuse, "pointer_mode": config.pointer_mode}
+            "tensor_reuse_hints": config.reuse, "pointer_mode": config.pointer_mode,
+            "pointer_advance": config.pointer_advance}
 
 
 def generate(kernel, arch, opt_level, *, config=None):

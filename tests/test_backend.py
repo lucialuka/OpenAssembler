@@ -74,6 +74,15 @@ def test_imad_wide_signed_cbank_template():
     assert enc.encode("IMAD.WIDE R4, R0, R2, c[0x0][0x160]") is not None
 
 
+def test_encoder_rejects_out_of_range_register_and_control_fields():
+    enc = Encoder("sm_80")
+    with pytest.raises(EncodeError, match="rd"):
+        enc.encode("MOV R256, R2")
+    from openassembler.isa.word import Control
+    with pytest.raises(EncodeError, match="stall"):
+        enc.encode("MOV R1, R2", Control(16, False, 7, 7, 0, 0))
+
+
 def test_float_immediate_setp_learned_and_round_trips():
     """FSETP's immediate operand (`if v < 0.0`, pyfront's ReLU) printed as
     decimal scientific notation by nvdisasm ('1.17549435...e-38'), which

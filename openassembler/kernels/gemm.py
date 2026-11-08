@@ -35,6 +35,7 @@ class GemmPlan:
     cta_order: str = "m_fast"
     epilogue: str = "none"
     pointer_mode: str = "legacy"
+    pointer_advance: str = "late"
 
     def __post_init__(self) -> None:
         for name in ("m", "n", "k"):
@@ -51,9 +52,14 @@ class GemmPlan:
             raise ValueError("epilogue must be none, bias_residual or bias_residual_relu")
         if self.pointer_mode not in ("legacy", "direct"):
             raise ValueError("pointer mode must be legacy or direct")
+        if self.pointer_advance not in ("late", "early", "auto"):
+            raise ValueError("pointer advance must be late, early or auto")
         if self.pointer_mode == "direct" and (self.schedule != "stagepair"
                 or self.cta_order != "m_fast" or self.epilogue != "none"):
             raise ValueError("direct pointer mode is validated for stagepair, m_fast, unfused GEMM")
+        if self.pointer_advance != "late" and (self.schedule != "stagepair"
+                or self.cta_order != "m_fast" or self.epilogue != "none"):
+            raise ValueError("early pointer advance is validated for stagepair, m_fast, unfused GEMM")
         if self.epilogue != "none" and self.schedule != "stagepair":
             raise ValueError("fused training epilogues require the validated stagepair schedule")
         if self.output_dtype != "f32" or self.layout != "rcr" or self.arch != "sm_80":
@@ -79,7 +85,7 @@ class GemmPlan:
                 "k": self.k, "dtype": self.dtype, "output_dtype": self.output_dtype,
                 "accumulation": "f32", "layout": self.layout, "schedule": self.schedule,
                 "cta_order": self.cta_order, "epilogue": self.epilogue,
-                "pointer_mode": self.pointer_mode,
+                "pointer_mode": self.pointer_mode, "pointer_advance": self.pointer_advance,
                 "tile_mnk": [128, 128, 64], "warp_mn": [64, 64], "stages": 2,
                 "shared_swizzle": [7, 7], "input_alignment": 16, "output_alignment": 8}
 
@@ -188,9 +194,20 @@ def _compute(dtype: str, stage: str) -> list[str]:
     return lines
 
 
-def _body(dtype: str, current: str, following: str, *, folded: bool) -> list[str]:
-    return (["cp.async.wait_group 0; bar.sync 0;"]+_copies(following, folded=folded)
-            +_compute(dtype, current)+["bar.sync 0;"]+_advance())
+def _body(dtype: str, current: str, following: str, *, folded: bool,
+          pointer_advance: str = "late") -> list[str]:
+    prefix = ["cp.async.wait_group 0; bar.sync 0;"] + _copies(following, folded=folded)
+    if pointer_advance == "early":
+        return prefix + _advance() + _compute(dtype, current) + ["bar.sync 0;"]
+    return prefix + _compute(dtype, current) + ["bar.sync 0;"] + _advance()
+
+
+def _effective_pointer_advance(plan: GemmPlan) -> str:
+    # Auto mode is intentionally a narrow dispatch rule. It is admitted only
+    # for the wide shape with two independent FP16/BF16 holdout confirmations.
+    if plan.pointer_advance == "auto":
+        return "early" if (plan.m, plan.n, plan.k) == (1024, 4096, 1024) else "late"
+    return plan.pointer_advance
 
 
 def _epilogue(n: int) -> list[str]:
@@ -214,10 +231,11 @@ def generate(plan: GemmPlan) -> str:
     if not isinstance(plan, GemmPlan):
         raise TypeError("generate expects a GemmPlan")
     lines = _prologue(plan)
+    pointer_advance = _effective_pointer_advance(plan)
     if plan.schedule == "stagepair":
         lines += _copies("0", folded=True)+_advance()
-        first = _body(plan.dtype, "0", "32768", folded=True)
-        second = _body(plan.dtype, "32768", "0", folded=True)
+        first = _body(plan.dtype, "0", "32768", folded=True, pointer_advance=pointer_advance)
+        second = _body(plan.dtype, "32768", "0", folded=True, pointer_advance=pointer_advance)
         if plan.k > 128:
             lines += (["LOOP_STAGE_PAIR:"]+first+second+
                       [f"add.u32 %r8,%r8,128; setp.lt.u32 %p,%r8,{plan.k-128}; @%p bra LOOP_STAGE_PAIR;"])

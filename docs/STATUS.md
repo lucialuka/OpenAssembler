@@ -303,6 +303,15 @@ No whole-native-transformer or general faster-than-CUDA claim is admitted.
 
 ## Research priorities
 
+The November 8 four-iteration follow-up is recorded in
+[iteration gap progress](../exp/iteration_rounds/README.md). It promoted source
+discovery hygiene, a shape-guarded early pointer-placement policy, and encoder
+range checks. The attempted mined-latency scheduler promotion was rejected after
+full nvdisasm validation produced invalid SASS on ordinary kernels. The early
+pointer candidate remains explicit/shape-specific; no universal ptxas-speed claim
+was made. The full A100 gap remains in address work, tensor scheduling,
+reductions, and native operator composition correctness.
+
 The catalogue records each experiment's actual status rather than treating a
 negative sample as a universal impossibility. Remaining priorities are
 counter-guided tensor scheduling, legal joint shared/register-layout search,

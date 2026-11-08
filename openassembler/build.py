@@ -551,7 +551,8 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
         tensor_config = None
         if gemm_contract is not None and kname == "gemm":
             from openassembler.backend.tensor import TensorConfig
-            tensor_config = TensorConfig(pointer_mode=gemm_contract["pointer_mode"])
+            tensor_config = TensorConfig(pointer_mode=gemm_contract["pointer_mode"],
+                                         pointer_advance=gemm_contract.get("pointer_advance", "late"))
         if len(cnames.get(kname, ())) == len(k.params) and any(n != p[1] for n, p in zip(cnames.get(kname, ()), k.params)):
             k.source_params = cnames[kname]
         so.kernels.append(k)

@@ -34,6 +34,11 @@ class EncodeError(Exception):
     pass
 
 
+def _require_unsigned(name: str, value: int, width: int) -> None:
+    if not isinstance(value, int) or not 0 <= value < (1 << width):
+        raise EncodeError(f"{name}={value!r} does not fit {width} bits")
+
+
 _BITFLIP: dict | None = None
 _SCALE = {1: 0, 4: 1, 8: 2, 16: 3}
 # (opcode, operand index) -> (lo, width) for immediates that are not the 32-bit imm slot
@@ -243,9 +248,15 @@ class Encoder:
         if rel % 4:
             raise EncodeError("misaligned branch target")
         lo, width = (34, 30) if ins.op == "BSSY" else (34, 48)
+        if not -(1 << (width - 1)) <= rel // 4 < (1 << (width - 1)):
+            raise EncodeError(f"branch displacement {rel} does not fit signed {width}-bit field")
         w = set_bits(t.word, lo, width, (rel >> 2) & ((1 << width) - 1))
         if ins.op == "BSSY":
-            w = set_bits(w, 16, 4, int(ins.ops[0].text[1:]))  # barrier index B0..B15 (bits 16..19)
+            barrier = int(ins.ops[0].text[1:])
+            _require_unsigned("barrier", barrier, 4)
+            w = set_bits(w, 16, 4, barrier)  # barrier index B0..B15 (bits 16..19)
+        if ins.guard is not None:
+            _require_unsigned("branch predicate", ins.guard.idx, 3)
         w = set_bits(set_bits(w, 12, 3, 7 if ins.guard is None else ins.guard.idx), 15, 1,
                      int(ins.guard.neg) if ins.guard else 0)
         if ctl is not None:
@@ -254,6 +265,11 @@ class Encoder:
 
     @staticmethod
     def _ctl(w: int, ctl: Control) -> int:
+        _require_unsigned("stall", ctl.stall, 4)
+        _require_unsigned("write scoreboard", ctl.wbar, 3)
+        _require_unsigned("read scoreboard", ctl.rbar, 3)
+        _require_unsigned("wait mask", ctl.wait, 6)
+        _require_unsigned("reuse mask", ctl.reuse, 4)
         w = set_bits(w, 105, 4, ctl.stall)
         w = set_bits(w, 109, 1, int(not ctl.yield_))
         w = set_bits(w, 110, 3, ctl.wbar)
@@ -270,6 +286,7 @@ class Encoder:
         if ins.guard is None:
             w = set_bits(set_bits(w, 12, 3, 7), 15, 1, 0)
         else:
+            _require_unsigned("guard predicate", ins.guard.idx, 3)
             w = set_bits(set_bits(w, 12, 3, ins.guard.idx), 15, 1, int(ins.guard.neg))
         tmpl_ins = parse_insn(0, "", 0) if False else None  # noqa: F841
         for pos, (op, (kind, field)) in enumerate(zip(ins.ops, t.slots)):
@@ -279,11 +296,13 @@ class Encoder:
                 if field is None:
                     raise EncodeError(f"register slot {pos} not learned")
                 lo, wd = (UREG_FIELDS | REG_FIELDS)[field]
+                _require_unsigned(field, op.idx, wd)
                 w = set_bits(w, lo, wd, op.idx)
             elif kind == "pred":
                 if field is None:
                     raise EncodeError(f"predicate slot {pos} not learned")
                 lo, wd = PRED_FIELDS[field]
+                _require_unsigned(field, op.idx, wd)
                 w = set_bits(w, lo, wd, op.idx)
                 if field in PRED_NEG:
                     w = set_bits(w, PRED_NEG[field], 1, int(op.neg))
@@ -292,12 +311,15 @@ class Encoder:
                     raise EncodeError("cbank modifier differs from template")
                 if field is None:
                     raise EncodeError(f"cbank slot {pos} not learned")
+                _require_unsigned("constant-bank offset", op.off, 16)
+                _require_unsigned("constant-bank", op.bank, 5)
                 w = set_bits(set_bits(w, 38, 16, op.off), 54, 5, op.bank)
             elif kind == "mem":
                 if field is None or op.base is None or op.ur is not None:
                     raise EncodeError(f"memory slot {pos} not learned")
                 if not -(1 << 23) <= op.off < (1 << 23):
                     raise EncodeError("offset out of 24-bit range")
+                _require_unsigned("memory base register", op.base.idx, 8)
                 w = set_bits(set_bits(w, 24, 8, op.base.idx), 40, 24, op.off & 0xFFFFFF)
                 if field == "mem+scale":
                     w = set_bits(w, 78, 2, _SCALE[op.scale])

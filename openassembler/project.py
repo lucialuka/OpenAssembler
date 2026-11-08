@@ -68,7 +68,11 @@ CU_EXTS = (".cu", ".cuh")
 CPP_EXTS = (".cpp", ".cc", ".cxx", ".c")
 SOURCE_EXTS = PTX_EXTS + PY_EXTS + CU_EXTS + CPP_EXTS
 # never walked into: VCS/editor dirs (all hidden), virtualenvs, caches, build output
-SKIP_DIRS = {".venv", "venv", "node_modules", "__pycache__", "build", "dist"}
+# Generated application/kernel artifacts are not source inputs.  In particular,
+# walking a previously captured PyTorch repository must not package its output
+# cubins, PTX cache or reports into the next source bundle.
+SKIP_DIRS = {".venv", "venv", "node_modules", "__pycache__", "build", "dist",
+             "output", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".tox"}
 MANIFEST = "manifest.json"
 MANIFEST_SCHEMA = 1
 

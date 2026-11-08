@@ -122,7 +122,8 @@ def cmd_gemm(a: argparse.Namespace) -> int:
     from openassembler.project import ProjectError
     try:
         plan = GemmPlan(m=a.m, n=a.n, k=a.k, dtype=a.dtype, schedule=a.schedule, arch=a.arch,
-                        cta_order=a.cta_order, epilogue=a.epilogue, pointer_mode=a.pointer_mode)
+                        cta_order=a.cta_order, epilogue=a.epilogue, pointer_mode=a.pointer_mode,
+                        pointer_advance=a.pointer_advance)
         return compile_gemm(plan, Path(a.out_dir), a.out, no_sass=a.no_sass, emit_only=a.emit_only)
     except (ValueError, TypeError, OSError, ProjectError) as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -590,6 +591,8 @@ def build_parser() -> argparse.ArgumentParser:
     pm.add_argument("--pointer-mode", choices=("legacy", "direct"), default="legacy",
                     help="direct reuses aligned pointer homes for staged copies; measured wins on MLP "
                          "shapes, regression on tall GEMM; stagepair/m_fast/unfused only")
+    pm.add_argument("--pointer-advance", choices=("late", "early", "auto"), default="late",
+                    help="late (default), the validated early-placement candidate, or shape-specific auto")
     pm.add_argument("--out-dir", default="output")
     pm.add_argument("-o", "--out", default="gemm", metavar="NAME")
     pm.add_argument("--no-sass", action="store_true")
