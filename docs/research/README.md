@@ -19,6 +19,11 @@ a short glossary are in [DEVELOPMENT](../DEVELOPMENT.md). The complete
 cross-cutting [whole-stack study](WHOLE_STACK_RESULTS.md) and
 [primary references](REFERENCES.md) remain essential companion documents.
 
+The cross-cutting black-box compiler and GPU reverse-engineering record is
+centralized in the [reverse-engineering results hub](../reverse_eng_results/README.md).
+Per-idea dossiers remain the authoritative status and reproduction records for
+individual features.
+
 There are **77 dossiers**: **34 implemented**, **17 validated but not integrated**, **14 tested but not selected**, and **12 open or hardware unavailable**.
 
 ## 1. Validated and implemented

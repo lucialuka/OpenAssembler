@@ -3,6 +3,8 @@
 Use [STATUS.md](STATUS.md) for architecture and current limits,
 [COMMANDS.md](COMMANDS.md) for complete CLI syntax, and the
 [research catalogue](research/README.md) for per-feature methods and commands.
+The cross-cutting black-box compiler and GPU reverse-engineering record is in
+[reverse_eng_results/](reverse_eng_results/README.md).
 This page contains shared setup and maintenance rules, not a second benchmark
 reproduction guide.
 

@@ -13,6 +13,7 @@ We provide a more efficient compiler eith optimization kernels that reach an app
 [Architecture and status](docs/STATUS.md) · [All commands](docs/COMMANDS.md) ·
 [Research catalogue](docs/research/README.md) · [Development setup](docs/DEVELOPMENT.md)
 · [Repository workflow and SSH/Modal setup](docs/REPOSITORY_WORKFLOW.md)
+· [Reverse-engineering results](docs/reverse_eng_results/README.md)
 
 > ⚠️ **IMPORTANT NOTICE**
 > This project is currently under **active heavy development** for kernel optimization and assembly language edge case handling. If you encounter any bugs/compiler inefficiency during deployment, please feel free to open an Issue. Your feedback will help us build a better version!

@@ -5,6 +5,8 @@ latest completed validation. The repository CLI update adds workflow/correctness
 checks; the separate November 7 native NN campaign adds GPU measurements and
 experimental candidates without promoting them into production. Full command syntax is in [COMMANDS.md](COMMANDS.md);
 every researched feature has a dossier in the [catalogue](research/README.md).
+The cross-cutting reverse-engineering record is centralized in the
+[reverse-engineering results hub](reverse_eng_results/README.md).
 
 ## Headline validation
 
