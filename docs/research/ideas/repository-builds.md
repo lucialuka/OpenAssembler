@@ -2,9 +2,9 @@
 
 Status: implemented
 
-The CLI builds discovered standalone GPU kernels or
-a configured PyTorch application while preserving an explicit record of what
-was compiled and by whom. It does not turn arbitrary host code into a binary.
+The CLI builds discovered standalone GPU kernels or an explicitly selected
+PyTorch application while preserving an explicit record of what was compiled
+and by whom. It does not turn arbitrary host code into a binary.
 
 ## Idea and behavior
 
@@ -17,8 +17,10 @@ symlinks and host-only files are not blindly compiled.
 Standalone discovery recognizes PTX entries, CUDA `__global__` kernels and the
 Python frontend's `@kernel` functions. Same-stem source collisions get stable
 distinct output names. Directory builds mirror source paths and do not accept
-a single-file `-o` name. A root `[application]` configuration instead selects
-the [PyTorch application route](pytorch-application-capture.md).
+a single-file `-o` name. A root `[application]` configuration is metadata for
+the explicit [PyTorch application route](pytorch-application-capture.md); it
+does not override native discovery. Use `--frontend torch`, `--frontend triton`,
+or `--frontend inductor` to select that route.
 
 The output manifest records source identity, kernels, backend attribution,
 paths, resource counts and verification state. Each output directory has a
@@ -62,7 +64,7 @@ need nvcc and its host compiler. Actual execution needs a GPU.
 ```sh
 openassembler compile examples/mlp --out-dir output_repository
 openassembler run output_repository --backend modal --dry-run
-openassembler compile testcases/test_whole_repo --verify --dry-run
+openassembler compile testcases/test_whole_repo --frontend torch --verify --dry-run
 .venv/bin/python -m pytest -q tests/test_cli_compile.py tests/test_runner.py \
   tests/test_integration.py tests/test_torchfront.py tests/test_repo_workflow.py
 openassembler benchmark --help

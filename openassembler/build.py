@@ -434,6 +434,7 @@ class KernelOut:
 
     def record(self) -> dict:
         r = {"name": self.name, "params": [list(p) for p in self.params], "compiled_by": self.compiled_by,
+             "backend": self.compiled_by,
              "instructions": self.instructions, "registers": self.registers, "verify": self.verify}
         if self.source_params:
             r["source_params"] = self.source_params

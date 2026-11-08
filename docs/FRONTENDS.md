@@ -25,6 +25,13 @@ fail or use only an explicitly requested, labeled fallback.
 Start with [the repository workflow guide](REPOSITORY_WORKFLOW.md) for the shared
 `compile REPO`, `run REPO`, `cnr REPO` interface and local/SSH/Modal setup.
 
+Repository builds are native-first. `auto` and `native` statically discover
+supported PTX, CUDA/C++ and Python `@kernel` sources even when the repository
+also contains an `openassembler.toml`. Host code, build systems, imports and
+launch logic are recorded as context and skipped from GPU compilation. Select
+the configured application capture explicitly with `--frontend torch`,
+`--frontend triton`, or `--frontend inductor`.
+
 [Discovery, manifests and publication](research/ideas/repository-builds.md)
 explains what directory compilation finds, output ownership and limits.
 

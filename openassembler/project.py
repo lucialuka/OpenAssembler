@@ -31,6 +31,7 @@ manifest.json schema (version 1; `openassembler run` reads nothing else):
         "reference": ".build/reference/kernels/gemm.cubin",
         "kernels": [{"name": "gemm", "params": [["u64", "a"], ["u32", "n"], ...],
                      "compiled_by": "openassembler" | "ptxas-fallback",
+                     "backend": "openassembler" | "ptxas-fallback",
                      "instructions": 42, "registers": 24,
                      "verify": "ok" | "failed" | "not-run" | "not-verified",
                      "note": "...",                       optional: why it fell back / wasn't verified
@@ -421,6 +422,7 @@ def load_manifest(out_dir: Path) -> dict | None:
                 and ("source_params" not in k or isinstance(k["source_params"], list)
                      and len(k["source_params"]) == len(k["params"])
                      and all(isinstance(v, str) for v in k["source_params"]))
+                and ("backend" not in k or k["backend"] in ("openassembler", "ptxas-fallback"))
                 for k in e["kernels"]):
             raise ManifestError(f"{p}: invalid kernel or source record; recompile")
         for rel in entry_outputs(e):
@@ -434,6 +436,7 @@ def load_manifest(out_dir: Path) -> dict | None:
                 or not isinstance(app.get("cache_sha256"), str)
                 or not all(isinstance(k, dict) and isinstance(k.get("name"), str)
                            and isinstance(k.get("cubin"), str) and isinstance(k.get("sha256"), str)
+                           and ("backend" not in k or k["backend"] == "torch-inductor-triton")
                            and isinstance(k.get("cache_path"), str)
                            and not Path(k["cache_path"]).is_absolute() and ".." not in Path(k["cache_path"]).parts
                            for k in app["kernels"])):

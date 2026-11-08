@@ -1,0 +1,3356 @@
+{
+  "device": "A100-40GB",
+  "cases": [
+    {
+      "case": {
+        "op": "rmsnorm_backward",
+        "width": 512,
+        "warps": 4,
+        "rows": 4096
+      },
+      "metadata": {
+        "kernel": "op_rmsnorm_backward_w512_c4_overlap",
+        "op": "rmsnorm_backward",
+        "width": 512,
+        "warps": 4,
+        "chunks": 16,
+        "candidate": "streamed_load_fma",
+        "preserved": [
+          "warp shuffle offsets",
+          "full-lane mask",
+          "tail guards",
+          "stores"
+        ],
+        "local_accumulators": [
+          "%f64",
+          "%f96"
+        ],
+        "rounding_policy": "explicit FMA for local products"
+      },
+      "variants": [
+        {
+          "label": "baseline",
+          "static_oa": {
+            "instructions": 232,
+            "non_nop": 226,
+            "registers": 58,
+            "sass_sha256": "3bfdad280616299e253f53700695ea2e2e097c2269261dbdc6f11a34414e0cce",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 168,
+            "non_nop": 154,
+            "registers": 40,
+            "sass_sha256": "43631491a1131ccecbafc2de502489e72efe20fb8566beae797f24bb141baa93",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w512_c4_baseline",
+                "op": "rmsnorm_backward",
+                "mode": "baseline_warp4",
+                "shape": [
+                  4096,
+                  512
+                ],
+                "threads": 128,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 58,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 40,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 7.597966087402597e-07,
+                            "relative_l2": 5.718662406665912e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 7.597966087402597e-07,
+                            "relative_l2": 5.698494605478593e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2097152,
+                        "mismatched_elements": 0,
+                        "max_abs": 7.597966087402597e-07,
+                        "relative_l2": 5.718662406665912e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2097152,
+                        "mismatched_elements": 0,
+                        "max_abs": 7.597966087402597e-07,
+                        "relative_l2": 5.698494605478593e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.017023999243974686,
+                      0.016256000846624374,
+                      0.01664000004529953
+                    ],
+                    "median_ms": 0.01664000004529953,
+                    "min_ms": 0.016256000846624374,
+                    "max_ms": 0.017023999243974686
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.013508000411093235,
+                      0.011264000087976456,
+                      0.011136000044643879
+                    ],
+                    "median_ms": 0.011264000087976456,
+                    "min_ms": 0.011136000044643879,
+                    "max_ms": 0.013508000411093235
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "ptxas",
+                    "oa"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ]
+                ],
+                "ptxas_over_oa": 0.6769230803673172
+              }
+            ],
+            "source_sha256": "ceab9442282224d08e15b88dfa1d65771cc4141af5be824baa6c653248bb7af8",
+            "oa_sha256": "a694f8c5889d79d6f68273aeaec029f42b9b756ce1398e4c311c004db3abfb9a",
+            "ptxas_sha256": "a6261020973a3c0291cec7c1fa615c45161080f7d8266352e6636934d4d718e9",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.5759253360000001
+          }
+        },
+        {
+          "label": "overlap",
+          "static_oa": {
+            "instructions": 200,
+            "non_nop": 196,
+            "registers": 43,
+            "sass_sha256": "38ba8f73fed8cfddf96e32fa2b83eb22f969e02b32416180e9c4d8a7f204de0c",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 168,
+            "non_nop": 154,
+            "registers": 40,
+            "sass_sha256": "0da09331d20fcce371ed1137b7c569b4b60d3f6dcfb9226438609f65a7a90bc8",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w512_c4_overlap",
+                "op": "rmsnorm_backward",
+                "mode": "overlap_warp4",
+                "shape": [
+                  4096,
+                  512
+                ],
+                "threads": 128,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 43,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 40,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 7.597966087402597e-07,
+                            "relative_l2": 5.704842715673625e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 7.597966087402597e-07,
+                            "relative_l2": 5.701604310975249e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2097152,
+                        "mismatched_elements": 0,
+                        "max_abs": 7.597966087402597e-07,
+                        "relative_l2": 5.704842715673625e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2097152,
+                        "mismatched_elements": 0,
+                        "max_abs": 7.597966087402597e-07,
+                        "relative_l2": 5.701604310975249e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.012927999719977379,
+                      0.012415999546647072,
+                      0.012671999633312225
+                    ],
+                    "median_ms": 0.012671999633312225,
+                    "min_ms": 0.012415999546647072,
+                    "max_ms": 0.012927999719977379
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.013244000263512135,
+                      0.011264000087976456,
+                      0.011136000044643879
+                    ],
+                    "median_ms": 0.011264000087976456,
+                    "min_ms": 0.011136000044643879,
+                    "max_ms": 0.013244000263512135
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "ptxas",
+                    "oa"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ]
+                ],
+                "ptxas_over_oa": 0.8888889215531216
+              }
+            ],
+            "source_sha256": "788e7cd566a2631285e717ab26cac01a59e4ad1beaf53295061e5942961cee61",
+            "oa_sha256": "d4d75ffdf996616ea505160eeb60975b8c57d3336205592548a8f8d7e825f854",
+            "ptxas_sha256": "8fb772211dc83286939be04da79b24d0ce70765660e9fddf42857347834f3ec4",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.12091854099999999
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "op": "rmsnorm_backward",
+        "width": 512,
+        "warps": 8,
+        "rows": 4096
+      },
+      "metadata": {
+        "kernel": "op_rmsnorm_backward_w512_c8_overlap",
+        "op": "rmsnorm_backward",
+        "width": 512,
+        "warps": 8,
+        "chunks": 16,
+        "candidate": "streamed_load_fma",
+        "preserved": [
+          "warp shuffle offsets",
+          "full-lane mask",
+          "tail guards",
+          "stores"
+        ],
+        "local_accumulators": [
+          "%f64",
+          "%f96"
+        ],
+        "rounding_policy": "explicit FMA for local products"
+      },
+      "variants": [
+        {
+          "label": "baseline",
+          "static_oa": {
+            "instructions": 232,
+            "non_nop": 226,
+            "registers": 58,
+            "sass_sha256": "1120df0be354e8eff13ab063853f69b8517450762704df6aa7ac859001c8bcd5",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 168,
+            "non_nop": 154,
+            "registers": 40,
+            "sass_sha256": "99a6eff7c8de2d2275c4577bba3d388d481207eab0e5df6a577f5cc5ceb43eb9",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w512_c8_baseline",
+                "op": "rmsnorm_backward",
+                "mode": "baseline_warp8",
+                "shape": [
+                  4096,
+                  512
+                ],
+                "threads": 256,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 58,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 40,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.98996715620126e-07,
+                            "relative_l2": 5.674273930533271e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.98996715620126e-07,
+                            "relative_l2": 5.659957789367678e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2097152,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.98996715620126e-07,
+                        "relative_l2": 5.674273930533271e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2097152,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.98996715620126e-07,
+                        "relative_l2": 5.659957789367678e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.01874000020325184,
+                      0.016896000131964684,
+                      0.015744000673294067
+                    ],
+                    "median_ms": 0.016896000131964684,
+                    "min_ms": 0.015744000673294067,
+                    "max_ms": 0.01874000020325184
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.012799999676644802,
+                      0.011392000131309032,
+                      0.011136000044643879
+                    ],
+                    "median_ms": 0.011392000131309032,
+                    "min_ms": 0.011136000044643879,
+                    "max_ms": 0.012799999676644802
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ]
+                ],
+                "ptxas_over_oa": 0.6742424267479192
+              }
+            ],
+            "source_sha256": "d78ccbeb4444f575be32741fb4289b14fcd6de7bc4e21bebf46771b8979c129c",
+            "oa_sha256": "6348901423b91ab39eb736c9048a1d7e1ce4f72ac90c446a0aa976a2bcb7db02",
+            "ptxas_sha256": "727dad96fa6e15235ae7ae6bb77fad917639450f5e09fda6dc300852b3ff643f",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.12224483500000005
+          }
+        },
+        {
+          "label": "overlap",
+          "static_oa": {
+            "instructions": 200,
+            "non_nop": 196,
+            "registers": 43,
+            "sass_sha256": "c64370c760527ed44a02090c663cc87b74257aef6c6754ee9e1869cd4fa21982",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 168,
+            "non_nop": 154,
+            "registers": 40,
+            "sass_sha256": "fa5037fbfffb4a08a935a7133799df55bf6f45fc737efc7ef46e0129c8c645b2",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w512_c8_overlap",
+                "op": "rmsnorm_backward",
+                "mode": "overlap_warp8",
+                "shape": [
+                  4096,
+                  512
+                ],
+                "threads": 256,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 43,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 40,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.98996715620126e-07,
+                            "relative_l2": 5.6652808606460565e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.98996715620126e-07,
+                            "relative_l2": 5.662899853508883e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2097152,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2097152,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.98996715620126e-07,
+                        "relative_l2": 5.6652808606460565e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2097152,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.98996715620126e-07,
+                        "relative_l2": 5.662899853508883e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.01536799967288971,
+                      0.012671999633312225,
+                      0.012415999546647072
+                    ],
+                    "median_ms": 0.012671999633312225,
+                    "min_ms": 0.012415999546647072,
+                    "max_ms": 0.01536799967288971
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.01152000017464161,
+                      0.011264000087976456,
+                      0.011136000044643879
+                    ],
+                    "median_ms": 0.011264000087976456,
+                    "min_ms": 0.011136000044643879,
+                    "max_ms": 0.01152000017464161
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ]
+                ],
+                "ptxas_over_oa": 0.8888889215531216
+              }
+            ],
+            "source_sha256": "ea4695a04572fb69ff783f303ab360fddbaeded4dcdbf812fd3b449c57e1fcfc",
+            "oa_sha256": "22a6ee3c2c564cec305c1b5df409e4232632e7d7ae2ee0020ae1187a147ccf35",
+            "ptxas_sha256": "70e27736ba51dc5cec539a3aab30b73882632ee522af5154489cd557666daf2c",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.18320047599999967
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "op": "rmsnorm_backward",
+        "width": 513,
+        "warps": 4,
+        "rows": 4096
+      },
+      "metadata": {
+        "kernel": "op_rmsnorm_backward_w513_c4_overlap",
+        "op": "rmsnorm_backward",
+        "width": 513,
+        "warps": 4,
+        "chunks": 17,
+        "candidate": "streamed_load_fma",
+        "preserved": [
+          "warp shuffle offsets",
+          "full-lane mask",
+          "tail guards",
+          "stores"
+        ],
+        "local_accumulators": [
+          "%f64",
+          "%f96"
+        ],
+        "rounding_policy": "explicit FMA for local products"
+      },
+      "variants": [
+        {
+          "label": "baseline",
+          "static_oa": {
+            "instructions": 240,
+            "non_nop": 239,
+            "registers": 61,
+            "sass_sha256": "594e29f1bf2df28df3bb4b156beec60a9300b3c15cd54bd4290520a1c32e071c",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 176,
+            "non_nop": 165,
+            "registers": 48,
+            "sass_sha256": "eab7d1d67985c565021b8dd49d84e8b13a5d9e0e282bb0d5d7b10551e8cfbf98",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w513_c4_baseline",
+                "op": "rmsnorm_backward",
+                "mode": "baseline_warp4",
+                "shape": [
+                  4096,
+                  513
+                ],
+                "threads": 128,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 61,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 48,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.821354481267861e-07,
+                            "relative_l2": 5.979372579031772e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.388142583801937e-07,
+                            "relative_l2": 5.747650117158491e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.141692094114635
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.514687126491826e-08,
+                            "relative_l2": 0.12652894741747378
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2101248,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.821354481267861e-07,
+                        "relative_l2": 5.979372579031772e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2101248,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.388142583801937e-07,
+                        "relative_l2": 5.747650117158491e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.02179200015962124,
+                      0.01945599913597107,
+                      0.01945599913597107
+                    ],
+                    "median_ms": 0.01945599913597107,
+                    "min_ms": 0.01945599913597107,
+                    "max_ms": 0.02179200015962124
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.010879999957978725,
+                      0.010751999914646149,
+                      0.010879999957978725
+                    ],
+                    "median_ms": 0.010879999957978725,
+                    "min_ms": 0.010751999914646149,
+                    "max_ms": 0.010879999957978725
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ]
+                ],
+                "ptxas_over_oa": 0.5592105489901736
+              }
+            ],
+            "source_sha256": "c0d04f2168fee7e99831885625224ae8cd071d4c6b73e2cbe81a25d37fa8203b",
+            "oa_sha256": "26ebb1e521c60567d3f8e92b0e1e1068f4df59c7fe813c8391a84bc15b9bcc50",
+            "ptxas_sha256": "55b15516fe6edbe6bde8e225e0b71e2935487812cea147d9285aef5679a213d5",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.17079571600000065
+          }
+        },
+        {
+          "label": "overlap",
+          "static_oa": {
+            "instructions": 208,
+            "non_nop": 207,
+            "registers": 45,
+            "sass_sha256": "95214022b080426916b23b581df66c971223c6544b0787bc81aa32c2cdddead0",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 176,
+            "non_nop": 165,
+            "registers": 48,
+            "sass_sha256": "d2f4939a73e0e9c7a9ff3895d99400537db9cc5b16ddf3beb3b828f44b3d0bbd",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w513_c4_overlap",
+                "op": "rmsnorm_backward",
+                "mode": "overlap_warp4",
+                "shape": [
+                  4096,
+                  513
+                ],
+                "threads": 128,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 45,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 48,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.685470483880351e-07,
+                            "relative_l2": 5.9449075591624336e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.388142583801937e-07,
+                            "relative_l2": 5.7411051973668995e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.141692094114635
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.514687126491826e-08,
+                            "relative_l2": 0.12652894741747378
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2101248,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.685470483880351e-07,
+                        "relative_l2": 5.9449075591624336e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2101248,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.388142583801937e-07,
+                        "relative_l2": 5.7411051973668995e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.017079999670386314,
+                      0.014336000196635723,
+                      0.014336000196635723
+                    ],
+                    "median_ms": 0.014336000196635723,
+                    "min_ms": 0.014336000196635723,
+                    "max_ms": 0.017079999670386314
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.011008000001311302,
+                      0.010879999957978725,
+                      0.010751999914646149
+                    ],
+                    "median_ms": 0.010879999957978725,
+                    "min_ms": 0.010751999914646149,
+                    "max_ms": 0.011008000001311302
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ]
+                ],
+                "ptxas_over_oa": 0.7589285580877693
+              }
+            ],
+            "source_sha256": "0e0bac61543f3a824945ee6b113cca2fc671ee670a754dc5f87ea9574cda08d2",
+            "oa_sha256": "24191177f01165be2c3a95342415acdf8509be5483ccad26cf79b582e377065b",
+            "ptxas_sha256": "6828ea00f5ad64e99dfb4aafd82fd7f801b0c508e002bdedfecdd7cebfa58a02",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.13040471999999959
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "op": "rmsnorm_backward",
+        "width": 513,
+        "warps": 8,
+        "rows": 4096
+      },
+      "metadata": {
+        "kernel": "op_rmsnorm_backward_w513_c8_overlap",
+        "op": "rmsnorm_backward",
+        "width": 513,
+        "warps": 8,
+        "chunks": 17,
+        "candidate": "streamed_load_fma",
+        "preserved": [
+          "warp shuffle offsets",
+          "full-lane mask",
+          "tail guards",
+          "stores"
+        ],
+        "local_accumulators": [
+          "%f64",
+          "%f96"
+        ],
+        "rounding_policy": "explicit FMA for local products"
+      },
+      "variants": [
+        {
+          "label": "baseline",
+          "static_oa": {
+            "instructions": 240,
+            "non_nop": 239,
+            "registers": 61,
+            "sass_sha256": "a202c8dc79a10940c0002bfca6bd8ef0ffe752b63fee8ada97276f2545563102",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 176,
+            "non_nop": 165,
+            "registers": 48,
+            "sass_sha256": "d2911bf3868c7000a2176f72ec672ccf1b9488c555e92cf03648afb07a3bafc5",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w513_c8_baseline",
+                "op": "rmsnorm_backward",
+                "mode": "baseline_warp8",
+                "shape": [
+                  4096,
+                  513
+                ],
+                "threads": 256,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 61,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 48,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.960997813720837e-07,
+                            "relative_l2": 5.91679560705967e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.960997813720837e-07,
+                            "relative_l2": 5.78383290890893e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.141692094114635
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.514687126491826e-08,
+                            "relative_l2": 0.12652894741747378
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2101248,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.960997813720837e-07,
+                        "relative_l2": 5.91679560705967e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2101248,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.960997813720837e-07,
+                        "relative_l2": 5.78383290890893e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.019840000197291374,
+                      0.01958400011062622,
+                      0.019711999222636223
+                    ],
+                    "median_ms": 0.019711999222636223,
+                    "min_ms": 0.01958400011062622,
+                    "max_ms": 0.019840000197291374
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.013372000306844711,
+                      0.011392000131309032,
+                      0.011264000087976456
+                    ],
+                    "median_ms": 0.011392000131309032,
+                    "min_ms": 0.011264000087976456,
+                    "max_ms": 0.013372000306844711
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "ptxas",
+                    "oa"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ]
+                ],
+                "ptxas_over_oa": 0.5779221073744291
+              }
+            ],
+            "source_sha256": "d601956bf76715e767a9972bbaea623734488a001e8beaf2269b155cd4adbb10",
+            "oa_sha256": "25a2f6b4659549aec0e6bf311770605474534962a89e937a1dfc27af17634115",
+            "ptxas_sha256": "f785dc1016b7c6e4a8042004cd62fdc80af17f1626ba5e3d13201aa08fed0be4",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.15632633399999918
+          }
+        },
+        {
+          "label": "overlap",
+          "static_oa": {
+            "instructions": 208,
+            "non_nop": 207,
+            "registers": 45,
+            "sass_sha256": "809c9bce55e2c28c48ace0b2ac2d0542fc36a6c3e319caf3649609440d71af13",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 176,
+            "non_nop": 165,
+            "registers": 48,
+            "sass_sha256": "a499d52db5cc5177d122c9e4e6f0976c0db400be00c1a385fa668a5eab5657ca",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w513_c8_overlap",
+                "op": "rmsnorm_backward",
+                "mode": "overlap_warp8",
+                "shape": [
+                  4096,
+                  513
+                ],
+                "threads": 256,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 45,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 1024,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 48,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.970049586385585e-07,
+                            "relative_l2": 5.951560947820247e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 6.960997813720837e-07,
+                            "relative_l2": 5.787172152745915e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.141692094114635
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 2101248,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.514687126491826e-08,
+                            "relative_l2": 0.12652894741747378
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2101248,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.970049586385585e-07,
+                        "relative_l2": 5.951560947820247e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 2101248,
+                        "mismatched_elements": 0,
+                        "max_abs": 6.960997813720837e-07,
+                        "relative_l2": 5.787172152745915e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.014976000413298607,
+                      0.014336000196635723,
+                      0.014336000196635723
+                    ],
+                    "median_ms": 0.014336000196635723,
+                    "min_ms": 0.014336000196635723,
+                    "max_ms": 0.014976000413298607
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.013563999906182289,
+                      0.011392000131309032,
+                      0.011264000087976456
+                    ],
+                    "median_ms": 0.011392000131309032,
+                    "min_ms": 0.011264000087976456,
+                    "max_ms": 0.013563999906182289
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "ptxas",
+                    "oa"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ]
+                ],
+                "ptxas_over_oa": 0.7946428554027525
+              }
+            ],
+            "source_sha256": "b7f0070c309d3d4fc91123fc0a659b6e5851d7beecd563623da417311c570e63",
+            "oa_sha256": "ca43cdae4d0a417abc155a4dfba4348e28d4375d109bd44f4923cbd995808bdf",
+            "ptxas_sha256": "1a0dfefe47f065513e0d71381dd54d3c5933b7f6b4e935697380dcbd84cb8db9",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.12689292399999985
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "op": "rmsnorm_backward",
+        "width": 1024,
+        "warps": 4,
+        "rows": 4096
+      },
+      "metadata": {
+        "kernel": "op_rmsnorm_backward_w1024_c4_overlap",
+        "op": "rmsnorm_backward",
+        "width": 1024,
+        "warps": 4,
+        "chunks": 32,
+        "candidate": "streamed_load_fma",
+        "preserved": [
+          "warp shuffle offsets",
+          "full-lane mask",
+          "tail guards",
+          "stores"
+        ],
+        "local_accumulators": [
+          "%f64",
+          "%f96"
+        ],
+        "rounding_policy": "explicit FMA for local products"
+      },
+      "variants": [
+        {
+          "label": "baseline",
+          "static_oa": {
+            "instructions": 392,
+            "non_nop": 386,
+            "registers": 106,
+            "sass_sha256": "0a771bdda2d84e5ca498d4987307fc3080dfa320ef88162d6b3db5d849b46c68",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 280,
+            "non_nop": 266,
+            "registers": 72,
+            "sass_sha256": "245a0110a0b7126ca3a65a55eafae95ed37bba75cd209e35111aa77af619dfaf",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w1024_c4_baseline",
+                "op": "rmsnorm_backward",
+                "mode": "baseline_warp4",
+                "shape": [
+                  4096,
+                  1024
+                ],
+                "threads": 128,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 512,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 106,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 896,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 72,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 8.307192542744701e-07,
+                            "relative_l2": 5.6377455996888447e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 8.307192542744701e-07,
+                            "relative_l2": 5.6033632744110946e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 4194304,
+                        "mismatched_elements": 0,
+                        "max_abs": 8.307192542744701e-07,
+                        "relative_l2": 5.6377455996888447e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 4194304,
+                        "mismatched_elements": 0,
+                        "max_abs": 8.307192542744701e-07,
+                        "relative_l2": 5.6033632744110946e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.0649079978466034,
+                      0.06451199948787689,
+                      0.06400000303983688
+                    ],
+                    "median_ms": 0.06451199948787689,
+                    "min_ms": 0.06400000303983688,
+                    "max_ms": 0.0649079978466034
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.040832001715898514,
+                      0.04057599976658821,
+                      0.04095999896526337
+                    ],
+                    "median_ms": 0.040832001715898514,
+                    "min_ms": 0.04057599976658821,
+                    "max_ms": 0.04095999896526337
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ]
+                ],
+                "ptxas_over_oa": 0.6329365395591509
+              }
+            ],
+            "source_sha256": "36e4f15b18e12acff8c906793a1adade6f39c5870220ec1f43bf7927325c9bea",
+            "oa_sha256": "52a1f2df2638f065e89f29788108043279e55f85160bd7e413993d2d3f68a658",
+            "ptxas_sha256": "4389513ed12de77ec51d6ce4da9dbf1fc54698f66b3d0d799f5a46fdba1181cd",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.18482954700000143
+          }
+        },
+        {
+          "label": "overlap",
+          "static_oa": {
+            "instructions": 328,
+            "non_nop": 324,
+            "registers": 75,
+            "sass_sha256": "66811691ab504c4409f4f94f0b269d38237bfd7a3dc01f1a0a28ade9bbd5163e",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 280,
+            "non_nop": 266,
+            "registers": 72,
+            "sass_sha256": "e987efb48ac435dbc4a8d3a8a55172c23aa84aef87c146783f34e6850262100b",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w1024_c4_overlap",
+                "op": "rmsnorm_backward",
+                "mode": "overlap_warp4",
+                "shape": [
+                  4096,
+                  1024
+                ],
+                "threads": 128,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 768,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 75,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 896,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 72,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 8.307192542744701e-07,
+                            "relative_l2": 5.610283784262416e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 8.307192542744701e-07,
+                            "relative_l2": 5.608198066397658e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 4194304,
+                        "mismatched_elements": 0,
+                        "max_abs": 8.307192542744701e-07,
+                        "relative_l2": 5.610283784262416e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 4194304,
+                        "mismatched_elements": 0,
+                        "max_abs": 8.307192542744701e-07,
+                        "relative_l2": 5.608198066397658e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.0533440001308918,
+                      0.05299200117588043,
+                      0.05286400020122528
+                    ],
+                    "median_ms": 0.05299200117588043,
+                    "min_ms": 0.05286400020122528,
+                    "max_ms": 0.0533440001308918
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.041600000113248825,
+                      0.040832001715898514,
+                      0.04121600091457367
+                    ],
+                    "median_ms": 0.04121600091457367,
+                    "min_ms": 0.040832001715898514,
+                    "max_ms": 0.041600000113248825
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ]
+                ],
+                "ptxas_over_oa": 0.7777777777777778
+              }
+            ],
+            "source_sha256": "945d10f67da06e6293a73469885d3a5186039e87181f77e2b314f1aeda88bbde",
+            "oa_sha256": "58eb49c647eed5bb0f0b8cb4560dd0fb54b152ea128df7e9af9fc51a1887c9f3",
+            "ptxas_sha256": "e36f8968ddd3a4ea56cb9ba79267b50b5cc511a6c7f790a7c46518ec06e503c8",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.17216823000000048
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "op": "rmsnorm_backward",
+        "width": 1024,
+        "warps": 8,
+        "rows": 4096
+      },
+      "metadata": {
+        "kernel": "op_rmsnorm_backward_w1024_c8_overlap",
+        "op": "rmsnorm_backward",
+        "width": 1024,
+        "warps": 8,
+        "chunks": 32,
+        "candidate": "streamed_load_fma",
+        "preserved": [
+          "warp shuffle offsets",
+          "full-lane mask",
+          "tail guards",
+          "stores"
+        ],
+        "local_accumulators": [
+          "%f64",
+          "%f96"
+        ],
+        "rounding_policy": "explicit FMA for local products"
+      },
+      "variants": [
+        {
+          "label": "baseline",
+          "static_oa": {
+            "instructions": 392,
+            "non_nop": 386,
+            "registers": 106,
+            "sass_sha256": "4921ecc6a1b842c45a88cc2e3d36a7c08aacb266f30c2497519d400ced6de8c6",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 280,
+            "non_nop": 266,
+            "registers": 72,
+            "sass_sha256": "3b6c8697b2145dbd863a3a3e72983eeaecc511122ff07e9ea9115d89550a87da",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w1024_c8_baseline",
+                "op": "rmsnorm_backward",
+                "mode": "baseline_warp8",
+                "shape": [
+                  4096,
+                  1024
+                ],
+                "threads": 256,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 512,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 106,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 896,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 72,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 8.374484199435983e-07,
+                            "relative_l2": 5.663216694959924e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 7.617712718399616e-07,
+                            "relative_l2": 5.687856962584507e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 4194304,
+                        "mismatched_elements": 0,
+                        "max_abs": 8.374484199435983e-07,
+                        "relative_l2": 5.663216694959924e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 4194304,
+                        "mismatched_elements": 0,
+                        "max_abs": 7.617712718399616e-07,
+                        "relative_l2": 5.687856962584507e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.06484399735927582,
+                      0.06464000046253204,
+                      0.06451199948787689
+                    ],
+                    "median_ms": 0.06464000046253204,
+                    "min_ms": 0.06451199948787689,
+                    "max_ms": 0.06484399735927582
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.04095999896526337,
+                      0.04057599976658821,
+                      0.04134399816393852
+                    ],
+                    "median_ms": 0.04095999896526337,
+                    "min_ms": 0.04057599976658821,
+                    "max_ms": 0.04134399816393852
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ]
+                ],
+                "ptxas_over_oa": 0.6336633457947674
+              }
+            ],
+            "source_sha256": "34c0fe3d7eb406aea6ab0cb9e273b1f236f6ccfa833540ab31c8803ee701c172",
+            "oa_sha256": "1d276328ee69636dcf3854667af914a53e4c3c03123e26de41c0c8e22d857588",
+            "ptxas_sha256": "49a453c408fc98c8f21b8a1625612e5c960e8bcca3ed5c2620c109d859017224",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.17337953600000233
+          }
+        },
+        {
+          "label": "overlap",
+          "static_oa": {
+            "instructions": 328,
+            "non_nop": 324,
+            "registers": 75,
+            "sass_sha256": "811c29ccfffcebb694ce0efa057da1bfce218e3e96b769096f76fba8c8fcb633",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 10
+          },
+          "static_ptxas": {
+            "instructions": 280,
+            "non_nop": 266,
+            "registers": 72,
+            "sass_sha256": "6db3518b5122a6ac00c42c89ab2f099b19de0ba6269f3f7fe16cf58a083c6551",
+            "hmma": 0,
+            "shfl": 10,
+            "warpsync": 0
+          },
+          "worker": {
+            "schema": 1,
+            "cases": [
+              {
+                "kernel": "op_rmsnorm_backward_w1024_c8_overlap",
+                "op": "rmsnorm_backward",
+                "mode": "overlap_warp8",
+                "shape": [
+                  4096,
+                  1024
+                ],
+                "threads": 256,
+                "rtol": 0.0002,
+                "atol": 5e-05,
+                "status": "ok",
+                "resources": {
+                  "oa": {
+                    "max_threads": 768,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 75,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  },
+                  "ptxas": {
+                    "max_threads": 896,
+                    "shared_bytes": 0,
+                    "const_bytes": 0,
+                    "local_bytes": 0,
+                    "num_regs": 72,
+                    "ptx_version": 80,
+                    "binary_version": 80
+                  }
+                },
+                "patterns": [
+                  {
+                    "pattern": "normal",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 8.374484199435983e-07,
+                            "relative_l2": 5.699575072217497e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 8.374484199435983e-07,
+                            "relative_l2": 5.697270974928314e-08
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": false
+                  },
+                  {
+                    "pattern": "zero",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 0.0,
+                            "relative_l2": 0.0
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  },
+                  {
+                    "pattern": "structured",
+                    "checks": {
+                      "oa": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      },
+                      "ptxas": {
+                        "outputs": [
+                          {
+                            "passed": true,
+                            "elements_checked": 4194304,
+                            "mismatched_elements": 0,
+                            "max_abs": 3.935884943919173e-08,
+                            "relative_l2": 0.14169209411463496
+                          }
+                        ],
+                        "canaries": true,
+                        "inputs_unchanged": true,
+                        "passed": true
+                      }
+                    },
+                    "oa_ptxas_bitwise_equal": true
+                  }
+                ],
+                "eligible_for_timing": [
+                  "oa",
+                  "ptxas"
+                ],
+                "graph_checks": {
+                  "oa": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 4194304,
+                        "mismatched_elements": 0,
+                        "max_abs": 8.374484199435983e-07,
+                        "relative_l2": 5.699575072217497e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  },
+                  "ptxas": {
+                    "outputs": [
+                      {
+                        "passed": true,
+                        "elements_checked": 4194304,
+                        "mismatched_elements": 0,
+                        "max_abs": 8.374484199435983e-07,
+                        "relative_l2": 5.697270974928314e-08
+                      }
+                    ],
+                    "canaries": true,
+                    "passed": true
+                  }
+                },
+                "graphs": {
+                  "oa": {
+                    "samples_ms": [
+                      0.05381600186228752,
+                      0.05350400134921074,
+                      0.05350400134921074
+                    ],
+                    "median_ms": 0.05350400134921074,
+                    "min_ms": 0.05350400134921074,
+                    "max_ms": 0.05381600186228752
+                  },
+                  "ptxas": {
+                    "samples_ms": [
+                      0.04134399816393852,
+                      0.04108799993991852,
+                      0.04095999896526337
+                    ],
+                    "median_ms": 0.04108799993991852,
+                    "min_ms": 0.04095999896526337,
+                    "max_ms": 0.04134399816393852
+                  }
+                },
+                "graph_orders": [
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "oa",
+                    "ptxas"
+                  ],
+                  [
+                    "ptxas",
+                    "oa"
+                  ]
+                ],
+                "ptxas_over_oa": 0.7679425632439101
+              }
+            ],
+            "source_sha256": "dc9bd2ae4783397f88b147886f33bce2404cc3988c137e744896f8fdba49530d",
+            "oa_sha256": "6ed2b0e902c6b2ee243f4c6cbb0333213e1816ba9ee3ad82fae39cafb73cdae7",
+            "ptxas_sha256": "184422e1787db77b032856ad4a3b18b68d21f9f79fcd7c812606778fdbaa1907",
+            "source_identities": {},
+            "runtime": {
+              "torch": "2.7.1+cu128",
+              "cuda": "12.8",
+              "name": "NVIDIA A100-SXM4-40GB",
+              "cc": "8.0",
+              "driver": 13030,
+              "sm_count": 108,
+              "clock_khz": 1410000,
+              "mem_bytes": 42429251584
+            },
+            "methodology": {
+              "reference": "FP64 formulas on exact FP32 inputs; explicit tanh-GELU; RMS/LayerNorm epsilon=1e-5; fixed label zero cross entropy; no affine norms; Adam-like has no bias correction/weight decay",
+              "precision": "FP32 inputs/accumulation/outputs or uint32 bit patterns; no TF32",
+              "patterns": [
+                "normal",
+                "zero",
+                "structured"
+              ],
+              "graph_repeats": 8,
+              "paired_shuffled_samples": 3,
+              "graph_poison_after_capture": true,
+              "all_outputs_and_guards": true,
+              "inputs_checked_unchanged": true,
+              "exact_pointwise_reference": "single residual add/multiply rounded once to FP32; mask-scale follows two explicit FP32 operations",
+              "vector_contract": "scalar4/vector4 require N multiple4; vector4 pointers16bytealigned; scalar odd-tail checks separately",
+              "compiler_control": "same PTX, ptxas -O3; no vendor-library attribution"
+            },
+            "elapsed_seconds": 0.14806494299999784
+          }
+        }
+      ]
+    }
+  ],
+  "methodology": {
+    "full_output": true,
+    "canaries": true,
+    "inputs_unchanged": true,
+    "graph_poison": true,
+    "bitwise_oa_ptxas": true,
+    "samples": 3,
+    "graph_repeats": 8
+  }
+}

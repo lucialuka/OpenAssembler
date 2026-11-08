@@ -44,13 +44,23 @@ for this update's hardware tests.
 
 ## Architecture
 
-OpenAssembler has two execution routes with different code-generation ownership.
-The native route owns SASS selection, allocation, scheduling and encoding.
-The configured application route owns capture, packaging, replay and checking,
-while Inductor/Triton generates its GPU code.
+OpenAssembler has a native-first repository route and an explicit application
+route with different code-generation ownership. Static repository discovery
+selects PTX, CUDA/C++ and `@kernel` sources for OpenAssembler's SASS backend;
+host programs, build systems and launch logic remain context. The configured
+application route is selected with `--frontend torch`/`triton`/`inductor` and
+owns capture, packaging, replay and checking while Inductor/Triton generates
+its GPU code.
 
 ```mermaid
 flowchart TB
+    REPO["Local repository"] --> ADAPT["Repository/build-system adapter"]
+    ADAPT --> DISC["Static kernel discovery and dependency context"]
+    DISC --> SELECT{"Per-kernel frontend/backend selection"}
+    SELECT -->|"native PTX / CUDA / @kernel"| N
+    SELECT -->|"explicit --frontend torch/triton/inductor"| A
+    SELECT -->|"unsupported native form + --fallback ptxas"| FALLBACK["ptxas fallback, labeled in manifest"]
+    SELECT -->|"host/library implementation"| HOST["Existing host/runtime implementation"]
     subgraph N["Native kernel compilation"]
         PY["Python kernel subset"] --> PF["pyfront: AST and types"]
         CU["CUDA C/C++ kernel"] --> NVCC["nvcc --ptx"]
@@ -81,6 +91,8 @@ flowchart TB
     REPLAY --> RUN
     RUN --> GPU["CUDA driver and GPU execution"]
     CHECK -. "verification gate" .-> BUNDLE
+    FALLBACK --> CUBIN
+    HOST --> RUN
 ```
 
 NVIDIA's tools remain necessary for the native container/reference and CUDA C++
@@ -95,7 +107,7 @@ row reductions into Inductor graphs.
 | Location | Responsibility |
 |---|---|
 | `openassembler/cli.py`, `ui/` | One-shot parser, dispatch, interactive shell and common diagnostics |
-| `project.py`, `build.py` | Source discovery, output naming/locks, manifests, frontend dispatch, compile/package pipeline |
+| `repository.py`, `project.py`, `build.py` | Static repository/build-system context, source discovery, output naming/locks, manifests, frontend dispatch and compile/package pipeline |
 | `pyfront/`, `cppfront.py`, `frontend.py` | Typed Python subset, CUDA C++ lowering and frontend support |
 | `ptx/` | PTX parsing and reference semantics for the implemented subset |
 | `backend/ra.py` | Native instruction selection, guarded definitions, grouped register allocation, DCE and copy handling |
@@ -131,7 +143,7 @@ are research proposals, not additional shipping modules in this tree.
 | Early pointer advancement | Explicit `--pointer-advance early|auto` | `auto` selects only the measured 1024×4096×1024 shape; tall controls remain late |
 | Cooperative softmax/population LayerNorm | Explicit `rowwise` | Contiguous bounded finite FP32, widths 1–1024, tails; no affine/saved statistics/backward |
 | Scalar alias/WAR/reader/scoreboard repairs and warp synchronization | Scalar backend | Implemented full-mask butterfly shuffle form; unsupported forms fail closed |
-| Application capture/replay | Configured PyTorch directories | Pinned supported runtime, captured arguments/shapes, retained runtime dependencies |
+| Application capture/replay | Explicit `--frontend torch`/`triton`/`inductor` on configured PyTorch directories | Pinned supported runtime, captured arguments/shapes, retained runtime dependencies |
 | Complete state diagnostics | Application verification gate | All tensors checked, bounded error details, unchanged admission tolerances |
 | ReLU/GELU/fused Adam-like examples | Compile the explicit example source | Not automatic model rewrites or a full optimized AdamW implementation |
 | AlphaTensor/Strassen factor research | Explicit `fastmm` command | Verified factorizations and bounded experiments; no established default tensor-GEMM win |

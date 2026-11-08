@@ -65,7 +65,7 @@ python3.13 exp/whole_stack/cli_proof/prove.py
 Equivalent explicit command set for that generated application:
 
 ```sh
-openassembler compile exp/whole_stack/cli_proof/application \
+openassembler compile exp/whole_stack/cli_proof/application --frontend torch \
   -o proof_model --verify --no-sass --out-dir output_application \
   --build-backend modal --build-budget 600
 openassembler run output_application --application proof_model --backend modal \

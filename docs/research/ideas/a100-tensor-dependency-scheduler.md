@@ -85,6 +85,17 @@ Run:
 PYTHONPATH=exp/tensor_scheduler pytest -q exp/tensor_scheduler/test_dependency_scheduler.py
 ```
 
+The first Modal exact-SASS sweep is documented in
+[`exp/tensor_scheduler/REPORT.md`](../../../exp/tensor_scheduler/REPORT.md)
+and the raw record is
+`exp/tensor_scheduler/hardware-probes_20261108T030653.043652Z.json`. It swept
+S1--S11 on an A100-SXM4-40GB after compiling each probe with CUDA 12.8
+`ptxas`. Dependent one-group HMMA chains and observer cases were incorrect
+below S7 in this probe family, while three independent accumulator chains were
+correct at S1. LDSM reuse required S2, repeated fresh LDSM and the tested
+async-copy path passed at S1. These are conditional observations, not a
+universal HMMA issue rule.
+
 ## A100 probe sequence
 
 1. Measure dependent HMMA latency with one accumulator group.
@@ -95,6 +106,30 @@ PYTHONPATH=exp/tensor_scheduler pytest -q exp/tensor_scheduler/test_dependency_s
 6. Fit these results into the experiment model and validate held-out shapes.
 7. Compare register pressure, occupancy, short/long scoreboards, shared-bank
    traffic and tensor-pipe utilization against the current schedule and ptxas.
+
+The metric preflight succeeded for the requested Nsight Compute counters, but
+the tiny ctypes-only worker returned “No kernels were profiled.” Therefore no
+per-probe counter value is claimed yet; the next pass must use a runtime-launch
+wrapper or the existing native-GEMM counter harness.
+
+The existing native-GEMM harness then completed a matched A100 counter pass
+(`exp/a100_counters/counter-validation_20261108T032554.579563Z.json`). In the
+tall FP16 controls, OA and ptxas executed the same 134,217,728 tensor
+instructions, while OA emitted 287.13M total instructions versus ptxas's
+217.38M. OA's m-fast run had 9.56% short-scoreboard and 14.25% long-scoreboard
+stalls; the Morton run had 10.09% and 10.11%. ptxas was 1.00%/56.38% on
+m-fast and 2.11%/3.93% on Morton. This is direct evidence that the remaining
+gap is in non-tensor instruction work and dependency overlap, not missing
+Tensor Core instructions.
+
+The follow-up `clock64()` loop probe now measures the tensor timing classes
+directly on the same A100: one dependent accumulator chain costs about 24.023
+cycles per HMMA after empty-loop subtraction, two independent chains cost about
+12.012 cycles per HMMA, and three independent chains cost about 8.008 cycles
+per HMMA. The record is
+`exp/tensor_scheduler/clocked-loop-probes_20261108T050653.662428Z.json`.
+This supports separate dependent latency and independent initiation modeling,
+while the earlier correctness sweep still forbids a universal S1 policy.
 
 ## Promotion rule
 

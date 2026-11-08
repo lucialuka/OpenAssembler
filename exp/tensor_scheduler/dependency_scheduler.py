@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from heapq import heappop, heappush
-from typing import Iterable, Mapping, Sequence
+from typing import Mapping, Sequence
 
 
 class EdgeKind(str, Enum):
@@ -27,6 +27,7 @@ class EdgeKind(str, Enum):
     HMMA_ISSUE = "hmma_issue"
     OPERAND_READY = "operand_ready"
     OBSERVER = "observer"
+    ADDRESS_WAR = "address_war"
     REGISTER_RAW = "register_raw"
     MEMORY_ORDER = "memory_order"
     CONTROL = "control"
@@ -48,6 +49,7 @@ class TensorLatency:
     async_to_wait: int = 1
     wait_to_ldsm: int = 1
     observer: int = 15
+    address_war: int = 1
     register_raw: int = 1
     memory_order: int = 1
     control: int = 1
@@ -169,9 +171,15 @@ def build_dependency_graph(
 
         # An instruction that overwrites a register must wait for earlier
         # asynchronous readers (LDSM/loads/stores) to consume the old value.
+        # This is an address-WAR/read-completion edge, not an HMMA observer
+        # edge. Keeping it separate prevents the targeted-drain policy from
+        # accidentally imposing observer latency on pointer reuse.
         for reg in ins.writes:
             for reader in readers.get(reg, ()):
-                _append_edge(edges, seen, reader, consumer, EdgeKind.OBSERVER, latency.observer, reg)
+                p = insns[reader]
+                kind = EdgeKind.ADDRESS_WAR if p.kind in {"ldsm", "load", "async_copy"} else EdgeKind.REGISTER_RAW
+                distance = latency.address_war if kind is EdgeKind.ADDRESS_WAR else latency.register_raw
+                _append_edge(edges, seen, reader, consumer, kind, distance, reg)
             if reg in last_write:
                 _append_edge(edges, seen, last_write[reg], consumer, EdgeKind.REGISTER_RAW, latency.register_raw, reg)
 
@@ -311,4 +319,78 @@ def classify_edges(graph: DependencyGraph) -> Mapping[str, int]:
     for edge in graph.edges:
         counts[edge.kind.value] += 1
     return counts
+
+
+@dataclass(frozen=True)
+class ScheduleMetrics:
+    """Static model metrics used to rank experiment-only candidates."""
+
+    cycles: int
+    hmma_count: int
+    non_tensor_count: int
+    observer_edges: int
+    address_war_edges: int
+    accum_edges: int
+    operand_edges: int
+    hmma_issue: int
+
+    @property
+    def hmma_density(self) -> float:
+        return self.hmma_count / max(1, self.cycles)
+
+
+def measure_schedule(result: Sequence[ScheduledInstruction], graph: DependencyGraph,
+                     latency: TensorLatency | None = None) -> ScheduleMetrics:
+    """Summarize a schedule without pretending it is a cycle-accurate model."""
+
+    latency = latency or TensorLatency()
+    kinds = classify_edges(graph)
+    hmma_count = sum(item.instruction.is_hmma for item in result)
+    non_tensor_count = len(result) - hmma_count
+    cycles = (result[-1].issue_cycle + 1) if result else 0
+    return ScheduleMetrics(
+        cycles=cycles,
+        hmma_count=hmma_count,
+        non_tensor_count=non_tensor_count,
+        observer_edges=kinds[EdgeKind.OBSERVER.value],
+        address_war_edges=kinds[EdgeKind.ADDRESS_WAR.value],
+        accum_edges=kinds[EdgeKind.ACCUM_RAW.value],
+        operand_edges=kinds[EdgeKind.OPERAND_READY.value],
+        hmma_issue=latency.hmma_issue,
+    )
+
+
+def candidate_policies() -> tuple[tuple[str, TensorLatency], ...]:
+    """Return bounded policies for the first experiment-only search.
+
+    The sweep intentionally varies only measured concepts. It does not relax
+    accumulator RAW or operand readiness below the current probe envelope.
+    """
+
+    return (
+        ("baseline_hmma8_targeted_observer", TensorLatency(accum_raw=8, hmma_issue=2, observer=15)),
+        ("independent_issue1_targeted_observer", TensorLatency(accum_raw=8, hmma_issue=1, observer=15)),
+        ("independent_issue1_short_observer", TensorLatency(accum_raw=8, hmma_issue=1, observer=7)),
+        ("independent_issue2_short_observer", TensorLatency(accum_raw=8, hmma_issue=2, observer=7)),
+        ("independent_issue1_ldsm2", TensorLatency(accum_raw=8, hmma_issue=1, ldsm_to_hmma=4, address_war=2, observer=15)),
+    )
+
+
+def search_candidates(instructions: Sequence[TensorInstruction],
+                      policies: Sequence[tuple[str, TensorLatency]] | None = None
+                      ) -> list[dict]:
+    """Schedule a workload under bounded policies and rank by model cycles.
+
+    Results include edge counts so a faster candidate that silently drops
+    address-WAR or observer edges is visible and can be rejected by callers.
+    """
+
+    rows = []
+    for name, latency in policies or candidate_policies():
+        graph = build_dependency_graph(instructions, latency)
+        result = schedule(graph, latency)
+        metrics = measure_schedule(result, graph, latency)
+        rows.append({"name": name, "latency": latency, "order": [item.instruction.name for item in result],
+                     "metrics": metrics})
+    return sorted(rows, key=lambda row: (row["metrics"].cycles, row["metrics"].non_tensor_count, row["name"]))
 

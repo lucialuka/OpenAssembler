@@ -4,6 +4,8 @@ from dependency_scheduler import (
     TensorLatency,
     build_dependency_graph,
     classify_edges,
+    measure_schedule,
+    search_candidates,
     schedule,
 )
 
@@ -59,4 +61,41 @@ def test_source_order_is_retained_when_no_independent_work_exists():
     ]
     result = schedule(build_dependency_graph(insns), TensorLatency())
     assert _names(result) == ["HMMA0", "HMMA1", "STG"]
+
+
+def test_address_war_is_separate_from_targeted_observer_delay():
+    insns = [
+        TensorInstruction("LDSM", reads=("addr",), writes=("frag",), kind="ldsm", source_index=0),
+        TensorInstruction("REUSE_ADDR", reads=("addr",), writes=("addr",), kind="scalar", source_index=1),
+        TensorInstruction("HMMA", reads=("frag",), writes=("acc",), kind="hmma", accumulator_group="A", source_index=2),
+        TensorInstruction("STG", reads=("acc",), kind="store", source_index=3),
+    ]
+    latency = TensorLatency(address_war=2, observer=15, ldsm_to_hmma=1, hmma_issue=1)
+    graph = build_dependency_graph(insns, latency)
+    kinds = classify_edges(graph)
+    assert kinds[EdgeKind.ADDRESS_WAR.value] == 1
+    assert kinds[EdgeKind.OBSERVER.value] == 1
+    result = schedule(graph, latency)
+    cycles = {item.instruction.name: item.issue_cycle for item in result}
+    assert cycles["REUSE_ADDR"] - cycles["LDSM"] >= 2
+    assert cycles["STG"] - cycles["HMMA"] >= 15
+
+
+def test_candidate_search_exposes_issue_and_observer_tradeoff():
+    insns = []
+    for i in range(4):
+        insns.extend([
+            TensorInstruction(f"HMMA.A{i}", reads=(f"a{i - 1}",) if i else (),
+                              writes=(f"a{i}",), kind="hmma", accumulator_group="A", source_index=len(insns)),
+            TensorInstruction(f"HMMA.B{i}", reads=(f"b{i - 1}",) if i else (),
+                              writes=(f"b{i}",), kind="hmma", accumulator_group="B", source_index=len(insns) + 1),
+        ])
+    insns.append(TensorInstruction("STG", reads=("a3",), kind="store", source_index=len(insns)))
+    rows = search_candidates(insns)
+    assert {row["name"] for row in rows} >= {"baseline_hmma8_targeted_observer", "independent_issue1_short_observer"}
+    assert all(row["metrics"].accum_edges == 6 for row in rows)
+    assert all(row["metrics"].observer_edges == 1 for row in rows)
+    fastest = rows[0]
+    assert fastest["metrics"].hmma_issue in (1, 2)
+    assert fastest["metrics"].cycles <= max(row["metrics"].cycles for row in rows)
 

@@ -318,7 +318,8 @@ def compile_application(root: Path, out_dir: Path, *, output_name: str | None = 
         rel = f"cubin/{k['artifact']}.cubin"
         if rel not in artifacts or hashlib.sha256(artifacts[rel]).hexdigest() != k['sha256']:
             raise ApplicationError(f"compiled-kernel checksum verification failed for {k.get('name', '?')}")
-        kernel_records.append({**k, 'cubin': f'cubin/{app_rel}/{k["artifact"]}.cubin',
+        kernel_records.append({**k, 'backend': 'torch-inductor-triton',
+            'cubin': f'cubin/{app_rel}/{k["artifact"]}.cubin',
             'sass': f'sass/{app_rel}/{k["artifact"]}.sass' if f'sass/{k["artifact"]}.sass' in artifacts else None,
             'ptx': f'.build/ptx/{app_rel}/{k["artifact"]}.ptx' if f'ptx/{k["artifact"]}.ptx' in artifacts else None})
     published[f'.build/{app_rel}/source.zip'] = source

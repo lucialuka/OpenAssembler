@@ -198,6 +198,15 @@ python3 exp/nn_round2/operator_fma_analysis.py \
 
 Its generated artifacts are under `exp/nn_round2/operator_standard_fma_build/`.
 
+The follow-up streamed load/FMA overlap candidate is documented in
+[`exp/weaknesses/reduction_overlap_report.md`](../../../exp/weaknesses/reduction_overlap_report.md).
+Its source-inclusive A100 run passed full output/tolerance, canary,
+input-immutability and graph-poison checks for 4096-row RMSNorm and softmax
+backward at widths 512, 513 and 1024 with four and eight warps. It reduced OA
+instructions and registers and beat the unfused OA candidate across the tested
+matrix, but matched ptxas remained faster in every case. Nsight counters for
+the candidate are still required before any promotion decision.
+
 ## Code and evidence
 
 - [Source transformation, exact formulas and stable-input worker](../../../exp/nn_round2/operator_candidates.py).

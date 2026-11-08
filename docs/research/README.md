@@ -19,7 +19,7 @@ a short glossary are in [DEVELOPMENT](../DEVELOPMENT.md). The complete
 cross-cutting [whole-stack study](WHOLE_STACK_RESULTS.md) and
 [primary references](REFERENCES.md) remain essential companion documents.
 
-There are **73 dossiers**: **34 implemented**, **15 validated but not integrated**, **13 tested but not selected**, and **11 open or hardware unavailable**.
+There are **75 dossiers**: **34 implemented**, **15 validated but not integrated**, **14 tested but not selected**, and **12 open or hardware unavailable**.
 
 ## 1. Validated and implemented
 
@@ -103,6 +103,7 @@ This list distinguishes failed numerical gates, correct-but-slower candidates, a
 | [Serial scalar cross-entropy baseline](ideas/scalar-cross-entropy-baseline.md) | The example exists, but its retained exact hardware gate fails; no speedup is admitted. |
 | [Naive scalar matrix-multiplication baseline](ideas/scalar-matmul-baseline.md) | The scalar example fails its retained exact gate and is not the validated tensor-core GEMM. |
 | [Software fragment caching in registers](ideas/software-register-caching.md) | Bounded B-fragment windows of two/four and prefetch variants passed correctness but were slower across seven paired rounds on the tested workloads. |
+| [No-op address instruction removal](ideas/non-tensor-address-overhead.md) | Removing eight proven no-op address adds passed full output checks and reduced static SASS, but did not improve paired A100 timing. |
 
 ## 4. Open, incomplete or unavailable on A100
 
@@ -121,6 +122,7 @@ These are source-inspection conclusions, implementation proposals, missing hardw
 | [Joint shared-layout and register-fragment search](ideas/joint-layout-register-search.md) | Existing swizzle experiments largely held register organization fixed; fragment-window and tile experiments explored other dimensions separately. |
 | [Fuse low-rank transforms into operand staging](ideas/low-rank-transform-fusion.md) | The existing runtime-factor and tiny compile-time studies identify this as promising future work. |
 | [Alternative multi-precision accumulation paths](ideas/multi-precision-accumulation.md) | The implemented tensor GEMM already uses mixed precision in the ordinary sense: FP16/BF16 inputs with FP32 accumulation and FP32 output. |
+| [Public CUTLASS and cuBLASLt techniques for A100](ideas/cutlass-cublas-public-techniques.md) | Public pipeline, tiling, epilogue, traversal and heuristic patterns are identified; proprietary cuBLAS device code is not extracted and A100 integration remains open. |
 
 ## How to use and maintain this catalogue
 

@@ -75,7 +75,7 @@ def test_file_inside_application_repo_still_uses_file_compilation(app_repo, monk
 @pytest.mark.parametrize('args', [['--arch', 'sm_90'], ['--kernel', 'x'], ['--fallback', 'ptxas'],
                                   ['--dump-ptx'], ['--opt-level', 'safe'], ['--trials', '0']])
 def test_application_rejects_ignored_compile_flags(app_repo, args, capsys):
-    assert main(['compile', str(app_repo), '--dry-run', *args]) == 1
+    assert main(['compile', str(app_repo), '--frontend', 'torch', '--dry-run', *args]) == 1
     assert 'error:' in capsys.readouterr().err
 
 
@@ -84,7 +84,7 @@ def test_application_rejects_ignored_compile_flags(app_repo, args, capsys):
                                     ['--reps', '1']])
 def test_cnr_rejects_invalid_application_run_options_before_capture(app_repo, options, monkeypatch):
     monkeypatch.setattr(torchfront, '_worker_request', lambda *a: pytest.fail('invalid run options launched capture'))
-    assert main(['cnr', str(app_repo), '--dry-run', *options]) == 1
+    assert main(['cnr', str(app_repo), '--frontend', 'torch', '--dry-run', *options]) == 1
 
 
 def test_standalone_compile_accepts_shared_transport_flags(tmp_path, capsys):
@@ -97,7 +97,7 @@ def test_standalone_compile_accepts_shared_transport_flags(tmp_path, capsys):
 @pytest.mark.parametrize('name', ['..', 'nested/out', 'x' * 81])
 def test_application_dry_run_validates_output_names(app_repo, name, tmp_path, capsys):
     out = tmp_path / 'output'
-    assert main(['compile', str(app_repo), '--out-dir', str(out), '-o', name, '--dry-run']) == 1
+    assert main(['compile', str(app_repo), '--frontend', 'torch', '--out-dir', str(out), '-o', name, '--dry-run']) == 1
     assert 'error:' in capsys.readouterr().err
     assert not out.exists()
 
@@ -107,7 +107,7 @@ def test_application_auto_backend_uses_modal_on_macos(app_repo, tmp_path, monkey
     import platform
     monkeypatch.setattr(platform, 'system', lambda: 'Darwin')
     monkeypatch.setattr(importlib.util, 'find_spec', lambda _: object())
-    assert main(['compile', str(app_repo), '--out-dir', str(tmp_path / 'output'),
+    assert main(['compile', str(app_repo), '--frontend', 'torch', '--out-dir', str(tmp_path / 'output'),
                  '--build-backend', 'auto', '--dry-run']) == 0
     assert 'build: modal' in capsys.readouterr().out
 
@@ -115,7 +115,7 @@ def test_application_auto_backend_uses_modal_on_macos(app_repo, tmp_path, monkey
 def test_explicit_verification_cannot_be_silently_disabled(app_repo, tmp_path, capsys):
     config = app_repo / 'openassembler.toml'
     config.write_text(config.read_text() + 'verification="none"\n')
-    assert main(['compile', str(app_repo), '--verify', '--dry-run',
+    assert main(['compile', str(app_repo), '--frontend', 'torch', '--verify', '--dry-run',
                  '--out-dir', str(tmp_path / 'output')]) == 1
     assert 'verification' in capsys.readouterr().err
 
@@ -143,9 +143,9 @@ def test_application_replay_saves_report_and_forwards_watchdog(app_repo, tmp_pat
 def test_missing_requirements_and_output_overlap_fail_before_capture(app_repo, capsys):
     config = app_repo / 'openassembler.toml'
     config.write_text(config.read_text() + 'requirements=["missing.txt"]\n')
-    assert main(['compile', str(app_repo), '--dry-run']) == 1
+    assert main(['compile', str(app_repo), '--frontend', 'torch', '--dry-run']) == 1
     assert 'requirements file is missing' in capsys.readouterr().err
-    assert main(['compile', str(app_repo), '--out-dir', str(app_repo), '--dry-run']) == 1
+    assert main(['compile', str(app_repo), '--frontend', 'torch', '--out-dir', str(app_repo), '--dry-run']) == 1
     assert 'inside the output folder' in capsys.readouterr().err
 
 

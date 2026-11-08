@@ -176,7 +176,7 @@ def app(repo, monkeypatch):
 @pytest.mark.parametrize('destination', ['local', 'modal', 'user@a100'])
 def test_application_cnr_uses_one_destination_for_both_stages(app, destination):
     root, calls = app
-    assert main(['cnr', str(root), '--backend', destination, '--verify',
+    assert main(['cnr', str(root), '--frontend', 'torch', '--backend', destination, '--verify',
                  '--budget', '120', '--job-timeout', '90']) == 0
     assert [c[0]['mode'] for c in calls] == ['compile', 'run']
     for request, config in calls:
@@ -189,7 +189,7 @@ def test_application_cnr_uses_one_destination_for_both_stages(app, destination):
 
 def test_application_run_infers_bundle_and_allows_new_ssh_destination(app):
     root, calls = app
-    assert main(['compile', str(root), '--backend', 'modal']) == 0
+    assert main(['compile', str(root), '--frontend', 'torch', '--backend', 'modal']) == 0
     assert main(['run', str(root), '--backend', 'ssh', '--host', 'user@a100',
                  '--verify-application']) == 0
     assert calls[-1][1]['build_host'] == 'user@a100'
@@ -200,7 +200,7 @@ def test_application_run_infers_bundle_and_allows_new_ssh_destination(app):
 
 def test_application_cnr_allows_separate_build_transport(app):
     root, calls = app
-    assert main(['cnr', str(root), '--build-backend', 'modal', '--backend', 'user@a100']) == 0
+    assert main(['cnr', str(root), '--frontend', 'torch', '--build-backend', 'modal', '--backend', 'user@a100']) == 0
     assert calls[0][1]['build_backend'] == 'modal'
     assert calls[1][1]['build_backend'] == 'ssh'
 

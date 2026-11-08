@@ -53,6 +53,11 @@ def _application_root(src: Path) -> Path | None:
     return root if root.is_dir() and config_path(root) else None
 
 
+def _frontend_choice(src: Path, out_dir: Path | None, requested: str):
+    from openassembler.repository import select_frontend
+    return select_frontend(src, out_dir or (Path(src).resolve() / "output"), requested)
+
+
 def _application_compile_opts(a: argparse.Namespace) -> dict:
     from openassembler.torchfront.frontend import ApplicationError
     if a.arch != 'sm_80':
@@ -100,7 +105,9 @@ def cmd_compile(a: argparse.Namespace) -> int:
     from openassembler import project
     from openassembler.transport import TransportError
     from openassembler.workflow import output_dir
-    if (root := _application_root(Path(a.src))) is not None:
+    frontend, root, plan = _frontend_choice(Path(a.src), Path(a.out_dir).resolve() if a.out_dir else None,
+                                             a.frontend)
+    if frontend == "torch":
         from openassembler.torchfront.frontend import ApplicationError, compile_application
         try:
             return compile_application(root, output_dir(root, a.out_dir), output_name=a.out,
@@ -108,6 +115,10 @@ def cmd_compile(a: argparse.Namespace) -> int:
         except (ApplicationError, OSError) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
+    if plan is not None and not plan.has_native:
+        from openassembler.repository import native_error
+        print(f"error: {native_error(plan)}", file=sys.stderr)
+        return 1
     try:
         return _native_build(a)[0]
     except (project.ProjectError, TransportError, OSError, ValueError) as exc:
@@ -210,7 +221,9 @@ def cmd_cnr(a: argparse.Namespace) -> int:
     from openassembler.transport import TransportError
     from openassembler.workflow import output_dir
 
-    if (root := _application_root(Path(a.src))) is not None:
+    frontend, root, plan = _frontend_choice(Path(a.src), Path(a.out_dir).resolve() if a.out_dir else None,
+                                             a.frontend)
+    if frontend == "torch":
         from openassembler.torchfront.frontend import ApplicationError, compile_application, run_application
         try:
             if a.spec or a.save_jobs:
@@ -245,6 +258,10 @@ def cmd_cnr(a: argparse.Namespace) -> int:
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
+    if plan is not None and not plan.has_native:
+        from openassembler.repository import native_error
+        print(f"error: {native_error(plan)}", file=sys.stderr)
+        return 1
     try:
         # Validate execution flags before incurring remote build work.
         validate_options(_run_opts(a, str(output_dir(Path(a.src), a.out_dir))), check_spec=True)
@@ -450,10 +467,11 @@ CUDA by nvcc --ptx), and .py with an openassembler.pyfront @kernel are compiled;
 other files (host code, shell scripts, docs, ...) are skipped and counted. In a git
 repo, .gitignore is respected. All kernels of one source file go into one cubin.
 
-A directory with [application] frontend="torch" in openassembler.toml uses the
-PyTorch capture frontend (TorchInductor/Triton). It executes the configured CUDA
-workload to build cubins, SASS and a Python runtime bundle. Files always use the
-standalone kernel frontend, even inside a configured application directory.
+A directory with [application] frontend="torch" in openassembler.toml still
+uses native static discovery by default. Pass --frontend torch (or triton/
+inductor) to explicitly execute the configured CUDA workload through the
+PyTorch capture frontend and build its runtime bundle. Files always use the
+standalone native-kernel frontend, even inside a configured application directory.
 Native tensor PTX selects the SM80 tensor backend; `gemm` generates its validated plan.
 The same --backend local|modal|user@host selects the build location for either frontend.
 Native compilation needs toolkit tools, not a GPU. PyTorch capture executes the
@@ -524,6 +542,9 @@ def _add_compile_args(pc: argparse.ArgumentParser) -> None:
                     help="extra nvcc flag, e.g. --nvcc-flag=-DTILE=32 (repeatable)")
     pc.add_argument("--dump-ptx", action="store_true", help="print the PTX each source compiled to")
     pc.add_argument("--no-sass", action="store_true", help="write only the cubins; skip the nvdisasm listing")
+    pc.add_argument("--frontend", choices=("auto", "native", "torch", "triton", "inductor"), default="auto",
+                    help="backend selection: auto/native discover kernels for OpenAssembler; "
+                         "torch/triton/inductor explicitly capture a configured application")
     pc.add_argument("--build-backend", default=None, metavar="auto|local|modal|user@host",
                     help="override only compilation's backend (otherwise --backend or application config)")
     pc.add_argument("--build-host", default=None, metavar="USER@HOST",

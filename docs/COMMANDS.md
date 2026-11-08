@@ -25,7 +25,7 @@ Python environment: the CLI invokes its `modal` executable.
 | `openassembler` | Open the interactive command shell. |
 | `openassembler --help` | List the top-level commands. |
 | `openassembler --version` | Print the installed OpenAssembler version. |
-| `openassembler compile SRC` | Compile a kernel file/tree, or capture a configured PyTorch application. |
+| `openassembler compile SRC` | Statically discover/compile native kernels; use `--frontend torch`/`triton`/`inductor` to explicitly capture a configured PyTorch application. |
 | `openassembler gemm ...` | Generate and compile a checked native A100 FP16/BF16 GEMM. |
 | `openassembler rowwise ...` | Generate and compile cooperative native FP32 softmax or LayerNorm. |
 | `openassembler run [PATH]` | Execute existing kernel cubins or replay a bundled application. |
@@ -80,7 +80,7 @@ openassembler compile examples/div_by_const.ptx -o division --verify
 openassembler compile examples/vector_add.py --out-dir output_python
 openassembler compile examples/vector_add.cu -I include --nvcc-flag=-DTILE=32 --out-dir output_cuda
 openassembler compile my_kernel_repo/ --out-dir output_repo
-openassembler compile testcases/test_whole_repo --verify --backend modal
+openassembler compile testcases/test_whole_repo --frontend torch --verify --backend modal
 ```
 
 `SRC` is required. A standalone `.ptx` file goes to the native backend; a
@@ -90,11 +90,12 @@ code is not translated into a GPU program. Directory discovery respects Git's
 tracked/non-ignored files and recognizes kernel sources; output paths mirror
 the source tree. A directory build does not accept a single output name.
 
-A directory with `[application] frontend="torch"` in `openassembler.toml`
-takes a different route: TorchDynamo/AOTAutograd and Inductor/Triton execute the
-configured CUDA workload and build an application bundle. This is not native
-OpenAssembler SASS generation for the complete model. A file inside that
-directory still takes the standalone-kernel route.
+A directory with `[application] frontend="torch"` in `openassembler.toml` still
+uses the native repository route by default. Use `--frontend torch` (or the
+aliases `triton`/`inductor`) to explicitly run the configured TorchDynamo/
+AOTAutograd and Inductor/Triton capture. This is not native OpenAssembler SASS
+generation for the complete model. A file inside that directory always takes
+the standalone native-kernel route.
 
 ### Compilation options
 
@@ -124,6 +125,7 @@ These options are also accepted by `cnr`.
 | `--build-gpu GPU` | Application configuration | Requested Modal GPU for application capture. Actual returned hardware is recorded separately. |
 | `--build-budget SECONDS` | Shared `--budget` / configuration | Override only compilation time budget. |
 | `--dry-run` | Off | Plan native compilation or application capture, without writing outputs, uploading sources or running workloads. `cnr` plans both stages. |
+| `--frontend MODE` | `auto` | `auto`/`native` statically discover native kernels and use OpenAssembler; `torch`, `triton` and `inductor` explicitly select the configured application capture. `auto` never silently invokes TorchInductor. |
 
 For scalar kernels, `safe` uses conservative in-order scheduling; `mined`
 uses dependency-distance stall selection; `sched` adds list scheduling; `opt`
@@ -134,7 +136,9 @@ tensor kernels use their separate validated tensor policy at every level.
 Application capture currently requires `--arch sm_80`. Standalone-only flags
 (`--kernel`, `--fallback`, `-I`, `--nvcc-flag`, `--dump-ptx`, and nondefault
 `--opt-level`/`--trials`) are rejected for applications. Transport selection
-works for both frontends. `--backend` applies to both stages of `cnr`; an
+works for both frontends. Native repository discovery is static: host programs,
+build systems, imports and launch logic are reported as context but are not
+executed or translated into a GPU program. `--backend` applies to both stages of `cnr`; an
 explicit `--build-backend` overrides only compilation. Native remote builds
 ship the same compiler and encoding data and publish their results locally,
 without requiring a local toolkit. Local native compilation has no build
@@ -380,7 +384,7 @@ defaults to all buffers. Spec-level `reps` overrides the CLI repetition count.
 openassembler cnr examples/vector_add.py --spec examples/run_spec.json --backend modal --out-dir output_cnr
 openassembler cnr examples/vector_add.cu --backend user@host --out-dir output_cnr
 openassembler cnr examples/div_by_const.ptx --verify --dry-run --out-dir output_cnr
-openassembler cnr testcases/test_whole_repo --verify --backend modal
+openassembler cnr testcases/test_whole_repo --frontend torch --verify --backend modal
 ```
 
 `SRC` is required. `cnr` accepts the compilation-option table and the shared
@@ -389,7 +393,13 @@ source/entry pairs successfully built by this invocation, not unrelated stale
 manifest entries. It does **not** expose `run`-only `--source`, `--from-results`,
 `--application`, `--app-arg`, or `--verify-application` flags.
 
-`--backend` selects both compilation and execution for either frontend.
+The complete option spellings are also valid with the command prefix:
+`openassembler compile --frontend native` and
+`openassembler cnr --frontend torch`.
+
+`--frontend native` selects static kernel discovery and OpenAssembler compilation;
+`--frontend torch`/`triton`/`inductor` selects the configured application route.
+`--backend` selects the transport for either frontend.
 `--build-backend` optionally separates those locations. `--dry-run` plans both
 stages without builds, uploads, output writes or GPU jobs, including for native
 sources. `--verify` also requests application replay verification. Application

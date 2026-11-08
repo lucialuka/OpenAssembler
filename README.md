@@ -65,10 +65,10 @@ CUDA toolkit or GPU when both compilation and execution are remote:
 ```sh
 pip install modal
 modal setup
-openassembler compile testcases/test_whole_repo --backend modal --verify
+openassembler compile testcases/test_whole_repo --frontend torch --backend modal --verify
 openassembler run testcases/test_whole_repo --backend modal --verify-application
 # Or capture and replay in one command:
-openassembler cnr testcases/test_whole_repo --backend modal --verify
+openassembler cnr testcases/test_whole_repo --frontend torch --backend modal --verify
 ```
 
 Replace that example with your repository path. A PyTorch repository provides
@@ -119,11 +119,11 @@ openassembler gemm --m 1024 --n 1024 --k 1024 --dtype f16 --out-dir output/gemm
 openassembler rowwise --op softmax --rows 1024 --width 512 --out-dir output/softmax
 ```
 
-A configured application selects its own entry point and workload. Inspect
-either route before submitting any work:
+A configured application is captured only when the application frontend is
+selected explicitly. Inspect either route before submitting any work:
 
 ```sh
-openassembler compile testcases/test_whole_repo --verify --dry-run
+openassembler compile testcases/test_whole_repo --frontend torch --verify --dry-run
 openassembler cnr /path/to/my_repo --backend user@a100 --dry-run
 ```
 

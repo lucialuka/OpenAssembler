@@ -41,8 +41,9 @@ TIPS = [
     " `--verify` checks it against the PTX reference interpreter.",
     "`compile REPO`, `run REPO`, `cnr REPO`: build, reuse, or build and run."
     " Directory outputs live in REPO/output/{cubin,sass}; --out-dir overrides it.",
-    "openassembler.toml selects PyTorch capture through TorchInductor/Triton"
-    " with a Python runtime bundle; otherwise repositories discover native GPU kernels.",
+    "Repositories discover native GPU kernels by default."
+    " Use --frontend torch/triton/inductor to explicitly capture a configured"
+    " PyTorch workload through TorchInductor/Triton.",
     "`gemm --m 128 --n 128 --k 128` builds a specialized A100 FP16/BF16 tensor GEMM.",
     "`run` executes output/ on a GPU: our cubin vs ptxas's, bit-exact + timing."
     " `--backend local|modal|user@host`, `--spec`, `--dry-run`.",

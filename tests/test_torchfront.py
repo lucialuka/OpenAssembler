@@ -20,7 +20,7 @@ EXAMPLE = ROOT / "testcases" / "test_whole_repo"
 
 def test_transformer_repo_dry_run_selects_its_configured_workload(tmp_path, capsys):
     out = tmp_path / "output"
-    assert main(["compile", str(EXAMPLE), "--out-dir", str(out), "--verify", "--dry-run"]) == 0
+    assert main(["compile", str(EXAMPLE), "--frontend", "torch", "--out-dir", str(out), "--verify", "--dry-run"]) == 0
     report = capsys.readouterr().out
     assert "PyTorch application test_whole_repo: 5 files" in report
     config = load_config(EXAMPLE / "openassembler.toml")

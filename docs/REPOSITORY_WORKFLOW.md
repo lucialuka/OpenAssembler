@@ -13,6 +13,12 @@ and executes the products of that invocation. `--dry-run` plans work without
 building, uploading or submitting jobs. All three accept `local`, `modal` or
 an SSH destination such as `user@a100` as their backend.
 
+The default frontend is native static discovery. A repository is scanned for
+PTX `.entry` kernels, CUDA/C++ `__global__` kernels and Python `@kernel`
+functions. A present `openassembler.toml` does not silently switch the build to
+TorchInductor/Triton. Select an application explicitly with `--frontend torch`,
+`--frontend triton`, or `--frontend inductor`.
+
 ## Choose the repository's frontend
 
 **Native GPU kernels:** a directory without an application configuration is
@@ -56,7 +62,7 @@ in advance. The native optimization research is preserved independently;
 native GEMMs and reductions are not silently substituted into application graphs.
 
 ```sh
-openassembler compile /path/to/repo --backend modal --verify
+openassembler compile /path/to/repo --frontend torch --backend modal --verify
 openassembler run /path/to/repo --backend modal --verify-application
 ```
 
