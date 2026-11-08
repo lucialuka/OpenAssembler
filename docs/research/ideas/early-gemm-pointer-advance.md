@@ -1,6 +1,6 @@
 # Moving next-tile pointer updates ahead of GEMM compute
 
-Status: validated-not-integrated
+Status: implemented
 
 The result is conditional: moving these address updates helps the tested wide
 forward GEMM but hurts the tall control. It remains an experiment, including

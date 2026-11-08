@@ -18,7 +18,7 @@ every researched feature has a dossier in the [catalogue](research/README.md).
 | BF16 application state | All 127 tensors checked; two parameter tensors fail the unchanged gate | Improved diagnostics, not a numerical repair |
 | Repository CLI on Modal | Three native input languages plus an external include; transformer capture emits 67 kernels, replay checks 77 tensors across six optimizer steps with zero new GPU code generation | Shared compile/run/cnr source paths; integration smoke, not new performance estimates |
 | Native NN arithmetic campaign | 264/274 initial arithmetic configurations pass; 402/402 tensor checks plus 134 graph checks; six composed NN configurations with full-state gates | Experimental only; rejected gates and slower methods retained |
-| New conditional candidates | Backward FMA reductions improve selected standard-width cases about 1.16–1.31×; earlier pointer placement gains about 1.5–2.3% over direct mode on one wide shape | Smaller/tall cases can regress; neither establishes general ptxas superiority |
+| New conditional candidates | Backward FMA reductions improve selected standard-width cases about 1.16–1.31×; integrated early pointer placement gains about 1.5–2.3% over direct mode on one wide shape | Smaller/tall cases can regress; neither establishes general ptxas superiority |
 
 These are measured snapshots, not promises for every shape, toolkit, GPU or
 training trajectory. Raw device metadata distinguishes A100-SXM4-40GB from
@@ -128,6 +128,7 @@ are research proposals, not additional shipping modules in this tree.
 | Morton8 CTA ordering | Explicit `--cta-order morton8` | Complete 8×8 tile groups; measured tall-shape benefit, not automatic dispatch |
 | Bias/residual/ReLU epilogue | Explicit `--epilogue` | FP32 auxiliary buffers; selected square benefits, other shapes can regress |
 | Pointer-home copy elimination | Explicit `--pointer-mode direct` | Unfused `stagepair`/`m_fast`; preserves legacy default |
+| Early pointer advancement | Explicit `--pointer-advance early|auto` | `auto` selects only the measured 1024×4096×1024 shape; tall controls remain late |
 | Cooperative softmax/population LayerNorm | Explicit `rowwise` | Contiguous bounded finite FP32, widths 1–1024, tails; no affine/saved statistics/backward |
 | Scalar alias/WAR/reader/scoreboard repairs and warp synchronization | Scalar backend | Implemented full-mask butterfly shuffle form; unsupported forms fail closed |
 | Application capture/replay | Configured PyTorch directories | Pinned supported runtime, captured arguments/shapes, retained runtime dependencies |
@@ -324,3 +325,4 @@ For exact per-feature methods and reproduction, use the
 [research catalogue](research/README.md). For the complete November 6 application
 study use [WHOLE_STACK_RESULTS.md](research/WHOLE_STACK_RESULTS.md). Shared setup,
 evidence rules and documentation maintenance are in [DEVELOPMENT.md](DEVELOPMENT.md).
+

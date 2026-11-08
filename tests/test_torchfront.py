@@ -29,6 +29,21 @@ def test_transformer_repo_dry_run_selects_its_configured_workload(tmp_path, caps
     assert not out.exists()
 
 
+def test_application_source_bundle_ignores_generated_output_and_caches(tmp_path):
+    root = tmp_path / "app"
+    root.mkdir()
+    (root / "train.py").write_text("print('ok')\n")
+    (root / "openassembler.toml").write_text("[application]\nfrontend='torch'\nentrypoint='train.py'\n")
+    output = root / "output"
+    (output / ".build").mkdir(parents=True)
+    (output / ".build" / "stale.ptx").write_text("stale")
+    (root / "__pycache__").mkdir()
+    (root / "__pycache__" / "stale.pyc").write_bytes(b"stale")
+    from openassembler.torchfront.frontend import project_files
+    files = project_files(root, tmp_path / "other-output")
+    assert sorted(files) == ["openassembler.toml", "train.py"]
+
+
 def test_application_config_rejects_parent_entrypoint(tmp_path):
     config = tmp_path / "openassembler.toml"
     config.write_text('[application]\nfrontend="torch"\nentrypoint="../outside.py"\n')

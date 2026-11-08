@@ -1,18 +1,14 @@
+
 <p align="center"><img src="figs/openassembler_logo.png" width="680" alt="OpenAssembler"></p>
 
 # OpenAssembler
 
 
-**Compile a local GPU-kernel repository or a configured PyTorch workload to
-NVIDIA SASS and CUDA binaries, then execute its saved build on an A100.**
+**A from-scratch NVIDIA SASS/CUDA Binary compiler, built entirely by reverse-engineering nvidia tools as a black box and applying kernel optimizations to the compiler.**
 
-OpenAssembler's native Python-kernel/CUDA C/C++/PTX route owns instruction
-selection, register allocation, scheduling and SASS encoding. Its application
-route captures configured PyTorch forward/backward graphs through
-TorchInductor/Triton and saves the required Python runtime cache. Both routes
-use the same repository commands and support local Linux, SSH and Modal.
-Current production support is SM80/A100; performance results and limitations
-are documented per workload in the linked research evidence.
+Do you always feel like when the newest nvidia GPU come out with unbearable high price while your existing older GPUs are making you left behind in model serving and training? 
+
+We provide a more efficient compiler eith optimization kernels that reach an approximate 10-30% speed up in selective kernels in LLM inferencing and training comparing to using the SASS/cubin compiled by the nvidia compiler on various existing architectures (A100, H100 etc). Our goal is to create efficient and fast compiler and low level assembly language/binary file so that you can (without buying expensive frontier GPUs) with a ~20% overall speedup in training speed of LLM training and inferencing. We currently support single file compilation (including Python, CUDA C, CUDA C++ down to SASS and further down to CUDA Binary file, which is directly executable on your NVIDIA GPUs). We are currently working on more optimization kernels and supporting complete compilation of a whole repo. 
 
 [Architecture and status](docs/STATUS.md) · [All commands](docs/COMMANDS.md) ·
 [Research catalogue](docs/research/README.md) · [Development setup](docs/DEVELOPMENT.md)
@@ -45,8 +41,7 @@ On macOS or Linux with Homebrew, install the complete CLI and its Modal
 transport with:
 
 ```sh
-brew tap Qingyang-Lucas-Fang/openassembler \
-  https://github.com/Qingyang-Lucas-Fang/OpenAssembler
+brew tap Qingyang-Lucas-Fang/openassembler https://github.com/Qingyang-Lucas-Fang/OpenAssembler
 brew install openassembler
 ```
 

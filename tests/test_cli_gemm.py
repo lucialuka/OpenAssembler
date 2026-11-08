@@ -115,11 +115,13 @@ def test_direct_pointer_mode_does_not_admit_unmeasured_combinations(options):
 
 
 def test_pointer_advance_auto_is_shape_specific_and_round_trips():
+    from openassembler.gemm import contract_from_source, source_for
     from openassembler.kernels.gemm import generate
     wide = GemmPlan(1024, 4096, 1024, pointer_advance="auto")
     tall = GemmPlan(16384, 4096, 4096, pointer_advance="auto")
     assert generate(wide) != generate(GemmPlan(1024, 4096, 1024, pointer_advance="late"))
     assert generate(tall) == generate(GemmPlan(16384, 4096, 4096, pointer_advance="late"))
+    assert contract_from_source(source_for(wide))["pointer_advance"] == "auto"
 
 
 @pytest.mark.parametrize('dtype,expected', [('f16', b'\x00\x3c'), ('bf16', b'\x80\x3f')])

@@ -111,3 +111,6 @@ The [post-allocation control](post-allocation-pointer-forwarding.md) yields
 identical streams, ruling out a changed physical register layout for these
 cases. Global selection, Morton/fusion combinations and more aggressive
 schedules require new matched tests before admission.
+
+
+The later [early pointer-placement policy](early-gemm-pointer-advance.md) is integrated separately as an explicit shape-guarded option. It does not change the legacy default or imply that direct pointers are universally faster.
