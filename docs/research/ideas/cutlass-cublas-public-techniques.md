@@ -150,3 +150,27 @@ candidate should add the CUTLASS-style register/K-block pipeline and targeted
 observer policy to the existing OA dependency graph, then compare held-out A100
 GEMMs and backward reductions against matched ptxas and cuBLAS controls.
 
+## Source-inclusive A100 experiments
+
+The experiment layer now tests two concrete public ideas without changing the
+production compiler:
+
+* `exp/tensor_scheduler/load_next_compute_current.py` alternates two fragment
+  register windows and inserts the next K-fragment load between the current
+  HMMA halves. It preserves the existing async-copy/barrier protocol and
+  per-accumulator K order. On six FP16 A100 shapes it passed full outputs,
+  canaries, poisoned graph replay, disassembly and resource checks. It beat
+  the current OA schedule on five non-square shapes, by about 1–10%, but
+  regressed 4096×4096×4096 by about 10% and used 24 more registers per thread.
+
+* `exp/gemm_dispatch/cta_swizzle.py` and `grouped_n_modal.py` compare
+  grouped-N, Morton-8 and m-fast traversal with the required launch-grid
+  change. The tall 16384×4096×4096 FP16 case favored grouped-N and Morton by
+  about 6–7% over m-fast; the wide and square cases were ties or regressions.
+
+The records are `exp/gemm_dispatch/measured_dispatch_manifest.json` and
+`exp/gemm_dispatch/REPORT.md`. These are shape-specific experiment results.
+They do not justify copying cuBLAS kernels or applying a universal traversal
+rule. Alignment, workspace, BF16 and neighboring shapes remain separate
+manifest entries until measured.
+

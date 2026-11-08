@@ -1,0 +1,700 @@
+{
+  "device": "NVIDIA A100-SXM4-40GB",
+  "cases": [
+    {
+      "case": {
+        "m": 1024,
+        "n": 4096,
+        "k": 1024,
+        "dtype": "f16",
+        "width": 8
+      },
+      "mapping": {
+        "cta_order": "grouped_n",
+        "width": 8,
+        "logical_tiles": [
+          8,
+          32
+        ],
+        "launch_grid": [
+          64,
+          4,
+          1
+        ],
+        "mapping": "logical_m=blockIdx.x>>log; logical_n=(blockIdx.y<<log)|(blockIdx.x&mask)"
+      },
+      "checks": [
+        {
+          "method": "ptxas_m_fast",
+          "relative_l2": 1.7955374005396152e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_grouped_n",
+          "relative_l2": 1.7955374005396152e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "oa_m_fast",
+          "relative_l2": 1.7955374005396152e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "oa_grouped_n",
+          "relative_l2": 1.7955374005396152e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        }
+      ],
+      "resources": {
+        "oa_m_fast": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "oa_grouped_n": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_m_fast": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_grouped_n": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        }
+      },
+      "static": {
+        "oa_m_fast": {
+          "instructions": 1600,
+          "non_nop": 1580,
+          "registers": 216,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "6c9d94e88331811064feb92c50ae39d7fdec15935e03cb255ac9b198e6a7c2e7"
+        },
+        "oa_grouped_n": {
+          "instructions": 1600,
+          "non_nop": 1584,
+          "registers": 216,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "5e5e463c4b46040c951177493582378e0b44ff728f54f29dad4915b7dfa6c05d"
+        },
+        "ptxas_m_fast": {
+          "instructions": 3168,
+          "non_nop": 3156,
+          "registers": 231,
+          "hmma": 2048,
+          "ldsm": 512,
+          "sass_sha256": "a5d5bf8b21ef443549825404632b99a0c75db56c9f888a1120da36adb193a72c"
+        },
+        "ptxas_grouped_n": {
+          "instructions": 3168,
+          "non_nop": 3159,
+          "registers": 231,
+          "hmma": 2048,
+          "ldsm": 512,
+          "sass_sha256": "e0bfe1e54492e438419b04316d30c775d202ce5a102914f801ea349ab6c10668"
+        }
+      },
+      "timings": [
+        {
+          "round": 0,
+          "median_ms": {
+            "oa_m_fast": 0.08940799906849861,
+            "oa_grouped_n": 0.08755199983716011,
+            "ptxas_m_fast": 0.06297600269317627,
+            "ptxas_grouped_n": 0.06272000074386597
+          },
+          "samples_ms": {
+            "oa_m_fast": [
+              0.08921600133180618,
+              0.09011200070381165,
+              0.08883199840784073,
+              0.0902400016784668,
+              0.08959999680519104,
+              0.08857599645853043,
+              0.08793599903583527,
+              0.08972799777984619
+            ],
+            "oa_grouped_n": [
+              0.08832000195980072,
+              0.08640000224113464,
+              0.0867839977145195,
+              0.08883199840784073,
+              0.08537600189447403,
+              0.08934400230646133,
+              0.08844800293445587,
+              0.08614400029182434
+            ],
+            "ptxas_m_fast": [
+              0.06335999816656113,
+              0.06284800171852112,
+              0.06310400366783142,
+              0.06297600269317627,
+              0.06297600269317627,
+              0.06297600269317627,
+              0.06297600269317627,
+              0.06297600269317627
+            ],
+            "ptxas_grouped_n": [
+              0.0648920014500618,
+              0.06259199976921082,
+              0.06310400366783142,
+              0.06259199976921082,
+              0.06272000074386597,
+              0.06259199976921082,
+              0.06272000074386597,
+              0.06284800171852112
+            ]
+          }
+        },
+        {
+          "round": 1,
+          "median_ms": {
+            "oa_m_fast": 0.08876799792051315,
+            "oa_grouped_n": 0.0865279994904995,
+            "ptxas_m_fast": 0.06284800171852112,
+            "ptxas_grouped_n": 0.0629120022058487
+          },
+          "samples_ms": {
+            "oa_m_fast": [
+              0.08908800035715103,
+              0.08934400230646133,
+              0.08857599645853043,
+              0.08832000195980072,
+              0.08767999708652496,
+              0.09011200070381165,
+              0.08844800293445587,
+              0.08895999938249588
+            ],
+            "oa_grouped_n": [
+              0.0870399996638298,
+              0.08563199639320374,
+              0.08895999938249588,
+              0.08614400029182434,
+              0.08691199868917465,
+              0.08601599931716919,
+              0.08563199639320374,
+              0.08870399743318558
+            ],
+            "ptxas_m_fast": [
+              0.06284800171852112,
+              0.06272000074386597,
+              0.06272000074386597,
+              0.06323199719190598,
+              0.06284800171852112,
+              0.06259199976921082,
+              0.06310400366783142,
+              0.06284800171852112
+            ],
+            "ptxas_grouped_n": [
+              0.06297600269317627,
+              0.06272000074386597,
+              0.06284800171852112,
+              0.06310400366783142,
+              0.06297600269317627,
+              0.06310400366783142,
+              0.06272000074386597,
+              0.06284800171852112
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "m": 4096,
+        "n": 4096,
+        "k": 4096,
+        "dtype": "f16",
+        "width": 8
+      },
+      "mapping": {
+        "cta_order": "grouped_n",
+        "width": 8,
+        "logical_tiles": [
+          32,
+          32
+        ],
+        "launch_grid": [
+          256,
+          4,
+          1
+        ],
+        "mapping": "logical_m=blockIdx.x>>log; logical_n=(blockIdx.y<<log)|(blockIdx.x&mask)"
+      },
+      "checks": [
+        {
+          "method": "ptxas_m_fast",
+          "relative_l2": 6.6740881266014185e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_grouped_n",
+          "relative_l2": 6.6740881266014185e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "oa_m_fast",
+          "relative_l2": 6.6740881266014185e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "oa_grouped_n",
+          "relative_l2": 6.6740881266014185e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        }
+      ],
+      "resources": {
+        "oa_m_fast": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "oa_grouped_n": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_m_fast": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 234,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_grouped_n": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 234,
+          "ptx_version": 80,
+          "binary_version": 80
+        }
+      },
+      "static": {
+        "oa_m_fast": {
+          "instructions": 1600,
+          "non_nop": 1580,
+          "registers": 216,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "ac4c38dedf7b2142cf304017184a07fd33556e6108df3c55d011f4cba20a7b29"
+        },
+        "oa_grouped_n": {
+          "instructions": 1600,
+          "non_nop": 1584,
+          "registers": 216,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "d74f6577f93b3519f725adaeee21f45dc7fed273a5c9fad64c6f64c599b6a05e"
+        },
+        "ptxas_m_fast": {
+          "instructions": 1104,
+          "non_nop": 1090,
+          "registers": 234,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "d935f1e7db794d9e72a153bb1fc6fba88311b671d238b70ed907bf4623035f48"
+        },
+        "ptxas_grouped_n": {
+          "instructions": 1104,
+          "non_nop": 1093,
+          "registers": 234,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "c54e6082b640adaac4647bd3fcbb9bf8eea1812cbdb16664457541f31710f1db"
+        }
+      },
+      "timings": [
+        {
+          "round": 0,
+          "median_ms": {
+            "oa_m_fast": 0.7068159878253937,
+            "oa_grouped_n": 0.7076480090618134,
+            "ptxas_m_fast": 0.7128959894180298,
+            "ptxas_grouped_n": 0.6912000179290771
+          },
+          "samples_ms": {
+            "oa_m_fast": [
+              0.7562239766120911,
+              0.7554559707641602,
+              0.7553279995918274,
+              0.7560960054397583,
+              0.6572800278663635,
+              0.6579200029373169,
+              0.6572800278663635,
+              0.65830397605896
+            ],
+            "oa_grouped_n": [
+              0.7564799785614014,
+              0.756991982460022,
+              0.7553279995918274,
+              0.7567359805107117,
+              0.6593279838562012,
+              0.6599680185317993,
+              0.659712016582489,
+              0.6589440107345581
+            ],
+            "ptxas_m_fast": [
+              0.7161239981651306,
+              0.7129600048065186,
+              0.712831974029541,
+              0.7132160067558289,
+              0.7130879759788513,
+              0.6214399933815002,
+              0.6215680241584778,
+              0.6218240261077881
+            ],
+            "ptxas_grouped_n": [
+              0.712448000907898,
+              0.7132160067558289,
+              0.712448000907898,
+              0.7118080258369446,
+              0.6705920100212097,
+              0.6197760105133057,
+              0.6201599836349487,
+              0.6213120222091675
+            ]
+          }
+        },
+        {
+          "round": 1,
+          "median_ms": {
+            "oa_m_fast": 0.6576639711856842,
+            "oa_grouped_n": 0.6592639982700348,
+            "ptxas_m_fast": 0.6213760077953339,
+            "ptxas_grouped_n": 0.6199679970741272
+          },
+          "samples_ms": {
+            "oa_m_fast": [
+              0.6572800278663635,
+              0.6572800278663635,
+              0.6577919721603394,
+              0.657151997089386,
+              0.6577919721603394,
+              0.657535970211029,
+              0.6584320068359375,
+              0.6577919721603394
+            ],
+            "oa_grouped_n": [
+              0.6589440107345581,
+              0.6593279838562012,
+              0.6589440107345581,
+              0.659712016582489,
+              0.6592000126838684,
+              0.6595839858055115,
+              0.6585599780082703,
+              0.659712016582489
+            ],
+            "ptxas_m_fast": [
+              0.6213120222091675,
+              0.6213120222091675,
+              0.6209279894828796,
+              0.6213120222091675,
+              0.6215680241584778,
+              0.6218240261077881,
+              0.6228479743003845,
+              0.6214399933815002
+            ],
+            "ptxas_grouped_n": [
+              0.6201599836349487,
+              0.620032012462616,
+              0.620032012462616,
+              0.6199039816856384,
+              0.6199039816856384,
+              0.620415985584259,
+              0.6196479797363281,
+              0.6199039816856384
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "case": {
+        "m": 16384,
+        "n": 4096,
+        "k": 4096,
+        "dtype": "f16",
+        "width": 8
+      },
+      "mapping": {
+        "cta_order": "grouped_n",
+        "width": 8,
+        "logical_tiles": [
+          128,
+          32
+        ],
+        "launch_grid": [
+          1024,
+          4,
+          1
+        ],
+        "mapping": "logical_m=blockIdx.x>>log; logical_n=(blockIdx.y<<log)|(blockIdx.x&mask)"
+      },
+      "checks": [
+        {
+          "method": "ptxas_m_fast",
+          "relative_l2": 6.670474249403924e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_grouped_n",
+          "relative_l2": 6.670474249403924e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "oa_m_fast",
+          "relative_l2": 6.670474249403924e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "oa_grouped_n",
+          "relative_l2": 6.670474249403924e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        }
+      ],
+      "resources": {
+        "oa_m_fast": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "oa_grouped_n": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_m_fast": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 234,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_grouped_n": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 234,
+          "ptx_version": 80,
+          "binary_version": 80
+        }
+      },
+      "static": {
+        "oa_m_fast": {
+          "instructions": 1600,
+          "non_nop": 1580,
+          "registers": 216,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "ac4c38dedf7b2142cf304017184a07fd33556e6108df3c55d011f4cba20a7b29"
+        },
+        "oa_grouped_n": {
+          "instructions": 1600,
+          "non_nop": 1584,
+          "registers": 216,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "d74f6577f93b3519f725adaeee21f45dc7fed273a5c9fad64c6f64c599b6a05e"
+        },
+        "ptxas_m_fast": {
+          "instructions": 1104,
+          "non_nop": 1090,
+          "registers": 234,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "d935f1e7db794d9e72a153bb1fc6fba88311b671d238b70ed907bf4623035f48"
+        },
+        "ptxas_grouped_n": {
+          "instructions": 1104,
+          "non_nop": 1093,
+          "registers": 234,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "c54e6082b640adaac4647bd3fcbb9bf8eea1812cbdb16664457541f31710f1db"
+        }
+      },
+      "timings": [
+        {
+          "round": 0,
+          "median_ms": {
+            "oa_m_fast": 2.7253119945526123,
+            "oa_grouped_n": 2.576383948326111,
+            "ptxas_m_fast": 3.4919040203094482,
+            "ptxas_grouped_n": 2.3968640565872192
+          },
+          "samples_ms": {
+            "oa_m_fast": [
+              3.001107931137085,
+              2.9951999187469482,
+              2.665855884552002,
+              2.7601919174194336,
+              2.704767942428589,
+              2.695296049118042,
+              2.7267839908599854,
+              2.7238399982452393
+            ],
+            "oa_grouped_n": [
+              2.8517119884490967,
+              2.758143901824951,
+              2.4837119579315186,
+              2.61081600189209,
+              2.5868799686431885,
+              2.50547194480896,
+              2.5045759677886963,
+              2.565887928009033
+            ],
+            "ptxas_m_fast": [
+              3.5224320888519287,
+              3.521023988723755,
+              3.4873600006103516,
+              3.4917120933532715,
+              3.4812159538269043,
+              3.4955520629882812,
+              3.492095947265625,
+              3.4911999702453613
+            ],
+            "ptxas_grouped_n": [
+              2.687743902206421,
+              2.6705920696258545,
+              2.3968000411987305,
+              2.4518399238586426,
+              2.3651840686798096,
+              2.396928071975708,
+              2.360447883605957,
+              2.365823984146118
+            ]
+          }
+        },
+        {
+          "round": 1,
+          "median_ms": {
+            "oa_m_fast": 2.725376009941101,
+            "oa_grouped_n": 2.5777279138565063,
+            "ptxas_m_fast": 3.4946560859680176,
+            "ptxas_grouped_n": 2.4078720808029175
+          },
+          "samples_ms": {
+            "oa_m_fast": [
+              2.726912021636963,
+              2.7238399982452393,
+              2.6792960166931152,
+              2.7557120323181152,
+              2.7013120651245117,
+              2.710400104522705,
+              2.7351040840148926,
+              2.7979519367218018
+            ],
+            "oa_grouped_n": [
+              2.61299204826355,
+              2.56166410446167,
+              2.5182719230651855,
+              2.630784034729004,
+              2.587775945663452,
+              2.5326080322265625,
+              2.6449921131134033,
+              2.5676798820495605
+            ],
+            "ptxas_m_fast": [
+              3.495680093765259,
+              3.4968318939208984,
+              3.4911999702453613,
+              3.4997758865356445,
+              3.4936320781707764,
+              3.4917120933532715,
+              3.49183988571167,
+              3.497983932495117
+            ],
+            "ptxas_grouped_n": [
+              2.4286720752716064,
+              2.4079360961914062,
+              2.3756799697875977,
+              2.395519971847534,
+              2.3783679008483887,
+              2.410752058029175,
+              2.4637439250946045,
+              2.4078080654144287
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "methodology": {
+    "full_output": true,
+    "canaries": true,
+    "poisoned_graph": true,
+    "layout_matched_ptxas": true,
+    "rounds": 2,
+    "samples": 8
+  }
+}

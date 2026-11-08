@@ -1,6 +1,6 @@
 # OpenAssembler architecture and status
 
-Updated **November 7, 2026**. This page describes the current source tree and
+Updated **November 8, 2026**. This page describes the current source tree and
 latest completed validation. The repository CLI update adds workflow/correctness
 checks; the separate November 7 native NN campaign adds GPU measurements and
 experimental candidates without promoting them into production. Full command syntax is in [COMMANDS.md](COMMANDS.md);
@@ -17,8 +17,12 @@ every researched feature has a dossier in the [catalogue](research/README.md).
 | Existing scalar operators | Paired native-before/native-after checks pass for ten cases, with unchanged resources and no observed slowdown | Scheduler correctness fixes do not establish another general speedup |
 | BF16 application state | All 127 tensors checked; two parameter tensors fail the unchanged gate | Improved diagnostics, not a numerical repair |
 | Repository CLI on Modal | Three native input languages plus an external include; transformer capture emits 67 kernels, replay checks 77 tensors across six optimizer steps with zero new GPU code generation | Shared compile/run/cnr source paths; integration smoke, not new performance estimates |
+| Native repository compilation runtime | Bounded parallel source builds are enabled by default; the 26-source repository compile fell from 29.18s serial to 19.62s with four workers, with identical 21-entry/61-kernel outputs ([raw run](../exp/runtime/native-default-20261108.json)) | CPU/toolkit contention can change the best worker count; `OPENASSEMBLER_BUILD_JOBS=1` restores serial behavior |
 | Native NN arithmetic campaign | 264/274 initial arithmetic configurations pass; 402/402 tensor checks plus 134 graph checks; six composed NN configurations with full-state gates | Experimental only; rejected gates and slower methods retained |
 | New conditional candidates | Backward FMA reductions improve selected standard-width cases about 1.16–1.31×; integrated early pointer placement gains about 1.5–2.3% over direct mode on one wide shape | Smaller/tall cases can regress; neither establishes general ptxas superiority |
+| Full SM80 control inventory | 42 scalar producer/consumer families plus 14 tensor probes replayed on A100; fixed-pipe minima are mostly S4/S5 and predicate guards S13 | Pair-specific controls; no universal control-field rewrite is admitted |
+| CUTLASS-style load-next fragment schedule | Full FP16 output/canary/graph/disassembly/resource gates pass on six shapes; OA improves 5 non-square shapes by about 1–10% | Uses 24 more registers and regresses 4096³ by about 10%; experiment-only |
+| Grouped-N CTA traversal | Tall 16384×4096×4096 improves OA about 6–7% versus m-fast and is near Morton; wide/square cases do not win consistently | Exact FP16 shape entries only; alignment/workspace/BF16 variants remain unmeasured |
 
 These are measured snapshots, not promises for every shape, toolkit, GPU or
 training trajectory. Raw device metadata distinguishes A100-SXM4-40GB from
@@ -138,6 +142,8 @@ are research proposals, not additional shipping modules in this tree.
 | Paired fragment loads, two-stage async copies, shared XOR layout and vector stores | Default generated tensor mainloop | Fixed 128×128×64 CTA tile, 128 threads, 64 KiB dynamic shared memory |
 | Protected tensor scoreboards, address WAR, HMMA8/drain15 and operand reuse | Default tensor backend | Existing measured dependencies are retained across optimization levels |
 | Morton8 CTA ordering | Explicit `--cta-order morton8` | Complete 8×8 tile groups; measured tall-shape benefit, not automatic dispatch |
+| CUTLASS-style load-next/compute-current schedule | Experiment-only under `exp/tensor_scheduler` | Shape-specific FP16 candidate; production tensor path still uses source-order HMMA8/drain15 |
+| Grouped-N CTA traversal | Experiment-only under `exp/gemm_dispatch` | Requires shape-specific launch-grid remapping and held-out timing; no automatic production dispatch |
 | Bias/residual/ReLU epilogue | Explicit `--epilogue` | FP32 auxiliary buffers; selected square benefits, other shapes can regress |
 | Pointer-home copy elimination | Explicit `--pointer-mode direct` | Unfused `stagepair`/`m_fast`; preserves legacy default |
 | Early pointer advancement | Explicit `--pointer-advance early|auto` | `auto` selects only the measured 1024×4096×1024 shape; tall controls remain late |

@@ -29,6 +29,8 @@ import re
 import struct
 import subprocess
 import sys
+import concurrent.futures
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -895,11 +897,35 @@ def _compile_paths(src: Path, out_dir: Path, opt: Options, o_name: str | None = 
     # ---- build
     rc = 0
     built: list[SourceOut] = []
-    results: list[SourceOut] = []
-    for s, lang, name in candidates:
+
+    # Native source files are independent until their in-memory cubin/PTX
+    # results are ready to publish. Bounded parallelism removes the largest
+    # repository-build bottleneck (serial lowering plus ptxas/nvdisasm
+    # subprocesses) while preserving deterministic result order. Set
+    # OPENASSEMBLER_BUILD_JOBS=1 to reproduce the historical serial path.
+    build_jobs = 1
+    if not single and len(candidates) > 1 and not opt.dump_ptx:
+        try:
+            requested_jobs = int(os.environ.get("OPENASSEMBLER_BUILD_JOBS", "4"))
+        except ValueError:
+            requested_jobs = 4
+        build_jobs = max(1, min(requested_jobs, len(candidates), 8))
+
+    def build_one(item):
+        s, lang, name = item
         o = opt if single else Options(**{**opt.__dict__, "include_dirs": [*opt.include_dirs, root]})
-        so = build_source(s, lang, name, o, single=single)
-        results.append(so)
+        return build_source(s, lang, name, o, single=single)
+
+    if build_jobs == 1:
+        results = [build_one(item) for item in candidates]
+    else:
+        print(f"building {len(candidates)} sources with {build_jobs} workers")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=build_jobs,
+                                                    thread_name_prefix="openassembler-build") as pool:
+            results = list(pool.map(build_one, candidates))
+
+    for so in results:
+        s, name = so.src, so.name
         if so.files:
             new = so.entry(opt.no_sass)
             prev = entries.get(new["cubin"])

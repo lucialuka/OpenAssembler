@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "date": "2026-11-08",
+  "scope": "native-default compiler runtime and bounded A100 execution validation",
+  "code_change": {
+    "file": "openassembler/build.py",
+    "behavior": "bounded parallel source compilation",
+    "default_workers": 4,
+    "maximum_workers": 8,
+    "serial_override": "OPENASSEMBLER_BUILD_JOBS=1",
+    "determinism": "executor.map preserves candidate order; outputs and manifests are published serially"
+  },
+  "compilation": {
+    "examples": {
+      "sources": 5,
+      "kernels": 14,
+      "serial_seconds": 28.42,
+      "parallel_seconds": 22.81,
+      "speedup": 1.246,
+      "serial_output": "/tmp/oa-examples-serial",
+      "parallel_output": "/tmp/oa-examples-parallel",
+      "artifacts_identical": true
+    },
+    "repository": {
+      "candidate_sources": 26,
+      "compiled_entries": 21,
+      "openassembler_kernels": 61,
+      "unsupported_files": 5,
+      "skipped_files": 775,
+      "serial_seconds": 29.18,
+      "parallel_seconds": 19.62,
+      "speedup": 1.488,
+      "serial_output": "/tmp/oa-root-build-serial",
+      "parallel_output": "/tmp/oa-root-build",
+      "artifacts_identical": true,
+      "unsupported_examples": [
+        "ld.global.v2",
+        "bar.warp.sync",
+        "f32 rounding/sat/ftz modifiers"
+      ]
+    }
+  },
+  "curated_a100_execution": {
+    "device": "NVIDIA A100-SXM4-40GB",
+    "cases": [
+      {"kind": "gemm", "shape": [128, 128, 128], "dtype": "f16", "status": "ok", "oa_ms": 0.0154, "ptxas_ms": 0.0123},
+      {"kind": "gemm", "shape": [1024, 4096, 1024], "dtype": "f16", "status": "ok", "oa_ms": 0.0963, "ptxas_ms": 0.0696},
+      {"kind": "softmax", "rows": 4096, "width": 512, "status": "ok", "oa_ms": 0.0174, "ptxas_ms": 0.0154}
+    ],
+    "method": "Modal A100, matched OA/ptxas jobs, exact small-integer or zero-input smoke gates"
+  },
+  "application_execution": {
+    "repository": "testcases/test_whole_repo",
+    "frontend": "torch",
+    "backend": "modal",
+    "device": "NVIDIA A100-SXM4-40GB",
+    "graphs": 2,
+    "optimizer_steps": 6,
+    "new_gpu_code_generation_on_replay": 0,
+    "verification_status": "ok",
+    "tensors_checked": 77
+  },
+  "broad_auto_harness_diagnostic": {
+    "scope": "examples directory, 14 comparisons",
+    "bitwise_matches": 6,
+    "known_mismatches": 6,
+    "faults": 2,
+    "interpretation": "auto launch inference is not a valid correctness contract for every arithmetic example; use explicit specs for nontrivial shapes and floating tolerance policies"
+  }
+}

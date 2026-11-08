@@ -15,8 +15,8 @@ After the branch is merged into the repository's default branch, add the
 repository as a tap and install the formula by name:
 
 ```sh
-brew tap Qingyang-Lucas-Fang/openassembler \
-  https://github.com/Qingyang-Lucas-Fang/OpenAssembler
+brew tap lucialuka/openassembler \
+  https://github.com/lucialuka/OpenAssembler
 brew install openassembler
 ```
 

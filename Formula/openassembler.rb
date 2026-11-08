@@ -1,7 +1,7 @@
 class Openassembler < Formula
   desc "Python/CUDA C/C++/PTX to NVIDIA SASS and CUDA binary compiler"
-  homepage "https://github.com/Qingyang-Lucas-Fang/OpenAssembler"
-  url "https://github.com/Qingyang-Lucas-Fang/OpenAssembler/archive/refs/heads/CLI.tar.gz"
+  homepage "https://github.com/lucialuka/OpenAssembler"
+  url "https://github.com/lucialuka/OpenAssembler/archive/refs/heads/CLI.tar.gz"
   version "0.2.0"
   license "Apache-2.0"
 

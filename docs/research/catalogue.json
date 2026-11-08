@@ -24,20 +24,6 @@
       "summary": "Experiment-only graph scheduler separates accumulator latency, independent HMMA issue spacing, operand readiness and observer dependencies; A100 hardware validation remains open."
     },
     {
-      "id": "non-tensor-address-overhead",
-      "title": "No-op address instruction removal",
-      "status": "tested-not-selected",
-      "path": "docs/research/ideas/non-tensor-address-overhead.md",
-      "summary": "Removing eight proven no-op address adds passed full output checks and reduced static SASS, but did not improve paired A100 timing."
-    },
-    {
-      "id": "cutlass-cublas-public-techniques",
-      "title": "Public CUTLASS and cuBLASLt techniques for A100",
-      "status": "untested-or-hardware-unavailable",
-      "path": "docs/research/ideas/cutlass-cublas-public-techniques.md",
-      "summary": "Public CUTLASS pipelines and cuBLASLt dispatch controls identify transferable tiling, staging, epilogue, traversal and heuristic designs; proprietary cuBLAS kernels are not extracted."
-    },
-    {
       "id": "adam-epsilon-sensitivity",
       "title": "Adam epsilon sensitivity of near-invariant BF16 key bias",
       "status": "validated-not-integrated",
@@ -157,6 +143,20 @@
       "summary": "Pinned public source and contracts were inspected; a faithful port and performance reproduction remain open."
     },
     {
+      "id": "cutlass-cublas-public-techniques",
+      "title": "Public CUTLASS and cuBLASLt techniques for A100",
+      "status": "untested-or-hardware-unavailable",
+      "path": "docs/research/ideas/cutlass-cublas-public-techniques.md",
+      "summary": "Public CUTLASS pipelines and cuBLASLt dispatch controls identify transferable tiling, staging, epilogue, traversal and heuristic designs; proprietary cuBLAS kernels are not extracted."
+    },
+    {
+      "id": "cutlass-load-next-compute-current",
+      "title": "CUTLASS-style load-next / compute-current fragment schedule",
+      "status": "validated-not-integrated",
+      "path": "docs/research/ideas/cutlass-load-next-compute-current.md",
+      "summary": "Source-inclusive A100 checks pass on six FP16 shapes; the candidate wins five non-square cases but regresses 4096^3 and raises register pressure."
+    },
+    {
       "id": "dead-code-and-copy-elimination",
       "title": "Dead-code removal, copy coalescing and local folding",
       "status": "implemented",
@@ -211,6 +211,13 @@
       "status": "implemented",
       "path": "docs/research/ideas/gpu-execution-and-launch-specs.md",
       "summary": "Typed launch planning, fault-isolated local/Modal/SSH transports implemented; Modal hardware is validated and latest real SSH evidence is absent."
+    },
+    {
+      "id": "grouped-n-cta-swizzle",
+      "title": "CUTLASS-style grouped-N CTA traversal",
+      "status": "validated-not-integrated",
+      "path": "docs/research/ideas/grouped-n-cta-swizzle.md",
+      "summary": "A grouped-N launch mapping passes full gates and wins the tall FP16 shape, while wide and square cases do not justify universal dispatch."
     },
     {
       "id": "hilbert-and-grouped-cta-order",
@@ -280,7 +287,7 @@
       "title": "Morton8 logical CTA traversal",
       "status": "implemented",
       "path": "docs/research/ideas/morton-cta-order.md",
-      "summary": "Corrected 8\u00d78 tile traversal helps tested tall grids; it is not an MMA storage layout or automatic policy."
+      "summary": "Corrected 8×8 tile traversal helps tested tall grids; it is not an MMA storage layout or automatic policy."
     },
     {
       "id": "multi-precision-accumulation",
@@ -315,7 +322,7 @@
       "title": "Native SM80 tensor GEMM compiler and mainloop",
       "status": "implemented",
       "path": "docs/research/ideas/native-tensor-gemm.md",
-      "summary": "The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128\u00d7128\u00d764 CTA tiles, four 64\u00d764 warp tiles, 128 threads and 64 KiB dynamic shared memory."
+      "summary": "The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128×128×64 CTA tiles, four 64×64 warp tiles, 128 threads and 64 KiB dynamic shared memory."
     },
     {
       "id": "nn-arithmetic-campaign",
@@ -323,6 +330,13 @@
       "status": "validated-not-integrated",
       "path": "docs/research/ideas/nn-arithmetic-campaign.md",
       "summary": "26 operator families and six custom NN configurations expose conditional gains and failed training gates; no general CUDA superiority."
+    },
+    {
+      "id": "non-tensor-address-overhead",
+      "title": "No-op address instruction removal",
+      "status": "tested-not-selected",
+      "path": "docs/research/ideas/non-tensor-address-overhead.md",
+      "summary": "Removing eight proven no-op address adds passed full output checks and reduced static SASS, but did not improve paired A100 timing."
     },
     {
       "id": "operand-reuse-hints",
@@ -364,7 +378,7 @@
       "title": "Software producer/consumer warp specialization",
       "status": "tested-not-selected",
       "path": "docs/research/ideas/producer-consumer-warps.md",
-      "summary": "The tested role-split variants passed four large-case A100 correctness checks but measured about 1.019\u20131.943 ms and lost to the unified-warp schedule."
+      "summary": "The tested role-split variants passed four large-case A100 correctness checks but measured about 1.019–1.943 ms and lost to the unified-warp schedule."
     },
     {
       "id": "ptx-native-frontend",
@@ -399,7 +413,7 @@
       "title": "Runtime-factor Triton low-rank lowering",
       "status": "tested-not-selected",
       "path": "docs/research/ideas/runtime-factor-low-rank-triton.md",
-      "summary": "The early A10040GB prototype was far slower: at 4096\u00b3 FP16, cuBLAS was about 0.511 ms, direct Triton 1.325 ms, Strassen 11.611 ms and AlphaTensor 13.041 ms."
+      "summary": "The early A10040GB prototype was far slower: at 4096³ FP16, cuBLAS was about 0.511 ms, direct Triton 1.325 ms, Strassen 11.611 ms and AlphaTensor 13.041 ms."
     },
     {
       "id": "sass-emulator-and-tensor-numerics",
@@ -504,7 +518,7 @@
       "title": "Carry-linked pointer updates and folded shared addresses",
       "status": "implemented",
       "path": "docs/research/ideas/tensor-address-generation.md",
-      "summary": "The earlier address work reduced one selected kernel from 1,898 to 1,812 static non-NOP instructions; six same-worker cases improved about 0.9\u20135.4%."
+      "summary": "The earlier address work reduced one selected kernel from 1,898 to 1,812 static non-NOP instructions; six same-worker cases improved about 0.9–5.4%."
     },
     {
       "id": "tensor-counter-profiling",
@@ -518,7 +532,7 @@
       "title": "Clocked tensor probes and synchronization sweeps",
       "status": "validated-not-integrated",
       "path": "docs/research/ideas/tensor-timing-and-synchronization.md",
-      "summary": "Corrected exact-SASS probes measured an approximately eight-cycle-per-operation slope for the tested dependent HMMA sequence and about 41 cycles per iteration for LDSM\u2192LOP3\u2192IADD3."
+      "summary": "Corrected exact-SASS probes measured an approximately eight-cycle-per-operation slope for the tested dependent HMMA sequence and about 41 cycles per iteration for LDSM→LOP3→IADD3."
     },
     {
       "id": "vectorized-fp32-epilogue",

@@ -117,3 +117,48 @@ per HMMA for three chains. This is the measured separation between dependent
 accumulator latency and independent initiation rate that the opt-in scheduler
 must preserve.
 
+## Full control inventory
+
+The retained scalar cubins were replayed on an A100 with the same output
+comparison used by the earlier latency campaign:
+
+```bash
+modal run tools/gpu_modal.py --which dir:corpus/sm_80/latsweep \
+  --trials 2 --budget 500 --suffix full_20261108
+python3.13 exp/tensor_scheduler/control_inventory.py
+```
+
+The source-inclusive record is `control-sweep-a100_20261108.json`; its
+compressed worker payload is `control-sweep-a100_20261108.raw.json.gz`. The
+generated `control-inventory.json` covers all 42 scalar dependency families
+exposed by `tools/lat_sweep.py` plus the 14 tensor probes. The broader
+`tools/ptx_probes.py` corpus contains 541 standalone SM80 PTX forms; those are
+recorded as inventory-only because a standalone form does not define a
+producer/consumer control edge. The companion
+`REPORT_ADDENDUM_20261108.md` records the measured minima and the limits of
+those pair-specific controls.
+
+## CUTLASS-style fragment schedule
+
+`load_next_compute_current.py` is an experiment-only source transformer based
+on the public CUTLASS SM80 multistage pattern. It alternates two fragment
+register windows, loads the next K fragment between current HMMA halves, and
+checks every accumulator's K-order. The source-inclusive Modal runner is:
+
+```bash
+modal run exp/tensor_scheduler/load_next_compute_current_modal.py \
+  --rounds 2 --samples 8
+```
+
+The latest six-shape run passed full output, canary, poisoned-graph,
+disassembly and resource checks. It improved OA timing on five non-square
+shapes and regressed the 4096×4096×4096 square case; the candidate remains
+shape-specific and experiment-only.
+
+## Actual lowered blocks
+
+`actual_block_schedule.py` feeds real lowered OA GEMM blocks into the
+four-edge dependency model. Terminator blocks fail closed, while HMMA-bearing
+blocks are accepted and their candidate source orders are recorded in
+`actual-block-schedule.json`. No reordered stream is encoded or promoted yet.
+

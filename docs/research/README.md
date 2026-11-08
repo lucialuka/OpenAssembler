@@ -19,7 +19,7 @@ a short glossary are in [DEVELOPMENT](../DEVELOPMENT.md). The complete
 cross-cutting [whole-stack study](WHOLE_STACK_RESULTS.md) and
 [primary references](REFERENCES.md) remain essential companion documents.
 
-There are **75 dossiers**: **34 implemented**, **15 validated but not integrated**, **14 tested but not selected**, and **12 open or hardware unavailable**.
+There are **77 dossiers**: **34 implemented**, **17 validated but not integrated**, **14 tested but not selected**, and **12 open or hardware unavailable**.
 
 ## 1. Validated and implemented
 
@@ -70,6 +70,8 @@ These capabilities, diagnostics and research prototypes have bounded validation.
 |---|---|
 | [Adam epsilon sensitivity of near-invariant BF16 key bias](ideas/adam-epsilon-sensitivity.md) | Changing epsilon explains sensitivity under a different training policy; it is not a repair of the original gate. |
 | [cuBLAS dispatch observation and cuBLASLt controls](ideas/cublas-observation-and-baselines.md) | Vendor dispatch and matched controls guide independent kernels; no vendor kernel was extracted into the compiler. |
+| [CUTLASS-style load-next / compute-current fragment schedule](ideas/cutlass-load-next-compute-current.md) | Full FP16 A100 gates pass on six shapes; five non-square cases improve and 4096³ regresses, so the schedule remains shape-specific and experiment-only. |
+| [CUTLASS-style grouped-N CTA traversal](ideas/grouped-n-cta-swizzle.md) | Full gates pass; the tall FP16 shape improves over m-fast, while wide and square cases do not justify a universal dispatch rule. |
 | [Two-slot asynchronous barrier overlap](ideas/mbarrier-overlap.md) | A two-slot one-CTA overlap probe works; dense-GEMM integration and an application benefit remain unproven. |
 | [Native GEMMs inside a complete hybrid residual MLP](ideas/native-hybrid-mlp.md) | Complete hybrid steps are checked, including packing and optimizer work; effects are mixed and integration is experimental. |
 | [Padded forward/backward integration prototype](ideas/padded-training-hook.md) | The phase-two FP16/BF16 hook passed forward/backward and three-step state checks under its explicit padding/rounding policy. |

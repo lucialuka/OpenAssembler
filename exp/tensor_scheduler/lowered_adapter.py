@@ -11,7 +11,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, Sequence
 
-from dependency_scheduler import TensorInstruction, TensorLatency, build_dependency_graph, schedule
+try:
+    from .dependency_scheduler import TensorInstruction, TensorLatency, build_dependency_graph, schedule
+except ImportError:
+    from dependency_scheduler import TensorInstruction, TensorLatency, build_dependency_graph, schedule
 
 
 @dataclass(frozen=True)

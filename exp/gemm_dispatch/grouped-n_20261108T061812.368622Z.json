@@ -1,0 +1,183 @@
+{
+  "device": "NVIDIA A100-SXM4-40GB",
+  "cases": [
+    {
+      "case": {
+        "m": 1024,
+        "n": 4096,
+        "k": 1024,
+        "dtype": "f16",
+        "width": 8
+      },
+      "mapping": {
+        "cta_order": "grouped_n",
+        "width": 8,
+        "logical_tiles": [
+          8,
+          32
+        ],
+        "launch_grid": [
+          64,
+          4,
+          1
+        ],
+        "mapping": "logical_m=blockIdx.x>>log; logical_n=(blockIdx.y<<log)|(blockIdx.x&mask)"
+      },
+      "checks": [
+        {
+          "method": "ptxas_m_fast",
+          "relative_l2": 1.7955374005396152e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_grouped_n",
+          "relative_l2": 1.7955374005396152e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "oa_m_fast",
+          "relative_l2": 1.7955374005396152e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "method": "oa_grouped_n",
+          "relative_l2": 1.7955374005396152e-06,
+          "same_layout_ptxas_bitwise": true,
+          "canaries": true,
+          "passed": true
+        }
+      ],
+      "resources": {
+        "oa_m_fast": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "oa_grouped_n": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_m_fast": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_grouped_n": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        }
+      },
+      "static": {
+        "oa_m_fast": {
+          "instructions": 1600,
+          "non_nop": 1580,
+          "registers": 216,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "6c9d94e88331811064feb92c50ae39d7fdec15935e03cb255ac9b198e6a7c2e7"
+        },
+        "oa_grouped_n": {
+          "instructions": 1600,
+          "non_nop": 1584,
+          "registers": 216,
+          "hmma": 512,
+          "ldsm": 128,
+          "sass_sha256": "5e5e463c4b46040c951177493582378e0b44ff728f54f29dad4915b7dfa6c05d"
+        },
+        "ptxas_m_fast": {
+          "instructions": 3168,
+          "non_nop": 3156,
+          "registers": 231,
+          "hmma": 2048,
+          "ldsm": 512,
+          "sass_sha256": "a5d5bf8b21ef443549825404632b99a0c75db56c9f888a1120da36adb193a72c"
+        },
+        "ptxas_grouped_n": {
+          "instructions": 3168,
+          "non_nop": 3159,
+          "registers": 231,
+          "hmma": 2048,
+          "ldsm": 512,
+          "sass_sha256": "e0bfe1e54492e438419b04316d30c775d202ce5a102914f801ea349ab6c10668"
+        }
+      },
+      "timings": [
+        {
+          "round": 0,
+          "median_ms": {
+            "oa_m_fast": 0.08940799906849861,
+            "oa_grouped_n": 0.0888959988951683,
+            "ptxas_m_fast": 0.0631680004298687,
+            "ptxas_grouped_n": 0.06304000318050385
+          },
+          "samples_ms": {
+            "oa_m_fast": [
+              0.09011200070381165,
+              0.08870399743318558,
+              0.08883199840784073,
+              0.0899839997291565,
+              0.09087999910116196,
+              0.08883199840784073
+            ],
+            "oa_grouped_n": [
+              0.09011200070381165,
+              0.08857599645853043,
+              0.08870399743318558,
+              0.08908800035715103,
+              0.08780799806118011,
+              0.0904960036277771
+            ],
+            "ptxas_m_fast": [
+              0.06374400109052658,
+              0.06297600269317627,
+              0.06310400366783142,
+              0.06335999816656113,
+              0.06310400366783142,
+              0.06323199719190598
+            ],
+            "ptxas_grouped_n": [
+              0.06434399634599686,
+              0.06310400366783142,
+              0.06297600269317627,
+              0.06348799914121628,
+              0.06297600269317627,
+              0.06297600269317627
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "methodology": {
+    "full_output": true,
+    "canaries": true,
+    "poisoned_graph": true,
+    "layout_matched_ptxas": true,
+    "rounds": 1,
+    "samples": 6
+  }
+}

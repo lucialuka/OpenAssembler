@@ -186,6 +186,13 @@ versioned SSH environment. Capture and replay on that host when necessary.
 The OpenAssembler worker/compiler is uploaded automatically; installing
 OpenAssembler on the remote host is not required for workstation dispatch.
 
+Directory native builds compile independent source files with a bounded worker
+pool by default (`OPENASSEMBLER_BUILD_JOBS=4`, capped at eight). Candidate order,
+manifest ownership and per-source verification remain deterministic. Set
+`OPENASSEMBLER_BUILD_JOBS=1` to reproduce the historical serial build or when
+the host is CPU constrained. `--dump-ptx` intentionally uses the serial path
+so PTX output remains readable and ordered.
+
 ```sh
 openassembler compile /path/to/repo --backend training-a100 --verify
 openassembler run /path/to/repo --backend training-a100

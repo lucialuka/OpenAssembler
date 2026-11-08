@@ -131,6 +131,19 @@ per HMMA. The record is
 This supports separate dependent latency and independent initiation modeling,
 while the earlier correctness sweep still forbids a universal S1 policy.
 
+The follow-up scalar replay covers all 42 producer/consumer families exposed by
+`tools/lat_sweep.py` and is merged with the 14 tensor probes in
+`exp/tensor_scheduler/control-inventory.json`. Fixed-pipe minima are mostly
+S4/S5, predicate-to-guard probes are S13, and the tested store/address cases
+are S1/S2. These are pair-specific observations, not global scheduler
+constants.
+
+`exp/tensor_scheduler/actual_block_schedule.py` now lowers real OA GEMM
+streams through the selector and allocator, splits them at barriers/control
+edges, and runs the experiment graph over the resulting blocks. HMMA-bearing
+blocks are accepted by the fail-closed adapter, while terminator blocks are
+rejected. No reordered stream has been encoded or promoted.
+
 ## Promotion rule
 
 The current HMMA8/drain15 schedule remains the correctness baseline. Promote an

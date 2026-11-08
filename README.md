@@ -14,6 +14,9 @@ We provide a more efficient compiler eith optimization kernels that reach an app
 [Research catalogue](docs/research/README.md) · [Development setup](docs/DEVELOPMENT.md)
 · [Repository workflow and SSH/Modal setup](docs/REPOSITORY_WORKFLOW.md)
 
+> ⚠️ **IMPORTANT NOTICE**
+> This project is currently under **active heavy development** for kernel optimization and assembly language edge case handling. If you encounter any bugs/compiler inefficiency during deployment, please feel free to open an Issue. Your feedback will help us build a better version!
+
 ## What you can do
 
 - Compile standalone kernels or discover supported kernels in a repository.
@@ -41,7 +44,7 @@ On macOS or Linux with Homebrew, install the complete CLI and its Modal
 transport with:
 
 ```sh
-brew tap Qingyang-Lucas-Fang/openassembler https://github.com/Qingyang-Lucas-Fang/OpenAssembler
+brew tap lucialuka/openassembler https://github.com/lucialuka/OpenAssembler
 brew install openassembler
 ```
 
@@ -76,6 +79,8 @@ Replace that example with your repository path. A PyTorch repository provides
 repository needs no application configuration. Directory builds default to
 `REPO/output/cubin/`, `REPO/output/sass/` and `REPO/output/manifest.json`.
 For a custom location, use the same `--out-dir DIR` on `compile` and `run`.
+Independent native source files build with up to four bounded workers by
+default; set `OPENASSEMBLER_BUILD_JOBS=1` for serial reproducibility.
 
 Use an existing Linux A100 host over SSH with the same commands:
 
@@ -151,10 +156,10 @@ The package is version **0.2.0**. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=qingyang-lucas-fang%2Fopenassembler&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=lucialuka%2Fopenassembler&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=qingyang-lucas-fang/openassembler&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=qingyang-lucas-fang/openassembler&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=qingyang-lucas-fang/openassembler&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=lucialuka/openassembler&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=lucialuka/openassembler&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=lucialuka/openassembler&type=date&legend=top-left" />
  </picture>
 </a>
