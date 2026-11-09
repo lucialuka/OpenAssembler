@@ -1,6 +1,10 @@
 # Joint tuning of GEMM pointer, tile-order and fusion options
 
-Status: validated-not-integrated
+Status: tested-not-selected
+
+The combinations remain experiment results rather than current compiler
+defaults. Their correctness does not outweigh mixed or small timing changes,
+and the candidates still lose to their matched ptxas controls.
 
 This classification is conditional: combining direct pointers with a fused
 FP32 epilogue gives small measured gains on selected shapes. The combined

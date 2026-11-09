@@ -24,7 +24,7 @@ centralized in the [reverse-engineering results hub](../reverse_eng_results/READ
 Per-idea dossiers remain the authoritative status and reproduction records for
 individual features.
 
-There are **77 dossiers**: **34 implemented**, **17 validated but not integrated**, **14 tested but not selected**, and **12 open or hardware unavailable**.
+There are **77 dossiers**: **36 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md).
 
 ## 1. Validated and implemented
 
@@ -50,6 +50,8 @@ These are available in the current code under their stated contracts. Explicit t
 | [Native tanh-approximation GELU example](ideas/native-gelu.md) | Tanh-GELU passes a predeclared FP64 tolerance, while the old exact gate failure remains and gains depend on size. |
 | [Native scalar ReLU example](ideas/native-relu.md) | Finite-input exact example passes; measured large-size PyTorch is faster, with no universal speedup. |
 | [Native SM80 tensor GEMM compiler and mainloop](ideas/native-tensor-gemm.md) | The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128×128×64 CTA tiles, four 64×64 warp tiles, 128 threads and 64 KiB dynamic shared memory. |
+| [CUTLASS-style load-next / compute-current fragment schedule](ideas/cutlass-load-next-compute-current.md) | Explicit `--fragment-schedule load_next` is admitted for two exact wide FP16/BF16 shapes after current A100 full-gate confirmations; default source order remains unchanged. |
+| [CUTLASS-style grouped-N CTA traversal](ideas/grouped-n-cta-swizzle.md) | Explicit `--cta-order grouped_n8` uses a checked transformed launch grid and passes current held-out FP16/BF16 tall-shape gates; no auto-dispatch. |
 | [Operand reuse hints and ordering](ideas/operand-reuse-hints.md) | The tensor scheduler emits reuse hints for supported neighboring HMMA operands. |
 | [Paired B-fragment LDSM loads and register-group use](ideas/paired-fragment-loads.md) | The selected native kernel uses paired `LDSM.x4` B loads. |
 | [Native PTX input and compilation boundary](ideas/ptx-native-frontend.md) | Supported SM80 PTX routes to the native scalar/tensor backends with explicit verification limits. |
@@ -73,14 +75,9 @@ These capabilities, diagnostics and research prototypes have bounded validation.
 
 | Feature / idea | What is established or limited |
 |---|---|
+| [Four-edge A100 tensor dependency scheduler](ideas/a100-tensor-dependency-scheduler.md) | A100 probes validate bounded dependency measurements; the generalized scheduler remains experimental, with no reordered stream promoted. |
 | [Adam epsilon sensitivity of near-invariant BF16 key bias](ideas/adam-epsilon-sensitivity.md) | Changing epsilon explains sensitivity under a different training policy; it is not a repair of the original gate. |
 | [cuBLAS dispatch observation and cuBLASLt controls](ideas/cublas-observation-and-baselines.md) | Vendor dispatch and matched controls guide independent kernels; no vendor kernel was extracted into the compiler. |
-| [CUTLASS-style load-next / compute-current fragment schedule](ideas/cutlass-load-next-compute-current.md) | Full FP16 A100 gates pass on six shapes; five non-square cases improve and 4096³ regresses, so the schedule remains shape-specific and experiment-only. |
-| [CUTLASS-style grouped-N CTA traversal](ideas/grouped-n-cta-swizzle.md) | Full gates pass; the tall FP16 shape improves over m-fast, while wide and square cases do not justify a universal dispatch rule. |
-| [Two-slot asynchronous barrier overlap](ideas/mbarrier-overlap.md) | A two-slot one-CTA overlap probe works; dense-GEMM integration and an application benefit remain unproven. |
-| [Native GEMMs inside a complete hybrid residual MLP](ideas/native-hybrid-mlp.md) | Complete hybrid steps are checked, including packing and optimizer work; effects are mixed and integration is experimental. |
-| [Padded forward/backward integration prototype](ideas/padded-training-hook.md) | The phase-two FP16/BF16 hook passed forward/backward and three-step state checks under its explicit padding/rounding policy. |
-| [Post-allocation pointer-copy forwarding](ideas/post-allocation-pointer-forwarding.md) | The tested rewrite is correct but produces exactly the direct-pointer stream; it adds no distinct optimization. |
 | [Structured-sparse MMA capability probes](ideas/sparse-mma-capability.md) | Limited ptxas-built sparse probes ran on A100; native OA sparse code generation and speedup are not established. |
 | [Hardware-counter-guided tensor analysis](ideas/tensor-counter-profiling.md) | Retained matched profiles show equal tensor work but different overhead and stalls. |
 | [Clocked tensor probes and synchronization sweeps](ideas/tensor-timing-and-synchronization.md) | Corrected exact-SASS probes measured an approximately eight-cycle-per-operation slope for the tested dependent HMMA sequence and about 41 cycles per iteration for LDSM→LOP3→IADD3. |
@@ -89,7 +86,6 @@ These capabilities, diagnostics and research prototypes have bounded validation.
 | [Fused local dot products for backward row reductions](ideas/fused-backward-reductions.md) | Explicit FMA improves selected native backward reductions; smaller cases can lose and same-source ptxas remains faster. |
 | [Stable analytic GELU backward](ideas/stable-gelu-backward.md) | A stable exponential derivative passes the unchanged accuracy gate after the direct-tanh form fails; no ptxas speed win. |
 | [Joint direct-pointer, traversal and epilogue options](ideas/joint-tensor-options.md) | Joint combinations pass full correctness; direct-plus-fusion has narrow gains while direct-plus-Morton is mostly neutral or worse. |
-| [Immutable inference weight-packing cache](ideas/inference-weight-packing-cache.md) | Versioned eager packing and immutable captured inference pass 26 method/network pairs; equally cached ptxas remains faster. |
 
 ## 3. Tested and rejected or not selected
 
@@ -111,6 +107,13 @@ This list distinguishes failed numerical gates, correct-but-slower candidates, a
 | [Naive scalar matrix-multiplication baseline](ideas/scalar-matmul-baseline.md) | The scalar example fails its retained exact gate and is not the validated tensor-core GEMM. |
 | [Software fragment caching in registers](ideas/software-register-caching.md) | Bounded B-fragment windows of two/four and prefetch variants passed correctness but were slower across seven paired rounds on the tested workloads. |
 | [No-op address instruction removal](ideas/non-tensor-address-overhead.md) | Removing eight proven no-op address adds passed full output checks and reduced static SASS, but did not improve paired A100 timing. |
+| [Adam epsilon sensitivity of near-invariant BF16 key bias](ideas/adam-epsilon-sensitivity.md) | The current diagnostic passes only after changing the optimizer policy; it is not a compiler repair or speedup. |
+| [Immutable inference weight-packing cache](ideas/inference-weight-packing-cache.md) | Application cache correctness passes, but an equally cached ptxas control remains faster; no OA compiler gain is admitted. |
+| [Joint direct-pointer, traversal and epilogue options](ideas/joint-tensor-options.md) | Full checks pass, but combinations are mixed or slower and add no selected production policy. |
+| [Two-slot asynchronous barrier overlap](ideas/mbarrier-overlap.md) | A retired tiny one-CTA probe passes, but no current dense GEMM integration or application gain exists. |
+| [Native GEMMs inside a complete hybrid residual MLP](ideas/native-hybrid-mlp.md) | Whole-step checks are valid but current native OA combinations are mixed or slower. |
+| [Padded forward/backward integration prototype](ideas/padded-training-hook.md) | The bounded hook is state-correct but slower and its original runner is retired. |
+| [Post-allocation pointer-copy forwarding](ideas/post-allocation-pointer-forwarding.md) | The rewrite is byte-identical to existing direct-pointer mode and adds no distinct optimization. |
 
 ## 4. Open, incomplete or unavailable on A100
 
@@ -119,7 +122,6 @@ These are source-inspection conclusions, implementation proposals, missing hardw
 | Feature / idea | What is established or limited |
 |---|---|
 | [A100 feasibility: TMA, clusters, FP8, DPX and virtual grouping](ideas/a100-hardware-limits.md) | Missing hardware capabilities cannot be enabled by a compiler flag; software substitutes remain distinct proposals. |
-| [Four-edge A100 tensor dependency scheduler](ideas/a100-tensor-dependency-scheduler.md) | An experiment-only graph model separates accumulator latency, independent HMMA initiation, operand readiness and observer dependencies; fresh A100 probe measurements and production integration remain open. |
 | [Adaptive shared-memory budgeting](ideas/adaptive-shared-memory-budgeting.md) | The production native GEMM has an explicit fixed contract: two 32 KiB shared operand regions, 64 KiB dynamic shared memory and 128 threads. |
 | [Cross-architecture encoding and cubin observations](ideas/architecture-portability.md) | Historical CUDA 12.8 probes examined common control fields on SM75/86/90/100/120 and parameter/ELF metadata changes. |
 | [Automatic equivalent SASS sequence search](ideas/automatic-sass-sequence-search.md) | Historical candidate searches explored several epilogue orders, fragment windows, pre-addressing, operand orders and scheduler variants; selected changes contributed to the current GEMM. |

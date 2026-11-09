@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-11-08",
+  "updated": "2026-11-09",
   "scope": "Current repository research and feature catalogue; one dossier per idea. Idea counts are not independent experiment counts.",
   "status_labels": {
     "implemented": "Validated within its stated contract and available in the current code",
@@ -19,14 +19,14 @@
     {
       "id": "a100-tensor-dependency-scheduler",
       "title": "Four-edge A100 tensor dependency scheduler",
-      "status": "untested-or-hardware-unavailable",
+      "status": "validated-not-integrated",
       "path": "docs/research/ideas/a100-tensor-dependency-scheduler.md",
-      "summary": "Experiment-only graph scheduler separates accumulator latency, independent HMMA issue spacing, operand readiness and observer dependencies; A100 hardware validation remains open."
+      "summary": "A100 probes validate bounded dependency measurements; the generalized four-edge scheduler remains experimental, with no reordered stream promoted."
     },
     {
       "id": "adam-epsilon-sensitivity",
       "title": "Adam epsilon sensitivity of near-invariant BF16 key bias",
-      "status": "validated-not-integrated",
+      "status": "tested-not-selected",
       "path": "docs/research/ideas/adam-epsilon-sensitivity.md",
       "summary": "Changing epsilon explains sensitivity under a different training policy; it is not a repair of the original gate."
     },
@@ -152,9 +152,9 @@
     {
       "id": "cutlass-load-next-compute-current",
       "title": "CUTLASS-style load-next / compute-current fragment schedule",
-      "status": "validated-not-integrated",
+      "status": "implemented",
       "path": "docs/research/ideas/cutlass-load-next-compute-current.md",
-      "summary": "Source-inclusive A100 checks pass on six FP16 shapes; the candidate wins five non-square cases but regresses 4096^3 and raises register pressure."
+      "summary": "Explicit load_next fragment scheduling is integrated for two exact wide FP16/BF16 shapes; full gates pass and the default source-order schedule remains unchanged."
     },
     {
       "id": "dead-code-and-copy-elimination",
@@ -215,9 +215,9 @@
     {
       "id": "grouped-n-cta-swizzle",
       "title": "CUTLASS-style grouped-N CTA traversal",
-      "status": "validated-not-integrated",
+      "status": "implemented",
       "path": "docs/research/ideas/grouped-n-cta-swizzle.md",
-      "summary": "A grouped-N launch mapping passes full gates and wins the tall FP16 shape, while wide and square cases do not justify universal dispatch."
+      "summary": "Explicit grouped_n8 CTA traversal is integrated with a checked launch grid; current A100 held-out FP16/BF16 tall cases pass while wide/square auto-dispatch remains disabled."
     },
     {
       "id": "hilbert-and-grouped-cta-order",
@@ -229,7 +229,7 @@
     {
       "id": "inference-weight-packing-cache",
       "title": "Immutable inference weight-packing cache",
-      "status": "validated-not-integrated",
+      "status": "tested-not-selected",
       "path": "docs/research/ideas/inference-weight-packing-cache.md",
       "summary": "Versioned eager packing and immutable captured inference pass 26 method/network pairs; equally cached ptxas remains faster."
     },
@@ -243,7 +243,7 @@
     {
       "id": "joint-tensor-options",
       "title": "Joint direct-pointer, traversal and epilogue options",
-      "status": "validated-not-integrated",
+      "status": "tested-not-selected",
       "path": "docs/research/ideas/joint-tensor-options.md",
       "summary": "Joint combinations pass full correctness; direct-plus-fusion has narrow gains while direct-plus-Morton is mostly neutral or worse."
     },
@@ -278,7 +278,7 @@
     {
       "id": "mbarrier-overlap",
       "title": "Two-slot asynchronous barrier overlap",
-      "status": "validated-not-integrated",
+      "status": "tested-not-selected",
       "path": "docs/research/ideas/mbarrier-overlap.md",
       "summary": "A two-slot one-CTA overlap probe works; dense-GEMM integration and an application benefit remain unproven."
     },
@@ -306,7 +306,7 @@
     {
       "id": "native-hybrid-mlp",
       "title": "Native GEMMs inside a complete hybrid residual MLP",
-      "status": "validated-not-integrated",
+      "status": "tested-not-selected",
       "path": "docs/research/ideas/native-hybrid-mlp.md",
       "summary": "Complete hybrid steps are checked, including packing and optimizer work; effects are mixed and integration is experimental."
     },
@@ -348,7 +348,7 @@
     {
       "id": "padded-training-hook",
       "title": "Padded forward/backward integration prototype",
-      "status": "validated-not-integrated",
+      "status": "tested-not-selected",
       "path": "docs/research/ideas/padded-training-hook.md",
       "summary": "The phase-two FP16/BF16 hook passed forward/backward and three-step state checks under its explicit padding/rounding policy."
     },
@@ -362,7 +362,7 @@
     {
       "id": "post-allocation-pointer-forwarding",
       "title": "Post-allocation pointer-copy forwarding",
-      "status": "validated-not-integrated",
+      "status": "tested-not-selected",
       "path": "docs/research/ideas/post-allocation-pointer-forwarding.md",
       "summary": "The tested rewrite is correct but produces exactly the direct-pointer stream; it adds no distinct optimization."
     },

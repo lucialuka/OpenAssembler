@@ -36,6 +36,7 @@ class GemmPlan:
     epilogue: str = "none"
     pointer_mode: str = "legacy"
     pointer_advance: str = "late"
+    fragment_schedule: str = "source"
 
     def __post_init__(self) -> None:
         for name in ("m", "n", "k"):
@@ -46,8 +47,10 @@ class GemmPlan:
             raise ValueError("GEMM input dtype must be f16 or bf16")
         if self.schedule not in ("stagepair", "combined"):
             raise ValueError("GEMM schedule must be stagepair or combined")
-        if self.cta_order not in ("m_fast", "morton8"):
-            raise ValueError("CTA order must be m_fast or morton8")
+        if self.fragment_schedule not in ("source", "load_next"):
+            raise ValueError("fragment schedule must be source or load_next")
+        if self.cta_order not in ("m_fast", "morton8", "grouped_n8"):
+            raise ValueError("CTA order must be m_fast, morton8 or grouped_n8")
         if self.epilogue not in ("none", "bias_residual", "bias_residual_relu"):
             raise ValueError("epilogue must be none, bias_residual or bias_residual_relu")
         if self.pointer_mode not in ("legacy", "direct"):
@@ -60,6 +63,18 @@ class GemmPlan:
         if self.pointer_advance != "late" and (self.schedule != "stagepair"
                 or self.cta_order != "m_fast" or self.epilogue != "none"):
             raise ValueError("early pointer advance is validated for stagepair, m_fast, unfused GEMM")
+        if self.fragment_schedule == "load_next" and (
+                self.schedule != "stagepair" or self.cta_order != "m_fast"
+                or self.pointer_mode != "legacy" or self.pointer_advance != "late"
+                or self.epilogue != "none"
+                or (self.m, self.n, self.k, self.dtype) not in (
+                    (1024, 4096, 1024, "f16"), (4096, 1024, 1024, "f16"),
+                    (1024, 4096, 1024, "bf16"), (4096, 1024, 1024, "bf16"))):
+            raise ValueError("load_next is validated only for stagepair, m_fast, late-pointer, unfused 1024x4096x1024 or 4096x1024x1024 FP16/BF16 GEMM")
+        if self.cta_order == "grouped_n8" and (self.schedule != "stagepair"
+                or self.pointer_mode != "legacy" or self.pointer_advance != "late"
+                or self.epilogue != "none"):
+            raise ValueError("grouped_n8 requires the validated stagepair, legacy-pointer, unfused GEMM")
         if self.epilogue != "none" and self.schedule != "stagepair":
             raise ValueError("fused training epilogues require the validated stagepair schedule")
         if self.output_dtype != "f32" or self.layout != "rcr" or self.arch != "sm_80":
@@ -72,11 +87,17 @@ class GemmPlan:
             raise ValueError("GEMM N tile count exceeds the CUDA grid-y limit")
         if self.cta_order == "morton8" and (self.m//128 % 8 or self.n//128 % 8):
             raise ValueError("morton8 requires complete 8x8 CTA groups")
+        if self.cta_order == "grouped_n8" and self.n//128 % 8:
+            raise ValueError("grouped_n8 requires N tile count divisible by 8")
 
     @property
     def launch(self) -> dict:
         """CUDA launch configuration; ``smem`` is dynamic shared bytes."""
-        return {"grid": [self.m//128, self.n//128, 1], "threads": 128, "smem": 65536}
+        if self.cta_order == "grouped_n8":
+            grid = [self.m//128 * 8, self.n//128 // 8, 1]
+        else:
+            grid = [self.m//128, self.n//128, 1]
+        return {"grid": grid, "threads": 128, "smem": 65536}
 
     @property
     def metadata(self) -> dict:
@@ -84,6 +105,7 @@ class GemmPlan:
         return {"kernel": "gemm", "arch": self.arch, "m": self.m, "n": self.n,
                 "k": self.k, "dtype": self.dtype, "output_dtype": self.output_dtype,
                 "accumulation": "f32", "layout": self.layout, "schedule": self.schedule,
+                "fragment_schedule": self.fragment_schedule,
                 "cta_order": self.cta_order, "epilogue": self.epilogue,
                 "pointer_mode": self.pointer_mode, "pointer_advance": self.pointer_advance,
                 "tile_mnk": [128, 128, 64], "warp_mn": [64, 64], "stages": 2,
@@ -114,6 +136,13 @@ def _prologue(plan: GemmPlan) -> list[str]:
                 lines += [f"shr.u32 %r707,%r702,{shift};", "and.b32 %r707,%r707,1;",
                           f"mad.lo.u32 %r{target},%r707,{1 << bit},%r{target};"]
         lines += ["mad.lo.u32 %r1,%r703,8,%r705;", "mad.lo.u32 %r2,%r704,8,%r706;"]
+    elif plan.cta_order == "grouped_n8":
+        # CUTLASS-style grouped-N traversal. The launch grid is
+        # (m_tiles*8, n_tiles/8); keep the mapping in the generated PTX so the
+        # source contract, cubin and runner all agree on logical coordinates.
+        lines += ["shr.u32 %r700,%r1,3;", "and.b32 %r701,%r1,7;",
+                  "mul.lo.u32 %r702,%r2,8;", "add.u32 %r2,%r702,%r701;",
+                  "mov.u32 %r1,%r700;"]
     lines += ["mul.lo.u32 %r1,%r1,128; mul.lo.u32 %r2,%r2,128;",
              "and.b32 %r3,%r0,31; shr.u32 %r4,%r0,5;",
              "shr.u32 %r5,%r4,1; mul.lo.u32 %r5,%r5,64;",
@@ -194,12 +223,57 @@ def _compute(dtype: str, stage: str) -> list[str]:
     return lines
 
 
+def _compute_load_next(dtype: str, stage: str) -> list[str]:
+    """Interleave next-K fragment loads between independent N accumulator groups."""
+    lines = ["shr.u32 %r47,%r3,4;", "mul.lo.u32 %r47,%r47,1024;"]
+
+    def load(k: int) -> None:
+        a_base = 400 + (k & 1) * 64
+        b_base = 500 + (k & 1) * 32
+        lines.extend([f"add.u32 %r41,%r{200 + k * 4},{stage};",
+                      f"add.u32 %r42,%r{300 + k * 8},{stage};",
+                      "add.u32 %r42,%r42,%r47;"])
+        for mi in range(4):
+            regs = ",".join(f"%r{a_base + mi * 4 + j}" for j in range(4))
+            lines.append(f"ldmatrix.sync.aligned.m8n8.x4.shared.b16 {{{regs}}},[%r41+{mi * 2048}];")
+        for ni in range(0, 8, 2):
+            regs = ",".join(f"%r{b_base + ni * 2 + j}" for j in range(4))
+            lines.append(f"ldmatrix.sync.aligned.m8n8.x4.shared.b16 {{{regs}}},[%r42+{ni * 1024}];")
+
+    def hmma(k: int, ni: int) -> None:
+        a_base = 400 + (k & 1) * 64
+        b_base = 500 + (k & 1) * 32
+        b_regs = ",".join(f"%r{b_base + ni * 2 + j}" for j in range(2))
+        for mi in range(4):
+            a_regs = ",".join(f"%r{a_base + mi * 4 + j}" for j in range(4))
+            c_regs = ",".join(f"%c{(mi * 8 + ni) * 4 + j}" for j in range(4))
+            lines.append(f"mma.sync.aligned.m16n8k16.row.col.f32.{dtype}.{dtype}.f32 "
+                         f"{{{c_regs}}},{{{a_regs}}},{{{b_regs}}},{{{c_regs}}};")
+
+    load(0)
+    for k in range(4):
+        for ni in range(4):
+            hmma(k, ni)
+        if k + 1 < 4:
+            load(k + 1)
+        for ni in range(4, 8):
+            hmma(k, ni)
+    return lines
+
+
+def _mainloop_compute(plan: GemmPlan, stage: str) -> list[str]:
+    if plan.fragment_schedule == "load_next":
+        return _compute_load_next(plan.dtype, stage)
+    return _compute(plan.dtype, stage)
+
+
 def _body(dtype: str, current: str, following: str, *, folded: bool,
-          pointer_advance: str = "late") -> list[str]:
+          pointer_advance: str = "late", fragment_schedule: str = "source") -> list[str]:
     prefix = ["cp.async.wait_group 0; bar.sync 0;"] + _copies(following, folded=folded)
+    compute = (_compute_load_next if fragment_schedule == "load_next" else _compute)
     if pointer_advance == "early":
-        return prefix + _advance() + _compute(dtype, current) + ["bar.sync 0;"]
-    return prefix + _compute(dtype, current) + ["bar.sync 0;"] + _advance()
+        return prefix + _advance() + compute(dtype, current) + ["bar.sync 0;"]
+    return prefix + compute(dtype, current) + ["bar.sync 0;"] + _advance()
 
 
 def _effective_pointer_advance(plan: GemmPlan) -> str:
@@ -234,13 +308,15 @@ def generate(plan: GemmPlan) -> str:
     pointer_advance = _effective_pointer_advance(plan)
     if plan.schedule == "stagepair":
         lines += _copies("0", folded=True)+_advance()
-        first = _body(plan.dtype, "0", "32768", folded=True, pointer_advance=pointer_advance)
-        second = _body(plan.dtype, "32768", "0", folded=True, pointer_advance=pointer_advance)
+        first = _body(plan.dtype, "0", "32768", folded=True, pointer_advance=pointer_advance,
+                      fragment_schedule=plan.fragment_schedule)
+        second = _body(plan.dtype, "32768", "0", folded=True, pointer_advance=pointer_advance,
+                       fragment_schedule=plan.fragment_schedule)
         if plan.k > 128:
             lines += (["LOOP_STAGE_PAIR:"]+first+second+
                       [f"add.u32 %r8,%r8,128; setp.lt.u32 %p,%r8,{plan.k-128}; @%p bra LOOP_STAGE_PAIR;"])
         # Tile T-2 copies T-1 into stage one. The drain has no speculative copy.
-        lines += first+["cp.async.wait_group 0; bar.sync 0;"]+_compute(plan.dtype, "32768")+["bar.sync 0;"]
+        lines += first+["cp.async.wait_group 0; bar.sync 0;"]+_mainloop_compute(plan, "32768")+["bar.sync 0;"]
     else:
         lines += _copies("%r9", folded=False)+_advance()+["LOOP:",
                   "cp.async.wait_group 0; bar.sync 0;", "xor.b32 %r10,%r9,32768;"]

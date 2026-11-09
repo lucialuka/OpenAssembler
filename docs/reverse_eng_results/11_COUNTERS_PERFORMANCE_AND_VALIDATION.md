@@ -37,3 +37,14 @@ Every candidate should report:
 
 The complete per-feature status remains in [the research catalogue](../research/README.md).
 
+## November 9 current-source revalidation
+
+The current source-path load-next confirmation passes every gate on FP16/BF16
+1024×4096×1024 and 4096×1024×1024. It uses 24 more registers (216 to 240) and
+measures roughly 8–10% lower OA time than the source-order schedule in paired
+A100 rounds. Three held-out large FP16 shapes all regress, so the option is
+exact-shape and opt-in. Grouped-N keeps 216 registers, passes the same gates and
+improves repeated 16384×4096×4096 by roughly 6.9–7.3%; held-out tall FP16/BF16
+cases improve while an 8192×4096×4096 control is neutral. These are layout and
+fragment schedule results, not evidence that OA beats same-source ptxas.
+

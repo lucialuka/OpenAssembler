@@ -12,6 +12,7 @@ import base64
 import hashlib
 import json
 import os
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -33,8 +34,8 @@ IMAGE = (modal.Image.from_registry("pytorch/pytorch:2.7.1-cuda12.8-cudnn9-devel"
 APP = modal.App("openassembler-load-next-compute-current-a100")
 
 
-def _cases() -> list[dict]:
-    return [
+def _cases(*, heldout: bool = False) -> list[dict]:
+    cases = [
         {"m": 128, "n": 128, "k": 128, "dtype": "f16"},
         {"m": 512, "n": 512, "k": 2048, "dtype": "f16"},
         {"m": 1024, "n": 4096, "k": 1024, "dtype": "f16"},
@@ -42,6 +43,16 @@ def _cases() -> list[dict]:
         {"m": 4096, "n": 1024, "k": 1024, "dtype": "f16"},
         {"m": 4096, "n": 4096, "k": 4096, "dtype": "f16"},
     ]
+    if heldout:
+        cases.extend([
+            {"m": 2048, "n": 8192, "k": 1024, "dtype": "f16"},
+            {"m": 8192, "n": 2048, "k": 1024, "dtype": "f16"},
+            {"m": 8192, "n": 8192, "k": 1024, "dtype": "f16"},
+            {"m": 1024, "n": 4096, "k": 1024, "dtype": "bf16"},
+            {"m": 4096, "n": 1024, "k": 1024, "dtype": "bf16"},
+            {"m": 2048, "n": 8192, "k": 1024, "dtype": "bf16"},
+        ])
+    return cases
 
 
 @APP.function(image=IMAGE, gpu="A100-40GB", timeout=1800, max_containers=1, retries=0)
@@ -72,7 +83,6 @@ def execute(cases: list[dict], rounds: int = 2, samples: int = 12) -> dict:
     from openassembler.container.cubin import regcount
     from openassembler.gpu.cuda_driver import Driver
     from openassembler.kernels.gemm import GemmPlan, generate as baseline_source
-    from exp.tensor_scheduler.load_next_compute_current import candidate_source
 
     def compile_one(source: str, kernel: str, root: str) -> tuple[bytes, bytes, dict]:
         os.makedirs(root, exist_ok=True)
@@ -111,7 +121,16 @@ def execute(cases: list[dict], rounds: int = 2, samples: int = 12) -> dict:
     for spec in cases:
         plan = GemmPlan(spec["m"], spec["n"], spec["k"], dtype=spec["dtype"], schedule="stagepair")
         base = baseline_source(plan)
-        cand = candidate_source(plan)
+        if (spec["m"], spec["n"], spec["k"]) in (
+                (1024, 4096, 1024), (4096, 1024, 1024)):
+            cand = baseline_source(GemmPlan(
+                spec["m"], spec["n"], spec["k"], dtype=spec["dtype"],
+                schedule="stagepair", fragment_schedule="load_next"))
+            implementation = "production"
+        else:
+            from exp.tensor_scheduler.load_next_compute_current import candidate_source
+            cand = candidate_source(plan)
+            implementation = "experiment"
         with tempfile.TemporaryDirectory() as td:
             # `GemmPlan.generate` already returns a complete PTX module.
             base_oa, ptxas, _ = compile_one(base, "gemm_base", os.path.join(td, "base"))
@@ -214,7 +233,8 @@ def execute(cases: list[dict], rounds: int = 2, samples: int = 12) -> dict:
             all_rows.append({"case": spec, "checks": checks, "resources": resources,
                              "static": {name: static(blob, name, td) for name, blob in artifacts.items()},
                              "timings": measurements,
-                             "candidate": "load_next_compute_current", "split_n": 4})
+                             "candidate": "load_next_compute_current", "split_n": 4,
+                             "implementation": implementation})
             for graph in graphs.values():
                 del graph
             for mod in modules.values():
@@ -222,18 +242,37 @@ def execute(cases: list[dict], rounds: int = 2, samples: int = 12) -> dict:
             torch.cuda.synchronize()
 
     driver.close()
-    return {"device": torch.cuda.get_device_name(), "cases": all_rows,
+    return {"device": torch.cuda.get_device_name(),
+            "runtime": {"torch": str(torch.__version__), "torch_cuda": torch.version.cuda,
+                        "ptxas": subprocess.run(["ptxas", "--version"], capture_output=True,
+                                                text=True, check=True).stdout.strip(),
+                        "nvdisasm": subprocess.run(["nvdisasm", "--version"], capture_output=True,
+                                                    text=True, check=True).stdout.strip()},
+            "cases": all_rows,
             "methodology": {"full_output": True, "canaries": True,
                              "poisoned_graph": True, "ptxas_bitwise": True,
                              "rounds": rounds, "samples": samples}}
 
 
 @APP.local_entrypoint()
-def main(subset: str = "", rounds: int = 2, samples: int = 12):
-    cases = _cases()
+def main(subset: str = "", rounds: int = 2, samples: int = 12,
+         heldout: bool = False):
+    cases = _cases(heldout=heldout)
     if subset:
         cases = [case for case in cases if subset in f"{case['m']}x{case['n']}x{case['k']}_{case['dtype']}"]
     result = execute.remote(cases, rounds, samples)
+    source_paths = [path for path in (ROOT / "openassembler").rglob("*")
+                    if path.is_file() and path.suffix != ".pyc"]
+    source_paths += sorted((ROOT / "specs" / "sm_80").glob("*.json"))
+    source_paths += [ROOT / "corpus" / "sm_80" / name
+                     for name in ("pairs.jsonl", "machine_model.json")]
+    source_paths += sorted(HERE.glob("*.py"))
+    result["source_identity"] = {
+        "git_head": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT,
+                                    capture_output=True, text=True, check=True).stdout.strip(),
+        "sha256": {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
+                   for path in source_paths},
+    }
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     out = HERE / f"load-next-compute-current_{stamp}.json"
     out.write_text(json.dumps(result, indent=2) + "\n")

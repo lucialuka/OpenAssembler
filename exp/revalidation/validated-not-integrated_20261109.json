@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "date": "2026-11-09",
+  "source": "current checkout; hardware records include source_identity where available",
+  "counts_before": {
+    "implemented": 34,
+    "validated-not-integrated": 18,
+    "tested-not-selected": 14,
+    "untested-or-hardware-unavailable": 11
+  },
+  "decisions": [
+    {"id":"a100-tensor-dependency-scheduler","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"local graph/adapter tests and A100 component probes","decision":"retain experiment-only; no reordered encoded GEMM passed the full promotion gate"},
+    {"id":"adam-epsilon-sensitivity","before":"validated-not-integrated","after":"tested-not-selected","current_evidence":"current diagnostic record; matched epsilon policy passes separately","decision":"devalidate as compiler optimization; epsilon changes the training policy"},
+    {"id":"cublas-observation-and-baselines","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"public dispatch observations and matched library controls","decision":"retain as a baseline/reverse-engineering method; no proprietary kernel extraction"},
+    {"id":"cutlass-load-next-compute-current","before":"validated-not-integrated","after":"implemented","current_evidence":"current A100 full gates; exact production option passes FP16/BF16 at 1024x4096x1024 and 4096x1024x1024","decision":"integrate opt-in fragment_schedule=load_next for those four dtype/shape pairs"},
+    {"id":"fused-backward-reductions","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"240+64 complete checks and selected OA gains; ptxas remains faster and counters show long scoreboard","decision":"retain source experiment; no rowwise production switch"},
+    {"id":"grouped-n-cta-swizzle","before":"validated-not-integrated","after":"implemented","current_evidence":"current A100 full gates, held-out FP16/BF16, repeated production-path timing","decision":"integrate explicit cta_order=grouped_n8 with checked launch grid; no auto dispatch"},
+    {"id":"inference-weight-packing-cache","before":"validated-not-integrated","after":"tested-not-selected","current_evidence":"application cache correctness passes; equally cached ptxas remains faster","decision":"devalidate as an OA compiler speedup"},
+    {"id":"joint-tensor-options","before":"validated-not-integrated","after":"tested-not-selected","current_evidence":"full correctness; direct+fusion narrow/mixed and direct+Morton neutral or slower","decision":"no production combination selected"},
+    {"id":"mbarrier-overlap","before":"validated-not-integrated","after":"tested-not-selected","current_evidence":"tiny retired one-CTA probe only; no dense GEMM current runner","decision":"devalidate as a current OA optimization"},
+    {"id":"native-hybrid-mlp","before":"validated-not-integrated","after":"tested-not-selected","current_evidence":"whole-step state checks with mixed or slower OA combinations","decision":"no reliable current native OA whole-step win"},
+    {"id":"nn-arithmetic-campaign","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"current arithmetic and composed-network benchmark corpus","decision":"retain as measurement evidence, not a compiler feature"},
+    {"id":"padded-training-hook","before":"validated-not-integrated","after":"tested-not-selected","current_evidence":"state-correct historical hook; 0.98 ms versus 0.68 ms reference and retired runner","decision":"devalidate as a speedup"},
+    {"id":"post-allocation-pointer-forwarding","before":"validated-not-integrated","after":"tested-not-selected","current_evidence":"byte-identical to existing direct-pointer stream","decision":"no distinct implementation or speedup"},
+    {"id":"sparse-mma-capability","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"three ptxas-only compressed-input capability probes","decision":"retain bounded hardware capability evidence; OA sparse compiler is not implemented"},
+    {"id":"stable-gelu-backward","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"current stable candidate passes its accuracy/guard contract; no ptxas speed win and no production backward ABI","decision":"retain correctness candidate for a future explicit rowwise contract"},
+    {"id":"tensor-counter-profiling","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"matched A100 profiles with equal HMMA counts and OA overhead/stalls","decision":"retain as a counter-guided method, not an automatic pass"},
+    {"id":"tensor-timing-and-synchronization","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"clocked component probes; retired mutation generator","decision":"retain bounded measurements; no universal control rewrite"},
+    {"id":"whole-transformer-evaluation","before":"validated-not-integrated","after":"validated-not-integrated","current_evidence":"current Inductor/Triton application study with state gates","decision":"retain as application evidence; it is not a native OA transformer compiler result"}
+  ],
+  "counts_after": {
+    "implemented": 36,
+    "validated-not-integrated": 9,
+    "tested-not-selected": 21,
+    "untested-or-hardware-unavailable": 11
+  }
+}

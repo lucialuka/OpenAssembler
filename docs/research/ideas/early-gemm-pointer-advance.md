@@ -3,9 +3,10 @@
 Status: implemented
 
 The result is conditional: moving these address updates helps the tested wide
-forward GEMM but hurts the tall control. It remains an experiment, including
-the combination with direct pointers. There is no production compiler change
-or general speedup claim.
+forward GEMM but hurts the tall control. The current compiler exposes the
+validated `--pointer-advance early|auto` policy with its existing shape guard;
+the combination with direct pointers remains an experiment and there is no
+general speedup claim.
 
 ## Idea in plain language
 

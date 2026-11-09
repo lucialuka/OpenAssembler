@@ -270,8 +270,8 @@ def gemm_case(t: Target, out_dir: Path, reps: int, plan: Plan) -> None:
     from openassembler.kernels.gemm import GemmPlan
     contract = t.kernel["gemm"]
     try:
-        allowed = ("m", "n", "k", "dtype", "schedule", "output_dtype", "layout", "arch",
-                   "cta_order", "epilogue", "pointer_mode")
+        allowed = ("m", "n", "k", "dtype", "schedule", "fragment_schedule", "output_dtype", "layout", "arch",
+                   "cta_order", "epilogue", "pointer_mode", "pointer_advance")
         g = GemmPlan(**{key: contract[key] for key in allowed if key in contract})
         if contract.get("schema") != 1 or contract.get("launch") != g.launch:
             raise ValueError("launch contract differs from its validated plan")

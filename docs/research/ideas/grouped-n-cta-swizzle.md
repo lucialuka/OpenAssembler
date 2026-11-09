@@ -1,11 +1,12 @@
 # CUTLASS-style grouped-N CTA traversal
 
-Status: validated-not-integrated
+Status: implemented
 
 This experiment tests a public CUTLASS CTA traversal policy against OA's
-m-fast and Morton-8 traversals. It changes logical tile order and launch-grid
-mapping only; the GEMM arithmetic, shared layout and tensor instructions stay
-the same.
+m-fast and Morton-8 traversals. The validated mapping is now an explicit
+`--cta-order grouped_n8` production option with a checked launch-grid contract.
+It changes logical tile order and launch-grid mapping only; the GEMM arithmetic,
+shared layout and tensor instructions stay the same.
 
 ## Idea in plain language
 
@@ -34,11 +35,28 @@ and square cases do not produce a stable grouped-N win. Grouped-N adds four
 integer prologue instructions and keeps the measured 216-register resource
 count; Morton adds 24 integer instructions for its coordinate decode.
 
+The current-source held-out run
+[`grouped-n_20261109T051142.571274Z.json`](../../../exp/gemm_dispatch/grouped-n_20261109T051142.571274Z.json)
+passed all output, canary, poisoned-graph, disassembly and resource gates on
+four additional shapes. The 32768×4096×4096 FP16 case improved by about 29%,
+16384×2048×2048 by about 10%, and 16384×4096×4096 BF16 by about 7%; the
+8192×4096×4096 control was neutral. The repeated two-round 16384×4096×4096
+source-inclusive production run also passed and measured 6.9–7.3% lower time.
+These data justify an explicit option, not automatic dispatch across all grids.
+After integration into the production `GemmPlan` and launch contract, another
+two-round current-source confirmation measured FP16 grouped-N/m-fast ratios
+0.9269/0.9379 and BF16 ratios 0.9249/0.9376. Full outputs, canaries,
+poisoned-graph replay, matched-layout ptxas checks, disassembly and resource
+gates pass; source and toolkit identities are retained in the
+[production-path record](../../../exp/gemm_dispatch/grouped-n_20261109T061426.814828Z.json).
+
 ## Reproduce
 
 ```bash
 pytest -q exp/gemm_dispatch/test_cta_swizzle.py
 modal run exp/gemm_dispatch/grouped_n_modal.py --rounds 2 --samples 8
+openassembler gemm --m 16384 --n 4096 --k 4096 \
+  --cta-order grouped_n8 --out-dir output_grouped_n
 ```
 
 `measured_dispatch_manifest.json` records the exact FP16, 16-byte-aligned,
@@ -47,8 +65,7 @@ shapes remain unclassified.
 
 ## Scope and next work
 
-The result supports a shape-aware traversal manifest, not a universal swizzle
-rule. A production entry would need held-out repeats, counter evidence and an
-explicit launch-grid contract. The public design reference is [CUTLASS
+The result supports an explicit traversal option, not a universal swizzle
+rule or auto-dispatch. The public design reference is [CUTLASS
 threadblock swizzle](https://github.com/NVIDIA/cutlass/blob/main/include/cutlass/gemm/threadblock/threadblock_swizzle.h).
 

@@ -50,6 +50,13 @@ LDSM address-WAR and observer protections. The next scheduler must model
 register pressure, exact fragment ownership and observer edges together before
 promotion.
 
+Two bounded alternatives now have explicit production contracts. The
+load-next/compute-current fragment schedule is admitted only for
+1024×4096×1024 and 4096×1024×1024, with FP16/BF16, stagepair, legacy pointers,
+late advancement and no fused epilogue. Grouped-N CTA traversal is admitted as
+`grouped_n8` when the N tile count is divisible by eight. Both are opt-in; the
+general dependency scheduler and automatic shape dispatch remain unpromoted.
+
 See [A100 tensor dependency scheduler](../research/ideas/a100-tensor-dependency-scheduler.md) and
 [Native SM80 tensor GEMM](../research/ideas/native-tensor-gemm.md).
 

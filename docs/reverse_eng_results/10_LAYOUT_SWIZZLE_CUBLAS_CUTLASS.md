@@ -12,10 +12,12 @@ The public CUTLASS SM80 code exposes a useful tuning vocabulary:
 * fused epilogues and reduction placement.
 
 The experiment layer implemented a load-next/compute-current fragment schedule
-and grouped-N traversal based on these public patterns. The load-next candidate
-passed all gates on six FP16 shapes, improving five non-square OA cases but
-regressing 4096³. Grouped-N and Morton both improved the tall OA shape by about
-6–7%, while wide and square cases were not stable wins.
+and grouped-N traversal based on these public patterns. Current source-hashed
+A100 replays now expose both as explicit opt-in production options under exact
+contracts. Load-next passes FP16/BF16 at 1024×4096×1024 and 4096×1024×1024;
+large held-out FP16 shapes regress. Grouped-N passes repeated FP16/BF16 tall
+cases and improves the 16384×4096×4096 case by about 6.9–7.3%, while wide and
+square cases remain unsuitable for automatic dispatch.
 
 These are shape-specific experiment results, not universal dispatch rules.
 

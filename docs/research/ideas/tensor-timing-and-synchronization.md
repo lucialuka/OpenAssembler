@@ -18,6 +18,16 @@ BAR field mutations passed the limited sweep, so the experiment did not prove BA
 
 Use explicit SASS with known register chains and clock reads, verify that generic fragment copies are absent, and vary one control at a time. Keep full-output and canary checks alongside timing. The first clock harness accidentally included copies and was rejected.
 
+## Current-source clock revalidation: November 9
+
+The current clocked probe reran the three dependent/independent HMMA chains on
+Modal A100. After subtracting the two-cycle empty-loop control, it measured
+24.023 cycles per HMMA for one dependent chain, 12.012 for two independent
+chains and 8.008 for three independent chains. This confirms the bounded
+component result in the current source environment; it does not validate a
+general reordering pass or change the production HMMA8/drain15 policy. The raw
+record is [`clocked-loop-probes_20261109T064627.431181Z.json`](../../../exp/tensor_scheduler/clocked-loop-probes_20261109T064627.431181Z.json).
+
 ## Reproduction and command set
 
 Run from the repository root. Use Python 3.12+ and an installed test environment. Commands that compile require the CUDA 12.8 toolkit; GPU commands additionally require an NVIDIA driver or an authenticated Modal client. Explicit skips mean a dependency/corpus is unavailable, not a passing hardware result.
@@ -26,8 +36,12 @@ Run from the repository root. Use Python 3.12+ and an installed test environment
 .venv/bin/python -m pytest -q tests/test_backend_tensor.py tests/test_gemm_codegen.py
 python3 -m json.tool docs/evidence/a100-mma/phase2/clocked-exact.json
 python3 -m json.tool docs/evidence/a100-mma/phase2/summary.json
+modal run exp/tensor_scheduler/clocked_loop_probes.py --mode run
 ```
-The first command checks the implemented safe policy; the others inspect the actual historical probe records. The original clock/mutation generator was retired, so these are not a fresh replay. A new exact-SASS probe driver is required to extend the model.
+The pytest command checks the implemented safe policy; the JSON commands inspect
+historical records, while the Modal command performs the current clocked replay.
+The original mutation generator remains retired; other synchronization-field
+claims still need a fresh exact-SASS driver.
 
 ## Code and retained evidence
 

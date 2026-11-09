@@ -1,6 +1,10 @@
 # Two-slot asynchronous barrier overlap
 
-Status: validated-not-integrated
+Status: tested-not-selected
+
+The old single-CTA protocol is retained as historical capability evidence. Its
+runner is retired and there is no current dense-GEMM lowering or A100 result
+showing a benefit inside the OpenAssembler compiler.
 
 Status applies to the stated experiment and contract, not to every possible version of the idea.
 

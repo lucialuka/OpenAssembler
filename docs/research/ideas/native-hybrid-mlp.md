@@ -1,6 +1,10 @@
 # Native GEMMs inside a complete hybrid residual MLP
 
-Status: validated-not-integrated
+Status: tested-not-selected
+
+This was a bounded hybrid application study, not a native OpenAssembler
+transformer compiler. Its whole-step comparisons are mixed or slower, so the
+candidate wiring was not selected for the current compiler/runtime.
 
 The experimental autograd integration and measurements are validated under a
 declared mixed-precision contract. They are not an automatic compiler feature

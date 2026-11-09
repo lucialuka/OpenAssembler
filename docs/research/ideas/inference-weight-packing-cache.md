@@ -1,6 +1,10 @@
 # Reuse packed inference weights instead of converting them on every call
 
-Status: validated-not-integrated
+Status: tested-not-selected
+
+This application-level cache was not integrated into the current native
+compiler path. Both OA and ptxas benefit from cached conversions, and the
+matched cached ptxas path remains faster; this is not an OA compiler speedup.
 
 This is a validated experiment under `exp/`, not an enabled compiler feature.
 It improves part of inference without changing the GEMM arithmetic. The same

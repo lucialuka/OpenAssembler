@@ -169,6 +169,27 @@ stdout/CSV, stderr, unsupported metrics, timeout/failure status, complete child
 proofs, device identity and commands are retained. This research has not become
 an automatic compiler cost model.
 
+### Current-source counter revalidation: November 9
+
+The counter harness was rebuilt from the current checkout and profiled four
+full-output tall FP16/BF16 controls on an A100-SXM4-80GB. Nsight Compute 2025.1
+accepted all requested metric names and collected both OA and same-PTX rows.
+Each row passes zero, integer and normal full-output checks, canaries and
+bitwise ptxas comparison. The raw record is
+[`counter-validation_20261109T064116.119142Z.json`](../../../exp/a100_counters/counter-validation_20261109T064116.119142Z.json).
+
+The current records again show equal tensor instruction counts (134,217,728)
+but roughly 287.1–287.6M OA instructions versus 217.4–218.0M ptxas
+instructions. OA m-fast has about 9.8–9.9% short-scoreboard and 11.2–12.1%
+long-scoreboard stalls; ptxas m-fast has about 1.5% and 30.7–32.4%.
+Morton lowers OA long scoreboard to about 10.1% and raises tensor-pipe active
+percentage to about 80.1%, while ptxas Morton remains around 85.5% tensor active
+and 3.9–4.0% long scoreboard. Shared-bank conflict counts are nonzero and
+traversal-dependent for both compilers, so the earlier zero-conflict comparison
+must not be generalized. The m-fast timing in this replay is not a promotion
+claim because the same run reports order and clock sensitivity and ptxas
+remains the stronger baseline under other paired campaigns.
+
 ## What remains open
 
 Turn reproducible counter diagnoses into narrowly controlled candidate changes. Counter percentages are correlated observations, not by themselves a causal model or a general performance prediction.

@@ -23,11 +23,20 @@ Match layouts, transpose modes, alpha/beta, input/accumulation/output precision,
 Run from the repository root. Use Python 3.12+ and an installed test environment. Commands that compile require the CUDA 12.8 toolkit; GPU commands additionally require an NVIDIA driver or an authenticated Modal client. Explicit skips mean a dependency/corpus is unavailable, not a passing hardware result.
 
 ```sh
-PYTHONPATH=. modal run exp/a100_counters/run.py --mode validate-cublas
+PYTHONPATH=. modal run exp/a100_counters/run.py --mode build-current
+PYTHONPATH=. modal run exp/a100_counters/run.py --mode validate-cublas \
+  --out-root output/a100-counters
 python3 -m json.tool docs/evidence/a100-mma/phase3/cublaslt-results.json
 python3 -m json.tool docs/evidence/a100-mma/phase3/cublas-dispatch.json
 ```
-The first command reproduces the retained current library comparison path when the remote library is available. The historical full Lt heuristic sweep/observation generator was retired; its exact old algorithm selection is not recreated by these inspection commands.
+The first two commands rebuild the current OA FP16/BF16 m-fast/Morton cubins and
+compare them with same-source ptxas and cuBLAS on A100. The November 9 run passes
+all full-output, canary and ptxas checks for the four tall cases; cuBLAS's output
+also passes its FP32-reference gate. Timing is order/clock-sensitive in this
+counter harness and is not used as a dispatch result. The raw current comparison
+is [`counter-validation_20261109T070650.778858Z.json`](../../../exp/a100_counters/counter-validation_20261109T070650.778858Z.json).
+The historical full Lt heuristic sweep/observation generator was retired; this
+current run does not recreate its old algorithm selection.
 
 ## Code and retained evidence
 

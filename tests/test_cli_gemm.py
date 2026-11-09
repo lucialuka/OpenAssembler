@@ -22,6 +22,7 @@ def test_gemm_emit_and_contract_needs_exact_validated_body(tmp_path):
     assert contract["launch"] == {"grid": [1, 2, 1], "threads": 128, "smem": 65536}
     assert contract["dtype"] == "bf16"
     assert contract["pointer_mode"] == "legacy"
+    assert contract["fragment_schedule"] == "source"
     assert contract_from_source(source.replace("bar.sync 0;", "", 1)) is None
     assert contract_from_source(source.split("\n", 1)[1]) is None
     assert contract_from_source('// openassembler-gemm-v1 {bad}\n') is None
@@ -122,6 +123,46 @@ def test_pointer_advance_auto_is_shape_specific_and_round_trips():
     assert generate(wide) != generate(GemmPlan(1024, 4096, 1024, pointer_advance="late"))
     assert generate(tall) == generate(GemmPlan(16384, 4096, 4096, pointer_advance="late"))
     assert contract_from_source(source_for(wide))["pointer_advance"] == "auto"
+
+
+@pytest.mark.parametrize("dtype", ["f16", "bf16"])
+def test_load_next_fragment_schedule_cli_is_exact_shape_opt_in(dtype, tmp_path):
+    assert main(["gemm", "--m", "1024", "--n", "4096", "--k", "1024",
+                 "--dtype", dtype, "--fragment-schedule", "load_next",
+                 "--out-dir", str(tmp_path), "--emit-only"]) == 0
+    source = (tmp_path/".build/generated/gemm.ptx").read_text()
+    contract = contract_from_source(source)
+    assert contract["fragment_schedule"] == "load_next"
+    assert source.count("ldmatrix.sync.aligned.m8n8.x4.shared.b16") > 0
+    assert source.count("mma.sync.aligned.m16n8k16") == 512
+
+
+def test_grouped_n8_runner_uses_transformed_grid_from_checked_contract(tmp_path):
+    from openassembler import project
+    from openassembler.runner import RunOptions, build_plan
+    plan_spec = GemmPlan(128, 1024, 128, cta_order="grouped_n8")
+    source = tmp_path / "gemm.ptx"
+    source.write_text(source_for(plan_spec))
+    for name in ("ours.cubin", "ref.cubin"):
+        (tmp_path / name).write_bytes(b"test cubin")
+    project.save_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
+        "source": str(source), "cubin": "ours.cubin", "reference": "ref.cubin",
+        "kernels": [{"name": "gemm", "params": [["u64", x] for x in ("A", "B", "C")],
+                     "compiled_by": "openassembler", "gemm": contract_from_source(source.read_text())}]
+    }])
+    run_plan, _ = build_plan(RunOptions(out_dir=tmp_path, n=1, reps=0))
+    assert len(run_plan.jobs) == 2
+    assert all(job["steps"][0][2] == (8, 1, 1) for job in run_plan.jobs)
+
+
+def test_grouped_n8_cli_round_trips_launch_contract(tmp_path):
+    assert main(["gemm", "--m", "16384", "--n", "4096", "--k", "4096",
+                 "--cta-order", "grouped_n8", "--out-dir", str(tmp_path),
+                 "--emit-only"]) == 0
+    source = (tmp_path/".build/generated/gemm.ptx").read_text()
+    contract = contract_from_source(source)
+    assert contract["cta_order"] == "grouped_n8"
+    assert contract["launch"]["grid"] == [1024, 4, 1]
 
 
 @pytest.mark.parametrize('dtype,expected', [('f16', b'\x00\x3c'), ('bf16', b'\x80\x3f')])

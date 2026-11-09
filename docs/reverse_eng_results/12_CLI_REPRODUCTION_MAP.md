@@ -11,12 +11,18 @@ python3 -m openassembler run output/vector --backend modal --budget 120 --job-ti
 
 ```sh
 python3 -m openassembler gemm --m 1024 --n 4096 --k 1024 --dtype f16 --out-dir output/gemm
+python3 -m openassembler gemm --m 1024 --n 4096 --k 1024 --dtype bf16 \
+  --fragment-schedule load_next --out-dir output/gemm_load_next
+python3 -m openassembler gemm --m 16384 --n 4096 --k 4096 \
+  --cta-order grouped_n8 --out-dir output/gemm_grouped_n
 python3 -m openassembler run output/gemm --backend modal --budget 180 --job-timeout 60
 python3 -m openassembler rowwise --op softmax --rows 4096 --width 512 --out-dir output/softmax
 python3 -m openassembler run output/softmax --backend modal --budget 180 --job-timeout 60
 ```
 
-These runner contracts use exact small-integer or analytic smoke inputs. The
+`load_next` is admitted only for the four FP16/BF16 shape pairs documented in
+the command reference. `grouped_n8` changes the launch grid and requires N tile
+count divisible by eight. These runner contracts use exact small-integer or analytic smoke inputs. The
 broader normal-input A100 validators live under `docs/evidence/a100-mma` and
 `exp/`.
 

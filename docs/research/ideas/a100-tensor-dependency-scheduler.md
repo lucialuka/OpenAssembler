@@ -1,9 +1,12 @@
 # A100 tensor dependency scheduler
 
-Status: untested-or-hardware-unavailable
+Status: validated-not-integrated
 
-Status applies to the stated experiment and contract, not to every possible
-version of the idea.
+Hardware probes validate bounded dependency measurements, including dependent
+HMMA latency, independent-chain initiation and selected operand/observer
+hazards. The generalized four-edge schedule has not been validated end to end
+or promoted. This status applies to the measured methods, not every schedule
+the experiment model could produce.
 
 ## Scope
 
@@ -137,6 +140,14 @@ The follow-up scalar replay covers all 42 producer/consumer families exposed by
 S4/S5, predicate-to-guard probes are S13, and the tested store/address cases
 are S1/S2. These are pair-specific observations, not global scheduler
 constants.
+
+The [November 8 exact-SASS sweep and clocked-loop probes](../../../exp/tensor_scheduler/REPORT.md)
+validate component measurements, but they do not validate the graph scheduler
+on a reordered GEMM stream. The separate [November 9 load-next replay](../../../exp/tensor_scheduler/load-next-compute-current_20261109T041912.552241Z.json)
+passes full-output, canary, poisoned-graph and bitwise-ptxas checks for six
+FP16 shapes. It tests a particular two-window mainloop schedule, not the
+general four-edge dependency model; no scheduler-produced order has been
+encoded or promoted.
 
 `exp/tensor_scheduler/actual_block_schedule.py` now lowers real OA GEMM
 streams through the selector and allocator, splits them at barriers/control

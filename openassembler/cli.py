@@ -126,7 +126,8 @@ def cmd_gemm(a: argparse.Namespace) -> int:
     from openassembler.kernels.gemm import GemmPlan
     from openassembler.project import ProjectError
     try:
-        plan = GemmPlan(m=a.m, n=a.n, k=a.k, dtype=a.dtype, schedule=a.schedule, arch=a.arch,
+        plan = GemmPlan(m=a.m, n=a.n, k=a.k, dtype=a.dtype, schedule=a.schedule,
+                        fragment_schedule=a.fragment_schedule, arch=a.arch,
                         cta_order=a.cta_order, epilogue=a.epilogue, pointer_mode=a.pointer_mode,
                         pointer_advance=a.pointer_advance)
         return compile_gemm(plan, Path(a.out_dir), a.out, no_sass=a.no_sass, emit_only=a.emit_only)
@@ -599,8 +600,10 @@ def build_parser() -> argparse.ArgumentParser:
     pm.add_argument("--arch", default="sm_80")
     pm.add_argument("--schedule", choices=("stagepair", "combined"), default="stagepair",
                     help="validated alternating-stage specialization (default), or its combined reference")
-    pm.add_argument("--cta-order", choices=("m_fast", "morton8"), default="m_fast",
-                    help="A100 logical CTA traversal; morton8 requires complete 8x8 tile groups")
+    pm.add_argument("--fragment-schedule", choices=("source", "load_next"), default="source",
+                    help="source-order fragments (default), or the bounded load-next schedule for two validated wide FP16 shapes")
+    pm.add_argument("--cta-order", choices=("m_fast", "morton8", "grouped_n8"), default="m_fast",
+                    help="A100 logical CTA traversal; morton8 requires complete 8x8 groups; grouped_n8 is an opt-in N-grouped launch")
     pm.add_argument("--epilogue", choices=("none", "bias_residual", "bias_residual_relu"), default="none",
                     help="fuse FP32 bias and residual, optionally ReLU, into the output epilogue")
     pm.add_argument("--pointer-mode", choices=("legacy", "direct"), default="legacy",

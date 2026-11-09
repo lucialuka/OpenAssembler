@@ -1,6 +1,11 @@
 # Padded forward/backward integration prototype
 
-Status: validated-not-integrated
+Status: tested-not-selected
+
+The original hook is preserved as a historical integration result. The
+0.98 ms versus 0.68 ms measurement is a regression, and its runner is retired;
+the current native GEMM CLI does not automatically pad or substitute model
+operations.
 
 Status applies to the stated experiment and contract, not to every possible version of the idea.
 

@@ -150,6 +150,18 @@ one process; the separate-process confirmation above is specifically for 513.
 A whole-training-step test and independent standard-width confirmation remain
 necessary before promotion.
 
+## Current-source revalidation: November 9
+
+The current experiment runner was rebuilt against the present checkout and
+executed for 64 standard-width cases on an A100-SXM4-80GB with CUDA 12.8. All
+64 cases pass complete outputs, canaries, unchanged-input checks, poisoned graph
+replay and exact OA/ptxas comparisons. The FMA templates still reduce selected
+OA work, but the ptxas/OA timing ratios range from about 0.57 to 0.88 across
+the retained widths and row counts, so ptxas remains faster. This confirms the
+candidate is a useful source-level reduction experiment, not a production
+rowwise dispatch rule. The source-hashed record is
+[`operator-standard-fma-20261109T063211.248802Z.json`](../../../exp/nn_round2/runs/operator-standard-fma-20261109T063211.248802Z.json).
+
 ## Reproduce and inspect
 
 From the repository root, use Python 3.12+ for native compilation, CUDA 12.8
@@ -165,6 +177,8 @@ PYTHONPATH=. python3 -m modal run exp/nn_round2/operator_candidates_modal.py \
   --samples 17 --rounds 2
 PYTHONPATH=. python3 -m modal run exp/nn_round2/operator_fma_confirm_modal.py \
   --samples 31 --rounds 2
+PYTHONPATH=. python3 -m modal run exp/nn_round2/operator_standard_fma_modal.py \
+  --samples 7 --rounds 2
 ```
 
 Both launchers save timestamped raw JSON under `exp/nn_round2/runs/`, including

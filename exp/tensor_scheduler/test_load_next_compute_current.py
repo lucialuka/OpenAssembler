@@ -43,6 +43,13 @@ def test_candidate_source_is_experiment_only_and_keeps_launch_contract():
     assert "ret;" in candidate
 
 
+def test_integrated_exact_shape_schedule_matches_validated_experiment_source():
+    for dtype in ("f16", "bf16"):
+        plan = GemmPlan(1024, 4096, 1024, dtype=dtype, fragment_schedule="load_next")
+        baseline = GemmPlan(1024, 4096, 1024, dtype=dtype)
+        assert generate(plan) == candidate_source(baseline)
+
+
 def test_summary_records_full_output_gate_scope():
     summary = schedule_summary()
     assert summary["k_order_preserved"] is True

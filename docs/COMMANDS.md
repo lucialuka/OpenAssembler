@@ -176,6 +176,8 @@ concurrent builds.
 ```sh
 openassembler gemm --m 1024 --n 4096 --k 1024 --dtype f16 --pointer-mode direct --out-dir output_gemm
 openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order morton8 --out-dir output_morton
+openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order grouped_n8 --out-dir output_grouped_n
+openassembler gemm --m 1024 --n 4096 --k 1024 --fragment-schedule load_next --out-dir output_load_next
 openassembler gemm --m 4096 --n 4096 --k 4096 --dtype bf16 --epilogue bias_residual_relu --out-dir output_fused
 ```
 
@@ -193,7 +195,8 @@ contract, and the N tile count must fit CUDA's grid-y limit.
 | `--dtype TYPE` | `f16` | Input type: `f16` or `bf16`. |
 | `--arch ARCH` | `sm_80` | This checked generator accepts only `sm_80`. |
 | `--schedule MODE` | `stagepair` | `stagepair` is the validated alternating-stage plan; `combined` retains its earlier comparison plan. |
-| `--cta-order ORDER` | `m_fast` | `m_fast` or `morton8`; Morton requires M/N multiples of 1024, giving complete 8×8 output-tile groups. |
+| `--fragment-schedule MODE` | `source` | `source` keeps the default source-order fragment stream; opt-in `load_next` is admitted for FP16/BF16 at 1024×4096×1024 and 4096×1024×1024, with stagepair, legacy pointers, late advancement and no epilogue. |
+| `--cta-order ORDER` | `m_fast` | `m_fast`, `morton8`, or opt-in `grouped_n8`; Morton requires complete 8×8 output-tile groups, while grouped-N requires N tile count divisible by 8 and changes the launch grid to `(m_tiles×8, n_tiles/8)`. |
 | `--epilogue MODE` | `none` | `none`, `bias_residual`, `bias_residual_relu`. Nonempty modes require `stagepair` and append FP32 bias/residual pointers. |
 | `--pointer-mode MODE` | `legacy` | `legacy` or explicit `direct` pointer homes. Direct requires `stagepair`, `m_fast`, and `--epilogue none`. |
 | `--pointer-advance MODE` | `late` | `late` (default), `early`, or shape-specific `auto` placement for the validated stagepair/m_fast/unfused pointer-update candidate. |
@@ -208,8 +211,8 @@ Custom callers must use the recorded launch and opt into the shared-memory
 size. Fusion computes `(A @ B.T + Bias) + Residual`, optionally followed by
 ReLU, with contiguous FP32 `Bias[N]` and `Residual[M,N]`.
 
-Morton order is a logical output-tile traversal, not a new MMA instruction or a
-promise about which SM runs each block. Direct pointers and fusion have
+Morton and grouped-N orders are logical output-tile traversals, not new MMA
+instructions or promises about which SM runs each block. Direct pointers and fusion have
 shape-specific wins and regressions. None is automatically selected. There
 is no `morton6` CLI option.
 

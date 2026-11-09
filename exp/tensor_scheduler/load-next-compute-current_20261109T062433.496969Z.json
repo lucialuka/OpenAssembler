@@ -1,0 +1,700 @@
+{
+  "device": "NVIDIA A100-SXM4-40GB",
+  "runtime": {
+    "torch": "2.7.1+cu128",
+    "torch_cuda": "12.8",
+    "ptxas": "ptxas: NVIDIA (R) Ptx optimizing assembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Wed_Jan_15_19:17:38_PST_2025\nCuda compilation tools, release 12.8, V12.8.61\nBuild cuda_12.8.r12.8/compiler.35404655_0",
+    "nvdisasm": "nvdisasm: NVIDIA (R) CUDA disassembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Fri_Jan__3_19:13:46_PST_2025\nCuda compilation tools, release 12.8, V12.8.55\nBuild cuda_12.8.r12.8/compiler.35351055_0"
+  },
+  "cases": [
+    {
+      "case": {
+        "m": 1024,
+        "n": 4096,
+        "k": 1024,
+        "dtype": "f16"
+      },
+      "checks": [
+        {
+          "input": "zero",
+          "method": "ptxas_baseline",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "zero",
+          "method": "oa_baseline",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "zero",
+          "method": "oa_candidate",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "zero",
+          "method": "ptxas_candidate",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "integer",
+          "method": "ptxas_baseline",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "integer",
+          "method": "oa_baseline",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "integer",
+          "method": "oa_candidate",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "integer",
+          "method": "ptxas_candidate",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "normal",
+          "method": "ptxas_baseline",
+          "relative_l2": 1.795041271179798e-06,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "normal",
+          "method": "oa_baseline",
+          "relative_l2": 1.795041271179798e-06,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "normal",
+          "method": "oa_candidate",
+          "relative_l2": 1.795041271179798e-06,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "normal",
+          "method": "ptxas_candidate",
+          "relative_l2": 1.795041271179798e-06,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        }
+      ],
+      "resources": {
+        "oa_baseline": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "oa_candidate": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 240,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_baseline": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_candidate": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 232,
+          "ptx_version": 80,
+          "binary_version": 80
+        }
+      },
+      "static": {
+        "oa_baseline": {
+          "instructions": 1600,
+          "non_nop": 1580,
+          "registers": 216,
+          "sass_sha256": "9b0522f1ea2ab7f21f52b1915a497bcf0794d01b6a86d47420c004cc9e7f80c4",
+          "hmma": 512,
+          "ldsm": 128,
+          "bar": 17
+        },
+        "oa_candidate": {
+          "instructions": 1600,
+          "non_nop": 1580,
+          "registers": 240,
+          "sass_sha256": "7795be19aef246b302859a092d6ee6d6a48481f1d3b6c0209353314c94dcd38f",
+          "hmma": 512,
+          "ldsm": 128,
+          "bar": 17
+        },
+        "ptxas_baseline": {
+          "instructions": 3168,
+          "non_nop": 3156,
+          "registers": 231,
+          "sass_sha256": "23f1840376a93f679c4ddcd5b402637789a549fd538f9d11bfdcd853483a7d46",
+          "hmma": 2048,
+          "ldsm": 512,
+          "bar": 65
+        },
+        "ptxas_candidate": {
+          "instructions": 3192,
+          "non_nop": 3180,
+          "registers": 232,
+          "sass_sha256": "c846e7971c418f1c61bf31d444e007b4bf2de9c03cae69eb2ea5b5419bd4e452",
+          "hmma": 2048,
+          "ldsm": 512,
+          "bar": 65
+        }
+      },
+      "timings": [
+        {
+          "round": 0,
+          "samples_ms": {
+            "oa_baseline": [
+              0.0913039967417717,
+              0.0902400016784668,
+              0.08947200328111649,
+              0.08921600133180618,
+              0.09011200070381165,
+              0.08767999708652496,
+              0.0904960036277771,
+              0.08947200328111649
+            ],
+            "oa_candidate": [
+              0.08089599758386612,
+              0.08064000308513641,
+              0.08038400113582611,
+              0.08025600016117096,
+              0.08051200211048126,
+              0.08025600016117096,
+              0.08025600016117096,
+              0.08038400113582611
+            ],
+            "ptxas_baseline": [
+              0.06400000303983688,
+              0.06323199719190598,
+              0.06297600269317627,
+              0.06284800171852112,
+              0.06284800171852112,
+              0.06297600269317627,
+              0.06681600213050842,
+              0.06335999816656113
+            ],
+            "ptxas_candidate": [
+              0.06374400109052658,
+              0.06361600011587143,
+              0.06374400109052658,
+              0.06387200206518173,
+              0.06374400109052658,
+              0.06335999816656113,
+              0.06387200206518173,
+              0.06348799914121628
+            ]
+          },
+          "median_ms": {
+            "oa_baseline": 0.08979200199246407,
+            "oa_candidate": 0.08038400113582611,
+            "ptxas_baseline": 0.06310399994254112,
+            "ptxas_candidate": 0.06374400109052658
+          }
+        },
+        {
+          "round": 1,
+          "samples_ms": {
+            "oa_baseline": [
+              0.08691199868917465,
+              0.08895999938249588,
+              0.08895999938249588,
+              0.08985599875450134,
+              0.08691199868917465,
+              0.09011200070381165,
+              0.0902400016784668,
+              0.08985599875450134
+            ],
+            "oa_candidate": [
+              0.08051200211048126,
+              0.08038400113582611,
+              0.08012799918651581,
+              0.08025600016117096,
+              0.08051200211048126,
+              0.08012799918651581,
+              0.08025600016117096,
+              0.08012799918651581
+            ],
+            "ptxas_baseline": [
+              0.06335999816656113,
+              0.06284800171852112,
+              0.06323199719190598,
+              0.06310400366783142,
+              0.06284800171852112,
+              0.06310400366783142,
+              0.06310400366783142,
+              0.06284800171852112
+            ],
+            "ptxas_candidate": [
+              0.06361600011587143,
+              0.06361600011587143,
+              0.06374400109052658,
+              0.06387200206518173,
+              0.06387200206518173,
+              0.06374400109052658,
+              0.06387200206518173,
+              0.06387200206518173
+            ]
+          },
+          "median_ms": {
+            "oa_baseline": 0.08940799906849861,
+            "oa_candidate": 0.08025600016117096,
+            "ptxas_baseline": 0.06310400366783142,
+            "ptxas_candidate": 0.06380800157785416
+          }
+        }
+      ],
+      "candidate": "load_next_compute_current",
+      "split_n": 4,
+      "implementation": "production"
+    },
+    {
+      "case": {
+        "m": 1024,
+        "n": 4096,
+        "k": 1024,
+        "dtype": "bf16"
+      },
+      "checks": [
+        {
+          "input": "zero",
+          "method": "ptxas_baseline",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "zero",
+          "method": "oa_baseline",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "zero",
+          "method": "oa_candidate",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "zero",
+          "method": "ptxas_candidate",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "integer",
+          "method": "ptxas_baseline",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "integer",
+          "method": "oa_baseline",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "integer",
+          "method": "oa_candidate",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "integer",
+          "method": "ptxas_candidate",
+          "relative_l2": 0.0,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "normal",
+          "method": "ptxas_baseline",
+          "relative_l2": 1.1365341379132587e-06,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "normal",
+          "method": "oa_baseline",
+          "relative_l2": 1.1365341379132587e-06,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "normal",
+          "method": "oa_candidate",
+          "relative_l2": 1.1365341379132587e-06,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        },
+        {
+          "input": "normal",
+          "method": "ptxas_candidate",
+          "relative_l2": 1.1365341379132587e-06,
+          "same_ptx_baseline_bitwise": true,
+          "canaries": true,
+          "passed": true
+        }
+      ],
+      "resources": {
+        "oa_baseline": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "oa_candidate": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 240,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_baseline": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_candidate": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 232,
+          "ptx_version": 80,
+          "binary_version": 80
+        }
+      },
+      "static": {
+        "oa_baseline": {
+          "instructions": 1600,
+          "non_nop": 1580,
+          "registers": 216,
+          "sass_sha256": "99644b6c8a7af7488f9598510bc18eadf9d923879ddacd71cab53e5257fad12e",
+          "hmma": 512,
+          "ldsm": 128,
+          "bar": 17
+        },
+        "oa_candidate": {
+          "instructions": 1600,
+          "non_nop": 1580,
+          "registers": 240,
+          "sass_sha256": "4bf7c95d77df5f26185ca650b7257a8e132cda236b98f761a19f59f8fca63fc4",
+          "hmma": 512,
+          "ldsm": 128,
+          "bar": 17
+        },
+        "ptxas_baseline": {
+          "instructions": 3168,
+          "non_nop": 3156,
+          "registers": 231,
+          "sass_sha256": "ffd02aa2490fdbb8b0593429f75a0e115785c7ed0b687dc5a3fb6f4e040bc535",
+          "hmma": 2048,
+          "ldsm": 512,
+          "bar": 65
+        },
+        "ptxas_candidate": {
+          "instructions": 3192,
+          "non_nop": 3180,
+          "registers": 232,
+          "sass_sha256": "7cb651094f750acbd74a89999718fdfc59f7b71b78e33c4eeb1e820fc5e9106b",
+          "hmma": 2048,
+          "ldsm": 512,
+          "bar": 65
+        }
+      },
+      "timings": [
+        {
+          "round": 0,
+          "samples_ms": {
+            "oa_baseline": [
+              0.08683600276708603,
+              0.0865280032157898,
+              0.08755200356245041,
+              0.08614400029182434,
+              0.08524800091981888,
+              0.08793599903583527,
+              0.08908800035715103,
+              0.08627200126647949
+            ],
+            "oa_candidate": [
+              0.08076799660921097,
+              0.08038400113582611,
+              0.07999999821186066,
+              0.08038400113582611,
+              0.08012799918651581,
+              0.08025600016117096,
+              0.08025600016117096,
+              0.08025600016117096
+            ],
+            "ptxas_baseline": [
+              0.06335999816656113,
+              0.06284800171852112,
+              0.06310400366783142,
+              0.06348799914121628,
+              0.06297600269317627,
+              0.06297600269317627,
+              0.06310400366783142,
+              0.06297600269317627
+            ],
+            "ptxas_candidate": [
+              0.06335999816656113,
+              0.06374400109052658,
+              0.06335999816656113,
+              0.06335999816656113,
+              0.06323199719190598,
+              0.06387200206518173,
+              0.06335999816656113,
+              0.06361600011587143
+            ]
+          },
+          "median_ms": {
+            "oa_baseline": 0.08668200299143791,
+            "oa_candidate": 0.08025600016117096,
+            "ptxas_baseline": 0.06304000318050385,
+            "ptxas_candidate": 0.06335999816656113
+          }
+        },
+        {
+          "round": 1,
+          "samples_ms": {
+            "oa_baseline": [
+              0.08614400029182434,
+              0.08819200098514557,
+              0.08691199868917465,
+              0.08883199840784073,
+              0.08550400286912918,
+              0.08499199897050858,
+              0.08870399743318558,
+              0.08908800035715103
+            ],
+            "oa_candidate": [
+              0.08038400113582611,
+              0.08025600016117096,
+              0.08051200211048126,
+              0.07999999821186066,
+              0.08038400113582611,
+              0.08025600016117096,
+              0.08012799918651581,
+              0.08025600016117096
+            ],
+            "ptxas_baseline": [
+              0.06297600269317627,
+              0.06310400366783142,
+              0.06310400366783142,
+              0.06323199719190598,
+              0.06272000074386597,
+              0.06310400366783142,
+              0.06284800171852112,
+              0.06310400366783142
+            ],
+            "ptxas_candidate": [
+              0.06361600011587143,
+              0.06348799914121628,
+              0.06361600011587143,
+              0.06361600011587143,
+              0.06348799914121628,
+              0.06348799914121628,
+              0.06348799914121628,
+              0.06335999816656113
+            ]
+          },
+          "median_ms": {
+            "oa_baseline": 0.08755199983716011,
+            "oa_candidate": 0.08025600016117096,
+            "ptxas_baseline": 0.06310400366783142,
+            "ptxas_candidate": 0.06348799914121628
+          }
+        }
+      ],
+      "candidate": "load_next_compute_current",
+      "split_n": 4,
+      "implementation": "production"
+    }
+  ],
+  "methodology": {
+    "full_output": true,
+    "canaries": true,
+    "poisoned_graph": true,
+    "ptxas_bitwise": true,
+    "rounds": 2,
+    "samples": 8
+  },
+  "source_identity": {
+    "git_head": "18fdb4fd082498f75cf8be87838c3bd83ebb8e9f",
+    "sha256": {
+      "openassembler/build.py": "ac01c19d3bc82703b6f6391eb07d0686f9b823026bee9bfe5afa7fcf381ef094",
+      "openassembler/runner.py": "0dba0763bc593522013f65ecdc439b1213093f7ce3ffec1c9d92a5536ce442fb",
+      "openassembler/.DS_Store": "8db5c83dc88b1b6ee6436be983658adf775f0e33a731242ef273b8b0859baca6",
+      "openassembler/transport.py": "d27c6356d287e3a42b70e0ac4a38d99269f023ed2351f2f4463d22add15d9fe8",
+      "openassembler/gemm.py": "87f0ebd9abc36af0621d7a45faa9e18a30eb7fd57c70a6f7156a98a7e39bab9e",
+      "openassembler/frontend.py": "f077b947a316d644a5533d50f8c5a5255840833985359af0a9668e7787f6cbbc",
+      "openassembler/__init__.py": "74d11fd8fcfaed0c46234d00cce97ca03778ba3478aca6ad449b5852f08b1cb8",
+      "openassembler/build_modal.py": "0b2ac5914af577a64872b75e4b1d9264eb15b44a2aaeee0539e35fbebe33f900",
+      "openassembler/cli.py": "eb5fe5961f81ea8750f3ed9085f007de7c18bbdb422971e4383acbaf96731ee5",
+      "openassembler/remote_build.py": "ff5a81217deb8cf2bcf43095a2f4a15ca43e080e3d6230296065e92be1796aec",
+      "openassembler/workflow.py": "a6eb6162380db437bdda51fc0d6aec2f57cfec1b41cd92116eeff9ca77891f04",
+      "openassembler/oracle.py": "627456041315055edfe796e6f4f45f0a036e8fd7a1fff6b369f803f25dd64497",
+      "openassembler/verify.py": "82ce424fa60e608814cd780278aeaee723c8a7074167e0880d29730fd10349bb",
+      "openassembler/repository.py": "4978ef50eca43fba9a63f9d8d6ad481edfe3cff4b1b90b6e1e9f865f41bcd09f",
+      "openassembler/rowwise.py": "2be791dc081667e3e526cde094dff31be47c9b9a9a1d8108f6ff76bb86c323cd",
+      "openassembler/cppfront.py": "dbb79ae6283406c70148f64a6c601fa8a6d8b338e3ffd19998536a8c69cf1892",
+      "openassembler/__main__.py": "1c8cc0014757550f4b2e1f1d35af3d12ce8eaf6636d3ac162b001ba218bf2f6d",
+      "openassembler/project.py": "8bc1ebdda315d92915bc5f4c68a38d61e3c91193568544e7627a5dd689416701",
+      "openassembler/ui/repl.py": "eeb750d95269f589d61e347c0f455c1dd4cc50cc383fbe412961244df1fc2eb4",
+      "openassembler/ui/session.py": "57ab4f80794e2af12efca3e00689b4c02c1195b6865b3733126ddbf80ab6dd3f",
+      "openassembler/ui/__init__.py": "5f4c1b4f2079591935cd23e152f9d7bef5be8183010d91c77d789fe637ced8ea",
+      "openassembler/ui/logo.py": "78f73b632eb97706477de464213803c118829de2759c414e1006e9d99e31e1be",
+      "openassembler/ui/banner.py": "c25a617921d87671f6115e2f695922e482ee38841084a6c14e32579508bca2ae",
+      "openassembler/ui/colors.py": "d9e9a9a284d43d0e406d13b0e5875eeb454482fb978a26ce97ae630243e43366",
+      "openassembler/kernels/gemm.py": "44739595de233c0f7fcbce7bf6ca2f1867a7a15630b8c98c02c3da61b3ebd315",
+      "openassembler/kernels/__init__.py": "0b7694564460b96acabaeb138d3856e08fcfc91d0a08764e4124b75231e304f7",
+      "openassembler/kernels/reductions.py": "8401a40578689acbcbc9bd75c02b518296313f71bb67224f801dc0bcddf9e58e",
+      "openassembler/emu/fp.py": "650b040866848d3ec4c520a351caa4a834617c4ba515ca451db06fad58688e8e",
+      "openassembler/emu/operands.py": "800507473fa3619dd3105570f8bb911b9f9ca96563ed0081b8a34eb4c17cb64c",
+      "openassembler/emu/__init__.py": "22794895d04b8cad24c79902987a9238da727fcaf2060eb763fa8459d98b1677",
+      "openassembler/emu/tensor.py": "2000285e5ede67cea8dd2ba5215391b5b8afa4cbf4cd630e30fbf1ee1d877bcb",
+      "openassembler/emu/ops.py": "39c2a3c17f5bf2f3fbc30932004107561b5c341609ac2f8f1f0ba63f5d8fd3de",
+      "openassembler/emu/machine.py": "d27253ba85d82241af0ba7647ae8cd7a0b7878f65b51c6634778ee81eb5da108",
+      "openassembler/emu/probe.py": "5cb86c75c70d49ccb8dda38d729311d38c6487f34b7425e759e6c99028495d83",
+      "openassembler/emu/program.py": "456029c96fed68bb71f6606aa00d94ba9dc5d571812cb62385c2340e9bd0a5d5",
+      "openassembler/gpu/cuda_driver.py": "55c9726c97c01e14de52ceed9b56685ed5536a67b19e9d00aed3a70deb67aef6",
+      "openassembler/gpu/batch.py": "a68f270e9ccbc6268438d7b156f27a7e486a7e191b353eedf14dc9998eac77a4",
+      "openassembler/gpu/__init__.py": "5c20d8549f39f88b5c8efec6f6c91dd9c9c4ed3cf6f8f2f7314b4cf7831110a1",
+      "openassembler/gpu/modal_app.py": "b38b55c7fae2f172a25ea59e741e0c25f5479f7d99488db93dd554b06b5bdb50",
+      "openassembler/ptx/semantics.py": "e18525f72cda4ddbd9e7914d8f99c1b06fcdebe491b3213108c576e7a374b1d1",
+      "openassembler/ptx/__init__.py": "795691db5fb416d0d1ac34094884c254cef88b465489ce758dbb74fb26997998",
+      "openassembler/ptx/semantics_fp.py": "dcd7d92edbd6985de2f47a00c86ff9dd0ed8687e8bcd38aa67749815f455a832",
+      "openassembler/ptx/interp.py": "1c229dbf583b829ee11130bb5276f006c236abbbfc89cc7dd08c20a214b840ab",
+      "openassembler/ptx/parse.py": "dfddfb0e3c3507a2d1d38968c84d2524f031b1f086f6dd09e56828ad984c7d39",
+      "openassembler/isa/encode.py": "655c78308e23c1dfe2464194fd8548579269ee74941a9496932453d27562ff36",
+      "openassembler/isa/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "openassembler/isa/word.py": "1e4bd5ae3c482c3296a58f938dea85339526476c5c2a0c5c088c6bc07a9131e8",
+      "openassembler/pyfront/__init__.py": "138aab10f3aec3decde8ab07752d334179f13ff27869e7f106f3a73134ec00b1",
+      "openassembler/pyfront/types.py": "b2b1cf6dce509e2c69fcfd8851387269c05226b1f0472f349671d25562536341",
+      "openassembler/pyfront/intrinsics.py": "269656c48d8ba188ccf927e2b46508813414694d66a6912351caa9ceb04bde08",
+      "openassembler/pyfront/compile.py": "a1e298dbad8157a0ffc4eb23a4e920746cb34d4b18ea4ec54586df1d36318b30",
+      "openassembler/backend/ptxas_fragments.json": "15a5263e189be6dfe19f04a9c37ee683eba60ff84b4cc07d7fe25992cb849edf",
+      "openassembler/backend/unroll.py": "47bc6999b3b6ac41e2e8d0b2176bd33f1dfd5d010b8e4aafb713adcd3d17c453",
+      "openassembler/backend/__init__.py": "db0ce3f4987c6190f6c2e6013a400787ce7a16c1e62816c9adc537fd508aa495",
+      "openassembler/backend/tensor_encoding.py": "885730c203401d42bef163b93dc8df69db3e75feedf47fabafe9dced34c056eb",
+      "openassembler/backend/naive.py": "fc84e723a0536e58ebbf96c6314aca3713a2f3d1f946ec646ae68225a2d244a7",
+      "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7",
+      "openassembler/backend/compile.py": "8e5e6d528ba786dba161d84195ebedec50fac0810c22ae26d76b21bb451bc2cb",
+      "openassembler/backend/sched.py": "5711333491c4a9dc19fb36c94334fb38df3126aadd8d1c3eed41df15e5ca2fd8",
+      "openassembler/backend/fragments.py": "0ed402508df118a74a7134c4c82add23fed615975073c171898e006e6819e176",
+      "openassembler/backend/ra.py": "401914e05059134e177224378ce86e0d55e94350f92dfde00c72162089e3e4cc",
+      "openassembler/container/__init__.py": "0593c682966fdca026aad58b2c613bc72130d2f991e77f2968ae40a2f9235bc1",
+      "openassembler/container/cubin.py": "4118f7124090e942a535ab7e0cae71cc12bb21deef8e9d83c16e4932be93bfdb",
+      "openassembler/container/elf.py": "d996eca5fab4efcc9034c8a44bd8554e4bb07a0aeb225839a30e98e7c0cc129d",
+      "openassembler/container/nvinfo.py": "0e0e4e4a419f095ef96aeea165330809adb9957d0e82e471fced15c171c10210",
+      "openassembler/fastmm/plan.py": "97ac7d9cb0fef28c73880ee2f7918f8398b57ff75d7a68e90eeef7fbddd501ce",
+      "openassembler/fastmm/factors.py": "7411135cba31863206b265126059963611c16bdc82aa842aa86b86ea09d45861",
+      "openassembler/fastmm/__init__.py": "9213bac95b7f440450be0e0e8a24a20f163f5e52ad2d74b3c77f7a1254d4a408",
+      "openassembler/fastmm/kernels.py": "d93435508bda92ba55bcd4af7b92a9c7e93419a937844e202de73f357135db8a",
+      "openassembler/opt/divconst.py": "fa29f618e10e06a98d6792a1e752e98a2c07f472884fd63ce9ef3d5f9f18773e",
+      "openassembler/opt/__init__.py": "8ca712dcb26058a07e5ad303f5b3e810cdc853711050b1cc3291b4e9679214b0",
+      "openassembler/torchfront/worker.py": "7fb6e79dd3db093304c7fd63461421ee9a52412b795809dc065780c1598388e1",
+      "openassembler/torchfront/frontend.py": "794f39fe795adce209bb7724dc028756f00cd2bd054ce7afb160ae75128f5efe",
+      "openassembler/torchfront/__init__.py": "d20ac464d16215e07836d0d449864bc85a947bafa36338cce371646624d12562",
+      "openassembler/torchfront/modal_app.py": "1ad817618c8abf91f028b9bf236a4ec1db019efa4a1344373aaeac113ecfd7cf",
+      "openassembler/torchfront/archive.py": "186bfa4ebdddb51fa475c43f488e5f2a4ee0d1b1ece9a9a67631bb1fa392b5ee",
+      "openassembler/torchfront/instrument.py": "eba92e85e3605fa22602aefd9a4d90bca9863d5db9339fdd937b02f5829d6708",
+      "specs/sm_80/arithmetic_templates.json": "1c3fc5163ab05bc4305260c12d51bfc270ab83d89fbb487fcbe5854c9179bfe1",
+      "specs/sm_80/bitflip.json": "1d03d8838c9e4992edd9a0ed2b247e9f1774730a7172e175bf4975554d78da0d",
+      "specs/sm_80/synth_fieldmaps.json": "10100a9b31d6110e9aba29446003c1f0d261f9ca859ea4bde423c5ed33a7f2e1",
+      "specs/sm_80/synth_templates.json": "dabae8aa91bd5e6e02ea3da38ca60a37d2af36dae2370530a11c92377c4cd59d",
+      "corpus/sm_80/pairs.jsonl": "c619303020b016b27eb8b93eb68652563f11c7a7a78bf7eaba4eca5d172bb491",
+      "corpus/sm_80/machine_model.json": "4361d09abc0a24d350d07dbf480cebecddc06d18af15428e7dafd0acc6c660bf",
+      "exp/tensor_scheduler/actual_block_schedule.py": "537676592b5f36838ec5b4313223f4165345b0aaada54f6e43de94f15bf1ce55",
+      "exp/tensor_scheduler/candidate_search.py": "1ed08ec96dcab55ee1f7e96525860646b57b928294be423b815ad62134fb3824",
+      "exp/tensor_scheduler/clocked_loop_probes.py": "461aa283116bcf884c19091d526cd32e90c03369216c87e56c9ddeddc0cf263a",
+      "exp/tensor_scheduler/control_inventory.py": "390cc0f8d551e91c5f089343821471aef495ad1b96bb1b42adfe818451d94da0",
+      "exp/tensor_scheduler/dependency_scheduler.py": "06c5c29c127cda1ab49ff3dfb9353e741a35c27ec7e756d329cdcb33a919c5e4",
+      "exp/tensor_scheduler/hardware_probes.py": "99ba79ea99ea95d725725e8d81948374f4ec250988f2199aa554fd56e6b27008",
+      "exp/tensor_scheduler/load_next_compute_current.py": "a392b3a0d0ee804c8686b5e213dec09bb68f7ff8c189e00674af772439b58365",
+      "exp/tensor_scheduler/load_next_compute_current_modal.py": "55ce1358caafa8e57ac393ce035bb539bcbad31a5dfc073ba7d69a6df034f5c7",
+      "exp/tensor_scheduler/lowered_adapter.py": "90f8c850fb079bf0ae0bd3d20b32457d58a549bd65bffbbd6386e8d0ea930dfe",
+      "exp/tensor_scheduler/non_tensor_overhead.py": "71411de0d28de55dfcebe6fe2d0fd4ff3ce7e4ac0860a90dce1e1db049b12741",
+      "exp/tensor_scheduler/test_actual_block_schedule.py": "2d6134dc71fb4754662710d90023a5cdd7aa0b898bc9f0c33142e87da64e8883",
+      "exp/tensor_scheduler/test_clocked_loop_probes.py": "d847156e4f8b564b134ed118861632ba07c14401edc05821f8fb5ff84096d98d",
+      "exp/tensor_scheduler/test_dependency_scheduler.py": "3815b96d4cdad746e15e778cbf67f72ac959044e8f819e0801a0bbc493888d6f",
+      "exp/tensor_scheduler/test_load_next_compute_current.py": "79431d9b672a0fe1e0cba860694db64d15819f955f1e52e7ce91907c36e6d5d4",
+      "exp/tensor_scheduler/test_lowered_adapter.py": "e7a6873c8fd815480561fde0f4937b07fcd3fdf557238920164078c528b4143a"
+    }
+  }
+}

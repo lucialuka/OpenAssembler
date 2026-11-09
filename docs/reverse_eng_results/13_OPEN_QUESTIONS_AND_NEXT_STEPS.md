@@ -16,6 +16,13 @@
 5. Can actual forward/backward/optimizer integration preserve full model state
    while using native OA kernels at the boundaries that matter?
 
+The November 9 revalidation integrated two bounded opt-in paths with full
+source/resource contracts: `--fragment-schedule load_next` for two wide shapes
+and `--cta-order grouped_n8` for N-grouped launches. Their held-out results do
+not support global automatic dispatch. The four-edge tensor scheduler,
+producer/consumer warp split, fused reductions, sparse MMA and stable GELU
+backward remain experiment or capability records.
+
 ## Hardware boundaries
 
 A100 does not provide Hopper TMA, thread-block clusters, DPX or the H100 FP8

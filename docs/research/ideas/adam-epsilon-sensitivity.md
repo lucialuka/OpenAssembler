@@ -1,6 +1,11 @@
 # Adam epsilon sensitivity of near-invariant BF16 key bias
 
-Status: validated-not-integrated
+Status: tested-not-selected
+
+This is a numerical training-policy diagnosis, not a compiler optimization.
+It remains useful to interpret the historical BF16 state failure, but it does
+not apply a current OpenAssembler kernel or justify changing production AdamW
+settings.
 
 The intervention is a useful numerical diagnostic under separately fixed
 training policies. It is not an original-policy compiler repair and is not

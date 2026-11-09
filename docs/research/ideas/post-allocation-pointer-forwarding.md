@@ -1,6 +1,10 @@
 # Post-allocation pointer-copy forwarding
 
-Status: validated-not-integrated
+Status: tested-not-selected
+
+The current backend already offers the equivalent direct-pointer stream. The
+post-allocation rewrite adds no distinct code path or performance benefit and
+is not an additional production pass.
 
 The experimental transformation is functionally valid on its tested cases,
 but produces exactly the already-implemented direct-pointer stream. It adds

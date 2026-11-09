@@ -48,8 +48,12 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def candidate_payload(name: str) -> dict:
-    root = EVIDENCE / name
+def candidate_payload(name: str, build_root: Path | None = None) -> dict:
+    root = build_root / name if build_root is not None else EVIDENCE / name
+    if build_root is not None and not (root / "manifest.json").is_file():
+        aliases = (name.replace("mfast", "m_fast"), name.replace("morton", "morton8"))
+        root = next((build_root / alias for alias in aliases
+                     if (build_root / alias / "manifest.json").is_file()), root)
     manifest = json.loads((root / "manifest.json").read_text())
     entry = manifest["entries"][0]
     return {
@@ -462,8 +466,9 @@ def main(mode: str = "preflight", out_root: str = "output/a100-counters"):
         return
     if mode not in ("validate", "validate-cublas", "validate-cublas-ncu"):
         raise SystemExit("mode must be preflight, build-current, validate, validate-cublas or validate-cublas-ncu")
-    cases = [candidate_payload(name) for name in ("tall_mfast_f16", "tall_morton_f16",
-                                                   "tall_mfast_bf16", "tall_morton_bf16")]
+    build_root = ROOT / out_root
+    cases = [candidate_payload(name, build_root) for name in (
+        "tall_mfast_f16", "tall_morton_f16", "tall_mfast_bf16", "tall_morton_bf16")]
     result = execute.remote(cases, mode in ("validate", "validate-cublas-ncu"),
                             mode in ("validate-cublas", "validate-cublas-ncu"))
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")

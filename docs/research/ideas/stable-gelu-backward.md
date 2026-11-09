@@ -59,6 +59,18 @@ contains 19 shuffled compiler-pair samples and 32 operations per graph; compile,
 module loading and host submission are excluded. Failed old-form rows have no
 admitted timing comparison.
 
+## Current-source revalidation: November 9
+
+The current Modal runner rebuilt the stable and direct-tanh templates against
+this checkout on an A100-SXM4-40GB. It recorded 52 method/shape/launch rows:
+40 stable or control rows pass all numerical, canary, input-immutability and
+graph checks; the 12 direct-tanh rows at the million-element cases reproduce the
+known accuracy failures. Passing stable rows have ptxas/OA ratios from about
+0.48 to 0.99, so the stable formula remains slower or roughly tied with the
+same-source ptxas control. This validates a correctness repair under its stated
+contract, not a production performance win. The source-hashed record is
+[`operator-gelu-stable-20261109T063435.427437Z.json`](../../../exp/nn_round2/runs/operator-gelu-stable-20261109T063435.427437Z.json).
+
 The candidate remains in `exp/`; no production GELU-backward operator or automatic
 application rewrite is added. Its experimental cubin uses the fixed campaign ABI
 of four input pointers, three output pointers and an unsigned element count;

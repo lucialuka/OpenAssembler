@@ -40,4 +40,3 @@ def test_manifest_is_explicit_and_does_not_promote_grouped_n():
     grouped = [row for row in manifest["cases"] if row["candidate"].startswith("grouped_n")]
     assert grouped and all(row["status"] == "untested" for row in grouped)
     assert "held_out_timing" in manifest["contract"]["required_gates"]
-

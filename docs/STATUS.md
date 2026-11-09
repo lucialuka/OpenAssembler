@@ -1,6 +1,6 @@
 # OpenAssembler architecture and status
 
-Updated **November 8, 2026**. This page describes the current source tree and
+Updated **November 9, 2026**. This page describes the current source tree and
 latest completed validation. The repository CLI update adds workflow/correctness
 checks; the separate November 7 native NN campaign adds GPU measurements and
 experimental candidates without promoting them into production. Full command syntax is in [COMMANDS.md](COMMANDS.md);
@@ -12,7 +12,7 @@ The cross-cutting reverse-engineering record is centralized in the
 
 | Area | Latest completed evidence | Interpretation |
 |---|---|---|
-| Repository regression | 630 passed, one optional PyTorch module skipped; its 18 tests pass separately | Current native/compiler integration checks; not a performance result |
+| Repository regression | 655 passed, one optional PyTorch module skipped | Current native/compiler integration checks; not a performance result |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
 | Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay | Explicit FP32 operators; same-source ptxas still faster on main shapes |
 | Native direct-pointer GEMM | 486 full method/input checks across three independent runs; six MLP products improve about 1.03–1.12× | Opt-in; tall GEMM regresses and default stays legacy |
@@ -23,8 +23,8 @@ The cross-cutting reverse-engineering record is centralized in the
 | Native NN arithmetic campaign | 264/274 initial arithmetic configurations pass; 402/402 tensor checks plus 134 graph checks; six composed NN configurations with full-state gates | Experimental only; rejected gates and slower methods retained |
 | New conditional candidates | Backward FMA reductions improve selected standard-width cases about 1.16–1.31×; integrated early pointer placement gains about 1.5–2.3% over direct mode on one wide shape | Smaller/tall cases can regress; neither establishes general ptxas superiority |
 | Full SM80 control inventory | 42 scalar producer/consumer families plus 14 tensor probes replayed on A100; fixed-pipe minima are mostly S4/S5 and predicate guards S13 | Pair-specific controls; no universal control-field rewrite is admitted |
-| CUTLASS-style load-next fragment schedule | Full FP16 output/canary/graph/disassembly/resource gates pass on six shapes; OA improves 5 non-square shapes by about 1–10% | Uses 24 more registers and regresses 4096³ by about 10%; experiment-only |
-| Grouped-N CTA traversal | Tall 16384×4096×4096 improves OA about 6–7% versus m-fast and is near Morton; wide/square cases do not win consistently | Exact FP16 shape entries only; alignment/workspace/BF16 variants remain unmeasured |
+| CUTLASS-style load-next fragment schedule | Current production-path full gates pass for FP16/BF16 at 1024×4096×1024 and 4096×1024×1024; paired A100 runs are about 8–10% faster than source-order OA | Explicit `--fragment-schedule load_next` only; 24 more registers and held-out large FP16 cases regress; default stays source order |
+| Grouped-N CTA traversal | Current production-path full gates pass; repeated 16384×4096×4096 is about 6.9–7.3% faster than m-fast and held-out tall FP16/BF16 cases improve | Explicit `--cta-order grouped_n8` only; wide/square auto-dispatch remains disabled |
 
 These are measured snapshots, not promises for every shape, toolkit, GPU or
 training trajectory. Raw device metadata distinguishes A100-SXM4-40GB from
@@ -144,8 +144,8 @@ are research proposals, not additional shipping modules in this tree.
 | Paired fragment loads, two-stage async copies, shared XOR layout and vector stores | Default generated tensor mainloop | Fixed 128×128×64 CTA tile, 128 threads, 64 KiB dynamic shared memory |
 | Protected tensor scoreboards, address WAR, HMMA8/drain15 and operand reuse | Default tensor backend | Existing measured dependencies are retained across optimization levels |
 | Morton8 CTA ordering | Explicit `--cta-order morton8` | Complete 8×8 tile groups; measured tall-shape benefit, not automatic dispatch |
-| CUTLASS-style load-next/compute-current schedule | Experiment-only under `exp/tensor_scheduler` | Shape-specific FP16 candidate; production tensor path still uses source-order HMMA8/drain15 |
-| Grouped-N CTA traversal | Experiment-only under `exp/gemm_dispatch` | Requires shape-specific launch-grid remapping and held-out timing; no automatic production dispatch |
+| CUTLASS-style load-next/compute-current schedule | Explicit `--fragment-schedule load_next` | FP16/BF16 1024×4096×1024 and 4096×1024×1024, stagepair, legacy pointer, late advancement, unfused only |
+| Grouped-N CTA traversal | Explicit `--cta-order grouped_n8` | N tile count divisible by 8; launch grid remaps to `(m_tiles×8,n_tiles/8)`; no automatic dispatch |
 | Bias/residual/ReLU epilogue | Explicit `--epilogue` | FP32 auxiliary buffers; selected square benefits, other shapes can regress |
 | Pointer-home copy elimination | Explicit `--pointer-mode direct` | Unfused `stagepair`/`m_fast`; preserves legacy default |
 | Early pointer advancement | Explicit `--pointer-advance early|auto` | `auto` selects only the measured 1024×4096×1024 shape; tall controls remain late |

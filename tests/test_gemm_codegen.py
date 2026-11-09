@@ -54,6 +54,10 @@ def test_invalid_or_unimplemented_contract_is_rejected(change):
 @pytest.mark.parametrize("change",[
     {"cta_order":"unknown"}, {"epilogue":"strassen"},
     {"cta_order":"morton8","m":128,"n":1024},
+    {"fragment_schedule":"unknown"},
+    {"fragment_schedule":"load_next","m":2048,"n":8192,"k":1024},
+    {"fragment_schedule":"load_next","pointer_mode":"direct"},
+    {"fragment_schedule":"load_next","pointer_advance":"early"},
 ])
 def test_new_plan_options_reject_unsupported_modes_and_incomplete_morton_groups(change):
     args=dict(m=128,n=128,k=128)
@@ -89,6 +93,39 @@ def test_morton8_emitted_coordinate_program_is_a_full_grid_bijection():
                              (group//(tile_m//8))*8+local_n))
     assert mapped==expected
     assert len(set(mapped))==tile_m*tile_n
+
+
+def test_grouped_n8_emits_public_mapping_and_launch_contract():
+    plan = GemmPlan(16384, 4096, 4096, cta_order="grouped_n8")
+    source = generate(plan)
+    assert "shr.u32 %r700,%r1,3;" in source
+    assert "and.b32 %r701,%r1,7;" in source
+    assert "mul.lo.u32 %r702,%r2,8;" in source
+    assert plan.launch == {"grid": [1024, 4, 1], "threads": 128, "smem": 65536}
+    assert plan.metadata["cta_order"] == "grouped_n8"
+
+    from openassembler.ptx.interp import Launch, run_kernel
+    from openassembler.ptx.parse import parse_module
+    prefix = source.split("and.b32 %r3,%r0,31;", 1)[0] + "ret;\n}\n"
+    module = parse_module(prefix)
+    tile_m, tile_n = plan.m // 128, plan.n // 128
+    mapped = []
+    grid_x, grid_y, _ = plan.launch["grid"]
+    for by in range(grid_y):
+        for bx in range(grid_x):
+            result = run_kernel(module, "gemm", Launch(block=(32, 1, 1),
+                grid=(grid_x, grid_y, 1), ctaid=(bx, by, 0),
+                params={"A": 0x1000, "B": 0x2000, "C": 0x3000}), None)
+            regs = result.warps[0][0].regs
+            mapped.append((regs["%r1"] // 128, regs["%r2"] // 128))
+    assert set(mapped) == {(m, n) for m in range(tile_m) for n in range(tile_n)}
+    assert len(mapped) == len(set(mapped)) == tile_m * tile_n
+
+
+@pytest.mark.parametrize("n", [128, 896])
+def test_grouped_n8_rejects_incomplete_n_groups(n):
+    with pytest.raises(ValueError, match="grouped_n8"):
+        GemmPlan(128, n, 128, cta_order="grouped_n8")
 
 
 def test_plan_is_immutable_and_launch_metadata_is_independent():

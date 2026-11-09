@@ -13,6 +13,8 @@ The independently documented components and explicit options are:
 - [Vectorized FP32 stores](research/ideas/vectorized-fp32-epilogue.md)
 - [Operand reuse hints](research/ideas/operand-reuse-hints.md)
 - [Morton8 traversal](research/ideas/morton-cta-order.md)
+- [CUTLASS-style load-next fragments](research/ideas/cutlass-load-next-compute-current.md)
+- [Grouped-N CTA traversal](research/ideas/grouped-n-cta-swizzle.md)
 - [Fused bias/residual/ReLU](research/ideas/fused-gemm-epilogues.md)
 - [Direct pointer homes](research/ideas/direct-pointer-homes.md)
 
