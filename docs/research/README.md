@@ -24,7 +24,11 @@ centralized in the [reverse-engineering results hub](../reverse_eng_results/READ
 Per-idea dossiers remain the authoritative status and reproduction records for
 individual features.
 
-There are **77 dossiers**: **36 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md).
+The current role/shape coverage audit is under
+[`exp/shape_coverage`](../../exp/shape_coverage/README.md). It is a contract and
+measurement matrix, not a production dispatch policy.
+
+There are **78 dossiers**: **36 implemented**, **10 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
 
 ## 1. Validated and implemented
 
@@ -76,7 +80,6 @@ These capabilities, diagnostics and research prototypes have bounded validation.
 | Feature / idea | What is established or limited |
 |---|---|
 | [Four-edge A100 tensor dependency scheduler](ideas/a100-tensor-dependency-scheduler.md) | A100 probes validate bounded dependency measurements; the generalized scheduler remains experimental, with no reordered stream promoted. |
-| [Adam epsilon sensitivity of near-invariant BF16 key bias](ideas/adam-epsilon-sensitivity.md) | Changing epsilon explains sensitivity under a different training policy; it is not a repair of the original gate. |
 | [cuBLAS dispatch observation and cuBLASLt controls](ideas/cublas-observation-and-baselines.md) | Vendor dispatch and matched controls guide independent kernels; no vendor kernel was extracted into the compiler. |
 | [Structured-sparse MMA capability probes](ideas/sparse-mma-capability.md) | Limited ptxas-built sparse probes ran on A100; native OA sparse code generation and speedup are not established. |
 | [Hardware-counter-guided tensor analysis](ideas/tensor-counter-profiling.md) | Retained matched profiles show equal tensor work but different overhead and stalls. |
@@ -85,7 +88,7 @@ These capabilities, diagnostics and research prototypes have bounded validation.
 | [Native NN arithmetic and composed-network campaign](ideas/nn-arithmetic-campaign.md) | 26 operator families and six custom NN configurations expose conditional gains and failed training gates; no general CUDA superiority. |
 | [Fused local dot products for backward row reductions](ideas/fused-backward-reductions.md) | Explicit FMA improves selected native backward reductions; smaller cases can lose and same-source ptxas remains faster. |
 | [Stable analytic GELU backward](ideas/stable-gelu-backward.md) | A stable exponential derivative passes the unchanged accuracy gate after the direct-tanh form fails; no ptxas speed win. |
-| [Joint direct-pointer, traversal and epilogue options](ideas/joint-tensor-options.md) | Joint combinations pass full correctness; direct-plus-fusion has narrow gains while direct-plus-Morton is mostly neutral or worse. |
+| [Smaller CTA tiles for short transformer GEMMs](ideas/small-grid-tensor-cta-tiles.md) | A bounded 64×64 tile cuts the small output-projection OA case about 48–49%; matched tile64 ptxas and cuBLAS remain faster. |
 
 ## 3. Tested and rejected or not selected
 
@@ -127,7 +130,7 @@ These are source-inspection conclusions, implementation proposals, missing hardw
 | [Automatic equivalent SASS sequence search](ideas/automatic-sass-sequence-search.md) | Historical candidate searches explored several epilogue orders, fragment windows, pre-addressing, operand orders and scheduler variants; selected changes contributed to the current GEMM. |
 | [Python versus a compiled host implementation](ideas/compiler-language-and-host-latency.md) | No profile shows that rewriting the host compiler improves GPU instruction speed; profile individual host passes first. |
 | [Control-flow recovery and a SASS-to-PTX lifter](ideas/control-flow-lifting.md) | Useful instruction and reconvergence patterns were observed; a complete structured lifter is not shipped. |
-| [CUDA-L2 project source audit](ideas/cuda-l2-source-audit.md) | Pinned public source and contracts were inspected; a faithful port and performance reproduction remain open. |
+| [CUDA-L2 project source audit](ideas/cuda-l2-source-audit.md) | Pinned public source and contra cts were inspected; a faithful port and performance reproduction remain open. |
 | [Joint shared-layout and register-fragment search](ideas/joint-layout-register-search.md) | Existing swizzle experiments largely held register organization fixed; fragment-window and tile experiments explored other dimensions separately. |
 | [Fuse low-rank transforms into operand staging](ideas/low-rank-transform-fusion.md) | The existing runtime-factor and tiny compile-time studies identify this as promising future work. |
 | [Alternative multi-precision accumulation paths](ideas/multi-precision-accumulation.md) | The implemented tensor GEMM already uses mixed precision in the ordinary sense: FP16/BF16 inputs with FP32 accumulation and FP32 output. |

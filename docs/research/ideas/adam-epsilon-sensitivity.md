@@ -48,6 +48,32 @@ training trajectory. Epsilon changes the optimizer policy; reporting the
 larger-epsilon pass as a fix for the failed original workload would be invalid.
 The production configuration therefore remains unchanged.
 
+## Current-source revalidation: November 9
+
+The same diagnostic was rerun from the current checkout on an A100-SXM4-40GB.
+Initial logits remain inside the declared benchmark tolerance. With epsilon
+1e-8, step 1 passes the parameter gate and step 29 fails it in both QKV key-bias
+tensors. Only those two steps are recorded, so this is not a localization of
+the first failing update or operation. With epsilon 1e-4, neither recorded
+checkpoint has a parameter-gate failure. The result supports sensitivity to
+small key-bias gradients and the optimizer denominator; it does not establish
+which operation introduced the difference. This diagnostic compares eager
+execution with AOTAutograd/Inductor, not native OA-generated kernels. The raw
+current record is
+[`bf16-diagnostic-20261109-current.json`](../../../exp/whole_stack/runs/bf16-diagnostic-20261109-current.json).
+
+The later [30-update, every-boundary diagnostic](../../../exp/whole_stack/runs/bf16-first-observed-divergence-20261109T111158.926633Z.json)
+keeps epsilon 1e-8 and the same gates. On an A100 80GB PCIe it observes a
+full-logit failure at step 3 (2/524,288 elements) and the first parameter-gate
+failure at step 22 after AdamW. Both QKV bias tensors fail one key-bias entry
+at that update, with maximum absolute differences 0.005915 and 0.005558.
+All recorded raw/clipped gradients and Adam tensors remain within their
+declared tolerances. The result refines the observed chronology, not the causal
+localization: extra full-logit forwards are diagnostic, intermediate operations
+are not individually compared, and the route is still eager versus Inductor.
+The first 29 batches match the original diagnostic, and update 30 repeats the
+last batch. No epsilon or tolerance policy was relaxed.
+
 ## Reproduce
 
 Run from the repository root with an authenticated Modal client; the retained
@@ -57,6 +83,7 @@ driver supplies the pinned PyTorch 2.7.1/CUDA 12.8 model/runtime:
 modal run exp/whole_stack/bf16_diagnostic.py
 modal run exp/whole_stack/bf16_diagnostic.py \
   --out exp/whole_stack/runs/reproduced-bf16-diagnostic.json
+modal run exp/whole_stack/first_divergence.py --steps 30
 ```
 
 The driver saves a numerical sensitivity report, not a valid performance
@@ -68,6 +95,8 @@ the original BF16 training passes.
 
 - [Diagnostic implementation](../../../exp/whole_stack/bf16_diagnostic.py),
   [model](../../../exp/whole_stack/model.py).
+- [Every-boundary diagnostic](../../../exp/whole_stack/first_divergence.py),
+  [streaming state ledger](../../../exp/whole_stack/trajectory_gate.py).
 - [Raw initial/logit/gradient/update result](../../../exp/whole_stack/runs/bf16-diagnostic-20261106T110747.459824Z.json).
 - [Full model numerical failure](../WHOLE_STACK_RESULTS.md),
   [complete-state diagnostics](state-verification-diagnostics.md),

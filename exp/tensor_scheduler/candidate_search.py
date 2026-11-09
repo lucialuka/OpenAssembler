@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from dependency_scheduler import TensorInstruction, search_candidates
+from latency_profiles import latency_profile
 
 
 def workload(chains: int, depth: int = 8, observer: str = "store") -> list[TensorInstruction]:
@@ -30,14 +31,24 @@ def workload(chains: int, depth: int = 8, observer: str = "store") -> list[Tenso
 
 
 def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=("toy_uncalibrated", "a100_clocked_24_8"),
+                        default="toy_uncalibrated")
+    args = parser.parse_args()
+    profile = latency_profile(args.profile)
     output = []
     for chains in (1, 2, 3):
-        rows = search_candidates(workload(chains))
+        rows = search_candidates(workload(chains),
+                                 None if args.profile == "toy_uncalibrated" else
+                                 ((profile.name, profile.latency),))
         output.append({"chains": chains, "candidates": [
             {"name": row["name"], "order": row["order"], "metrics": row["metrics"].__dict__}
             for row in rows
         ]})
-    print(json.dumps(output, indent=2))
+    print(json.dumps({"schema": 2, "latency_profile": profile.record(),
+                      "evidence_scope": "static model predictions, not hardware measurements",
+                      "experiments": output}, indent=2))
 
 
 if __name__ == "__main__":

@@ -1,10 +1,10 @@
 """Apply the lowered tensor dependency model to real OA basic blocks.
 
 The production tensor backend remains unchanged. This adapter selects a real
-GEMM through the current OA selector/allocation path, splits the lowered stream
-at control/synchronization boundaries, runs the experiment scheduler on each
-basic block, and reports whether any candidate movement preserves HMMA K-order
-and the existing memory/synchronization envelope.
+GEMM through the current OA selector/allocation path and audits regions at
+control/synchronization boundaries. Unsupported predicate, memory, async and
+observer state is rejected with a reason; preserving HMMA K-order alone does
+not establish those regions' semantic safety. No permutation is encoded.
 """
 
 from __future__ import annotations
@@ -24,8 +24,10 @@ from openassembler.ptx.parse import parse_module
 
 try:
     from .lowered_adapter import LoweredInstruction, schedule_lowered_block
+    from .latency_profiles import latency_profile
 except ImportError:
     from lowered_adapter import LoweredInstruction, schedule_lowered_block
+    from latency_profiles import latency_profile
 
 
 @dataclass(frozen=True)
@@ -38,6 +40,7 @@ class BlockResult:
     candidate_order: tuple[int, ...]
     k_order_preserved: bool
     accepted: bool
+    rejection_reason: str | None = None
 
 
 def _op(text: str) -> str:
@@ -62,26 +65,21 @@ def _blocks(plan: GemmPlan) -> list[list[LoweredInstruction]]:
     return blocks
 
 
-def _hmma_dest(text: str) -> tuple[int, ...]:
-    # Physical SASS text is stable in this experiment: HMMA ... {R0,R1,R2,R3},
-    # ... . The lowered adapter already carries the same destination registers,
-    # so use its write tuple instead of parsing operand punctuation.
-    return ()
-
-
-def analyze(plan: GemmPlan) -> dict:
+def analyze(plan: GemmPlan, *, profile: str = "toy_uncalibrated") -> dict:
+    model = latency_profile(profile)
     results: list[BlockResult] = []
     for index, block in enumerate(_blocks(plan)):
         if not block:
             continue
         try:
-            order = schedule_lowered_block(block)
-        except ValueError:
+            order = schedule_lowered_block(block, model.latency)
+        except ValueError as exc:
             # A block with a terminator or unsupported control is deliberately
             # rejected by the fail-closed adapter.
             results.append(BlockResult(index, len(block),
                                        sum(x.text.startswith("HMMA") for x in block),
-                                       0, tuple(range(len(block))), tuple(), False, False))
+                                       0, tuple(range(len(block))), tuple(), False, False,
+                                       str(exc)))
             continue
         moved = sum(a != b for a, b in zip(range(len(block)), order))
         hmma = sum(x.text.startswith("HMMA") for x in block)
@@ -101,7 +99,11 @@ def analyze(plan: GemmPlan) -> dict:
         results.append(BlockResult(index, len(block), hmma, moved,
                                    tuple(range(len(block))), tuple(order), k_order,
                                    k_order))
-    return {"schema": 1, "plan": plan.metadata, "blocks": [asdict(row) for row in results],
+    return {"schema": 2, "plan": plan.metadata, "blocks": [asdict(row) for row in results],
+            "latency_profile": model.record(),
+            "evidence_scope": "static adapter audit, not executed or encoded schedules",
+            "accepted_means": "model syntax/explicit-register envelope only; not hardware safety",
+            "encoding_allowed": False,
             "summary": {"blocks": len(results),
                         "hmma_blocks": sum(row.hmma > 0 for row in results),
                         "moved_instructions": sum(row.moved for row in results),
@@ -110,10 +112,17 @@ def analyze(plan: GemmPlan) -> dict:
 
 
 def main() -> None:
-    out = Path(__file__).with_name("actual-block-schedule.json")
-    rows = [analyze(GemmPlan(128, 128, k, dtype="f16", schedule="stagepair"))
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--profile", choices=("toy_uncalibrated", "a100_clocked_24_8"),
+                        default="toy_uncalibrated")
+    parser.add_argument("--out", type=Path,
+                        default=Path(__file__).with_name("actual-block-schedule.json"))
+    args = parser.parse_args()
+    out = args.out
+    rows = [analyze(GemmPlan(128, 128, k, dtype="f16", schedule="stagepair"), profile=args.profile)
             for k in (128, 256, 512)]
-    out.write_text(json.dumps({"schema": 1, "experiments": rows}, indent=2) + "\n")
+    out.write_text(json.dumps({"schema": 2, "experiments": rows}, indent=2) + "\n")
     print(out)
 
 

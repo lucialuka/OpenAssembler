@@ -32,9 +32,25 @@ From the repository root:
 PYTHONPATH=exp/tensor_scheduler pytest -q exp/tensor_scheduler/test_dependency_scheduler.py
 ```
 
-The checks are model-level only. They prove that the scheduler keeps the
-accumulator, operand and observer constraints distinct. They do not prove a
-faster A100 kernel.
+The checks are model-level only. They check explicit accumulator, operand and
+observer constraints; they do not establish a faster or generally safe A100
+schedule. The default distances and the historical issue1/issue2 search are
+synthetic hypotheses, not measured hardware control policies.
+
+An explicit partially calibrated model can be selected with:
+
+```bash
+PYTHONPATH=exp/tensor_scheduler .venv/bin/python exp/tensor_scheduler/candidate_search.py \
+  --profile a100_clocked_24_8
+PYTHONPATH=exp/tensor_scheduler .venv/bin/python exp/tensor_scheduler/actual_block_schedule.py \
+  --profile a100_clocked_24_8 --out exp/tensor_scheduler/actual-block-audit_20261109.json
+```
+
+`latency_profiles.py` records the exact retained clocked-evidence hash and uses
+approximate dependent-chain24/three-chain issue8 distances. LDSM, async-copy,
+observer, address-WAR and synchronization distances remain uncalibrated. These
+are static model estimates, not measured kernel cycles or minimum safe SASS
+stall fields. Neither profile authorizes encoding a reordered stream.
 
 ## A100 validation gate
 
@@ -95,11 +111,14 @@ requires exact SASS, full outputs and A100 counters.
 
 ## Lowered-instruction adapter
 
-`lowered_adapter.py` maps one lowered OA basic block into the graph model and
-returns a candidate source-index order. It rejects branches, returns and
-reconvergence markers rather than moving across control-flow boundaries. This
-is the first opt-in bridge toward virtual-register scheduling; it does not
-encode SASS or replace the production tensor backend.
+`lowered_adapter.py` accepts only explicitly described register-only windows.
+It rejects labels, branches, predication, implicit predicate/carry state,
+async-copy/wait/barrier operations, general memory and unsupported scalar
+forms. LDSM additionally needs an explicit caller-supplied shared-visibility
+context. Complete HMMA fragment/accumulator register metadata is checked;
+scalar readers of tensor outputs receive observer edges, while scalar
+overwrites of unfinished tensor results are rejected. It does not encode SASS
+or replace the production tensor backend.
 
 ## Clocked loop probe
 
@@ -157,8 +176,11 @@ shape-specific and experiment-only.
 
 ## Actual lowered blocks
 
-`actual_block_schedule.py` feeds real lowered OA GEMM blocks into the
-four-edge dependency model. Terminator blocks fail closed, while HMMA-bearing
-blocks are accepted and their candidate source orders are recorded in
-`actual-block-schedule.json`. No reordered stream is encoded or promoted yet.
+`actual_block_schedule.py` audits real lowered OA GEMM regions. Current regions
+contain memory, visibility or implicit state outside the adapter contract and
+are rejected with explicit reasons, including HMMA-bearing regions. Earlier
+`actual-block-schedule.json` acceptance was a model-level permutation check
+with omitted state and is superseded by the fail-closed audit. No reordered
+stream is encoded or promoted. A recorded `accepted` field means only that a
+bounded window fits the static adapter, never hardware validation.
 

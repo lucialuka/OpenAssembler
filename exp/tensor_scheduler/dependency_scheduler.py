@@ -37,8 +37,9 @@ class EdgeKind(str, Enum):
 class TensorLatency:
     """Clock distances for a candidate A100 schedule.
 
-    The defaults are deliberately conservative and mirror the current OA
-    experiment baseline.  `hmma_issue` is independent of `accum_raw`: the
+    The defaults are legacy synthetic hypotheses, not measured A100 latencies.
+    Use the explicit partial clocked profile for a bounded24/8 model fit.
+    `hmma_issue` is independent of `accum_raw`: the
     former limits a tensor-pipe reservation while the latter protects a chain
     that consumes the same accumulator group.
     """
@@ -333,6 +334,8 @@ class ScheduleMetrics:
     accum_edges: int
     operand_edges: int
     hmma_issue: int
+    hardware_measurement: bool = False
+    cycle_estimate_scope: str = "uncalibrated static dependency-model estimate"
 
     @property
     def hmma_density(self) -> float:
@@ -361,10 +364,11 @@ def measure_schedule(result: Sequence[ScheduledInstruction], graph: DependencyGr
 
 
 def candidate_policies() -> tuple[tuple[str, TensorLatency], ...]:
-    """Return bounded policies for the first experiment-only search.
+    """Return historical toy hypotheses, including unvalidated short distances.
 
-    The sweep intentionally varies only measured concepts. It does not relax
-    accumulator RAW or operand readiness below the current probe envelope.
+    Names are retained for old experiment consumers.  None is a measured A100
+    policy or a safe control table; use latency_profiles for an explicit,
+    provenance-labelled partial calibration.  These values must not be encoded.
     """
 
     return (
@@ -391,6 +395,8 @@ def search_candidates(instructions: Sequence[TensorInstruction],
         result = schedule(graph, latency)
         metrics = measure_schedule(result, graph, latency)
         rows.append({"name": name, "latency": latency, "order": [item.instruction.name for item in result],
-                     "metrics": metrics})
+                     "metrics": metrics, "hardware_measurement": False,
+                     "encoding_allowed": False,
+                     "evidence_scope": "static model hypothesis; not a measured schedule"})
     return sorted(rows, key=lambda row: (row["metrics"].cycles, row["metrics"].non_tensor_count, row["name"]))
 

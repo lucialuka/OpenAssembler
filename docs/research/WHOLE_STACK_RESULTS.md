@@ -354,6 +354,33 @@ Subsequent work is documented separately in [direct pointer homes](ideas/direct-
 [cooperative softmax](ideas/cooperative-softmax.md),
 [LayerNorm](ideas/cooperative-layernorm.md), and
 [complete state diagnostics](ideas/state-verification-diagnostics.md).
+
+The current-source BF16 diagnostic was rerun on November 9
+([raw record](../../exp/whole_stack/runs/bf16-diagnostic-20261109-current.json)).
+At the recorded checkpoints, step 1 passes the parameter gate and step 29
+fails it in two QKV key-bias tensors with the original epsilon `1e-8`.
+The diagnostic records only steps 1 and 29, so it does not locate the first
+failing update or operation. With a separately matched epsilon `1e-4` policy,
+no parameter tensor fails at those checkpoints. This compares eager execution
+with AOTAutograd/Inductor, not native OA kernels; it remains a numerical and
+optimizer-policy diagnosis rather than a native compiler correctness repair.
+
+A separate [30-update boundary diagnostic](../../exp/whole_stack/runs/bf16-first-observed-divergence-20261109T111158.926633Z.json)
+on November 9 records 151 required checkpoints on an A100 80GB PCIe with
+PyTorch 2.7.1/CUDA 12.8. It keeps epsilon `1e-8` and the original mixed gates.
+The first observed full-logit gate failure is **step 3 before the update**:
+2 of 524,288 BF16 elements fail, despite relative L2 of only 0.002881. The first
+parameter-gate failure is **step 22 after the update**, in both QKV bias tensors
+(one key-bias entry each; maximum absolute differences 0.005915 and 0.005558).
+Raw/clipped gradients, Adam moment/step tensors and optimizer settings stay
+inside their declared gates at every recorded boundary; this does not make
+their histories bitwise equal or repair the failed parameters. The diagnostic
+completes all checkpoints and fails 53 of them, including repeated observations
+of already divergent parameter state. It compares eager execution with
+Inductor and adds separate untimed full-logit forwards. It neither identifies
+the first arithmetic operation that caused a difference nor establishes native
+OA correctness. See the [state-trajectory method](ideas/state-verification-diagnostics.md)
+for reproduction and scope.
 The measurements here describe the original study, not those later compiler changes.
 
 1. Build cooperative reduction kernels before tuning the current serial

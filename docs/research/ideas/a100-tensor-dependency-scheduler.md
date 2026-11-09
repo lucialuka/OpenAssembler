@@ -155,6 +155,22 @@ edges, and runs the experiment graph over the resulting blocks. HMMA-bearing
 blocks are accepted by the fail-closed adapter, while terminator blocks are
 rejected. No reordered stream has been encoded or promoted.
 
+That earlier accepted-region result is superseded by the November 9
+[strict dependency audit](../../../exp/tensor_scheduler/actual-block-audit_20261109.json).
+The adapter now rejects unmodeled predication, implicit registers, control,
+async/wait/barrier visibility, general memory and unsafe tensor overwrites.
+All 45 audited actual GEMM regions are rejected; their earlier permutation
+acceptance did not prove semantic safety. Supported scalar consumers receive
+observer edges, but incomplete token modeling still blocks production use.
+The `a100_clocked_24_8` model profile now identifies its measurement artifact
+and hash; 24/8 are approximate model distances fitted to the bounded clocked
+probes, not universal controls. Other edge distances remain uncalibrated.
+
+Separately, [split-2/4/6 load-next placements](../../../exp/shape_coverage/a100-role-gemm_20261109T111245.728446Z.json)
+pass full FP16/BF16 output/graph/control checks at 1024×4096×1024 while retaining
+HMMA8/drain15 and K order. Split-4 remains better than split-2/6 on that role.
+This validates particular source schedules, not the general graph scheduler.
+
 ## Promotion rule
 
 The current HMMA8/drain15 schedule remains the correctness baseline. Promote an

@@ -1,0 +1,157 @@
+# Smaller tensor CTA tiles for short transformer GEMMs
+
+Status: validated-not-integrated
+
+This status covers the bounded experimental kernel and measured cases. It is
+not a production dispatch rule or a claim of general ptxas/cuBLAS superiority.
+
+## Idea in plain language
+
+A small GEMM can launch too few independent blocks when every block computes a
+large output tile. A smaller tile gives the GPU more independent blocks and
+shortens the work inside each one. That can help even if it repeats more
+address calculations and operand reads overall.
+
+The experiment generates a 64×64×64 CTA tile with four 32×32 warp tiles,
+FP16/BF16 operands, FP32 accumulation/output and two shared stages. Each thread
+owns 32 accumulator values instead of 128. The tested source uses 88 allocated
+registers and 32 KiB shared memory, versus 216 and 64 KiB in the default tile.
+It retains HMMA8/drain15, async visibility, barriers and each accumulator's K
+order. It changes no production compiler file.
+
+## Contract and integrity gates
+
+The standalone source plan requires M/N divisible by 64 and K divisible by 128,
+contiguous A[M,K] and B[N,K], FP32 C[M,N]=A@B.T, alpha=1 and beta=0. It rejects
+other precision, address overflow and unsupported policy combinations. Current
+hardware evidence uses 128-aligned model cases; it does not establish all
+possible 64-aligned shapes, tails, strides or transpose handling.
+
+The source intentionally lacks an inferred production GEMM annotation. The
+runner checks its explicit manual launch, exact output ownership, copy coverage
+and LDSM alignment/bounds. Hardware gates cover zero/integer/normal full
+outputs, canaries, poisoned buffers/graphs, unchanged inputs, bitwise agreement
+with baseline and same-policy ptxas, native build metadata, encoded controls,
+resources and shuffled paired timing. cuBLAS uses a matched FP32-output gate.
+
+## Measured small output-projection case
+
+For M/N/K=128/512/512 FP16, the output grid grows from four to 16 CTAs.
+
+| Independent worker | Default OA | OA tile64 | Same-source tile64 ptxas | cuBLAS GemmEx |
+|---|---:|---:|---:|---:|
+| A100-SXM4-40GB selection | 21.25–21.38 µs | 11.01 µs | 8.45 µs | 7.68 µs |
+| A100-SXM4-80GB frozen replay | 19.97 µs | 10.24 µs | 7.94 µs | 7.17 µs |
+
+Each row contains three paired rounds with 12 samples. The candidate reduces
+OA runtime by about 48–49%. It also beats the old 128-tile ptxas control, but
+not ptxas compiling the smaller-tile source. The replay includes direct+early
+pointer OA at 19.20 µs, so the gain survives that stronger OA control. Absolute
+times are not pooled across devices.
+
+The [selection record](../../../exp/shape_coverage/a100-role-gemm_20261109T112122.548949Z.json)
+passes 15 method/input and five graph checks. The
+[frozen protocol](../../../exp/shape_coverage/tile64-heldout-protocol.json)
+precedes the independent
+[replay record](../../../exp/shape_coverage/a100-role-gemm_20261109T113154.637725Z.json),
+which passes 33 method/input and 11 graph checks. Their recorded source
+identities agree, and the replay matches the frozen source hashes.
+
+## What the counters do and do not explain
+
+The [separate counter study](../../../exp/shape_coverage/a100-small-tile-counters_20261109T113502.971650Z.json)
+passes all 15 output checks and collects all 20 requested metrics for six
+profiles. Dynamic tensor instructions stay at 16,384, while OA total
+instructions rise from 42,512 to 75,328 and global-load sectors double from
+32,768 to 65,536. Shared-bank conflicts are zero for both tiles. Thus the gain
+is not a reduction in total work or bank conflicts.
+
+The register-limited block ceiling rises from two to five, but achieved
+active-warp percentages remain about 6.2%; the counters do not demonstrate
+higher achieved occupancy. More grid parallelism and shorter per-CTA work are
+supported explanations, not an isolated causal proof. Wait stalls fall from
+50.00% to 40.43%, while both short and long scoreboards increase. These
+percentages are not additive fractions of runtime.
+
+At the same 64-tile geometry, OA executes 58,944 non-tensor instructions versus
+ptxas's 24,256 and has more wait stalls. This remains a separate compiler gap.
+The observed cuBLAS invocation launches 64 CTAs and is faster despite 243,200
+total dynamic instructions. Its kernel name is an observation, not proof of an
+extracted proprietary algorithm.
+
+## Reproduce
+
+Run from the repository root with the local test environment and authenticated
+Modal client:
+
+```sh
+.venv/bin/python -m pytest -q exp/shape_coverage/test_small_tile_gemm.py \
+  exp/shape_coverage/test_gemm_policy.py
+modal run --detach exp/shape_coverage/a100_role_gemm_modal.py \
+  --heldout --model-case small_fp32_context --role attention_output_projection \
+  --dtype f16 --tile-sweep --pointer-sweep --rounds 3 --samples 12
+modal run --detach exp/shape_coverage/a100_role_gemm_modal.py \
+  --heldout --tile-sweep --pointer-sweep --rounds 3 --samples 12
+modal run --detach exp/shape_coverage/a100_small_tile_counters_modal.py
+```
+
+The [explicit generator](../../../exp/shape_coverage/small_tile_gemm.py),
+[layout/encoding tests](../../../exp/shape_coverage/test_small_tile_gemm.py),
+and [evidence inventory](../../../exp/shape_coverage/evidence-ledger.json) retain
+the implementation, methods and limitations. NCU replay duration is never used
+as timing. Kernel timings exclude packing, graph integration and whole training.
+
+## Broader role/shape validation
+
+The [32-case A100-SXM4-40GB sweep](../../../exp/shape_coverage/a100-role-gemm_20261109T113850.802215Z.json)
+covers four model geometries, QKV/output/FFN-up/FFN-down and FP16/BF16. All
+1,296 method/input checks and 432 poisoned-graph checks pass; source identity
+remains unchanged. Tile64 is faster than default OA in all three rounds on
+18 cases and slower on 14.
+
+| Cohort / role | Tile64 runtime change versus default OA |
+|---|---:|
+| Small-token QKV/output/FFN-up/FFN-down, both dtypes | About 45–54% lower |
+| Base-report output projection | About 37–39% lower |
+| Base-report FFN-down | About 46–47% lower |
+| Medium output projection | About 21–22% lower |
+| Medium FFN-down | About 27–28% lower |
+| Medium QKV | About 33–35% higher |
+| Medium FFN-up | About 5–9% higher |
+| All large-role cases | About 24–49% higher |
+
+Base-report QKV gains are small and can lose against the pointer control;
+base-report FFN-up regresses. The best OA option remains slower than the best
+measured ptxas option in every case. Selected default-library cases do lose to
+OA, but this is not a tuned cuBLASLt comparison or whole-training result.
+
+## Decision and remaining work
+
+Keep this family experimental and shape guarded. The broader sweep establishes
+real gains and regressions, so the small output case cannot justify a universal
+tile change. Unseen shapes, alignment classes, toolkit versions and whole-model
+substitution still need validation. A native model route and full
+forward/backward/optimizer state check remain separate integration gates.
+
+The [audited proposal](../../../exp/shape_coverage/tile64-dispatch-proposal.json)
+and [selector decision](../../../exp/shape_coverage/tile64-dispatch-decision.json)
+select only the 128×512×512 FP16 output-projection case for another A100
+integration experiment. Six within-run paired rounds show 1.930–1.950× speedup
+over m-fast; the independent replay is 1.875× faster than its best pointer
+control. The decision always says `production_promoted: false`.
+
+The importer checks raw hashes, source and policy identities, full pattern/
+graph coverage, recorded controls/resources, frozen chronology and observed
+Modal application provenance. Original cubin bytes and output arrays were not
+retained in these role JSONs: the audit checks recorded hash consistency and a
+current source-matched re-encoding, not a new independent binary or hardware
+verification. Zero spill bytes is explicitly derived from no local-memory/call
+instructions in that re-encoding plus recorded driver local-memory zero; it is
+not a ptxas spill report. A production integration must retain its built binary
+and repeat the applicable full-state and held-out checks.
+
+```sh
+.venv/bin/python -m exp.shape_coverage.import_tile64_evidence
+.venv/bin/python -m exp.shape_coverage.measured_dispatch \
+  exp/shape_coverage/tile64-dispatch-proposal.json
+```

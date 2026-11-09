@@ -8,7 +8,7 @@
 
 Do you always feel like when the newest nvidia GPU come out with unbearable high price while your existing older GPUs are making you left behind in model serving and training? 
 
-We provide a more efficient compiler eith optimization kernels that reach an approximate 10-30% speed up in selective kernels in LLM inferencing and training comparing to using the SASS/cubin compiled by the nvidia compiler on various existing architectures (A100, H100 etc). Our goal is to create efficient and fast compiler and low level assembly language/binary file so that you can (without buying expensive frontier GPUs) with a ~20% overall speedup in training speed of LLM training and inferencing. We currently support single file compilation (including Python, CUDA C, CUDA C++ down to SASS and further down to CUDA Binary file, which is directly executable on your NVIDIA GPUs). We are currently working on more optimization kernels and supporting complete compilation of a whole repo. 
+OpenAssembler generates native SASS and executable cubins for supported A100/SM80 kernels, with shape-specific kernel and compiler optimizations. Performance depends on the operation and comparison: measured improvements over earlier OA kernels do not imply a win over matched ptxas or cuBLAS, and a whole-native transformer-training speedup has not been established. The CLI supports standalone kernels and repository discovery for supported Python, CUDA C/C++ and PTX inputs. An explicit PyTorch application route uses Inductor/Triton for GPU code generation. Broader architecture support and end-to-end training acceleration remain research goals; see the measured contracts and limitations below.
 
 [Architecture and status](docs/STATUS.md) · [All commands](docs/COMMANDS.md) ·
 [Research catalogue](docs/research/README.md) · [Development setup](docs/DEVELOPMENT.md)
@@ -30,6 +30,8 @@ We provide a more efficient compiler eith optimization kernels that reach an app
   saved compiler/runtime cache with state verification.
 - Study factorized matrix multiplication, compiler encodings and scheduling
   through the retained research tools and evidence.
+- Audit transformer QKV/output/FFN roles and shape/layout coverage before
+  selecting a native GEMM policy.
 
 Support and performance are workload-specific. The [status page](docs/STATUS.md)
 separates native compiler results, library controls and application-frontend

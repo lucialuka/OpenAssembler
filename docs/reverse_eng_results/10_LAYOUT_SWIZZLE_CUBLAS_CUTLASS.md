@@ -21,6 +21,23 @@ square cases remain unsuitable for automatic dispatch.
 
 These are shape-specific experiment results, not universal dispatch rules.
 
+The current role-labelled A100 run extends this comparison beyond generic
+matrix shapes. For medium `M=1024,H=1024` forward roles, all output/canary/
+graph/ptxas/resource gates pass, but OA remains slower than same-source ptxas:
+approximately 1.15x on QKV, 1.48x on the output projection, 1.40x on FFN-up and
+1.43x on FFN-down. Load-next improves FFN-up OA by about 9% versus source-order
+OA in both FP16 and BF16; it does not close the ptxas gap. See the
+[role coverage experiment](../../exp/shape_coverage/README.md) and its raw
+source-hashed record.
+
+A [new 64×64 CTA family](../research/ideas/small-grid-tensor-cta-tiles.md)
+separately tests geometry rather than CTA traversal. The 32-case current-source
+study passes all numerical/graph gates, improves 18 cases and regresses 14.
+Small-token roles improve roughly 45–54%, while large cases can regress about
+49%. Matched ptxas remains faster on the best tested geometry. The exact small
+output case is selected only for a further integration experiment; it is not
+available through the production `gemm` tile contract.
+
 ## cuBLAS and cuBLASLt boundary
 
 Public cuBLASLt exposes heuristic selection, workspace limits, alignment,

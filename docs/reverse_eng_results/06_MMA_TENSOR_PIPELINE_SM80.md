@@ -57,6 +57,20 @@ late advancement and no fused epilogue. Grouped-N CTA traversal is admitted as
 `grouped_n8` when the N tile count is divisible by eight. Both are opt-in; the
 general dependency scheduler and automatic shape dispatch remain unpromoted.
 
+The newer [fragment placement study](../../exp/shape_coverage/a100-role-gemm_20261109T111245.728446Z.json)
+tests split-2/4/6 load-next placement with the same HMMA8/drain15 controls and
+per-accumulator K order. All full FP16/BF16 checks pass on the medium FFN-up
+role, but split-2/6 do not beat split-4 there. Register counts are 244/240/236;
+fewer registers are not sufficient evidence of a better schedule.
+
+The [current lowered-region audit](../../exp/tensor_scheduler/actual-block-audit_20261109.json)
+also supersedes the earlier model's region acceptance. All 45 audited actual
+GEMM regions now fail closed because the adapter cannot fully represent their
+visibility, predicate or implicit state. A source-hashed `a100_clocked_24_8`
+profile models the measured accumulator and initiation classes; all remaining
+readiness/observer distances are explicitly uncalibrated. No general reordered
+stream is encoded, and predicted model cycles remain distinct from measurements.
+
 See [A100 tensor dependency scheduler](../research/ideas/a100-tensor-dependency-scheduler.md) and
 [Native SM80 tensor GEMM](../research/ideas/native-tensor-gemm.md).
 

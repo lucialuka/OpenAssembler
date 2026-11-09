@@ -1,0 +1,90 @@
+{
+  "certificate": {
+    "tile_mnk": [
+      64,
+      64,
+      64
+    ],
+    "warp_mn": [
+      32,
+      32
+    ],
+    "warps": 4,
+    "accumulators_per_thread": 32,
+    "output_elements": 4096,
+    "output_ownership_exact_once": true,
+    "copied_bytes_per_operand_stage": 8192,
+    "copy_coverage_exact_once": true,
+    "ldsm_aligned_in_bounds": true,
+    "stages": 2,
+    "shared_bytes": 32768,
+    "hardware_validated": false,
+    "scope": "layout/source certificate; not instruction-timing or hardware proof",
+    "plan": {
+      "m": 128,
+      "n": 512,
+      "k": 512,
+      "dtype": "f16"
+    },
+    "launch": {
+      "grid": [
+        2,
+        8,
+        1
+      ],
+      "threads": 128,
+      "smem": 32768
+    },
+    "manual_launch": {
+      "grid": [
+        2,
+        8,
+        1
+      ],
+      "threads": 128,
+      "smem": 32768
+    },
+    "manual_launch_experiment": true,
+    "experimental": true,
+    "full_work_preserved": true,
+    "k_order_preserved": true,
+    "source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+    "input_alignment": 16,
+    "output_alignment": 8,
+    "operation": "C[M,N] = A[M,K] @ B[N,K].T; contiguous inputs/output",
+    "input_dtype": "f16",
+    "accumulation_dtype": "f32",
+    "output_dtype": "f32",
+    "hmma_control": 8,
+    "epoch_drain": 15,
+    "production_promoted": false
+  },
+  "static": {
+    "instructions": 723,
+    "registers": 88,
+    "encoded_words": 728,
+    "opcodes": {
+      "MOV": 110,
+      "ULDC": 1,
+      "S2R": 3,
+      "IMAD": 97,
+      "LOP3": 55,
+      "SHF": 23,
+      "IADD3": 159,
+      "LDGSTS": 32,
+      "LDGDEPBAR": 4,
+      "DEPBAR": 4,
+      "BAR": 8,
+      "LDSM": 64,
+      "HMMA": 128,
+      "NOP": 16,
+      "ISETP": 1,
+      "@P0": 1,
+      "STG": 16,
+      "EXIT": 1
+    },
+    "labels": 1,
+    "exits": 1
+  },
+  "evidence_scope": "native source-inclusive compile only; execution/timing untested"
+}

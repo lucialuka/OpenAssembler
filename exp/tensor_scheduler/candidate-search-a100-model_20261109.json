@@ -1,0 +1,178 @@
+{
+  "schema": 2,
+  "latency_profile": {
+    "name": "a100_clocked_24_8",
+    "latency": {
+      "accum_raw": 24,
+      "hmma_issue": 8,
+      "ldsm_to_hmma": 4,
+      "async_to_wait": 1,
+      "wait_to_ldsm": 1,
+      "observer": 15,
+      "address_war": 1,
+      "register_raw": 1,
+      "memory_order": 1,
+      "control": 1
+    },
+    "calibrated_fields": [
+      "accum_raw",
+      "hmma_issue"
+    ],
+    "uncalibrated_fields": [
+      "ldsm_to_hmma",
+      "async_to_wait",
+      "wait_to_ldsm",
+      "observer",
+      "address_war",
+      "register_raw",
+      "memory_order",
+      "control"
+    ],
+    "provenance": {
+      "kind": "partial fit to clocked ptxas loop probes",
+      "artifact": "clocked-loop-probes_20261109T064627.431181Z.json",
+      "sha256": "dc0492fc3e0f63aa0cd05ba40e184d83e5427c0dc4f4884b7db6fd76732f7164",
+      "device": "A100",
+      "repetitions": 128,
+      "observed_effective_cycles_per_hmma": {
+        "1": 24.0234375,
+        "2": 12.01171875,
+        "3": 8.0078125
+      },
+      "fit": {
+        "accum_raw": "one-chain effective cycles/HMMA rounded to24",
+        "hmma_issue": "three-chain effective cycles/HMMA rounded to8"
+      },
+      "limitations": [
+        "24/8 are approximate model distances, not lowest safe SASS stall controls",
+        "the bounded ptxas loop result does not validate an OA reordered kernel",
+        "LDSM, async-copy visibility, address WAR, observers and synchronization remain uncalibrated",
+        "loop/control overhead and operand arrangement are specific to the retained probes"
+      ]
+    },
+    "encoding_allowed": false,
+    "hardware_validated_schedule": false,
+    "cycle_predictions_are_hardware_measurements": false,
+    "scope": "static model; partial calibration does not validate reordering"
+  },
+  "evidence_scope": "static model predictions, not hardware measurements",
+  "experiments": [
+    {
+      "chains": 1,
+      "candidates": [
+        {
+          "name": "a100_clocked_24_8",
+          "order": [
+            "HMMA.A0",
+            "HMMA.A1",
+            "HMMA.A2",
+            "HMMA.A3",
+            "HMMA.A4",
+            "HMMA.A5",
+            "HMMA.A6",
+            "HMMA.A7",
+            "STORE"
+          ],
+          "metrics": {
+            "cycles": 184,
+            "hmma_count": 8,
+            "non_tensor_count": 1,
+            "observer_edges": 1,
+            "address_war_edges": 0,
+            "accum_edges": 7,
+            "operand_edges": 0,
+            "hmma_issue": 8,
+            "hardware_measurement": false,
+            "cycle_estimate_scope": "uncalibrated static dependency-model estimate"
+          }
+        }
+      ]
+    },
+    {
+      "chains": 2,
+      "candidates": [
+        {
+          "name": "a100_clocked_24_8",
+          "order": [
+            "HMMA.A0",
+            "HMMA.B0",
+            "HMMA.A1",
+            "HMMA.B1",
+            "HMMA.A2",
+            "HMMA.B2",
+            "HMMA.A3",
+            "HMMA.B3",
+            "HMMA.A4",
+            "HMMA.B4",
+            "HMMA.A5",
+            "HMMA.B5",
+            "HMMA.A6",
+            "HMMA.B6",
+            "HMMA.A7",
+            "HMMA.B7",
+            "STORE"
+          ],
+          "metrics": {
+            "cycles": 184,
+            "hmma_count": 16,
+            "non_tensor_count": 1,
+            "observer_edges": 1,
+            "address_war_edges": 0,
+            "accum_edges": 14,
+            "operand_edges": 0,
+            "hmma_issue": 8,
+            "hardware_measurement": false,
+            "cycle_estimate_scope": "uncalibrated static dependency-model estimate"
+          }
+        }
+      ]
+    },
+    {
+      "chains": 3,
+      "candidates": [
+        {
+          "name": "a100_clocked_24_8",
+          "order": [
+            "HMMA.A0",
+            "HMMA.B0",
+            "HMMA.C0",
+            "HMMA.A1",
+            "HMMA.B1",
+            "HMMA.C1",
+            "HMMA.A2",
+            "HMMA.B2",
+            "HMMA.C2",
+            "HMMA.A3",
+            "HMMA.B3",
+            "HMMA.C3",
+            "HMMA.A4",
+            "HMMA.B4",
+            "HMMA.C4",
+            "HMMA.A5",
+            "HMMA.B5",
+            "HMMA.C5",
+            "HMMA.A6",
+            "HMMA.B6",
+            "HMMA.C6",
+            "HMMA.A7",
+            "HMMA.B7",
+            "STORE",
+            "HMMA.C7"
+          ],
+          "metrics": {
+            "cycles": 185,
+            "hmma_count": 24,
+            "non_tensor_count": 1,
+            "observer_edges": 1,
+            "address_war_edges": 0,
+            "accum_edges": 21,
+            "operand_edges": 0,
+            "hmma_issue": 8,
+            "hardware_measurement": false,
+            "cycle_estimate_scope": "uncalibrated static dependency-model estimate"
+          }
+        }
+      ]
+    }
+  ]
+}
