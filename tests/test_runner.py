@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from openassembler.runner import (Case, Outcome, Plan, RunError, RunOptions, _first_diff,
-                                  compare, load_spec, report, run_command)
+from openassembler.runner import (Case, Plan, RunError, RunOptions, _first_diff, compare, load_spec, report,
+                                  run_command)
 
 
 def test_first_diff_reports_word_index_and_handles_length_changes():

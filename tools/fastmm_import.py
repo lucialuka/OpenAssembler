@@ -12,7 +12,6 @@ every scheme exactly.
 import gzip
 import json
 import re
-import ast
 from fractions import Fraction
 from pathlib import Path
 

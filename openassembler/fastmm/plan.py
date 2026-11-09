@@ -20,7 +20,7 @@ import struct
 from dataclasses import dataclass, field
 
 from openassembler.fastmm.factors import Scheme
-from openassembler.fastmm.kernels import BM, BN, THREADS
+from openassembler.fastmm.kernels import THREADS
 
 MAXIN = 8
 
@@ -36,10 +36,6 @@ class Plan:
     lincomb_ns: set = field(default_factory=set)
     flops_mul: int = 0
     n_lincomb: int = 0
-
-
-def _view(buf, off, ld):
-    return (buf, off, ld)
 
 
 def _lincomb(plan: Plan, out, terms, rows, cols, accumulate=False):

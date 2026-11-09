@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path[:0] = [str(ROOT), str(ROOT / "tools")]
 
-from bench_build import _reschedule_k, listing  # noqa: E402
+from bench_build import _reschedule_k  # noqa: E402
 from openassembler import oracle  # noqa: E402
 from openassembler.backend import ra  # noqa: E402
 from openassembler.container.cubin import required_regcount, splice_text  # noqa: E402

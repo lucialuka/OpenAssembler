@@ -18,7 +18,6 @@ which this module does not attempt to demangle for you.
 from __future__ import annotations
 
 import re
-import shlex
 from pathlib import Path
 
 from openassembler import oracle

@@ -182,6 +182,20 @@ and durable raw evidence, rather than starting another phase report. The full
 cross-cutting [whole-stack study](research/WHOLE_STACK_RESULTS.md) is retained
 because its complete methodology and attribution span several features.
 
+## Removing unused code and generated files
+
+Check CLI dispatch, direct and dynamic imports, package resources, tests,
+documentation links and evidence manifests before removing a helper or file.
+Keep intentional exports and compatibility entry points. A standalone research
+script or an unsuccessful experiment is not dead merely because production
+does not import it; retain the inputs, source snapshots and raw outcomes needed
+to interpret or reproduce a result.
+
+Compiler outputs belong in the ignored output directory. The transformer
+training example defaults to the separate, ignored out directory; its config,
+tokenizer and checkpoint files are generated run state, not committed fixtures.
+Source cleanup does not require deleting local environments or user run output.
+
 ## Short glossary
 
 | Term | Meaning here |

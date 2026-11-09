@@ -14,7 +14,7 @@ from openassembler.backend import ra, tensor
 from openassembler.backend.compile import Out
 from openassembler.backend.tensor_encoding import TensorEncoder
 from openassembler.emu.machine import Launch, Machine, Memory
-from openassembler.emu.program import load_listing, parse_insn
+from openassembler.emu.program import load_listing
 from openassembler.isa import encode
 from openassembler.isa.word import control, control_valid
 from openassembler.kernels.gemm import GemmPlan, generate as gemm_source

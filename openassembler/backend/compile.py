@@ -1,14 +1,12 @@
-"""M3 v0: naive PTX -> SASS compiler for straight-line probe kernels (sm_80).
+"""Shared naive PTX selection and production SASS scheduling (sm_80).
 
-Pipeline: parse PTX -> select SASS per PTX instruction -> assign one physical
-register per PTX virtual register (no reuse; the probes are tiny) -> conservative
-scheduling (control bits from the mined model, scoreboards for every variable-
-latency op) -> template encoder -> splice into a ptxas-built cubin of the same
-kernel (we reuse its ELF/.nv.info skeleton and fix REGCOUNT and EXIT offsets).
+Compiler assigns one physical register per PTX virtual register. The naive
+A/B backend re-exports this selector with its original conservative scheduler.
+Production register allocation lives in backend.ra; it shares Out and the
+safe/measured-latency scheduler here with the scalar and tensor pipelines.
 
-Coverage is deliberately small. Unsupported PTX raises NotSupported.
-Includes our own strength reduction: div/rem by an immediate uses the exhaustively
-proved multiply-high sequences from openassembler.opt.divconst.
+Unsupported PTX raises NotSupported. Immediate integer division/remainder uses
+the proved strength-reduction sequences from openassembler.opt.divconst.
 """
 
 from __future__ import annotations
@@ -17,7 +15,7 @@ from dataclasses import dataclass, field
 
 from openassembler.isa.word import Control
 from openassembler.opt import divconst
-from openassembler.ptx.parse import Addr, ImmI, Instr, Kernel, Var, Vec
+from openassembler.ptx.parse import ImmI, Instr, Kernel, Var, Vec
 
 PARAM_BASE = 0x160
 

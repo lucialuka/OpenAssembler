@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import diff_emu  # noqa: E402
 import ptx_probes  # noqa: E402
-from openassembler.emu.fp import F32, Val, add, decode, encode, mul  # noqa: E402
+from openassembler.emu.fp import add, decode, encode, mul  # noqa: E402
 from openassembler.emu.ops import lut3  # noqa: E402
 from openassembler.emu.probe import run_probe  # noqa: E402
 

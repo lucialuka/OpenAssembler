@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
 import modal
@@ -17,9 +16,7 @@ gpu_function = app.function(image=image, gpu='A100-40GB', timeout=960,
 
 @gpu_function
 def process(request_text: str) -> str:
-    import os
     import sys
-    import tempfile
     sys.path.insert(0, '/root')
     from openassembler.torchfront.worker import process as run_request
     response = run_request(json.loads(request_text))

@@ -47,12 +47,6 @@ def _compile_opts(a: argparse.Namespace):
                    nvcc_flags=list(a.nvcc_flag), dump_ptx=a.dump_ptx)
 
 
-def _application_root(src: Path) -> Path | None:
-    from openassembler.torchfront.frontend import config_path
-    root = Path(src).resolve()
-    return root if root.is_dir() and config_path(root) else None
-
-
 def _frontend_choice(src: Path, out_dir: Path | None, requested: str):
     from openassembler.repository import select_frontend
     return select_frontend(src, out_dir or (Path(src).resolve() / "output"), requested)

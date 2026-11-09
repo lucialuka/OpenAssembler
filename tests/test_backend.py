@@ -22,6 +22,51 @@ needs_smoke = pytest.mark.skipif(not (CORPUS / "smoke.cubin").exists(),
                                  reason="corpus/sm_80/smoke.cubin is build output (tools/build_corpus.py)")
 
 
+@pytest.mark.parametrize("backend_name", ["compile", "naive"])
+def test_legacy_selector_imports_preserve_output_types_semantics_and_errors(backend_name):
+    from importlib import import_module
+    import struct
+
+    from openassembler.emu.machine import Launch, Machine, Memory
+    from openassembler.emu.program import load_listing
+    from openassembler.ptx.parse import parse_module
+    from tests.backend_harness import listing
+
+    backend = import_module(f"openassembler.backend.{backend_name}")
+    ptx = """.version 8.7
+.target sm_80
+.address_size 64
+.visible .entry value(.param .u64 out) {
+ .reg .u64 %ptr; .reg .u32 %value;
+ ld.param.u64 %ptr,[out];
+ mov.u32 %value,41;
+ add.u32 %value,%value,1;
+ st.global.u32 [%ptr],%value;
+ ret;
+}
+"""
+    code = backend.Compiler(parse_module(ptx).kernels["value"]).compile()
+    assert code and all(isinstance(instruction, backend.Out) for instruction in code)
+    scheduled = backend.schedule(code)
+    enc = Encoder("sm_80")
+    for text, ctl in scheduled:
+        enc.encode(text, ctl)
+    program = load_listing(listing(scheduled, {}))
+    address = 0x100000000
+    for poison in (None, 0xDEADBEEF):
+        memory = Memory()
+        memory.write(address - 4, 4, 0xA5A5A5A5)
+        memory.write(address + 4, 4, 0xA5A5A5A5)
+        launch = Launch(block=(1, 1, 1), params=struct.pack("<Q", address), poison=poison)
+        Machine(program, launch, memory).run()
+        assert memory.read(address, 4) == 42
+        assert memory.read(address - 4, 4) == memory.read(address + 4, 4) == 0xA5A5A5A5
+
+    unsupported = ptx.replace("mov.u32 %value,41;", "mov.u32 %value,%smid;")
+    with pytest.raises(backend.NotSupported, match="special register"):
+        backend.Compiler(parse_module(unsupported).kernels["value"]).compile()
+
+
 @needs_corpus
 def test_elf_roundtrip_all_cubins():
     files = sorted((CORPUS / "cubin").glob("*.cubin"))

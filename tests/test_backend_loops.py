@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 import random
-import struct
 from pathlib import Path
 
 import pytest
 
 from openassembler import oracle
-from openassembler.backend import ra
-from openassembler.ptx.parse import parse_module
 from tests.backend_harness import compile_and_diff, f32b, pack_f32
 
 ROOT = Path(__file__).resolve().parent.parent

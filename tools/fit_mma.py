@@ -20,7 +20,6 @@ import gzip
 import itertools
 import json
 import sys
-from fractions import Fraction
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent

@@ -120,10 +120,6 @@ def main():
         print(f"{name:18} ptxas {n_ptxas} insns | ours " + " ".join(f"{v} {n}" for v, n in sizes.items()))
 
 
-def _reschedule(k, model):
-    return _reschedule_k(k, model)[0]
-
-
 def _reschedule_k(k, model):
     """Compile PTX kernel k with scheduler `model`; returns (code, labels).
     Suffix Y / N: force the yield bit on / off on every instruction (experiment)."""

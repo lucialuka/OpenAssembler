@@ -44,10 +44,6 @@ def run_batch(jobs_blob: bytes, job_timeout: float, budget: float) -> dict:
     return {"device": info, "gpu_seconds": round(time.monotonic() - t0, 1), **r}
 
 
-def _f32b(x: float) -> int:
-    return struct.unpack("<I", struct.pack("<f", x))[0]
-
-
 def _split_cols(n: int, max_block: int = 256) -> tuple[int, int]:
     """n columns -> (block.x, grid.y) so block.x * grid.y >= n and
     block.x <= max_block (well under CUDA's 1024-thread/block cap; 256 keeps

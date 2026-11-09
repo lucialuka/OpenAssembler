@@ -14,7 +14,6 @@ from __future__ import annotations
 import argparse
 import random
 import shlex
-import struct
 import sys
 from pathlib import Path
 
@@ -25,12 +24,10 @@ import diff_emu  # noqa: E402
 import ptx_probes  # noqa: E402
 from openassembler import oracle  # noqa: E402
 from openassembler.backend import ra  # noqa: E402
-from openassembler.backend.naive import Compiler, NotSupported, schedule  # noqa: E402
-from openassembler.container import nvinfo  # noqa: E402
+from openassembler.backend.naive import Compiler, schedule  # noqa: E402
 from openassembler.container.cubin import required_regcount, splice_text  # noqa: E402
-from openassembler.container.elf import Elf  # noqa: E402
 from openassembler.emu.probe import run_probe  # noqa: E402
-from openassembler.isa.encode import EncodeError, Encoder  # noqa: E402
+from openassembler.isa.encode import Encoder  # noqa: E402
 from openassembler.ptx.parse import parse_module  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -41,27 +38,6 @@ OUT = CORPUS / "ours"
 SCOPE = ["add.s32", "add.u32", "sub.s32", "mul.lo", "mul.hi", "mad.lo", "min.", "max.", "and.b32", "or.b32",
          "xor.b32", "shl.b32.i", "shr.u32.i", "shr.s32.i", "mul.wide", "not", "div.u32.i", "div.s32.i",
          "rem.u32.i", "rem.s32.i"]
-
-
-def patch_info(e: Elf, kname: str, nregs: int, exits: list[int]) -> None:
-    sec = e.section(".nv.info")
-    recs = nvinfo.parse(sec.data)
-    for r in recs:
-        if r.name == "REGCOUNT":
-            fn = struct.unpack_from("<I", r.data, 0)[0]
-            r.data = struct.pack("<II", fn, nregs)
-    e.replace_data(".nv.info", nvinfo.serialize(recs))
-    ks = e.section(f".nv.info.{kname}")
-    recs = nvinfo.parse(ks.data)
-    for r in recs:
-        if r.name == "EXIT_INSTR_OFFSETS":
-            r.data = struct.pack(f"<{len(exits)}I", *exits)
-    e.replace_data(ks.name, nvinfo.serialize(recs))
-    # The hardware register allocation comes from .text.<k> sh_info bits 24..31, not only
-    # from EIATTR_REGCOUNT: a stale value made every kernel above R13 fault with
-    # CUDA_ERROR_ILLEGAL_INSTRUCTION on the A100 (corpus/sm_80/gpu_a100_40gb_ours.json, first run).
-    t = e.section(f".text.{kname}")
-    t.info = (t.info & 0x00FFFFFF) | (nregs << 24)
 
 
 def main():

@@ -8,7 +8,7 @@ from typing import Callable
 
 from openassembler.emu import fp
 from openassembler.ptx.interp import M, Interp, Lane, NotModeled, Undefined, sext, types_of, _TBITS
-from openassembler.ptx.parse import Addr, ImmF, ImmI, Instr, PairDst, Var, Vec
+from openassembler.ptx.parse import Instr, PairDst, Var, Vec
 
 LANE_OPS: dict[str, Callable] = {}   # per-lane: fn(it, ln, ins) -> None
 WARP_OPS: dict[str, Callable] = {}   # collective: fn(it, lanes, ins) -> None
@@ -591,10 +591,6 @@ def _atom(it, ln, ins):
 
 
 # ---- warp collectives (lanes = active lanes, in lane order) ------------------------------------
-
-def _mask(it, lanes, op) -> int:
-    return it.get(lanes[0], op, 32)
-
 
 @warp("shfl")
 def _shfl(it, lanes, ins):

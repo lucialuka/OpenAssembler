@@ -29,7 +29,7 @@ from fractions import Fraction
 
 from openassembler.emu import fp
 from openassembler.emu.machine import Memory
-from openassembler.ptx.parse import Addr, ImmF, ImmI, Instr, Kernel, Module, PairDst, Var, Vec
+from openassembler.ptx.parse import Addr, ImmF, ImmI, Instr, Module, PairDst, Var, Vec
 
 
 class Undefined(Exception):

@@ -15,11 +15,10 @@ from __future__ import annotations
 
 import dataclasses as _dc
 
-import struct
 from typing import Callable
 
 from openassembler.emu.machine import M32, EmuError, Machine, Thread, Unsupported, Warp, special_reg
-from openassembler.emu.operands import CBank, Imm, Label, Mem, Pred, Raw, Reg
+from openassembler.emu.operands import Imm, Label, Pred, Reg
 from openassembler.emu.program import Insn
 
 ALU: dict[str, Callable] = {}

@@ -11,26 +11,13 @@ older single-kernel form, kept for callers that want exactly one kernel.
 
 from __future__ import annotations
 
-import re
-import sys
 from pathlib import Path
 
-from openassembler.project import CPP_EXTS, CU_EXTS, PTX_EXTS, PY_EXTS, python_kernel_names
+from openassembler.project import CPP_EXTS, CU_EXTS, PTX_EXTS, PY_EXTS
 
 
 class FrontendError(Exception):
     pass
-
-
-_HEADER_LINE = re.compile(r"^\s*\.(version|target|address_size)\b.*$", re.M)
-
-
-def _merge_ptx(texts: list[str]) -> str:
-    """Several single-kernel PTX modules (pyfront emits one per @kernel) -> one module:
-    keep the first module's .version/.target/.address_size header, drop the repeats."""
-    if not texts:
-        return ""
-    return "\n".join([texts[0], *(_HEADER_LINE.sub("", t) for t in texts[1:])])
 
 
 def _python_module(path: Path, arch: str) -> tuple[str, list[str], list[str]]:

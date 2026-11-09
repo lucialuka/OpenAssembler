@@ -16,18 +16,12 @@ the PTX yet (div.rn.f32, sqrt, cvt, ...); legs (1) == (2) must always pass."""
 from __future__ import annotations
 
 import math
-import struct
 
 import pytest
-from pyfront_threeway import BASE, Pending, close, f32, run_ptx_and_sass, run_python, same
+from pyfront_threeway import Pending, close, f32, run_ptx_and_sass, run_python, same
 
-from openassembler.backend import ra
-from openassembler.emu.machine import Launch as SassLaunch
-from openassembler.emu.machine import Machine, Memory
-from openassembler.emu.program import load_listing
-from openassembler.ptx.parse import parse_module
-from openassembler.pyfront import (Array, NotSupported, compile_kernel, exp, f32 as F32, i32, kernel,
-                                   log, rsqrt, shared_array, sqrt, syncthreads, tanh, tid_x)
+from openassembler.pyfront import (Array, exp, f32 as F32, i32, kernel, log, rsqrt, shared_array, sqrt,
+                                   syncthreads, tanh, tid_x)
 
 THREADS = 8
 I32_MIN = -(1 << 31)

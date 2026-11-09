@@ -152,11 +152,6 @@ def check_lincomb(sass, n_in, arch):
     return None if not bad else f"{bad} wrong"
 
 
-def params_layout(k):
-    """PTX param list -> struct format (natural alignment), to cross-check check_*()."""
-    return [ty for ty, _ in k.params]
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--arch", default="sm_80")

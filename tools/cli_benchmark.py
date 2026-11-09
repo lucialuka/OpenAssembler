@@ -12,7 +12,6 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-import shlex
 import subprocess
 import sys
 import time
