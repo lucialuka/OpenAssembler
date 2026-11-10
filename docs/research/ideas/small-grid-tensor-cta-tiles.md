@@ -1,9 +1,9 @@
 # Smaller tensor CTA tiles for short transformer GEMMs
 
-Status: validated-not-integrated
+Status: implemented
 
-This status covers the bounded experimental kernel and measured cases. It is
-not a production dispatch rule or a claim of general ptxas/cuBLAS superiority.
+This status covers the bounded production generator and measured cases. It is a
+shape-aware native option, not a claim of general ptxas/cuBLAS superiority.
 
 ## Idea in plain language
 
@@ -12,7 +12,7 @@ large output tile. A smaller tile gives the GPU more independent blocks and
 shortens the work inside each one. That can help even if it repeats more
 address calculations and operand reads overall.
 
-The experiment generates a 64×64×64 CTA tile with four 32×32 warp tiles,
+The production generator can generate a 64×64×64 CTA tile with four 32×32 warp tiles,
 FP16/BF16 operands, FP32 accumulation/output and two shared stages. Each thread
 owns 32 accumulator values instead of 128. The tested source uses 88 allocated
 registers and 32 KiB shared memory, versus 216 and 64 KiB in the default tile.
@@ -49,13 +49,10 @@ not ptxas compiling the smaller-tile source. The replay includes direct+early
 pointer OA at 19.20 µs, so the gain survives that stronger OA control. Absolute
 times are not pooled across devices.
 
-The [selection record](../../../exp/shape_coverage/a100-role-gemm_20261109T112122.548949Z.json)
-passes 15 method/input and five graph checks. The
-[frozen protocol](../../../exp/shape_coverage/tile64-heldout-protocol.json)
-precedes the independent
-[replay record](../../../exp/shape_coverage/a100-role-gemm_20261109T113154.637725Z.json),
-which passes 33 method/input and 11 graph checks. Their recorded source
-identities agree, and the replay matches the frozen source hashes.
+The selection record passes 15 method/input and five graph checks. The
+independent replay record passes 33 method/input and 11 graph checks. Its
+recorded source identity matches the selection run. These records are
+historical evidence for the source family, not a current binary attestation.
 
 ## What the counters do and do not explain
 
@@ -127,31 +124,23 @@ OA, but this is not a tuned cuBLASLt comparison or whole-training result.
 
 ## Decision and remaining work
 
-Keep this family experimental and shape guarded. The broader sweep establishes
-real gains and regressions, so the small output case cannot justify a universal
-tile change. Unseen shapes, alignment classes, toolkit versions and whole-model
+Keep this family shape guarded. The broader sweep establishes real gains and
+regressions, so the small output case cannot justify a universal tile change.
+`--dispatch auto` only selects a current exact table entry; an unknown or stale
+entry uses the 128×128 reference. `--tile 64x64` remains available for explicit
+manual experiments, and `--autotune` can test the currently admitted candidates
+on an A100. Unseen alignment classes, toolkit versions and whole-model
 substitution still need validation. A native model route and full
 forward/backward/optimizer state check remain separate integration gates.
 
-The [audited proposal](../../../exp/shape_coverage/tile64-dispatch-proposal.json)
-and [selector decision](../../../exp/shape_coverage/tile64-dispatch-decision.json)
-select only the 128×512×512 FP16 output-projection case for another A100
-integration experiment. Six within-run paired rounds show 1.930–1.950× speedup
-over m-fast; the independent replay is 1.875× faster than its best pointer
-control. The decision always says `production_promoted: false`.
-
-The importer checks raw hashes, source and policy identities, full pattern/
-graph coverage, recorded controls/resources, frozen chronology and observed
-Modal application provenance. Original cubin bytes and output arrays were not
-retained in these role JSONs: the audit checks recorded hash consistency and a
-current source-matched re-encoding, not a new independent binary or hardware
-verification. Zero spill bytes is explicitly derived from no local-memory/call
-instructions in that re-encoding plus recorded driver local-memory zero; it is
-not a ptxas spill report. A production integration must retain its built binary
-and repeat the applicable full-state and held-out checks.
+The production table
+[`sm80_gemm_dispatch.json`](../../../openassembler/kernels/sm80_gemm_dispatch.json)
+contains current source-identity-locked tile64 rows for exact shape/dtype
+contracts. Unknown contracts use the reference. The current integrated pilot
+retains PTX, cubin and SASS and passes the full numerical, canary, input,
+poisoned-graph, disassembly and resource gates; matched ptxas and cuBLAS remain
+faster.
 
 ```sh
-.venv/bin/python -m exp.shape_coverage.import_tile64_evidence
-.venv/bin/python -m exp.shape_coverage.measured_dispatch \
-  exp/shape_coverage/tile64-dispatch-proposal.json
+.venv/bin/python -m exp.shape_coverage.audit_role_evidence
 ```

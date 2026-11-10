@@ -174,6 +174,9 @@ concurrent builds.
 ## `gemm`: checked native A100 tensor GEMM
 
 ```sh
+openassembler gemm --m 128 --n 512 --k 512 --dtype f16 --out-dir output_auto
+openassembler gemm --m 128 --n 512 --k 512 --tile 64x64 --out-dir output_tile64
+openassembler gemm --m 1024 --n 4096 --k 1024 --dispatch manual --out-dir output_control
 openassembler gemm --m 1024 --n 4096 --k 1024 --dtype f16 --pointer-mode direct --out-dir output_gemm
 openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order morton8 --out-dir output_morton
 openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order grouped_n8 --out-dir output_grouped_n
@@ -182,8 +185,9 @@ openassembler gemm --m 4096 --n 4096 --k 4096 --dtype bf16 --epilogue bias_resid
 ```
 
 The operation is `C = A @ B.T`: contiguous `A[M,K]` and `B[N,K]` FP16/BF16
-inputs; FP32 accumulation and contiguous `C[M,N]` output. M, N and K must be
-positive multiples of 128. Inputs need 16-byte alignment; output needs
+inputs; FP32 accumulation and contiguous `C[M,N]` output. M/N must be positive
+multiples of 64 with the 64×64 tile, or of 128 with the 128×128 tile; K must
+be a positive multiple of 128. Inputs need 16-byte alignment; output needs
 eight-byte alignment. Arbitrary strides, tails, alpha/beta and alternate
 transposed storage are not part of this command.
 Each input/output element count must fit the generator's unsigned 32-bit index
@@ -194,27 +198,60 @@ contract, and the N tile count must fit CUDA's grid-y limit.
 | `--m M`, `--n N`, `--k K` | Required | Matrix dimensions. |
 | `--dtype TYPE` | `f16` | Input type: `f16` or `bf16`. |
 | `--arch ARCH` | `sm_80` | This checked generator accepts only `sm_80`. |
-| `--schedule MODE` | `stagepair` | `stagepair` is the validated alternating-stage plan; `combined` retains its earlier comparison plan. |
-| `--fragment-schedule MODE` | `source` | `source` keeps the default source-order fragment stream; opt-in `load_next` is admitted for FP16/BF16 at 1024×4096×1024 and 4096×1024×1024, with stagepair, legacy pointers, late advancement and no epilogue. |
-| `--cta-order ORDER` | `m_fast` | `m_fast`, `morton8`, or opt-in `grouped_n8`; Morton requires complete 8×8 output-tile groups, while grouped-N requires N tile count divisible by 8 and changes the launch grid to `(m_tiles×8, n_tiles/8)`. |
+| `--dispatch MODE` | `auto` | `auto` selects an exact measured native policy when its compiler/source identity and contract match; otherwise it retains the baseline. `manual` selects the baseline plus any explicit implementation knobs. |
+| `--tile SHAPE` | Automatic / `128x128` reference | Explicit `128x128` or `64x64` CTA tile. A shape divisible by 64 but not 128 requires the smaller tile. Explicit selection disables measured dispatch. |
+| `--schedule MODE` | Selected policy / `stagepair` reference | Explicit `stagepair` alternating-stage plan or `combined` comparison plan; selects manual dispatch. |
+| `--fragment-schedule MODE` | Selected policy / `source` reference | Explicit `source` or `load_next`; the latter is admitted only for FP16/BF16 at 1024×4096×1024 and 4096×1024×1024 with the 128×128 tile, stagepair, legacy pointers, late advancement and no epilogue. |
+| `--cta-order ORDER` | Selected policy / `m_fast` reference | Explicit `m_fast`, `morton8` or `grouped_n8`; Morton requires complete 8×8 output-tile groups, while grouped-N requires N tile count divisible by 8 and changes the launch grid to `(m_tiles×8, n_tiles/8)`. |
 | `--epilogue MODE` | `none` | `none`, `bias_residual`, `bias_residual_relu`. Nonempty modes require `stagepair` and append FP32 bias/residual pointers. |
-| `--pointer-mode MODE` | `legacy` | `legacy` or explicit `direct` pointer homes. Direct requires `stagepair`, `m_fast`, and `--epilogue none`. |
-| `--pointer-advance MODE` | `late` | `late` (default), `early`, or shape-specific `auto` placement for the validated stagepair/m_fast/unfused pointer-update candidate. |
+| `--pointer-mode MODE` | Selected policy / `legacy` reference | Explicit `legacy` or `direct` pointer homes. Direct requires the 128×128 tile, `stagepair`, `m_fast`, and `--epilogue none`. |
+| `--pointer-advance MODE` | Selected policy / `late` reference | Explicit `late`, `early`, or shape-specific `auto` placement for the validated 128×128/stagepair/m_fast/unfused pointer-update candidate. |
+| `--autotune BACKEND` | Off | Compile, fully check and time the admitted native policies on an A100 using `local` or `modal`. Requires automatic dispatch, no explicit policy knobs and a real build. Excludes fused epilogues. |
+| `--tuning-record JSON` | None | With `--autotune`, retain the tuning result and companion binary/source/SASS archive; without it, explicitly reuse a current shape/compiler-matched record. |
+| `--tune-rounds N` | `3` | Paired GPU timing rounds, bounded to 3–10. |
+| `--tune-samples N` | `12` | Samples per candidate per round, bounded to 8–100. |
 | `--out-dir DIR` | `output` | Output root. |
 | `-o NAME`, `--out NAME` | `gemm` | Artifact basename; entry name remains `gemm`. |
 | `--no-sass` | Off | Skip the readable listing. |
 | `--emit-only` | Off | Write annotated generated PTX without invoking the CUDA tools. |
 
-The fixed launch uses 128 threads and 65,536 dynamic shared-memory bytes per
-CTA. The generated source annotation supplies the checked launch to `run`.
+Both tile families use 128 threads. The 128×128 tile uses 65,536 dynamic
+shared-memory bytes; the 64×64 tile uses 32,768. The smaller tile currently
+requires stagepair, m-fast, source-order fragments, legacy/late pointers and no
+fused epilogue. The generated source annotation supplies the checked launch to `run`.
 Custom callers must use the recorded launch and opt into the shared-memory
 size. Fusion computes `(A @ B.T + Bias) + Residual`, optionally followed by
 ReLU, with contiguous FP32 `Bias[N]` and `Residual[M,N]`.
 
 Morton and grouped-N orders are logical output-tile traversals, not new MMA
-instructions or promises about which SM runs each block. Direct pointers and fusion have
-shape-specific wins and regressions. None is automatically selected. There
-is no `morton6` CLI option.
+instructions or promises about which SM runs each block. Every policy has
+shape-specific wins and regressions. Automatic dispatch uses exact recorded
+contracts; it does not extrapolate a winner to neighboring shapes or silently
+switch to ptxas/cuBLAS. There is no `morton6` CLI option.
+
+To compare the current admitted native policies on a particular A100 and keep
+the result for a later compile:
+
+```sh
+openassembler gemm --m 128 --n 512 --k 512 --autotune modal \
+  --tuning-record output/tuning/128-512-512-f16.json --out-dir output/tuned
+openassembler gemm --m 128 --n 512 --k 512 \
+  --tuning-record output/tuning/128-512-512-f16.json --out-dir output/reused
+```
+
+GPU tuning includes compilation and validation overhead. Its sixteen-operation
+graph timings cover resident-input isolated kernels, excluding packing, model integration
+and whole training. A candidate must pass full zero/integer/normal outputs,
+canaries, input immutability, poisoned graph, bitwise ptxas/baseline,
+disassembly and resource gates before timing. Selection requires at least a
+2% improvement in every paired round; uncertain gains keep the reference.
+The selected policy is the fastest admitted repeatable candidate in that
+bounded test, not a guarantee over every compiler, library, GPU or future run.
+
+`gemm-dispatch.json` records the selected plan, reason and scope beside the
+build. The source annotation and regular manifest carry its actual launch and
+native code-generation contract. Imported tuning records are explicit evidence;
+the CLI does not run a hidden GPU search during an ordinary compilation.
 
 The annotated PTX is saved under `.build/generated/NAME.ptx`. Recompiling that
 exact source with `compile` retains its plan/pointer policy. Edited or

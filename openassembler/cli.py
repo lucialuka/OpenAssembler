@@ -126,11 +126,31 @@ def cmd_gemm(a: argparse.Namespace) -> int:
     from openassembler.kernels.gemm import GemmPlan
     from openassembler.project import ProjectError
     try:
-        plan = GemmPlan(m=a.m, n=a.n, k=a.k, dtype=a.dtype, schedule=a.schedule,
-                        fragment_schedule=a.fragment_schedule, arch=a.arch,
-                        cta_order=a.cta_order, epilogue=a.epilogue, pointer_mode=a.pointer_mode,
-                        pointer_advance=a.pointer_advance)
-        return compile_gemm(plan, Path(a.out_dir), a.out, no_sass=a.no_sass, emit_only=a.emit_only)
+        knobs = {name: getattr(a, name) for name in ("schedule", "fragment_schedule", "cta_order",
+                 "pointer_mode", "pointer_advance", "tile") if getattr(a, name) is not None}
+        manual_requested = bool(knobs) or a.epilogue != "none"
+        # Explicit implementation knobs remain reproducible manual requests.
+        # Automatic policy selection is the normal path when no knob is set.
+        tile = "128x128" if a.m % 128 == a.n % 128 == 0 else "64x64"
+        plan = GemmPlan(m=a.m, n=a.n, k=a.k, dtype=a.dtype, arch=a.arch,
+                        epilogue=a.epilogue, **{"tile": tile, **knobs})
+        if (a.autotune or a.tuning_record) and (manual_requested or a.dispatch == "manual"):
+            raise ValueError("GPU tuning/record selection cannot be combined with manual policy knobs")
+        if a.autotune and a.emit_only:
+            raise ValueError("--autotune requires automatic dispatch, no manual policy knobs, and a real build")
+        if a.autotune or a.tuning_record:
+            from openassembler.gemm_tune import tune_or_load
+            record = a.tuning_record or str(Path(a.out_dir) / "gemm-tuning.json")
+            plan, decision = tune_or_load(plan, backend=a.autotune, record=record,
+                                          rounds=a.tune_rounds, samples=a.tune_samples)
+        elif a.dispatch == "auto" and not manual_requested:
+            from openassembler.gemm_dispatch import select_plan
+            plan, decision = select_plan(plan)
+        else:
+            decision = {"schema": 1, "mode": "manual", "policy": "explicit",
+                        "reason": "explicit implementation options"}
+        return compile_gemm(plan, Path(a.out_dir), a.out, no_sass=a.no_sass,
+                            emit_only=a.emit_only, dispatch=decision)
     except (ValueError, TypeError, OSError, ProjectError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -593,24 +613,35 @@ def build_parser() -> argparse.ArgumentParser:
     pm = sub.add_parser("gemm", help="compile a specialized A100 FP16/BF16 tensor GEMM",
                         description="Compile C=A@B.T with FP16/BF16 inputs and FP32 accumulation/output. "
                                     "A[M,K] and B[N,K] must be contiguous in K. M/N must be multiples "
-                                    "of 128, K a multiple of 128 and at least 128.")
+                                    "of 64 (128 for the larger tile), K a multiple of 128. Exact measured "
+                                    "shape policies are selected automatically; manual knobs override dispatch.")
     for dim in ("m", "n", "k"):
         pm.add_argument(f"--{dim}", type=int, required=True)
     pm.add_argument("--dtype", choices=("f16", "bf16"), default="f16")
     pm.add_argument("--arch", default="sm_80")
-    pm.add_argument("--schedule", choices=("stagepair", "combined"), default="stagepair",
-                    help="validated alternating-stage specialization (default), or its combined reference")
-    pm.add_argument("--fragment-schedule", choices=("source", "load_next"), default="source",
-                    help="source-order fragments (default), or the bounded load-next schedule for two validated wide FP16 shapes")
-    pm.add_argument("--cta-order", choices=("m_fast", "morton8", "grouped_n8"), default="m_fast",
+    pm.add_argument("--dispatch", choices=("auto", "manual"), default="auto",
+                    help="exact measured native shape selection (default), or baseline/manual policy")
+    pm.add_argument("--tile", choices=("128x128", "64x64"), default=None,
+                    help="explicit CTA tile; selects manual dispatch")
+    pm.add_argument("--schedule", choices=("stagepair", "combined"), default=None,
+                    help="manual alternating-stage specialization or combined reference")
+    pm.add_argument("--fragment-schedule", choices=("source", "load_next"), default=None,
+                    help="manual source-order or bounded FP16/BF16 load-next schedule")
+    pm.add_argument("--cta-order", choices=("m_fast", "morton8", "grouped_n8"), default=None,
                     help="A100 logical CTA traversal; morton8 requires complete 8x8 groups; grouped_n8 is an opt-in N-grouped launch")
     pm.add_argument("--epilogue", choices=("none", "bias_residual", "bias_residual_relu"), default="none",
                     help="fuse FP32 bias and residual, optionally ReLU, into the output epilogue")
-    pm.add_argument("--pointer-mode", choices=("legacy", "direct"), default="legacy",
+    pm.add_argument("--pointer-mode", choices=("legacy", "direct"), default=None,
                     help="direct reuses aligned pointer homes for staged copies; measured wins on MLP "
                          "shapes, regression on tall GEMM; stagepair/m_fast/unfused only")
-    pm.add_argument("--pointer-advance", choices=("late", "early", "auto"), default="late",
+    pm.add_argument("--pointer-advance", choices=("late", "early", "auto"), default=None,
                     help="late (default), the validated early-placement candidate, or shape-specific auto")
+    pm.add_argument("--autotune", choices=("local", "modal"),
+                    help="compile and validate admitted native policies, then time them on an A100 GPU")
+    pm.add_argument("--tuning-record", metavar="JSON",
+                    help="write a GPU tuning record with --autotune, or reuse an explicitly supplied current record")
+    pm.add_argument("--tune-rounds", type=int, default=3, help="paired GPU tuning rounds (minimum 3)")
+    pm.add_argument("--tune-samples", type=int, default=12, help="samples per policy per round (minimum 8)")
     pm.add_argument("--out-dir", default="output")
     pm.add_argument("-o", "--out", default="gemm", metavar="NAME")
     pm.add_argument("--no-sass", action="store_true")

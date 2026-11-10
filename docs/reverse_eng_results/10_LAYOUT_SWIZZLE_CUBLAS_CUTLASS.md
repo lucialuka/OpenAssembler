@@ -35,8 +35,11 @@ separately tests geometry rather than CTA traversal. The 32-case current-source
 study passes all numerical/graph gates, improves 18 cases and regresses 14.
 Small-token roles improve roughly 45–54%, while large cases can regress about
 49%. Matched ptxas remains faster on the best tested geometry. The exact small
-output case is selected only for a further integration experiment; it is not
-available through the production `gemm` tile contract.
+output case now has a production 64×64 generator and can be selected only when
+the exact measured dispatch contract matches; otherwise the reference tile
+remains active. It is available through `gemm --tile 64x64` for manual testing
+and through `--dispatch auto` only after a current promoted table entry. This
+remains distinct from a cuBLAS kernel extraction.
 
 ## cuBLAS and cuBLASLt boundary
 

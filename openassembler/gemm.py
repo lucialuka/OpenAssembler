@@ -37,7 +37,7 @@ def contract_from_source(source: str) -> dict | None:
 
 
 def compile_gemm(plan, out_dir: Path, name: str = "gemm", *, no_sass: bool = False,
-                 emit_only: bool = False) -> int:
+                 emit_only: bool = False, dispatch: dict | None = None) -> int:
     from openassembler.build import Options, _compile_paths
     # Apply exactly the same filename rules as the normal compile command.
     name, _ = project.single_output_name(Path("gemm.ptx"), name)
@@ -45,6 +45,11 @@ def compile_gemm(plan, out_dir: Path, name: str = "gemm", *, no_sass: bool = Fal
     with project.output_lock(out_dir):
         source = project.artifact_path(out_dir, f'.build/generated/{name}.ptx')
         project.write_atomic(source, source_for(plan))
+        if dispatch is not None:
+            project.write_atomic(project.artifact_path(out_dir, "gemm-dispatch.json"),
+                                 json.dumps({**dispatch, "plan": asdict(plan)}, indent=2) + "\n")
+            print(f"dispatch: {dispatch.get('mode', 'manual')} / {dispatch.get('policy', 'explicit')} "
+                  f"({dispatch.get('reason', '')})")
         if emit_only:
             print(source)
             return 0

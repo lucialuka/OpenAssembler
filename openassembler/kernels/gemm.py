@@ -37,12 +37,19 @@ class GemmPlan:
     pointer_mode: str = "legacy"
     pointer_advance: str = "late"
     fragment_schedule: str = "source"
+    tile: str = "128x128"
 
     def __post_init__(self) -> None:
+        if self.tile not in ("128x128", "64x64"):
+            raise ValueError("GEMM tile must be 128x128 or 64x64")
+        output_tile = 64 if self.tile == "64x64" else 128
         for name in ("m", "n", "k"):
             value = getattr(self, name)
-            if type(value) is not int or value <= 0 or value % 128:
-                raise ValueError(f"{name} must be a positive integer multiple of 128")
+            multiple = 128 if name == "k" else output_tile
+            if type(value) is not int or value <= 0 or value % multiple:
+                if multiple == 64:
+                    raise ValueError(f"{name} must be a positive integer multiple of 64 (or a multiple of 128 for the larger tile)")
+                raise ValueError(f"{name} must be a positive integer multiple of {multiple}")
         if self.dtype not in ("f16", "bf16"):
             raise ValueError("GEMM input dtype must be f16 or bf16")
         if self.schedule not in ("stagepair", "combined"):
@@ -57,6 +64,11 @@ class GemmPlan:
             raise ValueError("pointer mode must be legacy or direct")
         if self.pointer_advance not in ("late", "early", "auto"):
             raise ValueError("pointer advance must be late, early or auto")
+        if self.tile == "64x64" and (self.schedule != "stagepair"
+                or self.cta_order != "m_fast" or self.epilogue != "none"
+                or self.pointer_advance != "late"
+                or self.fragment_schedule != "source"):
+            raise ValueError("64x64 tile requires stagepair, m_fast, unfused, late pointers and source fragments")
         if self.pointer_mode == "direct" and (self.schedule != "stagepair"
                 or self.cta_order != "m_fast" or self.epilogue != "none"):
             raise ValueError("direct pointer mode is validated for stagepair, m_fast, unfused GEMM")
@@ -83,7 +95,7 @@ class GemmPlan:
         # widening to byte addresses. Reject shapes that could wrap that index.
         if max(self.m*self.k, self.n*self.k, self.m*self.n) > 1 << 32:
             raise ValueError("GEMM element indices must fit in unsigned 32 bits")
-        if self.n//128 > 65535:
+        if self.n//output_tile > 65535:
             raise ValueError("GEMM N tile count exceeds the CUDA grid-y limit")
         if self.cta_order == "morton8" and (self.m//128 % 8 or self.n//128 % 8):
             raise ValueError("morton8 requires complete 8x8 CTA groups")
@@ -93,6 +105,8 @@ class GemmPlan:
     @property
     def launch(self) -> dict:
         """CUDA launch configuration; ``smem`` is dynamic shared bytes."""
+        if self.tile == "64x64":
+            return {"grid": [self.m//64, self.n//64, 1], "threads": 128, "smem": 32768}
         if self.cta_order == "grouped_n8":
             grid = [self.m//128 * 8, self.n//128 // 8, 1]
         else:
@@ -101,14 +115,15 @@ class GemmPlan:
 
     @property
     def metadata(self) -> dict:
-        """Serializable precision/layout and fixed-geometry contract."""
+        """Serializable precision/layout and explicit-geometry contract."""
+        tile = 64 if self.tile == "64x64" else 128
         return {"kernel": "gemm", "arch": self.arch, "m": self.m, "n": self.n,
                 "k": self.k, "dtype": self.dtype, "output_dtype": self.output_dtype,
                 "accumulation": "f32", "layout": self.layout, "schedule": self.schedule,
                 "fragment_schedule": self.fragment_schedule,
                 "cta_order": self.cta_order, "epilogue": self.epilogue,
                 "pointer_mode": self.pointer_mode, "pointer_advance": self.pointer_advance,
-                "tile_mnk": [128, 128, 64], "warp_mn": [64, 64], "stages": 2,
+                "tile": self.tile, "tile_mnk": [tile, tile, 64], "warp_mn": [tile//2, tile//2], "stages": 2,
                 "shared_swizzle": [7, 7], "input_alignment": 16, "output_alignment": 8}
 
 
@@ -304,6 +319,9 @@ def generate(plan: GemmPlan) -> str:
     """Generate deterministic PTX for a validated plan, without compiler effects."""
     if not isinstance(plan, GemmPlan):
         raise TypeError("generate expects a GemmPlan")
+    if plan.tile == "64x64":
+        from openassembler.kernels._gemm64 import generate as generate_small_tile
+        return generate_small_tile(plan)
     lines = _prologue(plan)
     pointer_advance = _effective_pointer_advance(plan)
     if plan.schedule == "stagepair":

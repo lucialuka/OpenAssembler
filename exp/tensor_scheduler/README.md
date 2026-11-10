@@ -91,9 +91,9 @@ The campaign sweeps one, two and three accumulator-chain arrangements, LDSM
 reuse/freshness, async-copy visibility, HMMA observers and address WAR. It
 changes only SASS control bits after CUDA `ptxas` compilation, verifies each
 variant with `nvdisasm`, checks full output equality, and records paired timing.
-The current measured result is summarized in `REPORT.md`. The NCU preflight
-accepts the requested metric names, but the tiny direct-driver worker has not
-yet produced a profiled kernel; those counter values remain open.
+The current measured minima are summarized in the [scheduler dossier](../../docs/research/ideas/a100-tensor-dependency-scheduler.md#exact-sass-probe-envelope).
+The NCU preflight accepts the requested metric names, but the tiny direct-driver
+worker has not yet produced a profiled kernel; those counter values remain open.
 
 ## Candidate policy search
 
@@ -153,9 +153,9 @@ generated `control-inventory.json` covers all 42 scalar dependency families
 exposed by `tools/lat_sweep.py` plus the 14 tensor probes. The broader
 `tools/ptx_probes.py` corpus contains 541 standalone SM80 PTX forms; those are
 recorded as inventory-only because a standalone form does not define a
-producer/consumer control edge. The companion
-`REPORT_ADDENDUM_20261108.md` records the measured minima and the limits of
-those pair-specific controls.
+producer/consumer control edge. The canonical
+[scheduler dossier](../../docs/research/ideas/a100-tensor-dependency-scheduler.md#exact-sass-probe-envelope)
+records the measured minima and the limits of those pair-specific controls.
 
 ## CUTLASS-style fragment schedule
 
@@ -169,10 +169,13 @@ modal run exp/tensor_scheduler/load_next_compute_current_modal.py \
   --rounds 2 --samples 8
 ```
 
-The latest six-shape run passed full output, canary, poisoned-graph,
+The retained six-shape run passed full output, canary, poisoned-graph,
 disassembly and resource checks. It improved OA timing on five non-square
-shapes and regressed the 4096×4096×4096 square case; the candidate remains
-shape-specific and experiment-only.
+shapes and regressed the 4096×4096×4096 square case. The checked production
+generator now includes the admitted exact-shape option; see the
+[load-next dossier](../../docs/research/ideas/cutlass-load-next-compute-current.md)
+for current integration and dispatch scope. This older experiment driver is a
+control, not the current compiler policy.
 
 ## Actual lowered blocks
 

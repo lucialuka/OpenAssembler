@@ -27,7 +27,7 @@ The cross-cutting reverse-engineering record is centralized in the
 | Grouped-N CTA traversal | Current production-path full gates pass; repeated 16384×4096×4096 is about 6.9–7.3% faster than m-fast and held-out tall FP16/BF16 cases improve | Explicit `--cta-order grouped_n8` only; wide/square auto-dispatch remains disabled |
 | Transformer role/shape coverage | Static audit covers 180 role/dtype rows: 44 direct kernel routes, 84 dimension-fit but blocked by layout or batching, and 52 dimension-contract rejections; QKV/output/FFN role runs pass 462 method/input checks, with corrected pointer and fragment replays retained separately | Initial direct-pointer labels were invalidated and rerun with checked compile contracts. Same-source ptxas remains faster on those medium roles; automatic model routing is separate |
 | Current role-matched counters | All 20 counters collected for six FP16 FFN-up methods; OA direct+early executes 4.371M versus ptxas 3.231M total instructions with identical 2.097M tensor work | Extra instructions and overlap both matter; cuBLAS is faster despite more instructions. Counter replay is separate from graph timing |
-| Smaller CTA experiment | All 32 role/dtype cases pass 1,296 method/input and 432 graph checks. Tile64 improves 18 cases and regresses 14; the independently replayed small output case cuts OA time about 48–49% | Experimental exact-case proposal only. Large-role regressions reach about 49%; best measured ptxas stays faster in all 32 cases. See the [dossier](research/ideas/small-grid-tensor-cta-tiles.md) |
+| Smaller CTA family and measured dispatch | Historical 32-role study passes 1,296 method/input and 432 graph checks; tile64 wins 18 and loses 14. A current integrated A100 pilot passes 72 numerical/input/canary checks and 24 graph checks for 128×512×512 FP16 | The 64×64 generator and exact-contract selector are integrated. Only this exact tile64/direct contract is automatically promoted; 26 other table rows remain candidates pending current production replays. Current pilot: 9.15 µs versus 9.60–9.66 µs tile64 legacy, 18.94–19.01 µs best OA tile128, 7.04 µs matched ptxas and 6.30 µs cuBLAS. See the [tile dossier](research/ideas/small-grid-tensor-cta-tiles.md) and [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md) |
 | Per-boundary BF16 trajectory | 151/151 checkpoints captured across 30 updates: first observed output failure before update 3; first parameter failure after update 22 | Eager versus Inductor only; unchanged gates and optimizer policy. It does not localize the causal operation or repair native OA composition |
 
 These are measured snapshots, not promises for every shape, toolkit, GPU or
@@ -47,8 +47,10 @@ Both stages of `cnr --dry-run` are read-only plans.
 See [the workflow guide](REPOSITORY_WORKFLOW.md) for setup/migration and the
 [November 7 integration record](evidence/repository-cli-20261107.json) for
 native/application runs, runtime identities, numerical gates and source hashes.
-Native backend/generator/ISA/optimization files are unchanged; the existing
-legacy and direct-pointer encoded-stream hash checks remain regression gates.
+Native backend/generator/ISA/optimization identities are recorded in each
+dispatch table and tuning record; the legacy/direct encoded-stream checks remain
+regression gates while the shape-aware GEMM additions have their own full
+source/body/resource tests.
 SSH transport has automated coverage; no live SSH GPU destination was supplied
 for this update's hardware tests.
 
@@ -77,7 +79,8 @@ flowchart TB
         PF --> PTX["PTX module"]
         NVCC --> PTX
         RAW["PTX source"] --> PTX
-        GP["gemm / rowwise source generators"] --> PTX
+        GP["gemm / rowwise source generators"] --> DISPATCH["Exact contract dispatch / optional A100 tuner"]
+        DISPATCH --> PTX
         FM["fastmm research plans: FP32 kernels"] --> PTX
         PTX --> PARSE["Parse, validate and select entries"]
         PARSE --> ROUTE{"Tensor/copy instructions?"}
@@ -123,7 +126,7 @@ row reductions into Inductor graphs.
 | `backend/ra.py` | Native instruction selection, guarded definitions, grouped register allocation, DCE and copy handling |
 | `backend/compile.py`, `sched.py`, `unroll.py` | Scalar dependency scoreboards, latency-aware ordering and bounded loop unrolling |
 | `backend/tensor.py`, `tensor_encoding.py` | Tensor register groups, async-copy/LDSM/HMMA dependencies and deterministic SM80 tensor encoding |
-| `kernels/`, `gemm.py`, `rowwise.py` | Validated shape plans, generated PTX and checked launch contracts |
+| `kernels/`, `gemm.py`, `gemm_dispatch.py`, `gemm_tune.py`, `rowwise.py` | Validated shape plans, exact-contract native policy selection, optional correctness-gated A100 tuning, generated PTX and checked launch contracts |
 | `opt/divconst.py`, `backend/fragments.py` | Constant integer division/remainder and recorded arithmetic instruction sequences |
 | `isa/`, `container/` | Instruction words/fields/templates and CUDA ELF/cubin/metadata handling |
 | `emu/` | Functional SASS execution, warp behavior and recorded tensor numeric models |
@@ -144,13 +147,14 @@ are research proposals, not additional shipping modules in this tree.
 | Constant div/rem, DCE, copies and register allocation | Native scalar backend | Integer semantics and exact widths/modifiers matter |
 | Scalar unrolling/list scheduling | Selected by optimization level | Hardware-measured classes, not a universal latency table |
 | Cubin splicing, encoding, disassembly and emulation | Build/inspection/verification paths | SM80 and supported instructions; emulation does not prove timing correctness |
-| Dense FP16/BF16 GEMM | `gemm`, or supported tensor PTX | Full-tile `C=A@B.T`, contiguous K, FP32 accumulation/output |
-| Paired fragment loads, two-stage async copies, shared XOR layout and vector stores | Default generated tensor mainloop | Fixed 128×128×64 CTA tile, 128 threads, 64 KiB dynamic shared memory |
+| Dense FP16/BF16 GEMM | `gemm`, or supported tensor PTX | Full-tile `C=A@B.T`, contiguous K, FP32 accumulation/output; exact policy dispatch is shape aware |
+| Paired fragment loads, two-stage async copies, shared XOR layout and vector stores | Generated tensor mainloop | 128×128×64 reference tile or validated 64×64×128 tile, 128 threads and 64/32 KiB dynamic shared memory |
+| Shape-aware native GEMM dispatch and optional A100 tuning | `--dispatch auto` (default), `--dispatch manual`, `--autotune local|modal` | Exact compiler/source/contract identity gates; unknown shapes fall back to baseline; tuning validates full outputs and resources before timing |
 | Protected tensor scoreboards, address WAR, HMMA8/drain15 and operand reuse | Default tensor backend | Existing measured dependencies are retained across optimization levels |
-| Morton8 CTA ordering | Explicit `--cta-order morton8` | Complete 8×8 tile groups; measured tall-shape benefit, not automatic dispatch |
+| Morton8 CTA ordering | Explicit `--cta-order morton8`; table entry only after a current promotion | Complete 8×8 tile groups; the current table has no Morton8 rows |
 | CUTLASS-style load-next/compute-current schedule | Explicit `--fragment-schedule load_next` | FP16/BF16 1024×4096×1024 and 4096×1024×1024, stagepair, legacy pointer, late advancement, unfused only |
-| Grouped-N CTA traversal | Explicit `--cta-order grouped_n8` | N tile count divisible by 8; launch grid remaps to `(m_tiles×8,n_tiles/8)`; no automatic dispatch |
-| Transformer role/shape audit | `exp/shape_coverage/` | Role-labelled contract matrix and current forward-role A100 measurements; no automatic role dispatch |
+| Grouped-N CTA traversal | Explicit `--cta-order grouped_n8`; table entry only after a current promotion | N tile count divisible by 8; launch grid remaps to `(m_tiles×8,n_tiles/8)`; current table has no grouped-N rows |
+| Transformer role/shape audit | `exp/shape_coverage/` | Role-labelled contract matrix and current forward-role A100 measurements; role labels do not override exact layout/alignment contracts |
 | Bias/residual/ReLU epilogue | Explicit `--epilogue` | FP32 auxiliary buffers; selected square benefits, other shapes can regress |
 | Pointer-home copy elimination | Explicit `--pointer-mode direct` | Unfused `stagepair`/`m_fast`; preserves legacy default |
 | Early pointer advancement | Explicit `--pointer-advance early|auto` | `auto` selects only the measured 1024×4096×1024 shape; tall controls remain late |
@@ -271,7 +275,8 @@ The [native NN campaign](research/ideas/nn-arithmetic-campaign.md) tests 26
 named arithmetic/operator families, 18 FP16/BF16 tensor cases, and six explicit
 networks spanning residual MLP, gated MLP and decoder-transformer configurations.
 This is native-routed experimental code under `exp/nn_round2/`, separate from
-the Inductor application results above. Production compiler behavior is unchanged.
+the Inductor application results above. Its composed-network operators remain
+experimental and do not automatically enter application graphs.
 
 The first complete 40GB whole-network cohort admits 21 of 36 method/configuration
 training pairs after both initial and post-trajectory state checks. GEMM-only
@@ -306,7 +311,7 @@ No whole-native-transformer or general faster-than-CUDA claim is admitted.
 
 ## Verification, dependencies and limits
 
-- The latest full local suite is **579 passed, one skipped**. The skip is optional
+- The latest full local suite is **655 passed, one skipped**. The skip is optional
   PyTorch missing from the compiler-only environment; all 18 numerical tests
   separately pass locally with PyTorch and in the pinned 2.7.1 GPU image.
 - Scalar scheduling repairs pass the paired ten-case native-before/native-after

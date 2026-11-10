@@ -28,7 +28,7 @@ The current role/shape coverage audit is under
 [`exp/shape_coverage`](../../exp/shape_coverage/README.md). It is a contract and
 measurement matrix, not a production dispatch policy.
 
-There are **78 dossiers**: **36 implemented**, **10 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
+There are **79 dossiers**: **38 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
 
 ## 1. Validated and implemented
 
@@ -53,9 +53,9 @@ These are available in the current code under their stated contracts. Explicit t
 | [Morton8 logical CTA traversal](ideas/morton-cta-order.md) | Corrected 8×8 tile traversal helps tested tall grids; it is not an MMA storage layout or automatic policy. |
 | [Native tanh-approximation GELU example](ideas/native-gelu.md) | Tanh-GELU passes a predeclared FP64 tolerance, while the old exact gate failure remains and gains depend on size. |
 | [Native scalar ReLU example](ideas/native-relu.md) | Finite-input exact example passes; measured large-size PyTorch is faster, with no universal speedup. |
-| [Native SM80 tensor GEMM compiler and mainloop](ideas/native-tensor-gemm.md) | The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128×128×64 CTA tiles, four 64×64 warp tiles, 128 threads and 64 KiB dynamic shared memory. |
-| [CUTLASS-style load-next / compute-current fragment schedule](ideas/cutlass-load-next-compute-current.md) | Explicit `--fragment-schedule load_next` is admitted for two exact wide FP16/BF16 shapes after current A100 full-gate confirmations; default source order remains unchanged. |
-| [CUTLASS-style grouped-N CTA traversal](ideas/grouped-n-cta-swizzle.md) | Explicit `--cta-order grouped_n8` uses a checked transformed launch grid and passes current held-out FP16/BF16 tall-shape gates; no auto-dispatch. |
+| [Native SM80 tensor GEMM compiler and mainloop](ideas/native-tensor-gemm.md) | The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands and FP32 accumulation/output; exact 128×128 and 64×64 CTA families share the protected SM80 tensor pipeline. |
+| [CUTLASS-style load-next / compute-current fragment schedule](ideas/cutlass-load-next-compute-current.md) | The validated option remains available to the exact selector candidate set; the current promoted table has no load-next rows, so all other contracts keep the reference. |
+| [CUTLASS-style grouped-N CTA traversal](ideas/grouped-n-cta-swizzle.md) | The validated option remains available to the exact selector candidate set; the current promoted table has no grouped-N rows, so all other contracts keep the reference. |
 | [Operand reuse hints and ordering](ideas/operand-reuse-hints.md) | The tensor scheduler emits reuse hints for supported neighboring HMMA operands. |
 | [Paired B-fragment LDSM loads and register-group use](ideas/paired-fragment-loads.md) | The selected native kernel uses paired `LDSM.x4` B loads. |
 | [Native PTX input and compilation boundary](ideas/ptx-native-frontend.md) | Supported SM80 PTX routes to the native scalar/tensor backends with explicit verification limits. |
@@ -72,6 +72,8 @@ These are available in the current code under their stated contracts. Explicit t
 | [Complete application-state verification diagnostics](ideas/state-verification-diagnostics.md) | Checks all state groups under unchanged gates and bounded failure reports; exposes both BF16 parameter failures. |
 | [Carry-linked pointer updates and folded shared addresses](ideas/tensor-address-generation.md) | The earlier address work reduced one selected kernel from 1,898 to 1,812 static non-NOP instructions; six same-worker cases improved about 0.9–5.4%. |
 | [Vectorized FP32 result stores](ideas/vectorized-fp32-epilogue.md) | The native GEMM epilogue groups FP32 stores into pairs and passes an existing aligned register pair directly when possible. |
+| [Shape-aware native GEMM dispatch and on-device tuning](ideas/shape-aware-native-gemm-dispatch.md) | Exact source/contract selection chooses only a promoted native policy; optional local/Modal tuning checks and times the admitted candidates on A100 before retaining a scoped record. Missing/stale table data falls back to the reference. |
+| [Smaller CTA tiles for short transformer GEMMs](ideas/small-grid-tensor-cta-tiles.md) | The checked 64×64 family is integrated; one 128×512×512 FP16 direct-pointer policy is automatically promoted, while other shape-specific rows remain candidates pending current production replay. |
 
 ## 2. Validated, not integrated as a production optimization
 
@@ -88,7 +90,6 @@ These capabilities, diagnostics and research prototypes have bounded validation.
 | [Native NN arithmetic and composed-network campaign](ideas/nn-arithmetic-campaign.md) | 26 operator families and six custom NN configurations expose conditional gains and failed training gates; no general CUDA superiority. |
 | [Fused local dot products for backward row reductions](ideas/fused-backward-reductions.md) | Explicit FMA improves selected native backward reductions; smaller cases can lose and same-source ptxas remains faster. |
 | [Stable analytic GELU backward](ideas/stable-gelu-backward.md) | A stable exponential derivative passes the unchanged accuracy gate after the direct-tanh form fails; no ptxas speed win. |
-| [Smaller CTA tiles for short transformer GEMMs](ideas/small-grid-tensor-cta-tiles.md) | A bounded 64×64 tile cuts the small output-projection OA case about 48–49%; matched tile64 ptxas and cuBLAS remain faster. |
 
 ## 3. Tested and rejected or not selected
 

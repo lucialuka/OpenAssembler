@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "purpose": "Same-session A100 comparison of shape-identical 64x64 and 128x128 CTA policies before any tile dispatch.",
+  "status": "frozen-before-run",
+  "cases": [
+    [128, 512, 512],
+    [128, 1536, 512],
+    [1024, 1024, 1024],
+    [1024, 4096, 1024],
+    [1024, 512, 512]
+  ],
+  "dtypes": ["f16", "bf16"],
+  "tile64_candidates": ["legacy", "init_reuse_direct", "init_reuse_direct_early"],
+  "tile128_candidates": ["tile128", "tile128_direct", "tile128_early", "tile128_direct_early"],
+  "rounds": 3,
+  "samples_per_round": 12,
+  "launches_per_graph_replay": 16,
+  "hardware_gate": "Run complete output, canary, input-immutability, same-source ptxas bitwise, baseline ptxas bitwise and poisoned-graph checks for every candidate before timing. Require stable >=2% paired win in every round against the fastest admissible existing configuration on the exact shape/dtype. Any tile64 dispatch entry remains disabled if tile128 is faster.",
+  "resource_gate": "Retain SASS and cubin hashes, HMMA controls, post-HMMA drains, registers, local memory and per-method launch geometry. Require HMMA8 and drain15.",
+  "performance_scope": "Isolated GEMM timing only; does not prove whole-training gains or cuBLAS/cuBLASLt superiority.",
+  "production_promoted": false
+}

@@ -1,0 +1,3587 @@
+{
+  "schema": 1,
+  "device": "NVIDIA A100-SXM4-40GB",
+  "runtime": {
+    "torch": "2.7.1+cu128",
+    "cuda": "12.8"
+  },
+  "address_certificate": {
+    "copy_address_equivalences": 7680,
+    "all_threads_and_chunks": true,
+    "checked_pointer_carry_samples": true,
+    "shared_swizzle_preserved": true
+  },
+  "cases": [
+    {
+      "case": {
+        "m": 128,
+        "n": 512,
+        "k": 512,
+        "dtype": "f16"
+      },
+      "launch": {
+        "grid": [
+          2,
+          8,
+          1
+        ],
+        "threads": 128,
+        "smem": 32768
+      },
+      "certificates": {
+        "legacy": {
+          "candidate": {
+            "label": "legacy",
+            "address_init": "original",
+            "pointer_mode": "legacy",
+            "early_advance": false
+          },
+          "tile_mnk": [
+            64,
+            64,
+            64
+          ],
+          "manual_launch": {
+            "grid": [
+              2,
+              8,
+              1
+            ],
+            "threads": 128,
+            "smem": 32768
+          },
+          "source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "baseline_source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "pointer_add_width": 64,
+          "dependent_accumulator_k_order_equal": true,
+          "hardware_validated": false,
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "legacy",
+            "pointer_advance": "late"
+          },
+          "matched_ptxas": "ptxas_legacy",
+          "source_order_instructions": 723,
+          "encoded_registers": 88,
+          "native_word_sha256": "69dda377d3cd74efca74edd0a402631cc89a8f52440b808da74c5a1d20476e97"
+        },
+        "direct": {
+          "candidate": {
+            "label": "direct",
+            "address_init": "original",
+            "pointer_mode": "direct",
+            "early_advance": false
+          },
+          "tile_mnk": [
+            64,
+            64,
+            64
+          ],
+          "manual_launch": {
+            "grid": [
+              2,
+              8,
+              1
+            ],
+            "threads": 128,
+            "smem": 32768
+          },
+          "source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "baseline_source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "pointer_add_width": 64,
+          "dependent_accumulator_k_order_equal": true,
+          "hardware_validated": false,
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "direct",
+            "pointer_advance": "late"
+          },
+          "matched_ptxas": "ptxas_legacy",
+          "source_order_instructions": 659,
+          "encoded_registers": 88,
+          "native_word_sha256": "b75be0b46a61c8aaf3c6fe63b010119066bb2286a45db7987caac2c87181bed9"
+        },
+        "early": {
+          "candidate": {
+            "label": "early",
+            "address_init": "original",
+            "pointer_mode": "legacy",
+            "early_advance": true
+          },
+          "tile_mnk": [
+            64,
+            64,
+            64
+          ],
+          "manual_launch": {
+            "grid": [
+              2,
+              8,
+              1
+            ],
+            "threads": 128,
+            "smem": 32768
+          },
+          "source_sha256": "0c299afef266dcef290227fdf7cf7da14724c5a8fca3e31f4f64362c85c4cc8e",
+          "baseline_source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "pointer_add_width": 64,
+          "dependent_accumulator_k_order_equal": true,
+          "hardware_validated": false,
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "legacy",
+            "pointer_advance": "early"
+          },
+          "matched_ptxas": "ptxas_early",
+          "source_order_instructions": 723,
+          "encoded_registers": 88,
+          "native_word_sha256": "f78de48839daf62c2ea92d0d8eba6a230e38ae38d177a5993c2b26b27b4ad101"
+        },
+        "direct_early": {
+          "candidate": {
+            "label": "direct_early",
+            "address_init": "original",
+            "pointer_mode": "direct",
+            "early_advance": true
+          },
+          "tile_mnk": [
+            64,
+            64,
+            64
+          ],
+          "manual_launch": {
+            "grid": [
+              2,
+              8,
+              1
+            ],
+            "threads": 128,
+            "smem": 32768
+          },
+          "source_sha256": "0c299afef266dcef290227fdf7cf7da14724c5a8fca3e31f4f64362c85c4cc8e",
+          "baseline_source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "pointer_add_width": 64,
+          "dependent_accumulator_k_order_equal": true,
+          "hardware_validated": false,
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "direct",
+            "pointer_advance": "early"
+          },
+          "matched_ptxas": "ptxas_early",
+          "source_order_instructions": 659,
+          "encoded_registers": 88,
+          "native_word_sha256": "b7e4530b05097bb3893c850f3297cd06d27a5c46de1de64fcf4c699db76f5aaa"
+        },
+        "init_reuse": {
+          "candidate": {
+            "label": "init_reuse",
+            "address_init": "reuse",
+            "pointer_mode": "legacy",
+            "early_advance": false
+          },
+          "tile_mnk": [
+            64,
+            64,
+            64
+          ],
+          "manual_launch": {
+            "grid": [
+              2,
+              8,
+              1
+            ],
+            "threads": 128,
+            "smem": 32768
+          },
+          "source_sha256": "aa390fe73a39e3d7225d59c10af37c78996d977276830c00958b93b3115db243",
+          "baseline_source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "pointer_add_width": 64,
+          "dependent_accumulator_k_order_equal": true,
+          "hardware_validated": false,
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "legacy",
+            "pointer_advance": "late"
+          },
+          "matched_ptxas": "ptxas_init_reuse",
+          "source_order_instructions": 660,
+          "encoded_registers": 88,
+          "native_word_sha256": "6a1f5e078da402c49c4afaca57f9d50baa56c66d71f5f0f1b56c16b2f7ad5b39"
+        },
+        "init_reuse_direct": {
+          "candidate": {
+            "label": "init_reuse_direct",
+            "address_init": "reuse",
+            "pointer_mode": "direct",
+            "early_advance": false
+          },
+          "tile_mnk": [
+            64,
+            64,
+            64
+          ],
+          "manual_launch": {
+            "grid": [
+              2,
+              8,
+              1
+            ],
+            "threads": 128,
+            "smem": 32768
+          },
+          "source_sha256": "aa390fe73a39e3d7225d59c10af37c78996d977276830c00958b93b3115db243",
+          "baseline_source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "pointer_add_width": 64,
+          "dependent_accumulator_k_order_equal": true,
+          "hardware_validated": false,
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "direct",
+            "pointer_advance": "late"
+          },
+          "matched_ptxas": "ptxas_init_reuse",
+          "source_order_instructions": 597,
+          "encoded_registers": 88,
+          "native_word_sha256": "35085203bc9ce96fb6f751b166c3d3c07e996fd08b4fae4c5b715f5dd4ae6f88"
+        },
+        "init_reuse_direct_early": {
+          "candidate": {
+            "label": "init_reuse_direct_early",
+            "address_init": "reuse",
+            "pointer_mode": "direct",
+            "early_advance": true
+          },
+          "tile_mnk": [
+            64,
+            64,
+            64
+          ],
+          "manual_launch": {
+            "grid": [
+              2,
+              8,
+              1
+            ],
+            "threads": 128,
+            "smem": 32768
+          },
+          "source_sha256": "eceba97465cd6cc25dd42bb4803b058553c28adda849b0a2fd1c06959887fb0a",
+          "baseline_source_sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "pointer_add_width": 64,
+          "dependent_accumulator_k_order_equal": true,
+          "hardware_validated": false,
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "direct",
+            "pointer_advance": "early"
+          },
+          "matched_ptxas": "ptxas_init_reuse_direct_early",
+          "source_order_instructions": 597,
+          "encoded_registers": 88,
+          "native_word_sha256": "dd601e60446b171b9186d40377e7d2b2a23aec5d07c330d434670ab35fd05490"
+        },
+        "tile128": {
+          "candidate": {
+            "label": "tile128",
+            "tile_mnk": [
+              128,
+              128,
+              64
+            ],
+            "pointer_mode": "legacy",
+            "pointer_advance": "late"
+          },
+          "manual_launch": {
+            "grid": [
+              1,
+              4,
+              1
+            ],
+            "threads": 128,
+            "smem": 65536
+          },
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "legacy",
+            "pointer_advance": "late"
+          },
+          "matched_ptxas": "ptxas_tile128",
+          "source_sha256": "f371183248caef6994ed3e3656b4e4fe9a0077a2119cfa46318a4a4d9013f182",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "source_order_instructions": 1595,
+          "encoded_registers": 216,
+          "native_word_sha256": "1f54092e00a387588eb060e755c0d9b8c6841eb0eac2e10e19f3c0ea3661f0ab"
+        },
+        "tile128_direct": {
+          "candidate": {
+            "label": "tile128_direct",
+            "tile_mnk": [
+              128,
+              128,
+              64
+            ],
+            "pointer_mode": "direct",
+            "pointer_advance": "late"
+          },
+          "manual_launch": {
+            "grid": [
+              1,
+              4,
+              1
+            ],
+            "threads": 128,
+            "smem": 65536
+          },
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "direct",
+            "pointer_advance": "late"
+          },
+          "matched_ptxas": "ptxas_tile128_direct",
+          "source_sha256": "fef181be973a101942b2cea4922f92689f3172d68754020b9a3f85356dd6e991",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "source_order_instructions": 1467,
+          "encoded_registers": 216,
+          "native_word_sha256": "75819a879dc13081f773d37f359adae4abba36ef62e91c0c8221de5feb29b1c9"
+        },
+        "tile128_early": {
+          "candidate": {
+            "label": "tile128_early",
+            "tile_mnk": [
+              128,
+              128,
+              64
+            ],
+            "pointer_mode": "legacy",
+            "pointer_advance": "early"
+          },
+          "manual_launch": {
+            "grid": [
+              1,
+              4,
+              1
+            ],
+            "threads": 128,
+            "smem": 65536
+          },
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "legacy",
+            "pointer_advance": "early"
+          },
+          "matched_ptxas": "ptxas_tile128_early",
+          "source_sha256": "113a51b2f50d26e03621971f64858135df5c5ea6362e0fc5b2b3025449cd4030",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "source_order_instructions": 1595,
+          "encoded_registers": 216,
+          "native_word_sha256": "3185d499ab8caf97d0c92e33a42d2d054dd4e2615b4c83edebdc8583077b18ce"
+        },
+        "tile128_direct_early": {
+          "candidate": {
+            "label": "tile128_direct_early",
+            "tile_mnk": [
+              128,
+              128,
+              64
+            ],
+            "pointer_mode": "direct",
+            "pointer_advance": "early"
+          },
+          "manual_launch": {
+            "grid": [
+              1,
+              4,
+              1
+            ],
+            "threads": 128,
+            "smem": 65536
+          },
+          "config": {
+            "issue_gap": 8,
+            "epoch_drain": 15,
+            "reuse": true,
+            "pointer_mode": "direct",
+            "pointer_advance": "early"
+          },
+          "matched_ptxas": "ptxas_tile128_direct_early",
+          "source_sha256": "09f698b0e84a24fc17f5d56acd659ffe49a5afaaa7fe194409178da7636c9d79",
+          "tensor_copy_visibility_barrier_stream_equal": true,
+          "source_order_instructions": 1467,
+          "encoded_registers": 216,
+          "native_word_sha256": "6ac1a6f09de1c456d97f88cbee300fa394b475f822a0e363ae46816b2b6f7c1d"
+        }
+      },
+      "resources": {
+        "ptxas_legacy": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 84,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_early": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 84,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_init_reuse": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 82,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_init_reuse_direct_early": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 82,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_tile128": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_tile128_direct": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_tile128_early": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "ptxas_tile128_direct_early": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 231,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "legacy": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 88,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "direct": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 88,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "early": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 88,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "direct_early": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 88,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "init_reuse": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 88,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "init_reuse_direct": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 88,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "init_reuse_direct_early": {
+          "max_threads": 640,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 88,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "tile128": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "tile128_direct": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "tile128_early": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        },
+        "tile128_direct_early": {
+          "max_threads": 256,
+          "shared_bytes": 0,
+          "const_bytes": 0,
+          "local_bytes": 0,
+          "num_regs": 216,
+          "ptx_version": 80,
+          "binary_version": 80
+        }
+      },
+      "static": {
+        "ptxas_legacy": {
+          "cubin_sha256": "c380f90c8961811da02d6a749be83f7b19499792dbbf67173a10e584ba38adad",
+          "sass_sha256": "e448616fa9c7a0e4153ad65166c6a14ae4ccfa56f2a308a7acc5c4400543879e",
+          "listing_instructions": 648,
+          "hmma": 256,
+          "hmma_stalls": [
+            1,
+            2,
+            7,
+            8
+          ],
+          "ldsm": 128,
+          "mov": 0,
+          "drain_count": 0
+        },
+        "ptxas_early": {
+          "cubin_sha256": "c380f90c8961811da02d6a749be83f7b19499792dbbf67173a10e584ba38adad",
+          "sass_sha256": "e448616fa9c7a0e4153ad65166c6a14ae4ccfa56f2a308a7acc5c4400543879e",
+          "listing_instructions": 648,
+          "hmma": 256,
+          "hmma_stalls": [
+            1,
+            2,
+            7,
+            8
+          ],
+          "ldsm": 128,
+          "mov": 0,
+          "drain_count": 0
+        },
+        "ptxas_init_reuse": {
+          "cubin_sha256": "ed4f65ecc24ac329662020ac5d0c911d1bc07536787c88634badb9a79a50c687",
+          "sass_sha256": "4d50cb844c1956283fcd08f8c541c310e463a3e70dad7bb1a58e18555fee3417",
+          "listing_instructions": 632,
+          "hmma": 256,
+          "hmma_stalls": [
+            1,
+            3,
+            7,
+            8
+          ],
+          "ldsm": 128,
+          "mov": 0,
+          "drain_count": 0
+        },
+        "ptxas_init_reuse_direct_early": {
+          "cubin_sha256": "ed4f65ecc24ac329662020ac5d0c911d1bc07536787c88634badb9a79a50c687",
+          "sass_sha256": "4d50cb844c1956283fcd08f8c541c310e463a3e70dad7bb1a58e18555fee3417",
+          "listing_instructions": 632,
+          "hmma": 256,
+          "hmma_stalls": [
+            1,
+            3,
+            7,
+            8
+          ],
+          "ldsm": 128,
+          "mov": 0,
+          "drain_count": 0
+        },
+        "ptxas_tile128": {
+          "cubin_sha256": "40068900d69e1a6bb2a57de291a84540ebd761861e339bbef1e084018e0321f0",
+          "sass_sha256": "21672913489dcc97f066c9efe5fa0bf2e5c44e798b7be9f620ac50594a18d481",
+          "listing_instructions": 1704,
+          "hmma": 1024,
+          "hmma_stalls": [
+            1,
+            2,
+            3,
+            7,
+            8
+          ],
+          "ldsm": 256,
+          "mov": 0,
+          "drain_count": 0
+        },
+        "ptxas_tile128_direct": {
+          "cubin_sha256": "40068900d69e1a6bb2a57de291a84540ebd761861e339bbef1e084018e0321f0",
+          "sass_sha256": "21672913489dcc97f066c9efe5fa0bf2e5c44e798b7be9f620ac50594a18d481",
+          "listing_instructions": 1704,
+          "hmma": 1024,
+          "hmma_stalls": [
+            1,
+            2,
+            3,
+            7,
+            8
+          ],
+          "ldsm": 256,
+          "mov": 0,
+          "drain_count": 0
+        },
+        "ptxas_tile128_early": {
+          "cubin_sha256": "40068900d69e1a6bb2a57de291a84540ebd761861e339bbef1e084018e0321f0",
+          "sass_sha256": "21672913489dcc97f066c9efe5fa0bf2e5c44e798b7be9f620ac50594a18d481",
+          "listing_instructions": 1704,
+          "hmma": 1024,
+          "hmma_stalls": [
+            1,
+            2,
+            3,
+            7,
+            8
+          ],
+          "ldsm": 256,
+          "mov": 0,
+          "drain_count": 0
+        },
+        "ptxas_tile128_direct_early": {
+          "cubin_sha256": "40068900d69e1a6bb2a57de291a84540ebd761861e339bbef1e084018e0321f0",
+          "sass_sha256": "21672913489dcc97f066c9efe5fa0bf2e5c44e798b7be9f620ac50594a18d481",
+          "listing_instructions": 1704,
+          "hmma": 1024,
+          "hmma_stalls": [
+            1,
+            2,
+            3,
+            7,
+            8
+          ],
+          "ldsm": 256,
+          "mov": 0,
+          "drain_count": 0
+        },
+        "legacy": {
+          "cubin_sha256": "9070991f88aab27314d43c944d65d829c76bf2d8bfb957c46d7ad18f430ae7e3",
+          "sass_sha256": "3a84bbaa2ba722ef3fe11f64376c182cbb6eaf85fcaad391b87758ee6737dc43",
+          "listing_instructions": 728,
+          "hmma": 128,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 64,
+          "mov": 110,
+          "drain_count": 16
+        },
+        "direct": {
+          "cubin_sha256": "754726d4fb20262703b7f58d961e16a3b54521176c43beab14b8e302ef942b01",
+          "sass_sha256": "3e9a6ac80292812462db4ac3d3c7ab8b00073114b54dcbdbee4f57b5794826a0",
+          "listing_instructions": 664,
+          "hmma": 128,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 64,
+          "mov": 46,
+          "drain_count": 16
+        },
+        "early": {
+          "cubin_sha256": "ed558ffed9fe41c4c04191678b5438d68839d9807ac67644237ef57f723a9558",
+          "sass_sha256": "10072bc5a1638574d28c2fb7aa57796252df61ddcf4bdc81dc7db2d6a7af5097",
+          "listing_instructions": 728,
+          "hmma": 128,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 64,
+          "mov": 110,
+          "drain_count": 16
+        },
+        "direct_early": {
+          "cubin_sha256": "98416438e0274e7e5c7d4aede73eeebcbaf40e3e6ef8ac9c50f4928b6ec37e4e",
+          "sass_sha256": "04b30565e9e03bd69769bf2f96f3a9cb4ba2f3b7d9195f5fbfbeb60ba305f299",
+          "listing_instructions": 664,
+          "hmma": 128,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 64,
+          "mov": 46,
+          "drain_count": 16
+        },
+        "init_reuse": {
+          "cubin_sha256": "32fdcf416e73d547cad526844e634658207ef0103fa716027f8b42849e403a8b",
+          "sass_sha256": "c8c102eb6a1481c49f2128b4db0b1f3e7bc7a2a81a4eb952e37fc67c8a679ed8",
+          "listing_instructions": 664,
+          "hmma": 128,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 64,
+          "mov": 107,
+          "drain_count": 16
+        },
+        "init_reuse_direct": {
+          "cubin_sha256": "9f795b2c3d8b28c8f98e9121da632eae2e862852771375fac4c3f18e2ddd073f",
+          "sass_sha256": "bdd800ab5524e44a706e3d140bcd796c60fa2f8da422c5cf850271663d0b1603",
+          "listing_instructions": 600,
+          "hmma": 128,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 64,
+          "mov": 44,
+          "drain_count": 16
+        },
+        "init_reuse_direct_early": {
+          "cubin_sha256": "7467d4b7d67875e3411d857d1b2c6c94e5b6c33ee02230ab00d8f4c29b9e7b06",
+          "sass_sha256": "a5544bd5e1c8149284e107aadb1e5968b01e1aeedc37be585f6d0a8ce640dba4",
+          "listing_instructions": 600,
+          "hmma": 128,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 64,
+          "mov": 44,
+          "drain_count": 16
+        },
+        "tile128": {
+          "cubin_sha256": "822828d4378e9d43476315a828dbe0456bf59e400fee97963bfc123889d29bab",
+          "sass_sha256": "f1cf982ac7b10552bf0704b1c12d45eb096c7409e71a5934c4d7a98c76586f3a",
+          "listing_instructions": 1600,
+          "hmma": 512,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 128,
+          "mov": 282,
+          "drain_count": 16
+        },
+        "tile128_direct": {
+          "cubin_sha256": "975770111fa8ca8526132532d359be62292df26fd4f6e1b88596328e8fb39560",
+          "sass_sha256": "301aa37ee4e9a7798400bafc1effa951f8c3ef7d08f138f5f14763af26fb5cec",
+          "listing_instructions": 1472,
+          "hmma": 512,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 128,
+          "mov": 154,
+          "drain_count": 16
+        },
+        "tile128_early": {
+          "cubin_sha256": "66309fe8e829eb4757abc9ebef82088ad059ce47b8328316a1b6295d539336b9",
+          "sass_sha256": "98d89099fa40cd79c094047bd5bad36b272e0cc003fc625ff689c4101b62a2fd",
+          "listing_instructions": 1600,
+          "hmma": 512,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 128,
+          "mov": 282,
+          "drain_count": 16
+        },
+        "tile128_direct_early": {
+          "cubin_sha256": "aa264a6d765b918ba2351369d13201ceeadc962a97c2e96b45f20c3ed5e09928",
+          "sass_sha256": "c9e368635002921ca71db492914fa0f924e6fe451ea6f9e1632c68cbea3d764f",
+          "listing_instructions": 1472,
+          "hmma": 512,
+          "hmma_stalls": [
+            8
+          ],
+          "ldsm": 128,
+          "mov": 154,
+          "drain_count": 16
+        }
+      },
+      "checks": [
+        {
+          "method": "ptxas_legacy",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_init_reuse",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_init_reuse_direct_early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_direct",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_direct_early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "legacy",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "direct",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "direct_early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse_direct",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse_direct_early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_direct",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_direct_early",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "cublas",
+          "input": "zero",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": null,
+          "baseline_ptxas_bitwise": null,
+          "passed": true
+        },
+        {
+          "method": "ptxas_legacy",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_init_reuse",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_init_reuse_direct_early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_direct",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_direct_early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "legacy",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "direct",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "direct_early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse_direct",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse_direct_early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_direct",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_direct_early",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "cublas",
+          "input": "integer",
+          "relative_l2": 0.0,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": null,
+          "baseline_ptxas_bitwise": null,
+          "passed": true
+        },
+        {
+          "method": "ptxas_legacy",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_init_reuse",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_init_reuse_direct_early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_direct",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_direct_early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "legacy",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "direct",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "direct_early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse_direct",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "init_reuse_direct_early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_direct",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "tile128_direct_early",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": true,
+          "baseline_ptxas_bitwise": true,
+          "passed": true
+        },
+        {
+          "method": "cublas",
+          "input": "normal",
+          "relative_l2": 9.170790917778504e-07,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "same_source_ptxas_bitwise": null,
+          "baseline_ptxas_bitwise": null,
+          "passed": true
+        }
+      ],
+      "poisoned_graph_checks": [
+        {
+          "method": "ptxas_legacy",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "ptxas_early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "ptxas_init_reuse",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "ptxas_init_reuse_direct_early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_direct",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "ptxas_tile128_direct_early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "legacy",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "direct",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "direct_early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "init_reuse",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "init_reuse_direct",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "init_reuse_direct_early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "tile128",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "tile128_direct",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "tile128_early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "tile128_direct_early",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": true,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        },
+        {
+          "method": "cublas",
+          "poisoned_output": true,
+          "same_source_ptxas_bitwise": null,
+          "relative_l2": 9.170790917778504e-07,
+          "passed": true
+        }
+      ],
+      "timings": [
+        {
+          "round": 0,
+          "paired_orders": [
+            [
+              "direct_early",
+              "tile128_early",
+              "legacy",
+              "init_reuse_direct",
+              "init_reuse_direct_early",
+              "init_reuse",
+              "tile128_direct",
+              "early",
+              "ptxas_init_reuse_direct_early",
+              "tile128_direct_early",
+              "ptxas_tile128_direct_early",
+              "ptxas_legacy",
+              "ptxas_init_reuse",
+              "cublas",
+              "ptxas_tile128_early",
+              "ptxas_tile128",
+              "direct",
+              "tile128",
+              "ptxas_early",
+              "ptxas_tile128_direct"
+            ],
+            [
+              "ptxas_legacy",
+              "legacy",
+              "cublas",
+              "tile128_direct",
+              "tile128_early",
+              "ptxas_tile128_direct_early",
+              "early",
+              "ptxas_tile128",
+              "ptxas_init_reuse",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_early",
+              "tile128_direct_early",
+              "tile128",
+              "init_reuse_direct_early",
+              "direct",
+              "ptxas_tile128_early",
+              "init_reuse",
+              "init_reuse_direct",
+              "direct_early",
+              "ptxas_tile128_direct"
+            ],
+            [
+              "tile128_direct_early",
+              "ptxas_tile128_early",
+              "cublas",
+              "early",
+              "tile128_direct",
+              "ptxas_tile128_direct_early",
+              "direct",
+              "init_reuse",
+              "ptxas_init_reuse",
+              "ptxas_legacy",
+              "ptxas_early",
+              "tile128_early",
+              "ptxas_init_reuse_direct_early",
+              "init_reuse_direct",
+              "legacy",
+              "ptxas_tile128",
+              "init_reuse_direct_early",
+              "ptxas_tile128_direct",
+              "tile128",
+              "direct_early"
+            ],
+            [
+              "direct_early",
+              "tile128_early",
+              "ptxas_tile128",
+              "tile128_direct_early",
+              "ptxas_tile128_direct",
+              "ptxas_tile128_early",
+              "init_reuse_direct",
+              "early",
+              "direct",
+              "cublas",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_early",
+              "ptxas_init_reuse",
+              "legacy",
+              "ptxas_tile128_direct_early",
+              "ptxas_legacy",
+              "tile128",
+              "init_reuse",
+              "init_reuse_direct_early",
+              "tile128_direct"
+            ],
+            [
+              "ptxas_early",
+              "tile128_direct",
+              "direct_early",
+              "tile128",
+              "ptxas_init_reuse",
+              "ptxas_tile128",
+              "legacy",
+              "tile128_direct_early",
+              "cublas",
+              "ptxas_tile128_direct",
+              "tile128_early",
+              "ptxas_tile128_direct_early",
+              "early",
+              "init_reuse_direct_early",
+              "init_reuse",
+              "direct",
+              "ptxas_legacy",
+              "ptxas_tile128_early",
+              "ptxas_init_reuse_direct_early",
+              "init_reuse_direct"
+            ],
+            [
+              "init_reuse_direct",
+              "tile128_direct_early",
+              "ptxas_tile128_direct_early",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_tile128_early",
+              "ptxas_early",
+              "ptxas_init_reuse",
+              "init_reuse",
+              "ptxas_tile128",
+              "tile128_direct",
+              "direct_early",
+              "tile128",
+              "legacy",
+              "tile128_early",
+              "ptxas_legacy",
+              "early",
+              "ptxas_tile128_direct",
+              "init_reuse_direct_early",
+              "direct",
+              "cublas"
+            ],
+            [
+              "tile128_early",
+              "direct",
+              "ptxas_tile128_direct",
+              "cublas",
+              "early",
+              "ptxas_early",
+              "legacy",
+              "init_reuse",
+              "init_reuse_direct_early",
+              "ptxas_tile128",
+              "tile128",
+              "ptxas_tile128_early",
+              "ptxas_legacy",
+              "tile128_direct_early",
+              "ptxas_init_reuse_direct_early",
+              "tile128_direct",
+              "init_reuse_direct",
+              "direct_early",
+              "ptxas_tile128_direct_early",
+              "ptxas_init_reuse"
+            ],
+            [
+              "ptxas_legacy",
+              "ptxas_init_reuse",
+              "tile128_direct",
+              "ptxas_tile128",
+              "ptxas_early",
+              "ptxas_tile128_early",
+              "init_reuse_direct_early",
+              "legacy",
+              "tile128_direct_early",
+              "direct",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_tile128_direct_early",
+              "tile128",
+              "cublas",
+              "ptxas_tile128_direct",
+              "early",
+              "direct_early",
+              "tile128_early",
+              "init_reuse_direct",
+              "init_reuse"
+            ],
+            [
+              "tile128",
+              "legacy",
+              "cublas",
+              "ptxas_init_reuse",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_tile128_early",
+              "ptxas_tile128_direct",
+              "ptxas_early",
+              "ptxas_tile128",
+              "init_reuse_direct",
+              "tile128_direct",
+              "ptxas_tile128_direct_early",
+              "init_reuse",
+              "direct_early",
+              "direct",
+              "tile128_direct_early",
+              "early",
+              "ptxas_legacy",
+              "init_reuse_direct_early",
+              "tile128_early"
+            ],
+            [
+              "tile128_direct_early",
+              "tile128",
+              "ptxas_early",
+              "ptxas_init_reuse",
+              "init_reuse_direct",
+              "direct_early",
+              "legacy",
+              "cublas",
+              "tile128_early",
+              "ptxas_tile128_direct",
+              "ptxas_init_reuse_direct_early",
+              "direct",
+              "ptxas_tile128_early",
+              "early",
+              "ptxas_legacy",
+              "init_reuse",
+              "init_reuse_direct_early",
+              "tile128_direct",
+              "ptxas_tile128_direct_early",
+              "ptxas_tile128"
+            ],
+            [
+              "ptxas_init_reuse_direct_early",
+              "tile128_direct_early",
+              "tile128_early",
+              "init_reuse_direct",
+              "direct_early",
+              "ptxas_tile128_early",
+              "init_reuse_direct_early",
+              "ptxas_legacy",
+              "legacy",
+              "ptxas_early",
+              "ptxas_tile128_direct_early",
+              "tile128_direct",
+              "ptxas_init_reuse",
+              "cublas",
+              "init_reuse",
+              "ptxas_tile128",
+              "ptxas_tile128_direct",
+              "tile128",
+              "direct",
+              "early"
+            ],
+            [
+              "legacy",
+              "early",
+              "init_reuse_direct",
+              "tile128",
+              "ptxas_tile128_direct",
+              "ptxas_tile128_direct_early",
+              "direct",
+              "direct_early",
+              "tile128_early",
+              "cublas",
+              "ptxas_tile128_early",
+              "ptxas_early",
+              "init_reuse",
+              "ptxas_init_reuse",
+              "init_reuse_direct_early",
+              "tile128_direct_early",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_legacy",
+              "ptxas_tile128",
+              "tile128_direct"
+            ]
+          ],
+          "samples_ms": {
+            "ptxas_legacy": [
+              0.007679999805986881,
+              0.007104000076651573,
+              0.007104000076651573,
+              0.007104000076651573,
+              0.007040000054985285,
+              0.007104000076651573,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007104000076651573,
+              0.007104000076651573,
+              0.007040000054985285,
+              0.007040000054985285
+            ],
+            "ptxas_early": [
+              0.007360000163316727,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.006976000033318996,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.006976000033318996
+            ],
+            "ptxas_init_reuse": [
+              0.007552000228315592,
+              0.007040000054985285,
+              0.006912000011652708,
+              0.006912000011652708,
+              0.007040000054985285,
+              0.006912000011652708,
+              0.006912000011652708,
+              0.007040000054985285,
+              0.007360000163316727,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.006976000033318996
+            ],
+            "ptxas_init_reuse_direct_early": [
+              0.007679999805986881,
+              0.007360000163316727,
+              0.00723200011998415,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.006976000033318996,
+              0.006912000011652708,
+              0.007104000076651573,
+              0.007040000054985285
+            ],
+            "ptxas_tile128": [
+              0.013887999579310417,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.014271999709308147,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262
+            ],
+            "ptxas_tile128_direct": [
+              0.013632000423967838,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013632000423967838,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.01375999953597784,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013504000380635262
+            ],
+            "ptxas_tile128_early": [
+              0.014015999622642994,
+              0.013632000423967838,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013376000337302685,
+              0.013504000380635262,
+              0.013376000337302685,
+              0.013439999893307686,
+              0.01375999953597784,
+              0.013504000380635262,
+              0.013504000380635262
+            ],
+            "ptxas_tile128_direct_early": [
+              0.01408000010997057,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013567999936640263,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013504000380635262
+            ],
+            "legacy": [
+              0.010944000445306301,
+              0.009664000011980534,
+              0.01017600018531084,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009664000011980534,
+              0.009600000455975533,
+              0.009664000011980534
+            ],
+            "direct": [
+              0.009344000369310379,
+              0.009216000325977802,
+              0.009216000325977802,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009088000282645226,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009151999838650227
+            ],
+            "early": [
+              0.010367999784648418,
+              0.00979200005531311,
+              0.009600000455975533,
+              0.009664000011980534,
+              0.009664000011980534,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009535999968647957,
+              0.009727999567985535,
+              0.009664000011980534,
+              0.009727999567985535
+            ],
+            "direct_early": [
+              0.010280000045895576,
+              0.009216000325977802,
+              0.009151999838650227,
+              0.009088000282645226,
+              0.009535999968647957,
+              0.009151999838650227,
+              0.009216000325977802,
+              0.009151999838650227,
+              0.00902399979531765,
+              0.009088000282645226,
+              0.009151999838650227,
+              0.009088000282645226
+            ],
+            "init_reuse": [
+              0.009472000412642956,
+              0.009472000412642956,
+              0.009344000369310379,
+              0.009344000369310379,
+              0.00940799992531538,
+              0.009279999881982803,
+              0.00940799992531538,
+              0.009344000369310379,
+              0.009344000369310379,
+              0.009344000369310379,
+              0.00940799992531538,
+              0.00940799992531538
+            ],
+            "init_reuse_direct": [
+              0.009088000282645226,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008960000239312649
+            ],
+            "init_reuse_direct_early": [
+              0.00902399979531765,
+              0.008895999751985073,
+              0.008832000195980072,
+              0.008895999751985073,
+              0.009088000282645226,
+              0.008832000195980072,
+              0.008832000195980072,
+              0.008832000195980072,
+              0.008832000195980072,
+              0.008832000195980072,
+              0.008767999708652496,
+              0.008895999751985073
+            ],
+            "tile128": [
+              0.020031999796628952,
+              0.019967999309301376,
+              0.01990400068461895,
+              0.01990400068461895,
+              0.019840000197291374,
+              0.01990400068461895,
+              0.01990400068461895,
+              0.01990400068461895,
+              0.020031999796628952,
+              0.01990400068461895,
+              0.01990400068461895,
+              0.01990400068461895
+            ],
+            "tile128_direct": [
+              0.019328000023961067,
+              0.019200000911951065,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.019071999937295914,
+              0.019071999937295914,
+              0.01913600042462349,
+              0.019200000911951065,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.01913600042462349
+            ],
+            "tile128_early": [
+              0.020479999482631683,
+              0.020096000283956528,
+              0.020096000283956528,
+              0.020096000283956528,
+              0.020031999796628952,
+              0.020031999796628952,
+              0.020096000283956528,
+              0.020031999796628952,
+              0.020031999796628952,
+              0.020031999796628952,
+              0.020031999796628952,
+              0.020096000283956528
+            ],
+            "tile128_direct_early": [
+              0.019071999937295914,
+              0.019007999449968338,
+              0.019071999937295914,
+              0.019007999449968338,
+              0.01894400082528591,
+              0.018880000337958336,
+              0.01894400082528591,
+              0.01894400082528591,
+              0.019007999449968338,
+              0.019007999449968338,
+              0.019071999937295914,
+              0.019007999449968338
+            ],
+            "cublas": [
+              0.006527999881654978,
+              0.006335999816656113,
+              0.006335999816656113,
+              0.006399999838322401,
+              0.006335999816656113,
+              0.006335999816656113,
+              0.006335999816656113,
+              0.006271999794989824,
+              0.006335999816656113,
+              0.006399999838322401,
+              0.006399999838322401,
+              0.006335999816656113
+            ]
+          },
+          "median_ms": {
+            "ptxas_legacy": 0.007104000076651573,
+            "ptxas_early": 0.007040000054985285,
+            "ptxas_init_reuse": 0.007008000044152141,
+            "ptxas_init_reuse_direct_early": 0.007040000054985285,
+            "ptxas_tile128": 0.013504000380635262,
+            "ptxas_tile128_direct": 0.013504000380635262,
+            "ptxas_tile128_early": 0.013504000380635262,
+            "ptxas_tile128_direct_early": 0.013504000380635262,
+            "legacy": 0.009600000455975533,
+            "direct": 0.009151999838650227,
+            "early": 0.009664000011980534,
+            "direct_early": 0.009151999838650227,
+            "init_reuse": 0.00937600014731288,
+            "init_reuse_direct": 0.008960000239312649,
+            "init_reuse_direct_early": 0.008832000195980072,
+            "tile128": 0.01990400068461895,
+            "tile128_direct": 0.01913600042462349,
+            "tile128_early": 0.02006400004029274,
+            "tile128_direct_early": 0.019007999449968338,
+            "cublas": 0.006335999816656113
+          }
+        },
+        {
+          "round": 1,
+          "paired_orders": [
+            [
+              "direct_early",
+              "tile128",
+              "ptxas_tile128_direct",
+              "ptxas_early",
+              "tile128_direct_early",
+              "direct",
+              "init_reuse",
+              "ptxas_init_reuse",
+              "early",
+              "tile128_early",
+              "cublas",
+              "ptxas_init_reuse_direct_early",
+              "init_reuse_direct",
+              "ptxas_tile128_direct_early",
+              "ptxas_tile128_early",
+              "legacy",
+              "init_reuse_direct_early",
+              "ptxas_tile128",
+              "tile128_direct",
+              "ptxas_legacy"
+            ],
+            [
+              "tile128_direct_early",
+              "ptxas_early",
+              "ptxas_init_reuse",
+              "ptxas_tile128_direct_early",
+              "tile128_early",
+              "tile128_direct",
+              "ptxas_tile128",
+              "legacy",
+              "init_reuse_direct",
+              "early",
+              "ptxas_init_reuse_direct_early",
+              "direct",
+              "direct_early",
+              "init_reuse_direct_early",
+              "ptxas_tile128_early",
+              "init_reuse",
+              "ptxas_legacy",
+              "tile128",
+              "ptxas_tile128_direct",
+              "cublas"
+            ],
+            [
+              "ptxas_tile128_early",
+              "legacy",
+              "init_reuse_direct_early",
+              "tile128_direct_early",
+              "ptxas_init_reuse_direct_early",
+              "init_reuse_direct",
+              "ptxas_early",
+              "ptxas_tile128_direct",
+              "direct",
+              "tile128_direct",
+              "init_reuse",
+              "tile128",
+              "ptxas_init_reuse",
+              "direct_early",
+              "ptxas_tile128",
+              "early",
+              "tile128_early",
+              "ptxas_tile128_direct_early",
+              "cublas",
+              "ptxas_legacy"
+            ],
+            [
+              "init_reuse_direct_early",
+              "legacy",
+              "tile128_direct_early",
+              "ptxas_tile128_direct_early",
+              "tile128_direct",
+              "init_reuse_direct",
+              "cublas",
+              "ptxas_tile128_direct",
+              "init_reuse",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_early",
+              "ptxas_legacy",
+              "direct",
+              "direct_early",
+              "ptxas_init_reuse",
+              "tile128_early",
+              "tile128",
+              "ptxas_tile128",
+              "early",
+              "ptxas_tile128_early"
+            ],
+            [
+              "init_reuse_direct_early",
+              "tile128_direct",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_early",
+              "direct",
+              "ptxas_tile128_direct_early",
+              "legacy",
+              "tile128",
+              "ptxas_init_reuse",
+              "init_reuse",
+              "cublas",
+              "tile128_direct_early",
+              "direct_early",
+              "ptxas_tile128_direct",
+              "ptxas_tile128_early",
+              "ptxas_legacy",
+              "early",
+              "tile128_early",
+              "init_reuse_direct",
+              "ptxas_tile128"
+            ],
+            [
+              "cublas",
+              "tile128",
+              "tile128_direct",
+              "init_reuse",
+              "legacy",
+              "init_reuse_direct",
+              "ptxas_tile128",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_init_reuse",
+              "ptxas_legacy",
+              "init_reuse_direct_early",
+              "ptxas_tile128_direct",
+              "early",
+              "tile128_direct_early",
+              "tile128_early",
+              "direct_early",
+              "ptxas_early",
+              "ptxas_tile128_direct_early",
+              "direct",
+              "ptxas_tile128_early"
+            ],
+            [
+              "tile128_direct_early",
+              "init_reuse",
+              "tile128_direct",
+              "ptxas_early",
+              "ptxas_legacy",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_tile128",
+              "init_reuse_direct_early",
+              "early",
+              "ptxas_init_reuse",
+              "legacy",
+              "ptxas_tile128_direct_early",
+              "direct_early",
+              "cublas",
+              "tile128_early",
+              "tile128",
+              "direct",
+              "init_reuse_direct",
+              "ptxas_tile128_early",
+              "ptxas_tile128_direct"
+            ],
+            [
+              "early",
+              "direct",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_early",
+              "ptxas_init_reuse",
+              "ptxas_tile128_direct",
+              "ptxas_legacy",
+              "direct_early",
+              "init_reuse_direct_early",
+              "tile128",
+              "ptxas_tile128_direct_early",
+              "cublas",
+              "init_reuse_direct",
+              "init_reuse",
+              "legacy",
+              "ptxas_tile128_early",
+              "tile128_direct",
+              "ptxas_tile128",
+              "tile128_direct_early",
+              "tile128_early"
+            ],
+            [
+              "init_reuse_direct_early",
+              "tile128_direct_early",
+              "direct",
+              "init_reuse_direct",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_tile128",
+              "cublas",
+              "ptxas_legacy",
+              "tile128_direct",
+              "ptxas_tile128_direct_early",
+              "ptxas_tile128_direct",
+              "legacy",
+              "ptxas_early",
+              "tile128",
+              "tile128_early",
+              "ptxas_init_reuse",
+              "early",
+              "ptxas_tile128_early",
+              "direct_early",
+              "init_reuse"
+            ],
+            [
+              "ptxas_init_reuse",
+              "cublas",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_legacy",
+              "legacy",
+              "init_reuse_direct_early",
+              "early",
+              "tile128_direct",
+              "init_reuse_direct",
+              "ptxas_tile128_direct_early",
+              "direct",
+              "tile128_direct_early",
+              "ptxas_early",
+              "tile128_early",
+              "ptxas_tile128_early",
+              "ptxas_tile128_direct",
+              "direct_early",
+              "ptxas_tile128",
+              "init_reuse",
+              "tile128"
+            ],
+            [
+              "early",
+              "tile128_direct_early",
+              "init_reuse",
+              "tile128_early",
+              "tile128_direct",
+              "ptxas_tile128",
+              "init_reuse_direct_early",
+              "direct",
+              "ptxas_tile128_direct",
+              "ptxas_tile128_direct_early",
+              "ptxas_early",
+              "ptxas_legacy",
+              "ptxas_tile128_early",
+              "init_reuse_direct",
+              "direct_early",
+              "cublas",
+              "legacy",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_init_reuse",
+              "tile128"
+            ],
+            [
+              "tile128_early",
+              "direct_early",
+              "early",
+              "ptxas_legacy",
+              "ptxas_init_reuse",
+              "tile128_direct_early",
+              "ptxas_tile128_direct_early",
+              "ptxas_early",
+              "init_reuse_direct_early",
+              "direct",
+              "tile128_direct",
+              "ptxas_init_reuse_direct_early",
+              "init_reuse_direct",
+              "ptxas_tile128",
+              "legacy",
+              "ptxas_tile128_early",
+              "tile128",
+              "cublas",
+              "ptxas_tile128_direct",
+              "init_reuse"
+            ]
+          ],
+          "samples_ms": {
+            "ptxas_legacy": [
+              0.007040000054985285,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007104000076651573,
+              0.007040000054985285
+            ],
+            "ptxas_early": [
+              0.0071680000983178616,
+              0.007104000076651573,
+              0.006976000033318996,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.007040000054985285
+            ],
+            "ptxas_init_reuse": [
+              0.006976000033318996,
+              0.007104000076651573,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.007104000076651573,
+              0.007104000076651573,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.006912000011652708,
+              0.007040000054985285
+            ],
+            "ptxas_init_reuse_direct_early": [
+              0.007040000054985285,
+              0.007104000076651573,
+              0.007104000076651573,
+              0.006976000033318996,
+              0.007104000076651573,
+              0.00723200011998415,
+              0.007040000054985285,
+              0.007104000076651573,
+              0.006976000033318996,
+              0.007296000141650438,
+              0.007040000054985285,
+              0.006912000011652708
+            ],
+            "ptxas_tile128": [
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013504000380635262
+            ],
+            "ptxas_tile128_direct": [
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013504000380635262
+            ],
+            "ptxas_tile128_early": [
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013439999893307686,
+              0.013439999893307686,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013439999893307686
+            ],
+            "ptxas_tile128_direct_early": [
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013567999936640263,
+              0.013567999936640263,
+              0.013439999893307686,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013567999936640263
+            ],
+            "legacy": [
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009664000011980534,
+              0.009664000011980534,
+              0.009664000011980534,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009664000011980534
+            ],
+            "direct": [
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009855999611318111,
+              0.009151999838650227,
+              0.009088000282645226,
+              0.009151999838650227,
+              0.009279999881982803,
+              0.009088000282645226,
+              0.009088000282645226,
+              0.009151999838650227,
+              0.009216000325977802,
+              0.009151999838650227
+            ],
+            "early": [
+              0.009727999567985535,
+              0.009727999567985535,
+              0.009600000455975533,
+              0.009664000011980534,
+              0.009664000011980534,
+              0.009664000011980534,
+              0.009855999611318111,
+              0.009664000011980534,
+              0.009664000011980534,
+              0.009727999567985535,
+              0.01017600018531084,
+              0.009600000455975533
+            ],
+            "direct_early": [
+              0.00940799992531538,
+              0.009151999838650227,
+              0.009088000282645226,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.00940799992531538,
+              0.009088000282645226,
+              0.009088000282645226,
+              0.009664000011980534,
+              0.009151999838650227,
+              0.009088000282645226,
+              0.009151999838650227
+            ],
+            "init_reuse": [
+              0.00940799992531538,
+              0.00940799992531538,
+              0.009344000369310379,
+              0.009344000369310379,
+              0.00940799992531538,
+              0.00940799992531538,
+              0.00940799992531538,
+              0.00940799992531538,
+              0.009344000369310379,
+              0.00940799992531538,
+              0.009344000369310379,
+              0.009344000369310379
+            ],
+            "init_reuse_direct": [
+              0.008895999751985073,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008895999751985073,
+              0.008832000195980072,
+              0.008895999751985073,
+              0.00902399979531765,
+              0.008832000195980072,
+              0.008960000239312649,
+              0.008832000195980072
+            ],
+            "init_reuse_direct_early": [
+              0.008895999751985073,
+              0.008767999708652496,
+              0.008767999708652496,
+              0.008832000195980072,
+              0.008895999751985073,
+              0.008895999751985073,
+              0.008832000195980072,
+              0.008832000195980072,
+              0.008895999751985073,
+              0.008895999751985073,
+              0.008895999751985073,
+              0.008832000195980072
+            ],
+            "tile128": [
+              0.01990400068461895,
+              0.01990400068461895,
+              0.01990400068461895,
+              0.019967999309301376,
+              0.019967999309301376,
+              0.019967999309301376,
+              0.019967999309301376,
+              0.01990400068461895,
+              0.019967999309301376,
+              0.01990400068461895,
+              0.019967999309301376,
+              0.01990400068461895
+            ],
+            "tile128_direct": [
+              0.01926399953663349,
+              0.01913600042462349,
+              0.019071999937295914,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.01926399953663349,
+              0.019200000911951065,
+              0.01913600042462349,
+              0.019071999937295914,
+              0.01913600042462349,
+              0.019200000911951065,
+              0.019071999937295914
+            ],
+            "tile128_early": [
+              0.020096000283956528,
+              0.020160000771284103,
+              0.020031999796628952,
+              0.019967999309301376,
+              0.020031999796628952,
+              0.020031999796628952,
+              0.019967999309301376,
+              0.020031999796628952,
+              0.020096000283956528,
+              0.020031999796628952,
+              0.020096000283956528,
+              0.020096000283956528
+            ],
+            "tile128_direct_early": [
+              0.019007999449968338,
+              0.019200000911951065,
+              0.01894400082528591,
+              0.019007999449968338,
+              0.01894400082528591,
+              0.019007999449968338,
+              0.01894400082528591,
+              0.018880000337958336,
+              0.01894400082528591,
+              0.01894400082528591,
+              0.01894400082528591,
+              0.019007999449968338
+            ],
+            "cublas": [
+              0.006399999838322401,
+              0.006335999816656113,
+              0.006399999838322401,
+              0.006399999838322401,
+              0.006463999859988689,
+              0.006399999838322401,
+              0.006463999859988689,
+              0.006399999838322401,
+              0.006335999816656113,
+              0.006335999816656113,
+              0.006463999859988689,
+              0.006335999816656113
+            ]
+          },
+          "median_ms": {
+            "ptxas_legacy": 0.007040000054985285,
+            "ptxas_early": 0.007040000054985285,
+            "ptxas_init_reuse": 0.007040000054985285,
+            "ptxas_init_reuse_direct_early": 0.007072000065818429,
+            "ptxas_tile128": 0.013504000380635262,
+            "ptxas_tile128_direct": 0.013504000380635262,
+            "ptxas_tile128_early": 0.013504000380635262,
+            "ptxas_tile128_direct_early": 0.013504000380635262,
+            "legacy": 0.009600000455975533,
+            "direct": 0.009151999838650227,
+            "early": 0.009664000011980534,
+            "direct_early": 0.009151999838650227,
+            "init_reuse": 0.00940799992531538,
+            "init_reuse_direct": 0.008895999751985073,
+            "init_reuse_direct_early": 0.008863999973982573,
+            "tile128": 0.019935999996960163,
+            "tile128_direct": 0.01913600042462349,
+            "tile128_early": 0.020031999796628952,
+            "tile128_direct_early": 0.01894400082528591,
+            "cublas": 0.006399999838322401
+          }
+        },
+        {
+          "round": 2,
+          "paired_orders": [
+            [
+              "ptxas_legacy",
+              "ptxas_tile128",
+              "ptxas_tile128_direct",
+              "legacy",
+              "tile128_early",
+              "ptxas_init_reuse_direct_early",
+              "tile128",
+              "early",
+              "init_reuse_direct",
+              "ptxas_tile128_direct_early",
+              "tile128_direct",
+              "ptxas_init_reuse",
+              "direct",
+              "direct_early",
+              "ptxas_early",
+              "init_reuse",
+              "init_reuse_direct_early",
+              "cublas",
+              "tile128_direct_early",
+              "ptxas_tile128_early"
+            ],
+            [
+              "ptxas_tile128_early",
+              "early",
+              "direct",
+              "ptxas_early",
+              "tile128_direct",
+              "ptxas_init_reuse_direct_early",
+              "tile128_early",
+              "tile128_direct_early",
+              "ptxas_tile128_direct_early",
+              "ptxas_init_reuse",
+              "ptxas_legacy",
+              "init_reuse_direct_early",
+              "init_reuse_direct",
+              "init_reuse",
+              "ptxas_tile128",
+              "cublas",
+              "legacy",
+              "ptxas_tile128_direct",
+              "tile128",
+              "direct_early"
+            ],
+            [
+              "ptxas_legacy",
+              "tile128_direct_early",
+              "init_reuse",
+              "ptxas_early",
+              "direct_early",
+              "ptxas_init_reuse",
+              "init_reuse_direct_early",
+              "ptxas_tile128_direct",
+              "legacy",
+              "init_reuse_direct",
+              "ptxas_tile128_direct_early",
+              "tile128_direct",
+              "tile128",
+              "cublas",
+              "ptxas_tile128_early",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_tile128",
+              "early",
+              "direct",
+              "tile128_early"
+            ],
+            [
+              "ptxas_tile128_direct_early",
+              "tile128_direct",
+              "direct_early",
+              "ptxas_init_reuse",
+              "init_reuse_direct_early",
+              "ptxas_tile128_early",
+              "ptxas_tile128_direct",
+              "ptxas_early",
+              "cublas",
+              "init_reuse_direct",
+              "tile128_direct_early",
+              "early",
+              "tile128",
+              "ptxas_tile128",
+              "legacy",
+              "ptxas_legacy",
+              "direct",
+              "init_reuse",
+              "ptxas_init_reuse_direct_early",
+              "tile128_early"
+            ],
+            [
+              "ptxas_tile128_direct",
+              "direct",
+              "early",
+              "legacy",
+              "tile128_early",
+              "cublas",
+              "ptxas_tile128_early",
+              "ptxas_tile128",
+              "init_reuse_direct",
+              "tile128_direct_early",
+              "ptxas_legacy",
+              "init_reuse_direct_early",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_tile128_direct_early",
+              "ptxas_early",
+              "init_reuse",
+              "tile128",
+              "ptxas_init_reuse",
+              "direct_early",
+              "tile128_direct"
+            ],
+            [
+              "ptxas_init_reuse",
+              "direct_early",
+              "tile128_early",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_tile128_early",
+              "tile128_direct",
+              "ptxas_tile128",
+              "direct",
+              "ptxas_tile128_direct_early",
+              "ptxas_legacy",
+              "ptxas_tile128_direct",
+              "ptxas_early",
+              "init_reuse_direct_early",
+              "init_reuse_direct",
+              "early",
+              "tile128_direct_early",
+              "cublas",
+              "tile128",
+              "init_reuse",
+              "legacy"
+            ],
+            [
+              "init_reuse_direct",
+              "ptxas_early",
+              "tile128_direct",
+              "early",
+              "ptxas_tile128_direct_early",
+              "tile128_direct_early",
+              "tile128",
+              "ptxas_tile128_early",
+              "ptxas_tile128_direct",
+              "direct",
+              "cublas",
+              "direct_early",
+              "ptxas_tile128",
+              "init_reuse",
+              "ptxas_init_reuse_direct_early",
+              "init_reuse_direct_early",
+              "tile128_early",
+              "ptxas_legacy",
+              "ptxas_init_reuse",
+              "legacy"
+            ],
+            [
+              "ptxas_legacy",
+              "ptxas_early",
+              "ptxas_tile128",
+              "tile128_direct_early",
+              "init_reuse_direct",
+              "init_reuse",
+              "direct_early",
+              "legacy",
+              "ptxas_tile128_direct_early",
+              "cublas",
+              "ptxas_tile128_early",
+              "ptxas_init_reuse_direct_early",
+              "tile128_direct",
+              "ptxas_tile128_direct",
+              "init_reuse_direct_early",
+              "ptxas_init_reuse",
+              "direct",
+              "early",
+              "tile128_early",
+              "tile128"
+            ],
+            [
+              "ptxas_tile128_early",
+              "tile128_direct_early",
+              "legacy",
+              "direct_early",
+              "cublas",
+              "ptxas_tile128_direct",
+              "ptxas_init_reuse_direct_early",
+              "init_reuse_direct_early",
+              "direct",
+              "tile128_direct",
+              "early",
+              "ptxas_tile128_direct_early",
+              "init_reuse_direct",
+              "ptxas_legacy",
+              "tile128",
+              "ptxas_early",
+              "ptxas_init_reuse",
+              "ptxas_tile128",
+              "init_reuse",
+              "tile128_early"
+            ],
+            [
+              "cublas",
+              "tile128_direct",
+              "early",
+              "ptxas_legacy",
+              "ptxas_tile128_early",
+              "ptxas_tile128_direct",
+              "ptxas_tile128",
+              "init_reuse_direct_early",
+              "ptxas_early",
+              "direct_early",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_init_reuse",
+              "init_reuse",
+              "tile128_direct_early",
+              "direct",
+              "tile128",
+              "tile128_early",
+              "legacy",
+              "init_reuse_direct",
+              "ptxas_tile128_direct_early"
+            ],
+            [
+              "ptxas_early",
+              "ptxas_tile128",
+              "direct_early",
+              "direct",
+              "early",
+              "ptxas_tile128_direct",
+              "tile128_early",
+              "ptxas_init_reuse",
+              "init_reuse_direct_early",
+              "tile128_direct_early",
+              "init_reuse_direct",
+              "cublas",
+              "legacy",
+              "tile128_direct",
+              "init_reuse",
+              "ptxas_tile128_early",
+              "ptxas_legacy",
+              "ptxas_tile128_direct_early",
+              "ptxas_init_reuse_direct_early",
+              "tile128"
+            ],
+            [
+              "init_reuse_direct",
+              "early",
+              "tile128_early",
+              "tile128_direct_early",
+              "legacy",
+              "direct",
+              "ptxas_tile128_early",
+              "ptxas_tile128",
+              "tile128_direct",
+              "ptxas_init_reuse",
+              "direct_early",
+              "init_reuse_direct_early",
+              "cublas",
+              "ptxas_init_reuse_direct_early",
+              "ptxas_early",
+              "ptxas_tile128_direct",
+              "init_reuse",
+              "ptxas_legacy",
+              "ptxas_tile128_direct_early",
+              "tile128"
+            ]
+          ],
+          "samples_ms": {
+            "ptxas_legacy": [
+              0.007104000076651573,
+              0.007104000076651573,
+              0.007040000054985285,
+              0.007104000076651573,
+              0.007104000076651573,
+              0.007040000054985285,
+              0.0071680000983178616,
+              0.007040000054985285,
+              0.007104000076651573,
+              0.007104000076651573,
+              0.007104000076651573,
+              0.0071680000983178616
+            ],
+            "ptxas_early": [
+              0.007040000054985285,
+              0.006912000011652708,
+              0.007104000076651573,
+              0.006976000033318996,
+              0.007104000076651573,
+              0.007040000054985285,
+              0.006912000011652708,
+              0.007040000054985285,
+              0.007040000054985285,
+              0.006912000011652708,
+              0.007104000076651573,
+              0.0071680000983178616
+            ],
+            "ptxas_init_reuse": [
+              0.007040000054985285,
+              0.006976000033318996,
+              0.007104000076651573,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.006912000011652708,
+              0.007040000054985285,
+              0.007040000054985285
+            ],
+            "ptxas_init_reuse_direct_early": [
+              0.006976000033318996,
+              0.006976000033318996,
+              0.006912000011652708,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.006976000033318996,
+              0.006976000033318996,
+              0.007040000054985285,
+              0.006912000011652708,
+              0.006912000011652708,
+              0.007040000054985285,
+              0.006976000033318996
+            ],
+            "ptxas_tile128": [
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013504000380635262,
+              0.013439999893307686
+            ],
+            "ptxas_tile128_direct": [
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013567999936640263,
+              0.013439999893307686,
+              0.013632000423967838,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013439999893307686,
+              0.013632000423967838,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013439999893307686
+            ],
+            "ptxas_tile128_early": [
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.013567999936640263,
+              0.013504000380635262,
+              0.01369599997997284,
+              0.013567999936640263,
+              0.013567999936640263,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013504000380635262
+            ],
+            "ptxas_tile128_direct_early": [
+              0.013567999936640263,
+              0.013567999936640263,
+              0.013567999936640263,
+              0.013439999893307686,
+              0.013567999936640263,
+              0.013439999893307686,
+              0.013439999893307686,
+              0.013632000423967838,
+              0.013504000380635262,
+              0.013439999893307686,
+              0.013504000380635262,
+              0.013439999893307686
+            ],
+            "legacy": [
+              0.009664000011980534,
+              0.009727999567985535,
+              0.009664000011980534,
+              0.009600000455975533,
+              0.009535999968647957,
+              0.009664000011980534,
+              0.009600000455975533,
+              0.009727999567985535,
+              0.009535999968647957,
+              0.009727999567985535,
+              0.009600000455975533,
+              0.009727999567985535
+            ],
+            "direct": [
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009088000282645226,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009472000412642956,
+              0.009216000325977802,
+              0.009151999838650227,
+              0.009151999838650227
+            ],
+            "early": [
+              0.009600000455975533,
+              0.009727999567985535,
+              0.009600000455975533,
+              0.009600000455975533,
+              0.009727999567985535,
+              0.009664000011980534,
+              0.010239999741315842,
+              0.009664000011980534,
+              0.009727999567985535,
+              0.009664000011980534,
+              0.009664000011980534,
+              0.009535999968647957
+            ],
+            "direct_early": [
+              0.009151999838650227,
+              0.009151999838650227,
+              0.009088000282645226,
+              0.009088000282645226,
+              0.009088000282645226,
+              0.009088000282645226,
+              0.009151999838650227,
+              0.009088000282645226,
+              0.009088000282645226,
+              0.009151999838650227,
+              0.00902399979531765,
+              0.009216000325977802
+            ],
+            "init_reuse": [
+              0.00940799992531538,
+              0.00940799992531538,
+              0.009344000369310379,
+              0.009279999881982803,
+              0.009279999881982803,
+              0.00940799992531538,
+              0.009344000369310379,
+              0.009344000369310379,
+              0.009472000412642956,
+              0.009344000369310379,
+              0.009344000369310379,
+              0.009279999881982803
+            ],
+            "init_reuse_direct": [
+              0.008832000195980072,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008895999751985073,
+              0.008895999751985073,
+              0.008895999751985073,
+              0.008960000239312649,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.008960000239312649,
+              0.008895999751985073,
+              0.009088000282645226
+            ],
+            "init_reuse_direct_early": [
+              0.008832000195980072,
+              0.008832000195980072,
+              0.008832000195980072,
+              0.008767999708652496,
+              0.008895999751985073,
+              0.008832000195980072,
+              0.008832000195980072,
+              0.008767999708652496,
+              0.008767999708652496,
+              0.008767999708652496,
+              0.008832000195980072,
+              0.008767999708652496
+            ],
+            "tile128": [
+              0.019967999309301376,
+              0.019967999309301376,
+              0.019967999309301376,
+              0.019967999309301376,
+              0.019967999309301376,
+              0.019967999309301376,
+              0.01990400068461895,
+              0.019967999309301376,
+              0.019840000197291374,
+              0.019967999309301376,
+              0.01990400068461895,
+              0.019967999309301376
+            ],
+            "tile128_direct": [
+              0.01913600042462349,
+              0.019007999449968338,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.01913600042462349,
+              0.019071999937295914,
+              0.019200000911951065,
+              0.019071999937295914
+            ],
+            "tile128_early": [
+              0.020096000283956528,
+              0.020096000283956528,
+              0.020096000283956528,
+              0.020160000771284103,
+              0.020031999796628952,
+              0.020031999796628952,
+              0.020096000283956528,
+              0.020031999796628952,
+              0.020096000283956528,
+              0.020160000771284103,
+              0.020031999796628952,
+              0.020031999796628952
+            ],
+            "tile128_direct_early": [
+              0.01881599985063076,
+              0.01894400082528591,
+              0.018880000337958336,
+              0.019007999449968338,
+              0.01894400082528591,
+              0.01894400082528591,
+              0.019007999449968338,
+              0.019071999937295914,
+              0.01894400082528591,
+              0.01894400082528591,
+              0.01894400082528591,
+              0.019007999449968338
+            ],
+            "cublas": [
+              0.006399999838322401,
+              0.006271999794989824,
+              0.006399999838322401,
+              0.006399999838322401,
+              0.006527999881654978,
+              0.006399999838322401,
+              0.006399999838322401,
+              0.006463999859988689,
+              0.006335999816656113,
+              0.006399999838322401,
+              0.006399999838322401,
+              0.006463999859988689
+            ]
+          },
+          "median_ms": {
+            "ptxas_legacy": 0.007104000076651573,
+            "ptxas_early": 0.007040000054985285,
+            "ptxas_init_reuse": 0.007040000054985285,
+            "ptxas_init_reuse_direct_early": 0.006976000033318996,
+            "ptxas_tile128": 0.013504000380635262,
+            "ptxas_tile128_direct": 0.013504000380635262,
+            "ptxas_tile128_early": 0.013536000158637762,
+            "ptxas_tile128_direct_early": 0.013504000380635262,
+            "legacy": 0.009664000011980534,
+            "direct": 0.009151999838650227,
+            "early": 0.009664000011980534,
+            "direct_early": 0.009088000282645226,
+            "init_reuse": 0.009344000369310379,
+            "init_reuse_direct": 0.008895999751985073,
+            "init_reuse_direct_early": 0.008832000195980072,
+            "tile128": 0.019967999309301376,
+            "tile128_direct": 0.01913600042462349,
+            "tile128_early": 0.020096000283956528,
+            "tile128_direct_early": 0.01894400082528591,
+            "cublas": 0.006399999838322401
+          }
+        }
+      ]
+    }
+  ],
+  "methodology": {
+    "native_encoder": "production tensor.generate + build.splice_kernels; explicit TensorConfig",
+    "hmma_issue_gap": 8,
+    "epoch_drain": 15,
+    "rounds": 3,
+    "samples": 12,
+    "graph_launches": 16,
+    "precision": "FP16/BF16 operands; FP32 accumulation/output; alpha1 beta0; reduced precision and TF32 disabled",
+    "cublas": "GemmEx, disallow reduced precision reduction; not tuned cuBLASLt",
+    "scope": "isolated GEMM, excludes packing, graph integration and training-state behavior"
+  },
+  "source_identity": {
+    "sha256": {
+      "corpus/sm_80/machine_model.json": "4361d09abc0a24d350d07dbf480cebecddc06d18af15428e7dafd0acc6c660bf",
+      "corpus/sm_80/pairs.jsonl": "c619303020b016b27eb8b93eb68652563f11c7a7a78bf7eaba4eca5d172bb491",
+      "exp/instruction_overhead/a100_pointer_init_modal.py": "42d16581db33776187c19229a2519c190532b37f0a7ab6d5922bcefca46aad4e",
+      "exp/instruction_overhead/candidates.py": "8a272f15844dd09caae6e6998e6cdf4e472399201bc542cd305c68c5c9e66682",
+      "exp/shape_coverage/small_tile_gemm.py": "bf405fb1cbca1efffe780ad3c22db99c41efe9e8d47078011c83d3e8ec8cfe86",
+      "openassembler/backend/__init__.py": "db0ce3f4987c6190f6c2e6013a400787ce7a16c1e62816c9adc537fd508aa495",
+      "openassembler/backend/compile.py": "8e5e6d528ba786dba161d84195ebedec50fac0810c22ae26d76b21bb451bc2cb",
+      "openassembler/backend/fragments.py": "0ed402508df118a74a7134c4c82add23fed615975073c171898e006e6819e176",
+      "openassembler/backend/naive.py": "fc84e723a0536e58ebbf96c6314aca3713a2f3d1f946ec646ae68225a2d244a7",
+      "openassembler/backend/ra.py": "401914e05059134e177224378ce86e0d55e94350f92dfde00c72162089e3e4cc",
+      "openassembler/backend/sched.py": "5711333491c4a9dc19fb36c94334fb38df3126aadd8d1c3eed41df15e5ca2fd8",
+      "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7",
+      "openassembler/backend/tensor_encoding.py": "885730c203401d42bef163b93dc8df69db3e75feedf47fabafe9dced34c056eb",
+      "openassembler/backend/unroll.py": "47bc6999b3b6ac41e2e8d0b2176bd33f1dfd5d010b8e4aafb713adcd3d17c453",
+      "openassembler/build.py": "ac01c19d3bc82703b6f6391eb07d0686f9b823026bee9bfe5afa7fcf381ef094",
+      "openassembler/container/__init__.py": "0593c682966fdca026aad58b2c613bc72130d2f991e77f2968ae40a2f9235bc1",
+      "openassembler/container/cubin.py": "4118f7124090e942a535ab7e0cae71cc12bb21deef8e9d83c16e4932be93bfdb",
+      "openassembler/container/elf.py": "d996eca5fab4efcc9034c8a44bd8554e4bb07a0aeb225839a30e98e7c0cc129d",
+      "openassembler/container/nvinfo.py": "0e0e4e4a419f095ef96aeea165330809adb9957d0e82e471fced15c171c10210",
+      "openassembler/emu/__init__.py": "22794895d04b8cad24c79902987a9238da727fcaf2060eb763fa8459d98b1677",
+      "openassembler/emu/fp.py": "650b040866848d3ec4c520a351caa4a834617c4ba515ca451db06fad58688e8e",
+      "openassembler/emu/machine.py": "d27253ba85d82241af0ba7647ae8cd7a0b7878f65b51c6634778ee81eb5da108",
+      "openassembler/emu/operands.py": "800507473fa3619dd3105570f8bb911b9f9ca96563ed0081b8a34eb4c17cb64c",
+      "openassembler/emu/ops.py": "39c2a3c17f5bf2f3fbc30932004107561b5c341609ac2f8f1f0ba63f5d8fd3de",
+      "openassembler/emu/probe.py": "5cb86c75c70d49ccb8dda38d729311d38c6487f34b7425e759e6c99028495d83",
+      "openassembler/emu/program.py": "456029c96fed68bb71f6606aa00d94ba9dc5d571812cb62385c2340e9bd0a5d5",
+      "openassembler/emu/tensor.py": "2000285e5ede67cea8dd2ba5215391b5b8afa4cbf4cd630e30fbf1ee1d877bcb",
+      "openassembler/isa/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "openassembler/isa/encode.py": "655c78308e23c1dfe2464194fd8548579269ee74941a9496932453d27562ff36",
+      "openassembler/isa/word.py": "1e4bd5ae3c482c3296a58f938dea85339526476c5c2a0c5c088c6bc07a9131e8",
+      "openassembler/opt/__init__.py": "8ca712dcb26058a07e5ad303f5b3e810cdc853711050b1cc3291b4e9679214b0",
+      "openassembler/opt/divconst.py": "fa29f618e10e06a98d6792a1e752e98a2c07f472884fd63ce9ef3d5f9f18773e",
+      "openassembler/oracle.py": "627456041315055edfe796e6f4f45f0a036e8fd7a1fff6b369f803f25dd64497",
+      "openassembler/project.py": "8bc1ebdda315d92915bc5f4c68a38d61e3c91193568544e7627a5dd689416701",
+      "openassembler/ptx/__init__.py": "795691db5fb416d0d1ac34094884c254cef88b465489ce758dbb74fb26997998",
+      "openassembler/ptx/interp.py": "1c229dbf583b829ee11130bb5276f006c236abbbfc89cc7dd08c20a214b840ab",
+      "openassembler/ptx/parse.py": "dfddfb0e3c3507a2d1d38968c84d2524f031b1f086f6dd09e56828ad984c7d39",
+      "openassembler/ptx/semantics.py": "e18525f72cda4ddbd9e7914d8f99c1b06fcdebe491b3213108c576e7a374b1d1",
+      "openassembler/ptx/semantics_fp.py": "dcd7d92edbd6985de2f47a00c86ff9dd0ed8687e8bcd38aa67749815f455a832",
+      "specs/sm_80/arithmetic_templates.json": "1c3fc5163ab05bc4305260c12d51bfc270ab83d89fbb487fcbe5854c9179bfe1",
+      "specs/sm_80/bitflip.json": "1d03d8838c9e4992edd9a0ed2b247e9f1774730a7172e175bf4975554d78da0d",
+      "specs/sm_80/synth_fieldmaps.json": "10100a9b31d6110e9aba29446003c1f0d261f9ca859ea4bde423c5ed33a7f2e1",
+      "specs/sm_80/synth_templates.json": "dabae8aa91bd5e6e02ea3da38ca60a37d2af36dae2370530a11c92377c4cd59d"
+    },
+    "scope": "native encoder/container/data plus exact experiment generators; excludes unrelated changing dispatch/CLI source"
+  },
+  "source_unchanged_during_run": true,
+  "timestamp_utc": "2026-11-09T12:39:58.319301+00:00",
+  "retained_artifacts": {
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_legacy.cubin": {
+      "sha256": "c380f90c8961811da02d6a749be83f7b19499792dbbf67173a10e584ba38adad",
+      "bytes": 12832
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_legacy.sass": {
+      "sha256": "e448616fa9c7a0e4153ad65166c6a14ae4ccfa56f2a308a7acc5c4400543879e",
+      "bytes": 145682
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_early.cubin": {
+      "sha256": "c380f90c8961811da02d6a749be83f7b19499792dbbf67173a10e584ba38adad",
+      "bytes": 12832
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_early.sass": {
+      "sha256": "e448616fa9c7a0e4153ad65166c6a14ae4ccfa56f2a308a7acc5c4400543879e",
+      "bytes": 145682
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_init_reuse.cubin": {
+      "sha256": "ed4f65ecc24ac329662020ac5d0c911d1bc07536787c88634badb9a79a50c687",
+      "bytes": 12576
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_init_reuse.sass": {
+      "sha256": "4d50cb844c1956283fcd08f8c541c310e463a3e70dad7bb1a58e18555fee3417",
+      "bytes": 148418
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_init_reuse_direct_early.cubin": {
+      "sha256": "ed4f65ecc24ac329662020ac5d0c911d1bc07536787c88634badb9a79a50c687",
+      "bytes": 12576
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_init_reuse_direct_early.sass": {
+      "sha256": "4d50cb844c1956283fcd08f8c541c310e463a3e70dad7bb1a58e18555fee3417",
+      "bytes": 148418
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_tile128.cubin": {
+      "sha256": "40068900d69e1a6bb2a57de291a84540ebd761861e339bbef1e084018e0321f0",
+      "bytes": 29728
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_tile128.sass": {
+      "sha256": "21672913489dcc97f066c9efe5fa0bf2e5c44e798b7be9f620ac50594a18d481",
+      "bytes": 392451
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_tile128_direct.cubin": {
+      "sha256": "40068900d69e1a6bb2a57de291a84540ebd761861e339bbef1e084018e0321f0",
+      "bytes": 29728
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_tile128_direct.sass": {
+      "sha256": "21672913489dcc97f066c9efe5fa0bf2e5c44e798b7be9f620ac50594a18d481",
+      "bytes": 392451
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_tile128_early.cubin": {
+      "sha256": "40068900d69e1a6bb2a57de291a84540ebd761861e339bbef1e084018e0321f0",
+      "bytes": 29728
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_tile128_early.sass": {
+      "sha256": "21672913489dcc97f066c9efe5fa0bf2e5c44e798b7be9f620ac50594a18d481",
+      "bytes": 392451
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_tile128_direct_early.cubin": {
+      "sha256": "40068900d69e1a6bb2a57de291a84540ebd761861e339bbef1e084018e0321f0",
+      "bytes": 29728
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/ptxas_tile128_direct_early.sass": {
+      "sha256": "21672913489dcc97f066c9efe5fa0bf2e5c44e798b7be9f620ac50594a18d481",
+      "bytes": 392451
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/legacy.cubin": {
+      "sha256": "9070991f88aab27314d43c944d65d829c76bf2d8bfb957c46d7ad18f430ae7e3",
+      "bytes": 26688
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/legacy.sass": {
+      "sha256": "3a84bbaa2ba722ef3fe11f64376c182cbb6eaf85fcaad391b87758ee6737dc43",
+      "bytes": 154874
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/direct.cubin": {
+      "sha256": "754726d4fb20262703b7f58d961e16a3b54521176c43beab14b8e302ef942b01",
+      "bytes": 25664
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/direct.sass": {
+      "sha256": "3e9a6ac80292812462db4ac3d3c7ab8b00073114b54dcbdbee4f57b5794826a0",
+      "bytes": 141306
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/early.cubin": {
+      "sha256": "ed558ffed9fe41c4c04191678b5438d68839d9807ac67644237ef57f723a9558",
+      "bytes": 26688
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/early.sass": {
+      "sha256": "10072bc5a1638574d28c2fb7aa57796252df61ddcf4bdc81dc7db2d6a7af5097",
+      "bytes": 154874
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/direct_early.cubin": {
+      "sha256": "98416438e0274e7e5c7d4aede73eeebcbaf40e3e6ef8ac9c50f4928b6ec37e4e",
+      "bytes": 25664
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/direct_early.sass": {
+      "sha256": "04b30565e9e03bd69769bf2f96f3a9cb4ba2f3b7d9195f5fbfbeb60ba305f299",
+      "bytes": 141306
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/init_reuse.cubin": {
+      "sha256": "32fdcf416e73d547cad526844e634658207ef0103fa716027f8b42849e403a8b",
+      "bytes": 25408
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/init_reuse.sass": {
+      "sha256": "c8c102eb6a1481c49f2128b4db0b1f3e7bc7a2a81a4eb952e37fc67c8a679ed8",
+      "bytes": 141306
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/init_reuse_direct.cubin": {
+      "sha256": "9f795b2c3d8b28c8f98e9121da632eae2e862852771375fac4c3f18e2ddd073f",
+      "bytes": 24384
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/init_reuse_direct.sass": {
+      "sha256": "bdd800ab5524e44a706e3d140bcd796c60fa2f8da422c5cf850271663d0b1603",
+      "bytes": 127738
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/init_reuse_direct_early.cubin": {
+      "sha256": "7467d4b7d67875e3411d857d1b2c6c94e5b6c33ee02230ab00d8f4c29b9e7b06",
+      "bytes": 24384
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/init_reuse_direct_early.sass": {
+      "sha256": "a5544bd5e1c8149284e107aadb1e5968b01e1aeedc37be585f6d0a8ce640dba4",
+      "bytes": 127738
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128.cubin": {
+      "sha256": "822828d4378e9d43476315a828dbe0456bf59e400fee97963bfc123889d29bab",
+      "bytes": 57536
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128.sass": {
+      "sha256": "f1cf982ac7b10552bf0704b1c12d45eb096c7409e71a5934c4d7a98c76586f3a",
+      "bytes": 349339
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_direct.cubin": {
+      "sha256": "975770111fa8ca8526132532d359be62292df26fd4f6e1b88596328e8fb39560",
+      "bytes": 55488
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_direct.sass": {
+      "sha256": "301aa37ee4e9a7798400bafc1effa951f8c3ef7d08f138f5f14763af26fb5cec",
+      "bytes": 321435
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_early.cubin": {
+      "sha256": "66309fe8e829eb4757abc9ebef82088ad059ce47b8328316a1b6295d539336b9",
+      "bytes": 57536
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_early.sass": {
+      "sha256": "98d89099fa40cd79c094047bd5bad36b272e0cc003fc625ff689c4101b62a2fd",
+      "bytes": 349339
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_direct_early.cubin": {
+      "sha256": "aa264a6d765b918ba2351369d13201ceeadc962a97c2e96b45f20c3ed5e09928",
+      "bytes": 55488
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_direct_early.sass": {
+      "sha256": "c9e368635002921ca71db492914fa0f924e6fe451ea6f9e1632c68cbea3d764f",
+      "bytes": 321435
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/legacy.ptx": {
+      "sha256": "37188e6c06d1b1215774ff563e23aec90e4632e7685de54133d90d8d7ed548b0",
+      "bytes": 33411
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/early.ptx": {
+      "sha256": "0c299afef266dcef290227fdf7cf7da14724c5a8fca3e31f4f64362c85c4cc8e",
+      "bytes": 33411
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/init_reuse.ptx": {
+      "sha256": "aa390fe73a39e3d7225d59c10af37c78996d977276830c00958b93b3115db243",
+      "bytes": 31524
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/init_reuse_direct_early.ptx": {
+      "sha256": "eceba97465cd6cc25dd42bb4803b058553c28adda849b0a2fd1c06959887fb0a",
+      "bytes": 31524
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128.ptx": {
+      "sha256": "f371183248caef6994ed3e3656b4e4fe9a0077a2119cfa46318a4a4d9013f182",
+      "bytes": 101570
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_direct.ptx": {
+      "sha256": "fef181be973a101942b2cea4922f92689f3172d68754020b9a3f85356dd6e991",
+      "bytes": 101570
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_early.ptx": {
+      "sha256": "113a51b2f50d26e03621971f64858135df5c5ea6362e0fc5b2b3025449cd4030",
+      "bytes": 101571
+    },
+    "exp/instruction_overhead/artifacts/20261109T123958.319308Z/128x512x512_f16/tile128_direct_early.ptx": {
+      "sha256": "09f698b0e84a24fc17f5d56acd659ffe49a5afaaa7fe194409178da7636c9d79",
+      "bytes": 101571
+    }
+  }
+}

@@ -212,14 +212,110 @@ python3 exp/nn_round2/operator_fma_analysis.py \
 
 Its generated artifacts are under `exp/nn_round2/operator_standard_fma_build/`.
 
-The follow-up streamed load/FMA overlap candidate is documented in
-[`exp/weaknesses/reduction_overlap_report.md`](../../../exp/weaknesses/reduction_overlap_report.md).
-Its source-inclusive A100 run passed full output/tolerance, canary,
-input-immutability and graph-poison checks for 4096-row RMSNorm and softmax
-backward at widths 512, 513 and 1024 with four and eight warps. It reduced OA
-instructions and registers and beat the unfused OA candidate across the tested
-matrix, but matched ptxas remained faster in every case. Nsight counters for
-the candidate are still required before any promotion decision.
+## Streamed load/FMA follow-up and counters
+
+The source-inclusive [overlap run](../../../exp/weaknesses/reduction_overlap_run_20261108T051551.705065Z.json)
+passes full normal/zero/structured outputs, guards, input immutability and
+poisoned graph replay for 4096-row RMSNorm and softmax backward, widths
+512/513/1024, and four/eight warps per CTA. The candidate loads one chunk of
+each operand, immediately folds its products into local FMA accumulators, then
+loads the next chunk. Tail masks, the five-step full-mask shuffle tree and
+output stores stay unchanged. Normal and structured results pass the declared
+FP32 tolerance but are not generally bitwise equal to ptxas; zero results are.
+
+Representative RMSNorm baseline/overlap static instruction and register counts
+are 232/58 → 200/43 at width 512, 240/61 → 208/45 at width 513 and 392/106 →
+328/75 at width 1024. Softmax changes from 152/53 → 136/41, 160/56 → 144/43
+and 264/101 → 232/73 respectively. The candidate beats unfused OA in this
+matrix; ptxas remains faster in every case. These are historical source-bound
+measurements, not a current production reduction policy.
+
+The subsequent [Nsight record](../../../exp/weaknesses/reduction_overlap_ncu_20261108T061002.104721Z.json)
+completed **all 12 cases**, with baseline and overlap sources independently
+compiled by OA and ptxas and 21 accepted metric names. The worker profiles the
+third exact launch, validating full outputs, canaries and input immutability
+before and after replay. Barrier stalls are zero because these kernels have no
+CTA barriers. Counter replay duration is never used as benchmark timing.
+
+The overlap version cuts OA dynamic instructions by **10–16%** and registers by
+**12–31**, but OA long-scoreboard fractions remain about **82–91%**, against
+about **19–49%** for ptxas. DRAM/L2 traffic changes by only a few percent.
+Eligibility changes are small: fewer registers and scalar instructions alone
+do not solve memory/reduction dependency overlap. Stall percentages are
+sampling diagnostics and are not additive time fractions or causal proof.
+
+The complete retained per-case table follows. Inst/FMA are dynamic counts;
+registers are per thread, DRAM traffic is bytes, and eligible warps is the
+reported scheduler average. Absolute values stay within this A100-SXM4-40GB
+counter process and are not pooled with newer devices or timing rounds.
+
+| Op | Width | Warps | Method | Inst | FMA | Regs | Long SB % | Short SB % | Wait % | DRAM bytes | L2 hit % | Eligible warps |
+|---|---:|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| rmsnorm_backward | 512 | 4 | baseline oa | 921600 | 532480 | 58 | 86.64 | 1.99 | 1.22 | 26915072 | 50.30 | 0.17 |
+| rmsnorm_backward | 512 | 4 | baseline ptxas | 626688 | 331776 | 40 | 48.56 | 11.18 | 1.94 | 26200832 | 50.28 | 0.12 |
+| rmsnorm_backward | 512 | 4 | overlap oa | 798720 | 409600 | 43 | 86.34 | 2.23 | 0.96 | 27186304 | 51.02 | 0.19 |
+| rmsnorm_backward | 512 | 4 | overlap ptxas | 626688 | 331776 | 40 | 47.74 | 11.47 | 2.40 | 26072576 | 50.52 | 0.14 |
+| rmsnorm_backward | 512 | 8 | baseline oa | 921600 | 532480 | 58 | 82.32 | 2.37 | 1.37 | 27106048 | 50.17 | 0.19 |
+| rmsnorm_backward | 512 | 8 | baseline ptxas | 626688 | 331776 | 40 | 46.61 | 11.74 | 2.21 | 25986560 | 50.68 | 0.16 |
+| rmsnorm_backward | 512 | 8 | overlap oa | 798720 | 409600 | 43 | 85.47 | 2.08 | 0.97 | 27013760 | 50.78 | 0.21 |
+| rmsnorm_backward | 512 | 8 | overlap ptxas | 626688 | 331776 | 40 | 45.85 | 10.22 | 2.29 | 25823360 | 50.18 | 0.17 |
+| rmsnorm_backward | 513 | 4 | baseline oa | 974848 | 561152 | 61 | 85.32 | 2.13 | 1.25 | 27439104 | 53.02 | 0.19 |
+| rmsnorm_backward | 513 | 4 | baseline ptxas | 671744 | 352256 | 48 | 28.74 | 6.06 | 1.97 | 26003456 | 52.28 | 0.17 |
+| rmsnorm_backward | 513 | 4 | overlap oa | 843776 | 430080 | 45 | 87.43 | 2.06 | 0.81 | 27517312 | 55.45 | 0.18 |
+| rmsnorm_backward | 513 | 4 | overlap ptxas | 671744 | 352256 | 48 | 28.67 | 6.92 | 2.06 | 25956992 | 52.19 | 0.18 |
+| rmsnorm_backward | 513 | 8 | baseline oa | 974848 | 561152 | 61 | 84.36 | 2.12 | 1.21 | 27488000 | 52.93 | 0.19 |
+| rmsnorm_backward | 513 | 8 | baseline ptxas | 671744 | 352256 | 48 | 26.11 | 4.99 | 2.15 | 26589056 | 53.68 | 0.22 |
+| rmsnorm_backward | 513 | 8 | overlap oa | 843776 | 430080 | 45 | 85.56 | 2.32 | 0.87 | 27323776 | 55.01 | 0.20 |
+| rmsnorm_backward | 513 | 8 | overlap ptxas | 671744 | 352256 | 48 | 27.02 | 5.50 | 1.75 | 26281856 | 53.21 | 0.18 |
+| rmsnorm_backward | 1024 | 4 | baseline oa | 1576960 | 991232 | 106 | 87.19 | 1.75 | 1.46 | 54762752 | 49.69 | 0.09 |
+| rmsnorm_backward | 1024 | 4 | baseline ptxas | 1085440 | 593920 | 72 | 34.73 | 7.50 | 2.69 | 51831936 | 50.20 | 0.13 |
+| rmsnorm_backward | 1024 | 4 | overlap oa | 1323008 | 737280 | 75 | 85.85 | 2.01 | 0.94 | 51736192 | 50.46 | 0.11 |
+| rmsnorm_backward | 1024 | 4 | overlap ptxas | 1085440 | 593920 | 72 | 34.57 | 7.70 | 2.88 | 51564416 | 49.64 | 0.14 |
+| rmsnorm_backward | 1024 | 8 | baseline oa | 1576960 | 991232 | 106 | 86.10 | 1.65 | 1.46 | 55053952 | 50.17 | 0.09 |
+| rmsnorm_backward | 1024 | 8 | baseline ptxas | 1085440 | 593920 | 72 | 37.56 | 7.72 | 2.74 | 51968000 | 49.97 | 0.12 |
+| rmsnorm_backward | 1024 | 8 | overlap oa | 1323008 | 737280 | 75 | 86.59 | 1.69 | 0.85 | 52047232 | 50.66 | 0.10 |
+| rmsnorm_backward | 1024 | 8 | overlap ptxas | 1085440 | 593920 | 72 | 37.73 | 7.12 | 2.86 | 51939072 | 50.14 | 0.13 |
+| softmax_backward | 512 | 4 | baseline oa | 610304 | 299008 | 53 | 89.22 | 1.35 | 0.89 | 26935168 | 50.45 | 0.11 |
+| softmax_backward | 512 | 4 | baseline ptxas | 495616 | 229376 | 40 | 30.70 | 8.17 | 2.10 | 25818368 | 50.29 | 0.15 |
+| softmax_backward | 512 | 4 | overlap oa | 548864 | 237568 | 41 | 91.53 | 0.97 | 0.67 | 26887552 | 50.79 | 0.09 |
+| softmax_backward | 512 | 4 | overlap ptxas | 495616 | 229376 | 40 | 30.94 | 8.51 | 2.22 | 25815296 | 50.40 | 0.16 |
+| softmax_backward | 512 | 8 | baseline oa | 610304 | 299008 | 53 | 87.07 | 1.36 | 1.04 | 26999296 | 50.10 | 0.10 |
+| softmax_backward | 512 | 8 | baseline ptxas | 495616 | 229376 | 40 | 29.83 | 7.33 | 2.18 | 25898112 | 50.49 | 0.19 |
+| softmax_backward | 512 | 8 | overlap oa | 548864 | 237568 | 41 | 87.54 | 1.08 | 0.82 | 26977664 | 50.84 | 0.12 |
+| softmax_backward | 512 | 8 | overlap ptxas | 495616 | 229376 | 40 | 29.90 | 7.56 | 2.19 | 25854720 | 50.51 | 0.19 |
+| softmax_backward | 513 | 4 | baseline oa | 651264 | 315392 | 56 | 89.87 | 1.21 | 0.76 | 27249408 | 53.82 | 0.12 |
+| softmax_backward | 513 | 4 | baseline ptxas | 532480 | 245760 | 47 | 28.37 | 7.97 | 2.24 | 26114816 | 52.31 | 0.17 |
+| softmax_backward | 513 | 4 | overlap oa | 585728 | 249856 | 43 | 90.05 | 1.23 | 0.79 | 27486976 | 55.65 | 0.11 |
+| softmax_backward | 513 | 4 | overlap ptxas | 532480 | 245760 | 47 | 28.66 | 8.04 | 1.95 | 26055040 | 52.06 | 0.14 |
+| softmax_backward | 513 | 8 | baseline oa | 651264 | 315392 | 56 | 86.87 | 1.37 | 0.97 | 27803904 | 53.03 | 0.12 |
+| softmax_backward | 513 | 8 | baseline ptxas | 532480 | 245760 | 47 | 27.25 | 6.87 | 1.73 | 26346368 | 54.10 | 0.16 |
+| softmax_backward | 513 | 8 | overlap oa | 585728 | 249856 | 43 | 89.37 | 1.10 | 0.74 | 27548032 | 55.12 | 0.11 |
+| softmax_backward | 513 | 8 | overlap ptxas | 532480 | 245760 | 47 | 26.46 | 7.03 | 2.07 | 26418944 | 54.02 | 0.19 |
+| softmax_backward | 1024 | 4 | baseline oa | 1069056 | 561152 | 101 | 89.64 | 1.22 | 1.24 | 55245824 | 49.81 | 0.05 |
+| softmax_backward | 1024 | 4 | baseline ptxas | 888832 | 425984 | 72 | 18.79 | 6.76 | 1.92 | 52167552 | 49.66 | 0.11 |
+| softmax_backward | 1024 | 4 | overlap oa | 942080 | 434176 | 73 | 88.62 | 1.18 | 0.81 | 51734400 | 50.37 | 0.06 |
+| softmax_backward | 1024 | 4 | overlap ptxas | 888832 | 425984 | 72 | 18.73 | 6.61 | 2.12 | 52236032 | 49.76 | 0.12 |
+| softmax_backward | 1024 | 8 | baseline oa | 1069056 | 561152 | 101 | 88.68 | 1.23 | 1.23 | 55189248 | 49.88 | 0.05 |
+| softmax_backward | 1024 | 8 | baseline ptxas | 888832 | 425984 | 72 | 19.07 | 8.22 | 2.56 | 52169472 | 49.86 | 0.14 |
+| softmax_backward | 1024 | 8 | overlap oa | 942080 | 434176 | 73 | 90.77 | 0.95 | 0.73 | 52353152 | 50.33 | 0.06 |
+| softmax_backward | 1024 | 8 | overlap ptxas | 888832 | 425984 | 72 | 19.45 | 8.63 | 2.30 | 52443136 | 50.10 | 0.13 |
+
+Reproduce the bounded source and hardware studies with:
+
+```sh
+.venv/bin/python -m pytest -q exp/weaknesses/test_reduction_overlap_codegen.py
+modal run exp/weaknesses/reduction_overlap_run_modal.py
+modal run exp/weaknesses/reduction_overlap_ncu_modal.py
+```
+
+The [source generator](../../../exp/weaknesses/reduction_overlap_codegen.py)
+and [initial build gate](../../../exp/weaknesses/reduction_overlap_build_modal_result.json)
+remain available. The latter checks PTX/disassembly only. Promotion still
+requires current-source paired held-out timing and the applicable composed
+training-state contract. The next candidates are bounded load windows,
+balanced local/reduction trees, proven shuffle-reader tracking and resource-
+aware geometry selection. A synchronization deletion requires an explicit
+full-mask/visibility proof and full hardware checks.
 
 ## Code and evidence
 
@@ -235,8 +331,9 @@ the candidate are still required before any promotion decision.
 - [Independent confirmation](../../../exp/nn_round2/runs/operator-fma-confirm-20261107T144005.532354Z.json),
   [its mechanical summary](../../../exp/nn_round2/operator_fma_confirmation_analysis.json).
 
-The next admission tests are independent confirmation of standard-width choices,
-hardware-counter analysis and a composed training workload with matching
-saved-state/gradient contracts.
+The next admission tests are current-source held-out confirmation of the selected
+standard-width choices, combined load/tree scheduling informed by the retained
+counters, and a composed training workload with matching saved-state/gradient
+contracts.
 No production implementation or whole-transformer speedup follows from this
 standalone result.

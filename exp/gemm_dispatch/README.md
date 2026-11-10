@@ -1,9 +1,11 @@
 # CTA traversal and dispatch experiments
 
-This directory contains experiment-only models for the A100 GEMM launch
-policy.  It is deliberately separate from `openassembler/kernels/gemm.py` so
-that a traversal candidate cannot become a production dispatch rule before it
-has been compiled and timed on held-out A100 shapes.
+This directory retains the research models and source-inclusive tests for A100
+GEMM traversal. Production implementations live in
+`openassembler/kernels/gemm.py`; this directory is not imported by the compiler.
+The [grouped-N dossier](../../docs/research/ideas/grouped-n-cta-swizzle.md)
+owns its current integration status, while the files here preserve the exact
+historical experiment contracts.
 
 `cta_swizzle.py` implements three logical traversals:
 
@@ -27,7 +29,8 @@ python3.13 exp/gemm_dispatch/heuristic_manifest.py
 ```
 
 The generated `shape-alignment-workspace-manifest.json` is a candidate matrix,
-not a benchmark result.  Every grouped-N row remains `untested` until a
+not a benchmark result. Its `untested` rows must not inherit results from a
+different shape, dtype, alignment or workspace. A dispatch entry requires a
 source-inclusive A100 run verifies full output, canaries, poisoned-input
 execution, valid disassembly, register/shared-memory resources and paired
 held-out timing against the current OA traversal.
@@ -43,12 +46,14 @@ Run the grouped-N, Morton and m-fast comparison with:
 modal run exp/gemm_dispatch/grouped_n_modal.py --rounds 2 --samples 8
 ```
 
-The latest record is `grouped-n_20261108T062456.797718Z.json`. It covers
+The original record is `grouped-n_20261108T062456.797718Z.json`. It covers
 1024×4096×1024, 4096×4096×4096 and 16384×4096×4096 in FP16. Every numerical,
 canary, graph-replay, disassembly and resource check passed. The tall shape
 favored grouped-N and Morton by about 6–7% over OA m-fast; the wide and square
 cases did not produce a stable grouped-N win.
 
+Later November 9 held-out and production-path confirmations are linked in the
+[canonical dossier](../../docs/research/ideas/grouped-n-cta-swizzle.md).
 `measured_dispatch_manifest.json` records exact shape/alignment/workspace
 entries from this run. A `validated-experiment-only` status means both timing
 repeats beat the current OA policy for that exact case. It does not extend to

@@ -26,11 +26,11 @@ The most reliable reverse-engineered results are:
   12 for two independent chains and 8 for three chains after empty-loop
   subtraction.
 * The production tensor path retains conservative HMMA8/drain15 and
-  async-copy/LDSM/address-WAR protections. The dependency scheduler remains
-  experiment-only. Two bounded fragment/layout schedules are now explicit
-  production options: `fragment_schedule=load_next` for two exact wide shapes
-  and `cta_order=grouped_n8` with a transformed launch grid; neither changes
-  the default source-order policy.
+  async-copy/LDSM/address-WAR protections. The generalized dependency scheduler
+  remains experiment-only. Exact measured policy dispatch can select bounded
+  fragment/layout policies, including load-next, grouped-N and 64×64 tiles;
+  unknown or stale contracts keep the reference schedule. Optional A100 tuning
+  validates and measures admitted candidates before writing a reusable record.
 * Constant 32-bit integer division/remainder lowering is proven for its stated
   domain. A historical division-by-seven loop improved from 0.629 ms to 0.464
   ms; this is a scalar result, not a Tensor Core claim.

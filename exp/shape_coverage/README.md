@@ -1,8 +1,10 @@
 # Transformer GEMM role and shape coverage
 
 This experiment audits representative transformer GEMM roles against the
-current `GemmPlan` contract. It is a static coverage audit, not a performance
-claim and not a replacement for A100 numerical/timing validation.
+current-at-generation `GemmPlan` contract (the 128×128 reference). It is a
+static coverage audit, not a performance claim and not a replacement for A100
+numerical/timing validation. The later 64×64 family and exact dispatch table
+are documented separately; this matrix is not a role-level production route.
 
 Run it from the repository root:
 
@@ -195,18 +197,14 @@ names, booleans or aggregated timings.
 .venv/bin/python -m exp.shape_coverage.audit_role_evidence
 ```
 
-The [audited importer](import_tile64_evidence.py) connects the selected small
-output case to two raw runs and its frozen protocol. It verifies consistency
-before emitting an [exact proposal](tile64-dispatch-proposal.json) and
-[decision](tile64-dispatch-decision.json) for a further integration experiment.
-Original output arrays/cubin bytes were not retained in these role JSONs; the
-audit records that limit and does not claim independent hardware rerunning.
-The candidate remains slower than matched tile64 ptxas and cuBLAS, and is never
-marked production promoted.
+The source-identity-locked production table is
+`openassembler/kernels/sm80_gemm_dispatch.json`. It is validated separately
+from the historical role JSONs. Original output arrays/cubin bytes were not
+retained in those older role JSONs; the audit records that limit and does not
+claim independent hardware rerunning. The candidate remains slower than
+matched tile64 ptxas and cuBLAS. Current table entries must use their own
+source/body hash and full-gate evidence.
 
 ```sh
-.venv/bin/python -m exp.shape_coverage.import_tile64_evidence
-.venv/bin/python -m exp.shape_coverage.measured_dispatch \
-  exp/shape_coverage/tile64-dispatch-proposal.json
 modal run --detach exp/shape_coverage/a100_small_tile_counters_modal.py
 ```

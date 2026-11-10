@@ -10,7 +10,14 @@ Generate a complete matrix-multiplication kernel whose main work executes on A10
 
 ## Findings and implementation decision
 
-The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128×128×64 CTA tiles, four 64×64 warp tiles, 128 threads and 64 KiB dynamic shared memory. M/N/K are positive multiples of 128. It combines asynchronous copies, paired fragment loads, 7/7 shared swizzle, a fixed stage-pair loop and vector stores.
+The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands
+and FP32 accumulation/output. The reference is a 128×128×64 CTA tile with four
+64×64 warp tiles, 128 threads and 64 KiB dynamic shared memory; a checked
+64×64×64 CTA family uses four 32×32 warp tiles and 32 KiB. Exact-contract
+dispatch chooses a current promoted policy, while unknown/stale contracts keep
+the reference. Both families combine asynchronous copies, paired fragment
+loads, 7/7 shared swizzle, the protected HMMA8/drain15 schedule and vector
+stores.
 
 The promoted schedule bundle reduced time 16.13–26.69% versus the earlier direct schedule across six historical square/MLP/tall cases and reached 79.76–98.91% of matched default cuBLAS. This does not establish cuBLASLt parity, arbitrary GEMM support or a native transformer compiler.
 

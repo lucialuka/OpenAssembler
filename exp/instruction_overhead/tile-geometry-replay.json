@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "purpose": "Same-session A100 comparison of shape-identical 64x64 and 128x128 CTA policies.",
+  "status": "corrected-replay",
+  "supersedes_failed_runner_attempt": "ap-TZhhW70wUMaHKffmt9u11K",
+  "failure": "The profiler runner had no launch geometry recorded for the ptxas-only control. It failed before correctness or timing results were emitted.",
+  "additional_failed_attempt": "ap-5i1NuR0Ly4DBsbQX2jdxiU failed before emitting correctness/timing data because the runner applied the 32-KiB tile64 shared-memory opt-in to a 64-KiB tile128 function. The replay now sets the attribute from each exact policy's launch contract.",
+  "cases": [
+    [
+      128,
+      512,
+      512
+    ],
+    [
+      128,
+      1536,
+      512
+    ],
+    [
+      1024,
+      1024,
+      1024
+    ],
+    [
+      1024,
+      4096,
+      1024
+    ],
+    [
+      1024,
+      512,
+      512
+    ]
+  ],
+  "dtypes": [
+    "f16",
+    "bf16"
+  ],
+  "tile64_candidates": [
+    "legacy",
+    "init_reuse_direct",
+    "init_reuse_direct_early"
+  ],
+  "tile128_candidates": [
+    "tile128",
+    "tile128_direct",
+    "tile128_early",
+    "tile128_direct_early"
+  ],
+  "rounds": 3,
+  "samples_per_round": 12,
+  "launches_per_graph_replay": 16,
+  "gates": [
+    "full output",
+    "same-source and baseline ptxas bitwise",
+    "canaries",
+    "input immutability",
+    "poisoned graph",
+    "HMMA8/drain15",
+    "native disassembly and resources"
+  ],
+  "performance_gate": "At least 2% paired improvement on every round against the fastest admissible shape-matched OA configuration; reject tile64 dispatch where tile128 is faster.",
+  "production_promoted": false,
+  "full_detached_run": {
+    "app": "ap-hAxTaR5kExKKIhXPBFaoUr",
+    "timing_summary": "exp/instruction_overhead/a100-pointer-geometry-summary_20261109.json",
+    "status": "timing-summary-only",
+    "promotion": "blocked until full raw payload and retained binaries are materialized"
+  }
+}

@@ -1,10 +1,14 @@
 # Validated-not-integrated revalidation
 
-This directory records the November 9, 2026 pass over every idea that was
+This directory records the early November 9, 2026 pass over every idea that was
 previously labelled `validated-not-integrated`. The pass uses the current
 OpenAssembler source identity, current experiment tests, and current A100
-records where a hardware runner still exists. It separates compiler features
-from diagnostics and application studies.
+records where a hardware runner still existed. It separates compiler features
+from diagnostics and application studies. This is a source-bound historical
+ledger, not a live inventory of every later compiler change. The current
+[catalogue](../../docs/research/README.md) and each dossier own deployment
+status; later role/geometry studies are indexed in
+[shape coverage](../shape_coverage/README.md).
 
 ## Revalidation commands
 
@@ -41,9 +45,11 @@ Additional current-code A100 replays during the status review are retained in:
 
 ## Decision rule
 
-An idea is `implemented` only when a current source path, numerical/resource
-contract and explicit CLI or compiler option exist. A mixed or shape-specific
-candidate is opt-in and does not change the default. A result is
+An idea is `implemented` only when a production source path, numerical/resource
+contract and CLI or compiler integration exist. This early pass promoted its
+mixed, shape-specific candidates as explicit options. Later automatic selection
+requires its own exact-contract evidence and must not inherit the old ledger's
+claims. A result is
 `tested-not-selected` when the current evidence gives no production compiler
 benefit, fails its gate, duplicates an existing stream, or is only a policy or
 application-level change. Retired probe protocols remain documented with their

@@ -389,9 +389,10 @@ The measurements here describe the original study, not those later compiler chan
 2. Reduce native tensor address/control/copy work and jointly search fragment
    ordering/register liveness. The equal-MMA, zero-conflict counter cases make
    this more targeted than another unconditional swizzle sweep.
-3. Add shape-aware tile/CTA selection for small grids. The fixed 128×128 CTA
-   tile underfills the GPU on the long-K small-M/N case; the vendor control's
-   smaller tile is a concrete alternative to test.
+3. Extend the current exact-contract tile/CTA dispatch table for small grids.
+   The 64×64 native family now covers the measured alternative to the fixed
+   128×128 reference, but only current source-identity-locked entries should
+   be promoted; the 32-case study still contains both gains and regressions.
 4. Reduce dX/dW transposed packing and repeated conversion overhead, while
    measuring complete steps and keeping the same derivative/rounding contract.
 5. Preserve numerical gates in multi-step training. Treat near-invariant

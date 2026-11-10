@@ -25,7 +25,9 @@ The first divergent intermediate must be located before a candidate is promoted.
 Application-level results using TorchInductor/Triton must not be described as
 native OpenAssembler reduction code.
 
-The detailed evidence is in [Fused backward reductions](../research/ideas/fused-backward-reductions.md),
-[NN arithmetic campaign](../research/ideas/nn-arithmetic-campaign.md) and the
-Nsight report [reduction_overlap_ncu_report.md](../../exp/weaknesses/reduction_overlap_ncu_report.md).
+The detailed evidence and per-case counter table are in
+[Fused backward reductions](../research/ideas/fused-backward-reductions.md#streamed-loadfma-follow-up-and-counters)
+and [NN arithmetic campaign](../research/ideas/nn-arithmetic-campaign.md).
+The immutable Nsight record is
+[reduction_overlap_ncu_20261108T061002.104721Z.json](../../exp/weaknesses/reduction_overlap_ncu_20261108T061002.104721Z.json).
 

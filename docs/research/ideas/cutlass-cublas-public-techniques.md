@@ -168,8 +168,10 @@ production compiler:
   change. The tall 16384×4096×4096 FP16 case favored grouped-N and Morton by
   about 6–7% over m-fast; the wide and square cases were ties or regressions.
 
-The records are `exp/gemm_dispatch/measured_dispatch_manifest.json` and
-`exp/gemm_dispatch/REPORT.md`. These are shape-specific experiment results.
+The records are
+[`measured_dispatch_manifest.json`](../../../exp/gemm_dispatch/measured_dispatch_manifest.json),
+the [load-next dossier](cutlass-load-next-compute-current.md) and the
+[grouped-N dossier](grouped-n-cta-swizzle.md). These are shape-specific results.
 They do not justify copying cuBLAS kernels or applying a universal traversal
 rule. Alignment, workspace, BF16 and neighboring shapes remain separate
 manifest entries until measured.

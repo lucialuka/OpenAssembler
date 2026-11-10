@@ -31,7 +31,7 @@ def test_gemm_emit_and_contract_needs_exact_validated_body(tmp_path):
 def test_gemm_rejects_unsupported_shape_before_emitting_files(tmp_path, capsys):
     assert main(["gemm", "--m", "129", "--n", "128", "--k", "128",
                  "--out-dir", str(tmp_path)]) == 1
-    assert "multiple of 128" in capsys.readouterr().err
+    assert "multiple of 64" in capsys.readouterr().err
     assert not list(tmp_path.iterdir())
 
 

@@ -21,8 +21,11 @@ OpenAssembler generates native SASS and executable cubins for supported A100/SM8
 ## What you can do
 
 - Compile standalone kernels or discover supported kernels in a repository.
-- Generate full-tile FP16/BF16 GEMMs with FP32 output, with explicit Morton,
-  grouped-N CTA, load-next fragment, fused-epilogue and pointer-home options.
+- Generate full-tile FP16/BF16 GEMMs with FP32 output. The CLI chooses an exact
+  measured A100 policy for the one currently promoted production contract
+  (128×512×512 FP16); other shapes use the reference until their production
+  binaries are revalidated. Manual policy options and correctness-gated GPU
+  tuning are also available.
 - Generate cooperative FP32 softmax and population LayerNorm with row/column tails.
 - Inspect cubins and SASS, emulate supported instructions, and run matched GPU
   checks locally, over SSH or on Modal.

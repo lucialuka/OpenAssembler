@@ -88,10 +88,8 @@ Run:
 PYTHONPATH=exp/tensor_scheduler pytest -q exp/tensor_scheduler/test_dependency_scheduler.py
 ```
 
-The first Modal exact-SASS sweep is documented in
-[`exp/tensor_scheduler/REPORT.md`](../../../exp/tensor_scheduler/REPORT.md)
-and the raw record is
-`exp/tensor_scheduler/hardware-probes_20261108T030653.043652Z.json`. It swept
+The first Modal exact-SASS sweep is retained in
+[`hardware-probes_20261108T030653.043652Z.json`](../../../exp/tensor_scheduler/hardware-probes_20261108T030653.043652Z.json). It swept
 S1--S11 on an A100-SXM4-40GB after compiling each probe with CUDA 12.8
 `ptxas`. Dependent one-group HMMA chains and observer cases were incorrect
 below S7 in this probe family, while three independent accumulator chains were
@@ -141,7 +139,8 @@ S4/S5, predicate-to-guard probes are S13, and the tested store/address cases
 are S1/S2. These are pair-specific observations, not global scheduler
 constants.
 
-The [November 8 exact-SASS sweep and clocked-loop probes](../../../exp/tensor_scheduler/REPORT.md)
+The [November 8 exact-SASS sweep](../../../exp/tensor_scheduler/hardware-probes_20261108T030653.043652Z.json)
+and [clocked-loop probes](../../../exp/tensor_scheduler/clocked-loop-probes_20261108T050653.662428Z.json)
 validate component measurements, but they do not validate the graph scheduler
 on a reordered GEMM stream. The separate [November 9 load-next replay](../../../exp/tensor_scheduler/load-next-compute-current_20261109T041912.552241Z.json)
 passes full-output, canary, poisoned-graph and bitwise-ptxas checks for six
@@ -149,13 +148,10 @@ FP16 shapes. It tests a particular two-window mainloop schedule, not the
 general four-edge dependency model; no scheduler-produced order has been
 encoded or promoted.
 
-`exp/tensor_scheduler/actual_block_schedule.py` now lowers real OA GEMM
-streams through the selector and allocator, splits them at barriers/control
-edges, and runs the experiment graph over the resulting blocks. HMMA-bearing
-blocks are accepted by the fail-closed adapter, while terminator blocks are
-rejected. No reordered stream has been encoded or promoted.
-
-That earlier accepted-region result is superseded by the November 9
+`exp/tensor_scheduler/actual_block_schedule.py` lowers real OA GEMM streams
+through the selector and allocator, splits them at barriers/control edges,
+and audits each region against the experiment adapter's explicit contract.
+The earlier accepted-region result is superseded by the November 9
 [strict dependency audit](../../../exp/tensor_scheduler/actual-block-audit_20261109.json).
 The adapter now rejects unmodeled predication, implicit registers, control,
 async/wait/barrier visibility, general memory and unsafe tensor overwrites.
@@ -178,4 +174,28 @@ opt-in policy only after it passes full output and canary checks, valid
 disassembly, register/shared-memory reports, matched ptxas controls and
 repeated A100 timing on both seen and held-out shapes. A shorter instruction
 listing by itself is not evidence of a faster or safer schedule.
+
+## Exact-SASS probe envelope
+
+These minima describe the retained S1–S11 correctness sweep, not general
+instruction latency or an authorization to shorten every HMMA control:
+
+| Probe family | Lowest passing control | Tested context |
+|---|---:|---|
+| One dependent group, 8/16/32 HMMAs | S7 | Same accumulator RAW chain |
+| Two groups, 16 updates each | S7 | Two chains do not cover the dependency in this layout |
+| Three groups, 16 updates each | S1 | Three ready independent chains |
+| Reused LDSM fragment | S2 | One LDSM feeds 16 HMMAs |
+| Fresh LDSM fragment | S1 | A new load precedes each HMMA |
+| Async-copy/wait/LDSM/HMMA | S1 | Explicit async-copy and visibility protocol retained |
+| MOV, FFMA, store, barrier or branch observers | S7 | Tested consumers after HMMA |
+| LDSM address WAR | S2 | Immediate rewrite of the shared address register |
+
+The corresponding tiny kernels take roughly 4.4–5.7 microseconds, close to the
+launch-timing floor. Those samples do not establish a GEMM speedup. The clocked
+loops above supply separate cycle measurements. The first clocked implementation
+used an eight-byte block stride for a 32-byte record and caused a misaligned
+address fault; that run was discarded. Retained results use the corrected
+32-byte stride. The experiment graph's synthetic cycle totals remain model
+outputs, not hardware timings.
 

@@ -37,3 +37,19 @@ Historical manifests that fingerprinted human documentation are themselves
 preserved in this snapshot. Current metadata records documentation relocation;
 production code, raw JSON measurements and original hardware source fingerprints
 are not silently refreshed or reinterpreted as new benchmark results.
+
+## November 9 dispatch-integration cleanup
+
+Seven later chronological reports and plans were also consolidated into their
+canonical idea dossiers and reverse-engineering topics. Their active text
+contained superseded promotion statements and an accepted-region scheduler
+claim overturned by the strict dependency audit. Their exact original text,
+byte counts and hashes are retained in
+[`pre-dispatch-integration-20261109.json.gz`](pre-dispatch-integration-20261109.json.gz).
+The [cleanup map](dispatch-cleanup-20261109.json) names each retired path and
+its current replacement. Archive SHA-256:
+`856d303b3edc6c23db4f9cf5b4af7c81252d2f156ba113da6cdf712fec58795d`.
+
+All original hardware JSON records, success/failure gates, cubins and source
+identities remain intact. Removing a duplicate narrative does not turn a
+historical experiment into a current compiler validation.

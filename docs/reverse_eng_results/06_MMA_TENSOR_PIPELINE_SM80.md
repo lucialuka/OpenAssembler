@@ -54,8 +54,11 @@ Two bounded alternatives now have explicit production contracts. The
 load-next/compute-current fragment schedule is admitted only for
 1024×4096×1024 and 4096×1024×1024, with FP16/BF16, stagepair, legacy pointers,
 late advancement and no fused epilogue. Grouped-N CTA traversal is admitted as
-`grouped_n8` when the N tile count is divisible by eight. Both are opt-in; the
-general dependency scheduler and automatic shape dispatch remain unpromoted.
+`grouped_n8` when the N tile count is divisible by eight. These options remain
+explicit unless an exact current dispatch-table entry admits them. The general
+dependency scheduler remains unpromoted; the current table uses exact
+source-identity-locked tile64 and pointer policies and falls back on unknown or
+stale contracts.
 
 The newer [fragment placement study](../../exp/shape_coverage/a100-role-gemm_20261109T111245.728446Z.json)
 tests split-2/4/6 load-next placement with the same HMMA8/drain15 controls and
