@@ -38,6 +38,7 @@ class GemmPlan:
     pointer_advance: str = "late"
     fragment_schedule: str = "source"
     tile: str = "128x128"
+    address_init: str = "original"
 
     def __post_init__(self) -> None:
         if self.tile not in ("128x128", "64x64"):
@@ -64,11 +65,14 @@ class GemmPlan:
             raise ValueError("pointer mode must be legacy or direct")
         if self.pointer_advance not in ("late", "early", "auto"):
             raise ValueError("pointer advance must be late, early or auto")
+        if self.address_init not in ("original", "reuse"):
+            raise ValueError("address initialization must be original or reuse")
+        if self.address_init == "reuse" and self.tile != "64x64":
+            raise ValueError("address reuse is validated only for the 64x64 tile")
         if self.tile == "64x64" and (self.schedule != "stagepair"
                 or self.cta_order != "m_fast" or self.epilogue != "none"
-                or self.pointer_advance != "late"
                 or self.fragment_schedule != "source"):
-            raise ValueError("64x64 tile requires stagepair, m_fast, unfused, late pointers and source fragments")
+            raise ValueError("64x64 tile requires stagepair, m_fast, unfused and source fragments")
         if self.pointer_mode == "direct" and (self.schedule != "stagepair"
                 or self.cta_order != "m_fast" or self.epilogue != "none"):
             raise ValueError("direct pointer mode is validated for stagepair, m_fast, unfused GEMM")
@@ -123,7 +127,8 @@ class GemmPlan:
                 "fragment_schedule": self.fragment_schedule,
                 "cta_order": self.cta_order, "epilogue": self.epilogue,
                 "pointer_mode": self.pointer_mode, "pointer_advance": self.pointer_advance,
-                "tile": self.tile, "tile_mnk": [tile, tile, 64], "warp_mn": [tile//2, tile//2], "stages": 2,
+                "tile": self.tile, "address_init": self.address_init,
+                "tile_mnk": [tile, tile, 64], "warp_mn": [tile//2, tile//2], "stages": 2,
                 "shared_swizzle": [7, 7], "input_alignment": 16, "output_alignment": 8}
 
 

@@ -13,8 +13,8 @@ from pathlib import Path
 
 import modal
 
-ROOT = Path(__file__).resolve().parents[2]
-HERE = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2] if modal.is_local() else Path("/root/repo")
+HERE = Path(__file__).resolve().parent if modal.is_local() else ROOT / "exp/dispatch_tuning"
 IMAGE = (modal.Image.from_registry("pytorch/pytorch:2.7.1-cuda12.8-cudnn9-devel")
          .add_local_dir(str(ROOT / "openassembler"), "/root/repo/openassembler",
                         ignore=["**/__pycache__", "**/*.pyc"])
@@ -31,6 +31,25 @@ IMAGE = (modal.Image.from_registry("pytorch/pytorch:2.7.1-cuda12.8-cudnn9-devel"
                          "/root/repo/exp/dispatch_tuning/rowwise_modal.py"))
 APP = modal.App("openassembler-rowwise-geometry-revalidation")
 CHECKPOINTS = modal.Volume.from_name("openassembler-rowwise-geometry-evidence", create_if_missing=True)
+
+
+def select_cases(cases: list[tuple[str, int, int]], *, start: int = 0, limit: int = 0,
+                 indices: str = "") -> list[tuple[str, int, int]]:
+    if type(start) is not int or start < 0 or type(limit) is not int or limit < 0:
+        raise ValueError("start and limit must be nonnegative integers")
+    if indices:
+        try:
+            chosen = [int(value) for value in indices.split(",")]
+        except ValueError:
+            raise ValueError("indices must be a comma-separated list of integers") from None
+        if not chosen or len(chosen) != len(set(chosen)) or any(i < 0 or i >= len(cases) for i in chosen):
+            raise ValueError("indices must be nonempty, unique and in the case-matrix range")
+        if start or limit:
+            raise ValueError("choose explicit indices or a contiguous start/limit range")
+        return [cases[i] for i in chosen]
+    if start > len(cases):
+        raise ValueError(f"start {start} exceeds {len(cases)} cases")
+    return cases[start:] if limit == 0 else cases[start:start + limit]
 
 
 @APP.function(image=IMAGE, gpu="A100-40GB", timeout=300, max_containers=1,
@@ -53,10 +72,9 @@ def execute(op: str, rows: int, width: int, session: str, rounds: int, samples: 
     os.chdir("/root/repo")
     import torch
     from openassembler.cli import main as cli_main
-    from openassembler.gemm_dispatch import compiler_identity
     from openassembler.gpu.cuda_driver import Driver
     from openassembler.kernels.reductions import ReductionPlan
-    from exp.dispatch_tuning.rowwise_geometry import WARPS, TOLERANCES, source
+    from exp.dispatch_tuning.rowwise_geometry import WARPS, TOLERANCES, source, compiler_identity
     torch.set_num_threads(2)
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.cuda.init()
@@ -243,7 +261,8 @@ def execute(op: str, rows: int, width: int, session: str, rounds: int, samples: 
 
 
 @APP.local_entrypoint()
-def main(pilot: bool = False, rounds: int = 3, samples: int = 8, session: str = ""):
+def main(pilot: bool = False, rounds: int = 3, samples: int = 8, session: str = "",
+         start: int = 0, limit: int = 0, indices: str = ""):
     import base64
     from exp.dispatch_tuning.rowwise_geometry import SHAPES
     session = session or "rowwise_" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
@@ -253,10 +272,24 @@ def main(pilot: bool = False, rounds: int = 3, samples: int = 8, session: str = 
     directory.mkdir(parents=True, exist_ok=True)
     cases = [(op, rows, width) for op in ("softmax", "layernorm")
              for rows, width in ([(7, 33), (1024, 512)] if pilot else SHAPES)]
-    metadata = {"schema": 1, "session": session, "case_count": len(cases), "rounds": rounds, "samples": samples,
-                "checkpoint_volume": "openassembler-rowwise-geometry-evidence", "statuses": {}}
-    (directory / "campaign.json").write_text(json.dumps(metadata, indent=2) + "\n")
-    for op, rows, width in cases:
+    selected_cases = select_cases(cases, start=start, limit=limit, indices=indices)
+    metadata_case_scope = {"start": start, "limit": limit, "indices": indices,
+                           "selected_count": len(selected_cases), "total_count": len(cases)}
+    campaign_path = directory / "campaign.json"
+    if campaign_path.is_file():
+        metadata = json.loads(campaign_path.read_text())
+        if (metadata.get("case_count") != len(cases) or metadata.get("rounds") != rounds
+                or metadata.get("samples") != samples or metadata.get("session") != session):
+            raise ValueError("resume request conflicts with the frozen campaign protocol")
+    else:
+        metadata = {"schema": 1, "session": session, "case_count": len(cases),
+                    "rounds": rounds, "samples": samples,
+                    "checkpoint_volume": "openassembler-rowwise-geometry-evidence", "statuses": {}, "batches": []}
+    metadata.setdefault("batches", []).append({**metadata_case_scope,
+                       "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                       "started_utc": datetime.now(timezone.utc).isoformat()})
+    campaign_path.write_text(json.dumps(metadata, indent=2) + "\n")
+    for op, rows, width in selected_cases:
         key = f"{op}_{rows}x{width}"
         output = directory / f"{key}.json"
         if output.exists():

@@ -2,7 +2,15 @@
 <p align="center"><img src="figs/openassembler_logo.png" width="680" alt="OpenAssembler"></p>
 
 # OpenAssembler
-
+<p align="center">
+ <a href="https://www.star-history.com/lucialuka/openassembler">
+  <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank" />
+   <img alt="Star History Rank" src="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank" />
+  </picture>
+ </a>
+</p>
 
 **A from-scratch NVIDIA SASS/CUDA Binary compiler, built entirely by reverse-engineering nvidia tools as a black box and applying kernel optimizations to the compiler.**
 

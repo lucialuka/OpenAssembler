@@ -127,7 +127,8 @@ def cmd_gemm(a: argparse.Namespace) -> int:
     from openassembler.project import ProjectError
     try:
         knobs = {name: getattr(a, name) for name in ("schedule", "fragment_schedule", "cta_order",
-                 "pointer_mode", "pointer_advance", "tile") if getattr(a, name) is not None}
+                 "pointer_mode", "pointer_advance", "tile", "address_init")
+                 if getattr(a, name) is not None}
         manual_requested = bool(knobs) or a.epilogue != "none"
         # Explicit implementation knobs remain reproducible manual requests.
         # Automatic policy selection is the normal path when no knob is set.
@@ -623,6 +624,8 @@ def build_parser() -> argparse.ArgumentParser:
                     help="exact measured native shape selection (default), or baseline/manual policy")
     pm.add_argument("--tile", choices=("128x128", "64x64"), default=None,
                     help="explicit CTA tile; selects manual dispatch")
+    pm.add_argument("--copy-address-init", choices=("original", "reuse"), default=None,
+                    dest="address_init", help="manual 64x64 copy-address setup: separate per-chunk bases or checked 64-bit derived offsets")
     pm.add_argument("--schedule", choices=("stagepair", "combined"), default=None,
                     help="manual alternating-stage specialization or combined reference")
     pm.add_argument("--fragment-schedule", choices=("source", "load_next"), default=None,

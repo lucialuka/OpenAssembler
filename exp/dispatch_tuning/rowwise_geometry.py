@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 import hashlib
+from pathlib import Path
 
 from openassembler.kernels.reductions import ReductionPlan, generate
 
@@ -23,6 +24,24 @@ SHAPES = (
 )
 TOLERANCES = {"softmax": {"rtol": 5e-5, "atol": 1e-6},
               "layernorm": {"rtol": 1e-4, "atol": 2e-5}}
+
+
+def compiler_identity() -> str:
+    """Identity of rowwise-reachable generator/backend/encoding implementation."""
+    root = Path(__file__).resolve().parents[2]
+    paths = []
+    for folder in ("backend", "opt", "ptx", "isa", "container"):
+        paths += list((root / "openassembler" / folder).rglob("*.py"))
+    paths += [root / name for name in ("openassembler/kernels/reductions.py", "openassembler/rowwise.py",
+               "openassembler/build.py", "openassembler/oracle.py", "openassembler/project.py",
+               "corpus/sm_80/pairs.jsonl", "corpus/sm_80/machine_model.json")]
+    paths += list((root / "specs/sm_80").glob("*.json"))
+    h = hashlib.sha256()
+    for path in sorted(set(paths)):
+        h.update(path.relative_to(root).as_posix().encode() + b"\0")
+        h.update(path.read_bytes())
+        h.update(b"\0")
+    return h.hexdigest()
 
 
 def source(plan: ReductionPlan, warps: int) -> tuple[str, dict]:

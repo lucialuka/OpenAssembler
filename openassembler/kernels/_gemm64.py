@@ -34,7 +34,8 @@ def _prologue(plan: GemmPlan) -> list[str]:
     ]
     lines += [f"mov.f32 %c{i},0f00000000;" for i in range(32)]
     for which, cta_row_register in ((0, 1), (1, 2)):
-        for chunk in range(COPY_CHUNKS):
+        chunks = range(1) if plan.address_init == "reuse" else range(COPY_CHUNKS)
+        for chunk in chunks:
             cid = which * COPY_CHUNKS + chunk
             lines += [
                 f"add.u32 %r20,%r0,{chunk * 128};",
@@ -46,6 +47,10 @@ def _prologue(plan: GemmPlan) -> list[str]:
                 f"mad.lo.u32 %r{100 + cid},%r21,64,%r26; mul.lo.u32 %r{100 + cid},%r{100 + cid},2;",
                 f"add.u32 %r{100 + cid},%r{100 + cid},{which * OPERAND_BYTES};",
             ]
+        if plan.address_init == "reuse":
+            for chunk in range(1, COPY_CHUNKS):
+                cid = which * COPY_CHUNKS + chunk
+                lines.append(f"add.u64 %d{10 + cid},%d{10 + which * COPY_CHUNKS},{chunk * 32 * plan.k};")
     for ik in range(4):
         a, b = 200 + ik * 4, 300 + ik * 8
         lines += [
@@ -107,6 +112,11 @@ def _body(dtype: str, current: int, following: int) -> list[str]:
             + _compute(dtype, current) + ["bar.sync 0;"] + _advance())
 
 
+def _body_early(dtype: str, current: int, following: int) -> list[str]:
+    return ( ["cp.async.wait_group 0; bar.sync 0;"] + _copies(following)
+            + _advance() + _compute(dtype, current) + ["bar.sync 0;"] )
+
+
 def _epilogue(n: int) -> list[str]:
     lines = [
         "shr.u32 %r50,%r3,2; add.u32 %r50,%r50,%r5; add.u32 %r50,%r50,%r1;",
@@ -124,8 +134,13 @@ def _epilogue(n: int) -> list[str]:
 
 
 def generate(plan: GemmPlan) -> str:
+    pointer_advance = plan.pointer_advance
+    if pointer_advance == "auto":
+        pointer_advance = ("early" if (plan.m, plan.n, plan.k) == (1024, 4096, 1024)
+                           else "late")
+    body = _body_early if pointer_advance == "early" else _body
     lines = _prologue(plan) + _copies(0) + _advance()
-    first, second = _body(plan.dtype, 0, STAGE_BYTES), _body(plan.dtype, STAGE_BYTES, 0)
+    first, second = body(plan.dtype, 0, STAGE_BYTES), body(plan.dtype, STAGE_BYTES, 0)
     if plan.k > 128:
         lines += (["LOOP_STAGE_PAIR:"] + first + second
                   + [f"add.u32 %r8,%r8,128; setp.lt.u32 %p,%r8,{plan.k - 128}; @%p bra LOOP_STAGE_PAIR;"])

@@ -26,6 +26,13 @@ _SOURCE_HASHES = {
     (1024, 1024, 4096, "bf16"): "02c61f25aee62a03fca6823663b1dd4db818b884f059d6dd05f183d0a974bc00",
 }
 
+_COPY_REUSE_SOURCES = {
+    (128, 512, 512, "f16", "reuse"):
+        "aa390fe73a39e3d7225d59c10af37c78996d977276830c00958b93b3115db243",
+    (128, 512, 512, "f16", "reuse_direct_early"):
+        "eceba97465cd6cc25dd42bb4803b058553c28adda849b0a2fd1c06959887fb0a",
+}
+
 
 @pytest.mark.parametrize("m,n,k,dtype", _SOURCE_HASHES)
 def test_tile64_source_matches_hardware_validated_experimental_bytes(m, n, k, dtype):
@@ -82,6 +89,39 @@ def test_tile64_direct_pointer_contract_is_shape_validated():
     plan = GemmPlan(128, 512, 512, tile="64x64", pointer_mode="direct")
     assert plan.pointer_mode == "direct"
     assert plan.launch == {"grid": [2, 8, 1], "threads": 128, "smem": 32768}
+
+
+@pytest.mark.parametrize("m,n,k,dtype,mode", _COPY_REUSE_SOURCES)
+def test_copy_address_reuse_matches_the_previous_hardware_experiment(m, n, k, dtype, mode):
+    options = {"address_init": "reuse"}
+    if "direct" in mode:
+        options["pointer_mode"] = "direct"
+    if mode.endswith("early"):
+        options["pointer_advance"] = "early"
+    plan = GemmPlan(m, n, k, dtype, tile="64x64", **options)
+    source = generate(plan)
+    assert sha256(source.encode()).hexdigest() == _COPY_REUSE_SOURCES[m, n, k, dtype, mode]
+    assert source.count("add.u64 %d11,%d10,16384;") == 1
+    assert source.count("add.u64 %d12,%d10,32768;") == 1
+    assert source.count("add.u64 %d13,%d10,49152;") == 1
+    assert source.count("mma.sync.") == 128
+    assert source.count("ldmatrix.sync.") == 64
+    assert source.count("cp.async.cg.") == 32
+    assert source.count("bar.sync 0") == 8
+
+
+@pytest.mark.parametrize("changes", [
+    {"tile": "128x128", "address_init": "reuse"},
+    {"address_init": "invalid"},
+    {"address_init": "reuse", "pointer_advance": "auto"},
+    {"address_init": "reuse", "fragment_schedule": "load_next"},
+    {"address_init": "reuse", "epilogue": "bias_residual"},
+])
+def test_copy_reuse_contract_rejects_unvalidated_combinations(changes):
+    args = {"m": 128, "n": 512, "k": 512, "tile": "64x64"}
+    args.update(changes)
+    with pytest.raises(ValueError):
+        GemmPlan(**args)
 
 
 def _trace(plan, tid):

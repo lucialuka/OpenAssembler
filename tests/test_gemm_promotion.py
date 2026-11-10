@@ -179,6 +179,38 @@ def test_rehashed_tampered_disassembly_still_must_match_actual_cubin(retained_se
         promotion.promote(*retained_sessions)
 
 
+def test_coherently_rehashed_binary_and_listing_must_match_current_native_encoder(retained_sessions):
+    from openassembler.container.elf import Elf
+    _, heldout, _ = retained_sessions
+    result = json.loads(heldout.read_text())
+    archive = heldout.parent / result["artifact_archive"]["path"]
+    with zipfile.ZipFile(archive) as old:
+        files = {name: old.read(name) for name in old.namelist()}
+    cubin_path = "tile64_direct/native.cubin"
+    elf = Elf.parse(files[cubin_path])
+    changed = bytearray(elf.section(".text.gemm").data)
+    changed[0] ^= 1
+    elf.replace_data(".text.gemm", bytes(changed))
+    files[cubin_path] = elf.serialize()
+    sass_path = "tile64_direct/native.sass"
+    text = files[sass_path].decode()
+    import re
+    match = re.search(r"/\* 0x([0-9a-f]{16}) \*/", text)
+    assert match
+    replacement = f"{int(match.group(1), 16) ^ 1:016x}"
+    files[sass_path] = (text[:match.start(1)] + replacement + text[match.end(1):]).encode()
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as new:
+        for name, data in files.items():
+            new.writestr(name, data)
+    result["artifact_archive"]["sha256"] = hashlib.sha256(archive.read_bytes()).hexdigest()
+    artifact = result["candidates"]["tile64_direct"]["artifacts"]["native"]
+    artifact["cubin_sha256"] = hashlib.sha256(files[cubin_path]).hexdigest()
+    artifact["sass_sha256"] = hashlib.sha256(files[sass_path]).hexdigest()
+    heldout.write_text(json.dumps(result, indent=2))
+    with pytest.raises(promotion.PromotionError, match="differs from current encoding"):
+        promotion.promote(*retained_sessions)
+
+
 def test_missing_provenance_is_a_block_not_a_new_hardware_claim(retained_sessions):
     _, heldout, _ = retained_sessions
     _rewrite(heldout, lambda value: value.pop("session"))
