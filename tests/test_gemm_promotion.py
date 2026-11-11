@@ -11,6 +11,7 @@ import zipfile
 import pytest
 
 from openassembler import gemm_promotion as promotion
+from openassembler import gemm_dispatch
 from openassembler import gemm_tune
 
 
@@ -27,13 +28,49 @@ def retained_sessions(tmp_path, monkeypatch):
     identity = record["compiler_identity"]
     monkeypatch.setattr(promotion, "compiler_identity", lambda: identity)
     monkeypatch.setattr(gemm_tune, "compiler_identity", lambda: identity)
+    # The retained November 10 fixture predates the new CSE candidate family.
+    # Scope this offline unit fixture to the policies actually present in its
+    # archive; do not pretend it contains binaries for newly added candidates.
+    fixture_policies = tuple(record["candidates"])
+    def fixture_candidates(plan):
+        result = {}
+        for name in fixture_policies:
+            try:
+                result[name] = gemm_dispatch.policy_plan(plan, name)
+            except ValueError:
+                pass
+        return result
+    monkeypatch.setattr(gemm_dispatch, "candidate_plans", fixture_candidates)
+    monkeypatch.setattr(gemm_tune, "candidate_plans", fixture_candidates)
+    monkeypatch.setattr(promotion, "candidate_plans", fixture_candidates)
+    from dataclasses import asdict
+    from openassembler.kernels.gemm import generate
+    from openassembler.gemm import source_for
+    from zipfile import ZipFile
+    baseline = record["candidates"]["baseline"]["plan"]
+    base_plan = gemm_dispatch.GemmPlan(**baseline)
+    for name, plan in fixture_candidates(base_plan).items():
+        record["candidates"][name]["plan"] = asdict(plan)
+        record["candidates"][name]["ptx_body_sha256"] = hashlib.sha256(generate(plan).encode()).hexdigest()
     paths = []
     for split, completed in (("selection", "2026-11-10T00:00:00+00:00"),
                              ("heldout", "2026-11-10T02:00:00+00:00")):
         directory = tmp_path / split
         directory.mkdir()
         archive_name = record["artifact_archive"]["path"]
-        (directory / archive_name).write_bytes((original.parent / archive_name).read_bytes())
+        # Rebuild only the PTX member headers from the current plan schema;
+        # retain all recorded cubin/SASS bytes and their original hashes.
+        archive_copy = directory / archive_name
+        archive_copy.write_bytes((original.parent / archive_name).read_bytes())
+        staged = directory / "fixture-repack.zip"
+        with ZipFile(archive_copy) as src, ZipFile(staged, "w") as dst:
+            for name, candidate in record["candidates"].items():
+                for kind in ("native", "ptxas"):
+                    dst.writestr(f"{name}/{kind}.cubin", src.read(f"{name}/{kind}.cubin"))
+                    dst.writestr(f"{name}/{kind}.sass", src.read(f"{name}/{kind}.sass"))
+                dst.writestr(f"{name}/gemm.ptx", source_for(gemm_dispatch.GemmPlan(**candidate["plan"])))
+        staged.replace(archive_copy)
+        record["artifact_archive"]["sha256"] = hashlib.sha256(archive_copy.read_bytes()).hexdigest()
         item = deepcopy(record)
         item["completed_utc"] = completed
         item["session"] = {"id": f"simulated-{split}", "split": split,

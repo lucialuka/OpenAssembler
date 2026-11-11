@@ -163,8 +163,17 @@ def cmd_rowwise(a: argparse.Namespace) -> int:
     from openassembler.kernels.reductions import ReductionPlan
     from openassembler.project import ProjectError
     try:
-        plan = ReductionPlan(rows=a.rows, width=a.width, op=a.op, epsilon=a.epsilon, arch=a.arch)
-        return compile_rowwise(plan, Path(a.out_dir), a.out, no_sass=a.no_sass, emit_only=a.emit_only)
+        plan = ReductionPlan(rows=a.rows, width=a.width, op=a.op, epsilon=a.epsilon, arch=a.arch,
+                             warps_per_cta=(a.warps_per_cta if a.warps_per_cta is not None else 4))
+        manual = a.warps_per_cta is not None or a.dispatch == "manual"
+        if not manual and a.dispatch == "auto":
+            from openassembler.rowwise_dispatch import select_plan
+            plan, decision = select_plan(plan)
+        else:
+            decision = {"schema": 1, "mode": "manual", "policy": f"w{plan.warps_per_cta}",
+                        "reason": "explicit rowwise warp geometry"}
+        return compile_rowwise(plan, Path(a.out_dir), a.out, no_sass=a.no_sass,
+                               emit_only=a.emit_only, dispatch=decision)
     except (ValueError, TypeError, OSError, ProjectError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
@@ -660,6 +669,10 @@ def build_parser() -> argparse.ArgumentParser:
     pw.add_argument("--width", type=int, required=True)
     pw.add_argument("--epsilon", type=float, default=1e-5, help="positive FP32 LayerNorm epsilon")
     pw.add_argument("--arch", default="sm_80")
+    pw.add_argument("--dispatch", choices=("auto", "manual"), default="auto",
+                    help="exact shape/operation measured A100 geometry (default), or the four-warp reference")
+    pw.add_argument("--warps-per-cta", type=int, choices=(1, 2, 4, 8), default=None,
+                    help="explicit manual whole-warp geometry; overrides auto dispatch")
     pw.add_argument("--out-dir", default="output")
     pw.add_argument("-o", "--out", default=None, metavar="NAME")
     pw.add_argument("--no-sass", action="store_true")

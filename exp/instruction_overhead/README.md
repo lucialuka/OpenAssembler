@@ -3,9 +3,11 @@
 This directory tests changes that reduce scalar instructions around an SM80
 tensor mainloop. Each candidate keeps the established HMMA control value,
 post-chain drain, LDSM visibility/address dependencies, async-copy groups,
-barriers, K order and full-output contract. One exact tile64/direct policy has
-since passed a current production-source A100 pilot and is enabled through the
-exact GEMM dispatch table; the copy-address source rewrite remains experimental.
+barriers, K order and full-output contract. The tile64 CTA, direct pointer-home
+lowering, early advancement and checked copy-address reuse are now integrated
+as independently selectable production plan fields. Shape-specific automatic
+dispatch remains disabled while the expanded candidate set is revalidated on
+the current production source.
 
 ## Copy-address reuse
 
@@ -52,9 +54,14 @@ Treat these twelve rows as a useful routing hypothesis, not promotion evidence.
 The synchronous production-source pilot
 `a100-pointer-init_20261109T232622.533492Z.json` separately validates the
 128×512×512 FP16 tile64/direct policy with retained binaries and complete gates.
-Its result is reflected by one exact row in
-`openassembler/kernels/sm80_gemm_dispatch.json`; it does not validate the
-other shape rows. The copy-address source rewrite remains experimental.
+The same pilot also tested tile64 copy-address reuse + direct homes + early
+advancement. Its emitted PTX and native word sequence match the current
+`GemmPlan(address_init="reuse", pointer_mode="direct", pointer_advance="early")`
+byte-for-byte; across all 12 retained 64×64 cases in the earlier campaign, each
+production plan/PTX and independently regenerated native word sequence also
+match the retained artifact. This demonstrates source/encoder fidelity. The
+new production-source two-session campaign is still required to select exact
+automatic shape entries and compare CSE variants against the incumbent.
 
 For the production pilot, direct pointer lowering removes 64 MOV instructions
 from the 64×64 native SASS listing (728→664), with HMMA 128, LDSM 64, sixteen
@@ -65,7 +72,9 @@ best tile128 OA control. Same-source tile64 ptxas is 7.04 µs and cuBLAS is
 
 A subsequent twelve-shape production replay attempt ended when Modal stopped
 the app before returning results. It emitted no usable raw result, artifact
-bundle or gate record and is excluded from promotion.
+bundle or gate record and is excluded from promotion. The replacement
+`a100-production-shapes-copyinit-v3-20261110` campaign is running the larger
+42-contract production matrix with the address-reuse candidates included.
 
 The public CLI tuning path was then exercised synchronously on the same exact
 shape. `a100-production-autotune_20261110.json` records the seven admissible

@@ -1,0 +1,39 @@
+{
+  "status": "failed",
+  "case": {
+    "id": "1024x1024x1024_f16",
+    "role_context": {
+      "model_case": "medium_long",
+      "role": "attention_output_projection",
+      "m": 1024,
+      "n": 1024,
+      "k": 1024,
+      "dtype": "f16",
+      "batch": 4,
+      "sequence": 256,
+      "hidden": 1024
+    },
+    "plan": {
+      "m": 1024,
+      "n": 1024,
+      "k": 1024,
+      "dtype": "f16",
+      "schedule": "stagepair",
+      "output_dtype": "f32",
+      "layout": "rcr",
+      "arch": "sm_80",
+      "cta_order": "m_fast",
+      "epilogue": "none",
+      "pointer_mode": "legacy",
+      "pointer_advance": "late",
+      "fragment_schedule": "source",
+      "tile": "128x128",
+      "address_init": "original"
+    }
+  },
+  "campaign": "a100-production-shapes-copyinit-v4-20261110",
+  "session": "selection",
+  "error": "RuntimeError: worker exit 1: Traceback (most recent call last):\n  File \"/tmp/oa-shape-worker-710zeoog/campaign.py\", line 265, in <module>\n    worker(args.request, args.result)\n  File \"/tmp/oa-shape-worker-710zeoog/campaign.py\", line 246, in worker\n    _, decision = tune_or_load(plan, backend=\"local\", record=str(target),\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/oa-shape-worker-710zeoog/openassembler/gemm_tune.py\", line 140, in tune_or_load\n    result = benchmark(plan, rounds=rounds, samples=samples)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/oa-shape-worker-710zeoog/openassembler/gemm_tune.py\", line 236, in benchmark\n    from openassembler.gemm import source_for\n  File \"/tmp/oa-shape-worker-710zeoog/openassembler/gemm.py\", line 27\n    try:\nIndentationError: unexpected indent\n",
+  "elapsed_seconds": 2.084738431999998,
+  "completed_utc": "2026-11-10T11:16:10.829281+00:00"
+}

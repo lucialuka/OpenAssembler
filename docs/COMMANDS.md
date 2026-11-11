@@ -181,6 +181,7 @@ openassembler gemm --m 1024 --n 4096 --k 1024 --dtype f16 --pointer-mode direct 
 openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order morton8 --out-dir output_morton
 openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order grouped_n8 --out-dir output_grouped_n
 openassembler gemm --m 1024 --n 4096 --k 1024 --fragment-schedule load_next --out-dir output_load_next
+openassembler gemm --m 128 --n 512 --k 512 --tile 64x64 --copy-address-init reuse --pointer-mode direct --pointer-advance early --out-dir output_copy_reuse
 openassembler gemm --m 4096 --n 4096 --k 4096 --dtype bf16 --epilogue bias_residual_relu --out-dir output_fused
 ```
 
@@ -200,6 +201,7 @@ contract, and the N tile count must fit CUDA's grid-y limit.
 | `--arch ARCH` | `sm_80` | This checked generator accepts only `sm_80`. |
 | `--dispatch MODE` | `auto` | `auto` selects an exact measured native policy when its compiler/source identity and contract match; otherwise it retains the baseline. `manual` selects the baseline plus any explicit implementation knobs. |
 | `--tile SHAPE` | Automatic / `128x128` reference | Explicit `128x128` or `64x64` CTA tile. A shape divisible by 64 but not 128 requires the smaller tile. Explicit selection disables measured dispatch. |
+| `--copy-address-init MODE` | Selected policy / `original` | Explicit `original` per-chunk address calculation or `reuse` derived 64-bit offsets for the 64×64 tile; candidate is included in the production A100 tuning pool. |
 | `--schedule MODE` | Selected policy / `stagepair` reference | Explicit `stagepair` alternating-stage plan or `combined` comparison plan; selects manual dispatch. |
 | `--fragment-schedule MODE` | Selected policy / `source` reference | Explicit `source` or `load_next`; the latter is admitted only for FP16/BF16 at 1024×4096×1024 and 4096×1024×1024 with the 128×128 tile, stagepair, legacy pointers, late advancement and no epilogue. |
 | `--cta-order ORDER` | Selected policy / `m_fast` reference | Explicit `m_fast`, `morton8` or `grouped_n8`; Morton requires complete 8×8 output-tile groups, while grouped-N requires N tile count divisible by 8 and changes the launch grid to `(m_tiles×8, n_tiles/8)`. |
@@ -216,9 +218,12 @@ contract, and the N tile count must fit CUDA's grid-y limit.
 | `--emit-only` | Off | Write annotated generated PTX without invoking the CUDA tools. |
 
 Both tile families use 128 threads. The 128×128 tile uses 65,536 dynamic
-shared-memory bytes; the 64×64 tile uses 32,768. The smaller tile currently
-requires stagepair, m-fast, source-order fragments, legacy/late pointers and no
-fused epilogue. The generated source annotation supplies the checked launch to `run`.
+shared-memory bytes; the 64×64 tile uses 32,768. The smaller tile uses
+stagepair, m-fast, source-order fragments and no fused epilogue. It has
+selectable legacy/direct pointer homes, late/early pointer placement, and
+original/reused copy-address initialization; every combination remains a
+separate candidate until its exact contract passes A100 gates. The generated
+source annotation supplies the checked launch to `run`.
 Custom callers must use the recorded launch and opt into the shared-memory
 size. Fusion computes `(A @ B.T + Bias) + Residual`, optionally followed by
 ReLU, with contiguous FP32 `Bias[N]` and `Residual[M,N]`.
@@ -264,12 +269,15 @@ tensor policy; describe an actual launch with `run --spec`.
 openassembler rowwise --op softmax --rows 1024 --width 512 --out-dir output_softmax
 openassembler rowwise --op layernorm --rows 129 --width 127 --epsilon 1e-5 --out-dir output_norm
 openassembler rowwise --op softmax --rows 7 --width 33 --emit-only --out-dir generated
+openassembler rowwise --op layernorm --rows 4096 --width 32 --dispatch auto --emit-only --out-dir generated_norm
+openassembler rowwise --op layernorm --rows 4096 --width 32 --dispatch manual --warps-per-cta 2 --emit-only --out-dir generated_norm2
 ```
 
 Both operators read/write contiguous FP32 `[rows,width]`, with four-byte-aligned
-buffers. One warp cooperates on each row, four warps per CTA; the launch uses
-128 threads, `ceil(rows/4)` blocks and no shared memory. Row and column tails
-are supported. Input values and the relevant differences/sums/squares must
+buffers. One warp cooperates on each row. The default four-warp plan uses 128
+threads and `ceil(rows/4)` blocks; exact measured A100 contracts may select one,
+two or eight warps per CTA. Every plan uses no shared memory. Row and column
+tails are supported. Input values and the relevant differences/sums/squares must
 remain finite in FP32; NaN/Inf and overflowing intermediate arithmetic are not
 covered. The entry ABI is `(u64 X, u64 Y)`; use separate input/output buffers.
 
@@ -280,6 +288,8 @@ covered. The entry ABI is `(u64 X, u64 Y)`; use separate input/output buffers.
 | `--width W` | Required | Integer width 1–1024. |
 | `--epsilon VALUE` | `1e-5` | LayerNorm epsilon. It must round to a positive, normal, finite FP32 value. The plan validates it for both operations. |
 | `--arch ARCH` | `sm_80` | Only `sm_80` is supported by this checked generator. |
+| `--dispatch auto|manual` | `auto` | Auto selects only an exact promoted `(op, rows, width, epsilon, dtype, layout, alignment, SM80)` table entry. Unknown, stale or body-mismatched entries fall back to four warps. `manual` keeps the four-warp baseline unless `--warps-per-cta` is supplied. |
+| `--warps-per-cta 1|2|4|8` | Auto table; otherwise `4` | Explicitly choose whole warps per CTA; overrides automatic dispatch. The runner carries and validates the resulting exact launch. |
 | `--out-dir DIR` | `output` | Output root. |
 | `-o NAME`, `--out NAME` | Operation name | Artifact basename; entry name remains the operation name. |
 | `--no-sass` | Off | Skip the readable listing. |

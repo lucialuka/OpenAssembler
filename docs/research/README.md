@@ -28,7 +28,7 @@ The current role/shape coverage audit is under
 [`exp/shape_coverage`](../../exp/shape_coverage/README.md). It is a contract and
 measurement matrix, not a production dispatch policy.
 
-There are **79 dossiers**: **38 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
+There are **80 dossiers**: **39 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
 
 ## 1. Validated and implemented
 
@@ -40,6 +40,7 @@ These are available in the current code under their stated contracts. Explicit t
 | [Constant integer division and remainder lowering](ideas/constant-division.md) | The implemented 32-bit lowering removes a reciprocal-based path from direct PTX division/remainder sites. |
 | [Cooperative population LayerNorm](ideas/cooperative-layernorm.md) | Shifted population LayerNorm passes full finite-domain tests; affine, saved statistics and backward are absent. |
 | [Cooperative FP32 row softmax](ideas/cooperative-softmax.md) | Native warp-per-row softmax passes the full five-pattern contract; large serial-mapping gains, ptxas still faster. |
+| [Shape-aware rowwise CTA geometry](ideas/shape-aware-rowwise-dispatch.md) | Five exact heldout A100 contracts select 1/2/8 warps per CTA; unknown or stale shapes keep four warps. |
 | [Loadable cubins and metadata-safe code replacement](ideas/cubin-metadata-splicing.md) | The production container code parses/serializes CUDA ELF and .nv.info records, replaces kernel text, fixes exit offsets and declares the generated register count. |
 | [CUDA C/C++ frontend through nvcc PTX](ideas/cuda-cpp-frontend.md) | nvcc supplies CUDA parsing/PTX, while OpenAssembler supplies supported native SASS generation. |
 | [Dead-code removal, copy coalescing and local folding](ideas/dead-code-and-copy-elimination.md) | These passes are in the regular scalar and tensor compilation pipelines before allocation. |

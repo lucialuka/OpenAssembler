@@ -1,0 +1,2629 @@
+{
+  "schema": 1,
+  "compiler_identity": "a010742ea1aef39d0a251aeeb547cf206ef21e6b0ecb2c1941642741488327ae",
+  "contract": {
+    "m": 4096,
+    "n": 6144,
+    "k": 2048,
+    "dtype": "f16",
+    "arch": "sm_80",
+    "layout": "rcr",
+    "output_dtype": "f32",
+    "accumulation": "f32",
+    "epilogue": "none",
+    "alpha": 1,
+    "beta": 0,
+    "batch_count": 1,
+    "a_alignment": 16,
+    "b_alignment": 16,
+    "c_alignment": 8,
+    "workspace_bytes": 0,
+    "tails": "none"
+  },
+  "device": {
+    "name": "NVIDIA A100 80GB PCIe",
+    "cc": "8.0",
+    "driver": 13030,
+    "sm_count": 108,
+    "clock_khz": 1410000,
+    "mem_bytes": 85118156800
+  },
+  "candidates": {
+    "baseline": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "legacy",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "128x128",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "55e87f456e6db316febb0ae11d0635d5c19f0ff307574d6dced8fa3b6c1ba0fd",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "e77c17eaa3d87df4ac7d76a1621f3eddc21300d9b81cc863176c767a411f0512",
+          "sass_sha256": "5691735b8f777dc9cc003dc4e7fd7cc4ef78b43e7187f514ff727c3b6d78038f",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 216,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1600,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 282,
+            "IADD3": 243,
+            "IMAD": 153,
+            "NOP": 20
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "1d3c771116f2ffe850aa241eaaecd983e2ec8fa9fb79eabd5f404a99915d2a6c",
+          "sass_sha256": "b7f9d047714129230d06b113f5fc011921fcf700b900873221d7a6296e8cb927",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 234,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1104,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 1,
+            "IADD3": 52,
+            "IMAD": 110,
+            "NOP": 14
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "tile64": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "legacy",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "64x64",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "1037be28a1f1f41128e5d086fe984f5343d8dda64d2b183d11a1def6c6b2386f",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "7a54975c3f704583075ec31b84d7010ac9e843307e874d07cf52e1658d18d1fc",
+          "sass_sha256": "686c2934bb77ccdf25ddab4099f118ebc9f0d89209789c69ec4f7c537246a5e7",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 88,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 728,
+          "counts": {
+            "HMMA": 128,
+            "LDSM": 64,
+            "MOV": 110,
+            "IADD3": 159,
+            "IMAD": 97,
+            "NOP": 20
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "6886302f3bd65cf2ee8fea1107312bc6c1aac5cf42c935242494098fc8e981c7",
+          "sass_sha256": "37ba3047fbfb3288137b2a8c1ee8d177af5da001216fd4d2a84c45bf488a765b",
+          "resources": {
+            "max_threads": 768,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 80,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 2176,
+          "counts": {
+            "HMMA": 1024,
+            "LDSM": 512,
+            "MOV": 0,
+            "IADD3": 18,
+            "IMAD": 62,
+            "NOP": 12
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "tile64_direct": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "direct",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "64x64",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "1037be28a1f1f41128e5d086fe984f5343d8dda64d2b183d11a1def6c6b2386f",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "438cfef5cd37041d5dd27fcff1a24057cddc59208a95ae5a4d090de85ea79fa1",
+          "sass_sha256": "f9609b75a18368b6b345b797e9029ef1d62bcec919308e2ff0226da79f888639",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 88,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 664,
+          "counts": {
+            "HMMA": 128,
+            "LDSM": 64,
+            "MOV": 46,
+            "IADD3": 159,
+            "IMAD": 97,
+            "NOP": 20
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "6886302f3bd65cf2ee8fea1107312bc6c1aac5cf42c935242494098fc8e981c7",
+          "sass_sha256": "37ba3047fbfb3288137b2a8c1ee8d177af5da001216fd4d2a84c45bf488a765b",
+          "resources": {
+            "max_threads": 768,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 80,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 2176,
+          "counts": {
+            "HMMA": 1024,
+            "LDSM": 512,
+            "MOV": 0,
+            "IADD3": 18,
+            "IMAD": 62,
+            "NOP": 12
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "tile64_reuse": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "legacy",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "64x64",
+        "address_init": "reuse"
+      },
+      "ptx_body_sha256": "3a5858076f74ef3de780ecd8beffbdb1a75e08863a91e619e8ef0e3e2aaa78f8",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "29269ee69b608e36649de4278c745575d110e9b9eb6288a6879c46baf0bfb3b0",
+          "sass_sha256": "401f638cc4a8605c80ced8dbd43223541c1e4a649f7c836c0116ad51d6f63db7",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 88,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 664,
+          "counts": {
+            "HMMA": 128,
+            "LDSM": 64,
+            "MOV": 107,
+            "IADD3": 159,
+            "IMAD": 61,
+            "NOP": 19
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "a0a0b8e321dee95c796e8baee1da3a9678c43bd7690c499eed1efb5fbe824024",
+          "sass_sha256": "0dcf77344a4b4f1b265f25a4728a1ccee857cc8647358892bf2e1d91494d1f6a",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 90,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 2160,
+          "counts": {
+            "HMMA": 1024,
+            "LDSM": 512,
+            "MOV": 0,
+            "IADD3": 18,
+            "IMAD": 55,
+            "NOP": 13
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "tile64_reuse_direct": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "direct",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "64x64",
+        "address_init": "reuse"
+      },
+      "ptx_body_sha256": "3a5858076f74ef3de780ecd8beffbdb1a75e08863a91e619e8ef0e3e2aaa78f8",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "4867633bfa0dd9eadca9194a4d63c392220b7b214713896c6cefb59ff22afd0f",
+          "sass_sha256": "ef4962c7ae88a4c2bde59a123c2182dda475ab13d4359de77886ed22f41206e9",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 88,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 600,
+          "counts": {
+            "HMMA": 128,
+            "LDSM": 64,
+            "MOV": 44,
+            "IADD3": 159,
+            "IMAD": 61,
+            "NOP": 18
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "a0a0b8e321dee95c796e8baee1da3a9678c43bd7690c499eed1efb5fbe824024",
+          "sass_sha256": "0dcf77344a4b4f1b265f25a4728a1ccee857cc8647358892bf2e1d91494d1f6a",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 90,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 2160,
+          "counts": {
+            "HMMA": 1024,
+            "LDSM": 512,
+            "MOV": 0,
+            "IADD3": 18,
+            "IMAD": 55,
+            "NOP": 13
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "tile64_reuse_direct_early": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "direct",
+        "pointer_advance": "early",
+        "fragment_schedule": "source",
+        "tile": "64x64",
+        "address_init": "reuse"
+      },
+      "ptx_body_sha256": "81e0506ff02d1a59bb1f322c14e82e7c622ed159d4177ac6487fb117d69c4671",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "aeecddcc7ce68fc0d1a25c315160137036d32b460ef781e57d5eb80798cbaad1",
+          "sass_sha256": "eeae70fd7a28f4ff9480cebe3c10395f91407994fa92d162b2a337e47b185cdf",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 88,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 600,
+          "counts": {
+            "HMMA": 128,
+            "LDSM": 64,
+            "MOV": 44,
+            "IADD3": 159,
+            "IMAD": 61,
+            "NOP": 18
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "a0a0b8e321dee95c796e8baee1da3a9678c43bd7690c499eed1efb5fbe824024",
+          "sass_sha256": "0dcf77344a4b4f1b265f25a4728a1ccee857cc8647358892bf2e1d91494d1f6a",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 90,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 2160,
+          "counts": {
+            "HMMA": 1024,
+            "LDSM": 512,
+            "MOV": 0,
+            "IADD3": 18,
+            "IMAD": 55,
+            "NOP": 13
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "tile64_direct_early": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "direct",
+        "pointer_advance": "early",
+        "fragment_schedule": "source",
+        "tile": "64x64",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "f3e12d872457c99f4a1384bc437ff9619b3b4f7cbd545c9cc51e77febaa65ecc",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "ded5262cc10ca94997cfc1a71f18bbca9773d126d4f2b1d752d22bd001818706",
+          "sass_sha256": "45ac836d0502a89efd700477eff4e502c5fdfb7cd18d2d282448817cb01c7f9b",
+          "resources": {
+            "max_threads": 640,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 88,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 664,
+          "counts": {
+            "HMMA": 128,
+            "LDSM": 64,
+            "MOV": 46,
+            "IADD3": 159,
+            "IMAD": 97,
+            "NOP": 20
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "6886302f3bd65cf2ee8fea1107312bc6c1aac5cf42c935242494098fc8e981c7",
+          "sass_sha256": "37ba3047fbfb3288137b2a8c1ee8d177af5da001216fd4d2a84c45bf488a765b",
+          "resources": {
+            "max_threads": 768,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 80,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 2176,
+          "counts": {
+            "HMMA": 1024,
+            "LDSM": 512,
+            "MOV": 0,
+            "IADD3": 18,
+            "IMAD": 62,
+            "NOP": 12
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "combined": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "combined",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "legacy",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "128x128",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "b9687f5d045c3c88b6b52d129de03f8057432fba9ff3eefaa5a74e0b9ef3b0ea",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "12f9d190db6d46c8371d6552b5d05739a90ddf5ab4b12f96f79ee7c2bd384cd1",
+          "sass_sha256": "6a896f9a5cf80b58bf5b10faa86670443070ae6ccc71604326220fc28f8fd0db",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 232,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1136,
+          "counts": {
+            "HMMA": 256,
+            "LDSM": 64,
+            "MOV": 219,
+            "IADD3": 209,
+            "IMAD": 151,
+            "NOP": 15
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "2c05e7c20b30deeba75403521fc64c30cfec2abd8ba4019fa058c48a654f75ad",
+          "sass_sha256": "f6c0e9ee7b9ef76d2725769eda4923d16b470fdca1a9850d7eab3d8a55d3937e",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 244,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 816,
+          "counts": {
+            "HMMA": 256,
+            "LDSM": 64,
+            "MOV": 0,
+            "IADD3": 71,
+            "IMAD": 152,
+            "NOP": 11
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "morton8": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "morton8",
+        "epilogue": "none",
+        "pointer_mode": "legacy",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "128x128",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "402bca1d19aceced38d285fb5565654ce53da66ae694bb47914ef63c87ed4346",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "322281a9147f58c6c00f841bcf8df25ec45f30d8dfc4d5eeb479d929b464b13b",
+          "sass_sha256": "7a3dded75d760b788ba07bfc7dd447a8090771afe4f864b91a96265adc9a3f14",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 216,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1624,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 283,
+            "IADD3": 243,
+            "IMAD": 163,
+            "NOP": 17
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "ec1ddcc7523d52ce639c856d93e9cf98129be2d4f5e0a86996ba842132a61dfe",
+          "sass_sha256": "7db91182f073fd0942039938780164fc709806f6e8b0452d7318359bac7dd443",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 236,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1136,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 0,
+            "IADD3": 49,
+            "IMAD": 127,
+            "NOP": 11
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "grouped_n8": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "grouped_n8",
+        "epilogue": "none",
+        "pointer_mode": "legacy",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "128x128",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "12c440eea76061415208aeb2a004ad7b08f944de4668827b9b30af3db92db0b6",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "b2b7a0b50d7de5972f4b2452af9098755b9e6e5e0ff79eb832059cf23456b6d7",
+          "sass_sha256": "b557b685fb98e929d60f557b6ae8cc0b310d92e7a076eb028a1bbd19de5e0611",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 216,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1600,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 282,
+            "IADD3": 244,
+            "IMAD": 154,
+            "NOP": 16
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "5f348489daf2d475cb6443d1dea06f3edf63af58b915505095d4e4a0fb2e672e",
+          "sass_sha256": "4269b644b7ee88aaf07bccf24e5c0f00fd6942f6807f5dbc6594a77a135b08ab",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 234,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1104,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 0,
+            "IADD3": 52,
+            "IMAD": 110,
+            "NOP": 11
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "pointer_direct": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "direct",
+        "pointer_advance": "late",
+        "fragment_schedule": "source",
+        "tile": "128x128",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "55e87f456e6db316febb0ae11d0635d5c19f0ff307574d6dced8fa3b6c1ba0fd",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "86721f7bd6e9ae56982b117fed69a5c52d1bc6544bd4d713b5a0d4e39d3ef4a1",
+          "sass_sha256": "d08515caf554cb7dc43b6e8ec4165833083d98ea34db6d9e8c4d519952cd1dd2",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 216,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1472,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 154,
+            "IADD3": 243,
+            "IMAD": 153,
+            "NOP": 20
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "1d3c771116f2ffe850aa241eaaecd983e2ec8fa9fb79eabd5f404a99915d2a6c",
+          "sass_sha256": "b7f9d047714129230d06b113f5fc011921fcf700b900873221d7a6296e8cb927",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 234,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1104,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 1,
+            "IADD3": 52,
+            "IMAD": 110,
+            "NOP": 14
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "pointer_early": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "legacy",
+        "pointer_advance": "early",
+        "fragment_schedule": "source",
+        "tile": "128x128",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "cb22c425f0f9e8ec6d3e7f7a5dea5b4aa9d3da3988a3074552357591d1851cee",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "9be1de8bb00d7f3fb0be44c202f0708e9b9048ca7c17a5b05a8a149768582943",
+          "sass_sha256": "86e75b617de5f559aeeb64d02bbc61c8a64b3c21f0dba1c9137e1164f157a07b",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 216,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1600,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 282,
+            "IADD3": 243,
+            "IMAD": 153,
+            "NOP": 20
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "1d3c771116f2ffe850aa241eaaecd983e2ec8fa9fb79eabd5f404a99915d2a6c",
+          "sass_sha256": "b7f9d047714129230d06b113f5fc011921fcf700b900873221d7a6296e8cb927",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 234,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1104,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 1,
+            "IADD3": 52,
+            "IMAD": 110,
+            "NOP": 14
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    },
+    "pointer_direct_early": {
+      "plan": {
+        "m": 4096,
+        "n": 6144,
+        "k": 2048,
+        "dtype": "f16",
+        "schedule": "stagepair",
+        "output_dtype": "f32",
+        "layout": "rcr",
+        "arch": "sm_80",
+        "cta_order": "m_fast",
+        "epilogue": "none",
+        "pointer_mode": "direct",
+        "pointer_advance": "early",
+        "fragment_schedule": "source",
+        "tile": "128x128",
+        "address_init": "original"
+      },
+      "ptx_body_sha256": "cb22c425f0f9e8ec6d3e7f7a5dea5b4aa9d3da3988a3074552357591d1851cee",
+      "checks": [
+        {
+          "input": "zero",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "integer",
+          "relative_l2_fp32": 0.0,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        },
+        {
+          "input": "normal",
+          "relative_l2_fp32": 3.4291645079065347e-06,
+          "full_output": true,
+          "finite_output": true,
+          "canaries": true,
+          "inputs_unchanged": true,
+          "ptxas_bitwise": true,
+          "baseline_bitwise": true
+        }
+      ],
+      "artifacts": {
+        "native": {
+          "cubin_sha256": "6f9a81429fef33572e3076b3b82dcf37c9279e1176ff9781233e4b49f88ed34c",
+          "sass_sha256": "1e150dfb108996a67df7f9a37f4d83f91c1b5b1cce08152cc6db101397adf424",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 216,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1472,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 154,
+            "IADD3": 243,
+            "IMAD": 153,
+            "NOP": 20
+          }
+        },
+        "ptxas": {
+          "cubin_sha256": "1d3c771116f2ffe850aa241eaaecd983e2ec8fa9fb79eabd5f404a99915d2a6c",
+          "sass_sha256": "b7f9d047714129230d06b113f5fc011921fcf700b900873221d7a6296e8cb927",
+          "resources": {
+            "max_threads": 256,
+            "shared_bytes": 0,
+            "const_bytes": 0,
+            "local_bytes": 0,
+            "num_regs": 234,
+            "ptx_version": 80,
+            "binary_version": 80
+          },
+          "instructions": 1104,
+          "counts": {
+            "HMMA": 512,
+            "LDSM": 128,
+            "MOV": 1,
+            "IADD3": 52,
+            "IMAD": 110,
+            "NOP": 14
+          }
+        }
+      },
+      "disassembly_valid": true,
+      "resources_valid": true,
+      "poisoned_graph": true
+    }
+  },
+  "timings": [
+    {
+      "round": 0,
+      "paired_orders": [
+        [
+          "tile64_reuse_direct_early",
+          "pointer_direct",
+          "grouped_n8",
+          "tile64_reuse",
+          "pointer_early",
+          "tile64",
+          "morton8",
+          "tile64_direct_early",
+          "pointer_direct_early",
+          "tile64_reuse_direct",
+          "combined",
+          "baseline",
+          "tile64_direct"
+        ],
+        [
+          "pointer_direct_early",
+          "baseline",
+          "morton8",
+          "pointer_early",
+          "grouped_n8",
+          "tile64",
+          "tile64_direct_early",
+          "tile64_reuse_direct",
+          "pointer_direct",
+          "tile64_direct",
+          "tile64_reuse_direct_early",
+          "tile64_reuse",
+          "combined"
+        ],
+        [
+          "pointer_direct",
+          "tile64_reuse_direct",
+          "baseline",
+          "morton8",
+          "pointer_early",
+          "combined",
+          "tile64_reuse_direct_early",
+          "tile64_direct",
+          "tile64_reuse",
+          "tile64",
+          "tile64_direct_early",
+          "pointer_direct_early",
+          "grouped_n8"
+        ],
+        [
+          "pointer_early",
+          "baseline",
+          "tile64_reuse",
+          "morton8",
+          "tile64_direct_early",
+          "tile64_reuse_direct",
+          "tile64",
+          "grouped_n8",
+          "tile64_direct",
+          "combined",
+          "pointer_direct",
+          "pointer_direct_early",
+          "tile64_reuse_direct_early"
+        ],
+        [
+          "morton8",
+          "pointer_direct",
+          "tile64_reuse_direct",
+          "tile64_reuse_direct_early",
+          "combined",
+          "tile64",
+          "pointer_early",
+          "tile64_direct_early",
+          "pointer_direct_early",
+          "tile64_reuse",
+          "grouped_n8",
+          "tile64_direct",
+          "baseline"
+        ],
+        [
+          "tile64_reuse",
+          "tile64_direct",
+          "pointer_direct_early",
+          "tile64_reuse_direct_early",
+          "morton8",
+          "tile64",
+          "tile64_reuse_direct",
+          "grouped_n8",
+          "baseline",
+          "combined",
+          "pointer_direct",
+          "tile64_direct_early",
+          "pointer_early"
+        ],
+        [
+          "combined",
+          "tile64_reuse_direct_early",
+          "tile64_reuse_direct",
+          "pointer_direct",
+          "morton8",
+          "pointer_direct_early",
+          "grouped_n8",
+          "tile64_direct",
+          "tile64_direct_early",
+          "baseline",
+          "pointer_early",
+          "tile64",
+          "tile64_reuse"
+        ],
+        [
+          "tile64_reuse",
+          "baseline",
+          "pointer_early",
+          "tile64_direct",
+          "tile64_reuse_direct",
+          "tile64",
+          "morton8",
+          "grouped_n8",
+          "tile64_reuse_direct_early",
+          "tile64_direct_early",
+          "combined",
+          "pointer_direct",
+          "pointer_direct_early"
+        ]
+      ],
+      "samples_ms": {
+        "baseline": [
+          0.585536003112793,
+          0.5776000022888184,
+          0.5778560042381287,
+          0.5779200196266174,
+          0.5779839754104614,
+          0.5781760215759277,
+          0.5973119735717773,
+          0.5824000239372253
+        ],
+        "tile64": [
+          0.81632000207901,
+          0.8195840120315552,
+          0.811519980430603,
+          0.8104959726333618,
+          0.8167679905891418,
+          0.810368001461029,
+          0.8277760148048401,
+          0.8299520015716553
+        ],
+        "tile64_direct": [
+          0.7950720191001892,
+          0.7785599827766418,
+          0.7902719974517822,
+          0.7848320007324219,
+          0.7900159955024719,
+          0.7899519801139832,
+          0.8291839957237244,
+          0.7932159900665283
+        ],
+        "tile64_reuse": [
+          0.7617279887199402,
+          0.7984640002250671,
+          0.8094080090522766,
+          0.8090879917144775,
+          0.8094720244407654,
+          0.8102399706840515,
+          0.8202880024909973,
+          0.8125439882278442
+        ],
+        "tile64_reuse_direct": [
+          0.7948160171508789,
+          0.7786239981651306,
+          0.7783039808273315,
+          0.7838720083236694,
+          0.7879679799079895,
+          0.7852159738540649,
+          0.7959039807319641,
+          0.7841280102729797
+        ],
+        "tile64_reuse_direct_early": [
+          0.6627839803695679,
+          0.7748479843139648,
+          0.7862399816513062,
+          0.7810559868812561,
+          0.7886719703674316,
+          0.785535991191864,
+          0.7895680069923401,
+          0.7779840230941772
+        ],
+        "tile64_direct_early": [
+          0.8013439774513245,
+          0.7879040241241455,
+          0.7826560139656067,
+          0.7864320278167725,
+          0.789247989654541,
+          0.7879040241241455,
+          0.8254079818725586,
+          0.7801600098609924
+        ],
+        "combined": [
+          0.6007040143013,
+          0.5843200087547302,
+          0.5913599729537964,
+          0.5851519703865051,
+          0.5976319909095764,
+          0.5921919941902161,
+          0.5916159749031067,
+          0.5877760052680969
+        ],
+        "morton8": [
+          0.58924800157547,
+          0.5809280276298523,
+          0.5809919834136963,
+          0.5811840295791626,
+          0.5851519703865051,
+          0.5811840295791626,
+          0.6120319962501526,
+          0.5850239992141724
+        ],
+        "grouped_n8": [
+          0.516543984413147,
+          0.5856639742851257,
+          0.5754240155220032,
+          0.5799040198326111,
+          0.5799040198326111,
+          0.5801600217819214,
+          0.6190720200538635,
+          0.5774719715118408
+        ],
+        "pointer_direct": [
+          0.5095679759979248,
+          0.5669119954109192,
+          0.566976010799408,
+          0.5707520246505737,
+          0.5775359869003296,
+          0.5742719769477844,
+          0.5921919941902161,
+          0.569920003414154
+        ],
+        "pointer_early": [
+          0.575872004032135,
+          0.5817599892616272,
+          0.5818880200386047,
+          0.5820159912109375,
+          0.5833600163459778,
+          0.5820800065994263,
+          0.600383996963501,
+          0.5856000185012817
+        ],
+        "pointer_direct_early": [
+          0.5741440057754517,
+          0.5663359761238098,
+          0.5594879984855652,
+          0.5630720257759094,
+          0.5666559934616089,
+          0.5665919780731201,
+          0.6024960279464722,
+          0.5626239776611328
+        ]
+      },
+      "median_ms": {
+        "baseline": 0.5780799984931946,
+        "tile64": 0.8165439963340759,
+        "tile64_direct": 0.7901439964771271,
+        "tile64_reuse": 0.809440016746521,
+        "tile64_reuse_direct": 0.7846719920635223,
+        "tile64_reuse_direct_early": 0.7832959890365601,
+        "tile64_direct_early": 0.7879040241241455,
+        "combined": 0.5914879739284515,
+        "morton8": 0.5831040143966675,
+        "grouped_n8": 0.5799040198326111,
+        "pointer_direct": 0.5703360140323639,
+        "pointer_early": 0.5820479989051819,
+        "pointer_direct_early": 0.566463977098465
+      }
+    },
+    {
+      "round": 1,
+      "paired_orders": [
+        [
+          "tile64_direct_early",
+          "tile64_reuse",
+          "tile64",
+          "morton8",
+          "pointer_direct_early",
+          "pointer_early",
+          "pointer_direct",
+          "baseline",
+          "tile64_reuse_direct_early",
+          "tile64_direct",
+          "combined",
+          "tile64_reuse_direct",
+          "grouped_n8"
+        ],
+        [
+          "pointer_early",
+          "morton8",
+          "baseline",
+          "tile64_reuse_direct",
+          "pointer_direct_early",
+          "tile64_direct",
+          "grouped_n8",
+          "tile64",
+          "tile64_direct_early",
+          "combined",
+          "tile64_reuse_direct_early",
+          "pointer_direct",
+          "tile64_reuse"
+        ],
+        [
+          "pointer_early",
+          "grouped_n8",
+          "tile64_reuse_direct_early",
+          "tile64_direct",
+          "pointer_direct",
+          "tile64",
+          "morton8",
+          "pointer_direct_early",
+          "tile64_reuse",
+          "tile64_reuse_direct",
+          "combined",
+          "tile64_direct_early",
+          "baseline"
+        ],
+        [
+          "tile64_reuse_direct",
+          "baseline",
+          "tile64_direct",
+          "tile64",
+          "tile64_reuse",
+          "combined",
+          "pointer_early",
+          "pointer_direct",
+          "grouped_n8",
+          "tile64_reuse_direct_early",
+          "morton8",
+          "pointer_direct_early",
+          "tile64_direct_early"
+        ],
+        [
+          "tile64_direct",
+          "tile64",
+          "baseline",
+          "tile64_reuse_direct_early",
+          "pointer_early",
+          "tile64_direct_early",
+          "tile64_reuse_direct",
+          "combined",
+          "grouped_n8",
+          "pointer_direct",
+          "tile64_reuse",
+          "pointer_direct_early",
+          "morton8"
+        ],
+        [
+          "tile64",
+          "pointer_direct_early",
+          "tile64_direct_early",
+          "tile64_direct",
+          "tile64_reuse",
+          "tile64_reuse_direct_early",
+          "baseline",
+          "tile64_reuse_direct",
+          "pointer_direct",
+          "pointer_early",
+          "grouped_n8",
+          "combined",
+          "morton8"
+        ],
+        [
+          "pointer_direct_early",
+          "pointer_direct",
+          "tile64_reuse_direct",
+          "tile64",
+          "pointer_early",
+          "tile64_reuse_direct_early",
+          "baseline",
+          "tile64_direct_early",
+          "combined",
+          "grouped_n8",
+          "morton8",
+          "tile64_reuse",
+          "tile64_direct"
+        ],
+        [
+          "grouped_n8",
+          "tile64_reuse_direct_early",
+          "combined",
+          "tile64",
+          "tile64_reuse",
+          "morton8",
+          "tile64_direct",
+          "pointer_early",
+          "pointer_direct",
+          "pointer_direct_early",
+          "tile64_direct_early",
+          "baseline",
+          "tile64_reuse_direct"
+        ]
+      ],
+      "samples_ms": {
+        "baseline": [
+          0.5810559988021851,
+          0.5817599892616272,
+          0.578112006187439,
+          0.5786240100860596,
+          0.578112006187439,
+          0.5789440274238586,
+          0.5709440112113953,
+          0.5871999859809875
+        ],
+        "tile64": [
+          0.8030719757080078,
+          0.810368001461029,
+          0.8160640001296997,
+          0.8104959726333618,
+          0.8116480112075806,
+          0.8164479732513428,
+          0.8265600204467773,
+          0.8154240250587463
+        ],
+        "tile64_direct": [
+          0.7927680015563965,
+          0.8026880025863647,
+          0.792959988117218,
+          0.7920640110969543,
+          0.7894399762153625,
+          0.8008319735527039,
+          0.7914239764213562,
+          0.7944959998130798
+        ],
+        "tile64_reuse": [
+          0.8007040023803711,
+          0.8084480166435242,
+          0.8139520287513733,
+          0.8102399706840515,
+          0.8199040293693542,
+          0.8202880024909973,
+          0.8021119832992554,
+          0.813696026802063
+        ],
+        "tile64_reuse_direct": [
+          0.7884160280227661,
+          0.7968000173568726,
+          0.7876480221748352,
+          0.7850880026817322,
+          0.7838720083236694,
+          0.7932159900665283,
+          0.8004480004310608,
+          0.7958400249481201
+        ],
+        "tile64_reuse_direct_early": [
+          0.7857919931411743,
+          0.775551974773407,
+          0.7902079820632935,
+          0.7863039970397949,
+          0.78438401222229,
+          0.7902719974517822,
+          0.7834240198135376,
+          0.7896959781646729
+        ],
+        "tile64_direct_early": [
+          0.7793279886245728,
+          0.7827200293540955,
+          0.7867519855499268,
+          0.7871360182762146,
+          0.7899519801139832,
+          0.7985919713973999,
+          0.77920001745224,
+          0.8005759716033936
+        ],
+        "combined": [
+          0.5978879928588867,
+          0.5857279896736145,
+          0.5948160290718079,
+          0.5928320288658142,
+          0.5928959846496582,
+          0.6042240262031555,
+          0.5850239992141724,
+          0.5961599946022034
+        ],
+        "morton8": [
+          0.5745279788970947,
+          0.5854719877243042,
+          0.584384024143219,
+          0.5814399719238281,
+          0.5812479853630066,
+          0.5928959846496582,
+          0.5736960172653198,
+          0.5857920050621033
+        ],
+        "grouped_n8": [
+          0.5835520029067993,
+          0.5867519974708557,
+          0.5800960063934326,
+          0.5804160237312317,
+          0.5804160237312317,
+          0.5936639904975891,
+          0.573632001876831,
+          0.5795199871063232
+        ],
+        "pointer_direct": [
+          0.5762559771537781,
+          0.5674880146980286,
+          0.5776000022888184,
+          0.5742080211639404,
+          0.5755519866943359,
+          0.5859839916229248,
+          0.5861120223999023,
+          0.5773440003395081
+        ],
+        "pointer_early": [
+          0.582912027835846,
+          0.5861120223999023,
+          0.582207977771759,
+          0.5825279951095581,
+          0.5822719931602478,
+          0.5942400097846985,
+          0.5870720148086548,
+          0.585856020450592
+        ],
+        "pointer_direct_early": [
+          0.5615360140800476,
+          0.5771520137786865,
+          0.5699840188026428,
+          0.5665919780731201,
+          0.571071982383728,
+          0.5753600001335144,
+          0.5776640176773071,
+          0.5730559825897217
+        ]
+      },
+      "median_ms": {
+        "baseline": 0.5787840187549591,
+        "tile64": 0.8135360181331635,
+        "tile64_direct": 0.7928639948368073,
+        "tile64_reuse": 0.8119679987430573,
+        "tile64_reuse_direct": 0.7908160090446472,
+        "tile64_reuse_direct_early": 0.7860479950904846,
+        "tile64_direct_early": 0.7869440019130707,
+        "combined": 0.593856006860733,
+        "morton8": 0.5829119980335236,
+        "grouped_n8": 0.5804160237312317,
+        "pointer_direct": 0.5767999887466431,
+        "pointer_early": 0.584384024143219,
+        "pointer_direct_early": 0.5720639824867249
+      }
+    },
+    {
+      "round": 2,
+      "paired_orders": [
+        [
+          "tile64_reuse",
+          "grouped_n8",
+          "tile64_reuse_direct",
+          "pointer_direct",
+          "pointer_direct_early",
+          "tile64_direct_early",
+          "tile64_direct",
+          "baseline",
+          "morton8",
+          "tile64",
+          "combined",
+          "pointer_early",
+          "tile64_reuse_direct_early"
+        ],
+        [
+          "tile64_reuse_direct",
+          "combined",
+          "tile64_reuse_direct_early",
+          "tile64_direct_early",
+          "tile64_reuse",
+          "pointer_direct",
+          "pointer_direct_early",
+          "pointer_early",
+          "tile64",
+          "grouped_n8",
+          "baseline",
+          "tile64_direct",
+          "morton8"
+        ],
+        [
+          "tile64_direct_early",
+          "tile64_reuse_direct_early",
+          "grouped_n8",
+          "pointer_early",
+          "tile64",
+          "tile64_reuse_direct",
+          "baseline",
+          "pointer_direct_early",
+          "morton8",
+          "pointer_direct",
+          "tile64_direct",
+          "tile64_reuse",
+          "combined"
+        ],
+        [
+          "pointer_direct_early",
+          "pointer_direct",
+          "grouped_n8",
+          "tile64_direct",
+          "tile64",
+          "morton8",
+          "tile64_reuse_direct_early",
+          "tile64_reuse_direct",
+          "baseline",
+          "tile64_reuse",
+          "pointer_early",
+          "combined",
+          "tile64_direct_early"
+        ],
+        [
+          "morton8",
+          "tile64_reuse_direct_early",
+          "pointer_direct",
+          "tile64_direct_early",
+          "pointer_direct_early",
+          "baseline",
+          "tile64_reuse_direct",
+          "combined",
+          "tile64_direct",
+          "grouped_n8",
+          "tile64",
+          "pointer_early",
+          "tile64_reuse"
+        ],
+        [
+          "morton8",
+          "tile64_direct",
+          "baseline",
+          "tile64_reuse_direct_early",
+          "combined",
+          "pointer_direct_early",
+          "tile64_reuse_direct",
+          "pointer_early",
+          "tile64",
+          "pointer_direct",
+          "tile64_direct_early",
+          "grouped_n8",
+          "tile64_reuse"
+        ],
+        [
+          "combined",
+          "baseline",
+          "tile64_direct_early",
+          "morton8",
+          "pointer_direct",
+          "tile64",
+          "pointer_early",
+          "tile64_direct",
+          "tile64_reuse_direct",
+          "tile64_reuse_direct_early",
+          "pointer_direct_early",
+          "grouped_n8",
+          "tile64_reuse"
+        ],
+        [
+          "combined",
+          "pointer_early",
+          "morton8",
+          "tile64_direct",
+          "tile64_reuse_direct_early",
+          "tile64",
+          "pointer_direct_early",
+          "tile64_reuse",
+          "baseline",
+          "grouped_n8",
+          "tile64_direct_early",
+          "pointer_direct",
+          "tile64_reuse_direct"
+        ]
+      ],
+      "samples_ms": {
+        "baseline": [
+          0.580735981464386,
+          0.5782399773597717,
+          0.5783680081367493,
+          0.5812479853630066,
+          0.5802879929542542,
+          0.5818880200386047,
+          0.5779839754104614,
+          0.581824004650116
+        ],
+        "tile64": [
+          0.8112639784812927,
+          0.8112639784812927,
+          0.8117759823799133,
+          0.8234879970550537,
+          0.8266239762306213,
+          0.8161280155181885,
+          0.8178560137748718,
+          0.8112000226974487
+        ],
+        "tile64_direct": [
+          0.7898880243301392,
+          0.7887359857559204,
+          0.7996159791946411,
+          0.8001279830932617,
+          0.8024960160255432,
+          0.7935360074043274,
+          0.8004480004310608,
+          0.7937920093536377
+        ],
+        "tile64_reuse": [
+          0.8215039968490601,
+          0.8087040185928345,
+          0.8201599717140198,
+          0.8133760094642639,
+          0.8183680176734924,
+          0.8127999901771545,
+          0.8103039860725403,
+          0.8106880187988281
+        ],
+        "tile64_reuse_direct": [
+          0.7836800217628479,
+          0.7834879755973816,
+          0.7841280102729797,
+          0.7872639894485474,
+          0.7959679961204529,
+          0.7868800163269043,
+          0.7935360074043274,
+          0.7864320278167725
+        ],
+        "tile64_reuse_direct_early": [
+          0.7861120104789734,
+          0.7853440046310425,
+          0.7850239872932434,
+          0.7886719703674316,
+          0.7863680124282837,
+          0.7899519801139832,
+          0.7864959836006165,
+          0.7960960268974304
+        ],
+        "tile64_direct_early": [
+          0.789247989654541,
+          0.7910400032997131,
+          0.7879040241241455,
+          0.7917439937591553,
+          0.786624014377594,
+          0.7904000282287598,
+          0.787775993347168,
+          0.7918720245361328
+        ],
+        "combined": [
+          0.5932160019874573,
+          0.5928320288658142,
+          0.5996159911155701,
+          0.5960959792137146,
+          0.6011520028114319,
+          0.5965440273284912,
+          0.5923200249671936,
+          0.5927039980888367
+        ],
+        "morton8": [
+          0.5814399719238281,
+          0.5813760161399841,
+          0.5812479853630066,
+          0.588096022605896,
+          0.5852800011634827,
+          0.5847679972648621,
+          0.5816320180892944,
+          0.5817599892616272
+        ],
+        "grouped_n8": [
+          0.5875840187072754,
+          0.5802239775657654,
+          0.583296000957489,
+          0.5867519974708557,
+          0.5874559879302979,
+          0.5843200087547302,
+          0.5805439949035645,
+          0.5834879875183105
+        ],
+        "pointer_direct": [
+          0.5742080211639404,
+          0.5750399827957153,
+          0.5797759890556335,
+          0.5742080211639404,
+          0.5740799903869629,
+          0.5771520137786865,
+          0.5739520192146301,
+          0.5770879983901978
+        ],
+        "pointer_early": [
+          0.5820800065994263,
+          0.5823360085487366,
+          0.5824000239372253,
+          0.5861120223999023,
+          0.5935360193252563,
+          0.5857279896736145,
+          0.5894399881362915,
+          0.5820159912109375
+        ],
+        "pointer_direct_early": [
+          0.5667840242385864,
+          0.5668479800224304,
+          0.5668479800224304,
+          0.5665919780731201,
+          0.5667840242385864,
+          0.571071982383728,
+          0.5668479800224304,
+          0.5666559934616089
+        ]
+      },
+      "median_ms": {
+        "baseline": 0.5805119872093201,
+        "tile64": 0.8139519989490509,
+        "tile64_direct": 0.7967039942741394,
+        "tile64_reuse": 0.8130879998207092,
+        "tile64_reuse_direct": 0.7866560220718384,
+        "tile64_reuse_direct_early": 0.7864319980144501,
+        "tile64_direct_early": 0.7898240089416504,
+        "combined": 0.5946559906005859,
+        "morton8": 0.5816960036754608,
+        "grouped_n8": 0.5839039981365204,
+        "pointer_direct": 0.5746240019798279,
+        "pointer_early": 0.5840640068054199,
+        "pointer_direct_early": 0.5668160021305084
+      }
+    }
+  ],
+  "runtime": {
+    "torch": "2.7.1+cu128",
+    "cuda": "12.8",
+    "ptxas": "ptxas: NVIDIA (R) Ptx optimizing assembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Wed_Jan_15_19:17:38_PST_2025\nCuda compilation tools, release 12.8, V12.8.61\nBuild cuda_12.8.r12.8/compiler.35404655_0"
+  },
+  "completed_utc": "2026-11-10T11:59:01.227639+00:00",
+  "elapsed_seconds": 35.018017735,
+  "timing_scope": "sixteen-launch CUDA graphs, native kernels only; excludes build, transfers, packing, training",
+  "selected": "baseline",
+  "artifact_archive": {
+    "path": "tuning.artifacts.zip",
+    "sha256": "22c2044dc1655bd006a49e7a747bbe3a03e4f9b8f032974bf0be97cd107c7baf"
+  },
+  "campaign": "a100-production-shapes-copyinit-v5-20261110",
+  "session": {
+    "id": "a100-production-shapes-copyinit-v5-20261110-selection-67ba07c7-9d73-4947-8234-2b194efcb0ac",
+    "split": "selection",
+    "modal_app_id": "ap-iBRfdFWaS6K72qO5W7qQKH",
+    "container_id": "ta-01M72N5GTETMKCD63QT01GCF2R",
+    "function_call_id": "fc-01M72N5FFFVT002NP9AB98FZTG"
+  },
+  "case": {
+    "id": "4096x6144x2048_f16",
+    "role_context": {
+      "model_case": "large_long",
+      "role": "qkv_projection",
+      "m": 4096,
+      "n": 6144,
+      "k": 2048,
+      "dtype": "f16",
+      "batch": 4,
+      "sequence": 1024,
+      "hidden": 2048
+    },
+    "plan": {
+      "m": 4096,
+      "n": 6144,
+      "k": 2048,
+      "dtype": "f16",
+      "schedule": "stagepair",
+      "output_dtype": "f32",
+      "layout": "rcr",
+      "arch": "sm_80",
+      "cta_order": "m_fast",
+      "epilogue": "none",
+      "pointer_mode": "legacy",
+      "pointer_advance": "late",
+      "fragment_schedule": "source",
+      "tile": "128x128",
+      "address_init": "original"
+    }
+  },
+  "decision": {
+    "schema": 1,
+    "mode": "gpu-tuned",
+    "policy": "baseline",
+    "reason": "correctness-gated paired A100 timing",
+    "device": {
+      "name": "NVIDIA A100 80GB PCIe",
+      "cc": "8.0",
+      "driver": 13030,
+      "sm_count": 108,
+      "clock_khz": 1410000,
+      "mem_bytes": 85118156800
+    },
+    "contract": {
+      "m": 4096,
+      "n": 6144,
+      "k": 2048,
+      "dtype": "f16",
+      "arch": "sm_80",
+      "layout": "rcr",
+      "output_dtype": "f32",
+      "accumulation": "f32",
+      "epilogue": "none",
+      "alpha": 1,
+      "beta": 0,
+      "batch_count": 1,
+      "a_alignment": 16,
+      "b_alignment": 16,
+      "c_alignment": 8,
+      "workspace_bytes": 0,
+      "tails": "none"
+    },
+    "scope": "this shape, native candidate set, worker and timing scope; no global guarantee",
+    "record": "/checkpoints/a100-production-shapes-copyinit-v5-20261110/selection/4096x6144x2048_f16/tuning.json"
+  },
+  "protocol_sha256": "cdca887b82fd6a9ec1c7a51a3772d2e09318864d3887b33cfa23becf86ef8e05",
+  "comparison": {
+    "selected_policy": "baseline",
+    "checks": [
+      {
+        "input": "zero",
+        "method": "native",
+        "relative_l2_fp32": 0.0,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": true,
+        "passed": true
+      },
+      {
+        "input": "zero",
+        "method": "ptxas",
+        "relative_l2_fp32": 0.0,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": true,
+        "passed": true
+      },
+      {
+        "input": "zero",
+        "method": "cublas",
+        "relative_l2_fp32": 0.0,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": null,
+        "passed": true
+      },
+      {
+        "input": "integer",
+        "method": "native",
+        "relative_l2_fp32": 0.0,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": true,
+        "passed": true
+      },
+      {
+        "input": "integer",
+        "method": "ptxas",
+        "relative_l2_fp32": 0.0,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": true,
+        "passed": true
+      },
+      {
+        "input": "integer",
+        "method": "cublas",
+        "relative_l2_fp32": 0.0,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": null,
+        "passed": true
+      },
+      {
+        "input": "normal",
+        "method": "native",
+        "relative_l2_fp32": 3.4301278901693877e-06,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": true,
+        "passed": true
+      },
+      {
+        "input": "normal",
+        "method": "ptxas",
+        "relative_l2_fp32": 3.4301278901693877e-06,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": true,
+        "passed": true
+      },
+      {
+        "input": "normal",
+        "method": "cublas",
+        "relative_l2_fp32": 1.888942051664344e-06,
+        "full_output": true,
+        "finite_output": true,
+        "canaries": true,
+        "inputs_unchanged": true,
+        "ptxas_bitwise": null,
+        "passed": true
+      }
+    ],
+    "poisoned_graph_checks": [
+      {
+        "method": "native",
+        "passed": true,
+        "relative_l2_fp32": 3.4301278901693877e-06
+      },
+      {
+        "method": "ptxas",
+        "passed": true,
+        "relative_l2_fp32": 3.4301278901693877e-06
+      },
+      {
+        "method": "cublas",
+        "passed": true,
+        "relative_l2_fp32": 1.888942051664344e-06
+      }
+    ],
+    "timings": [
+      {
+        "round": 0,
+        "paired_orders": [
+          [
+            "cublas",
+            "native",
+            "ptxas"
+          ],
+          [
+            "native",
+            "cublas",
+            "ptxas"
+          ],
+          [
+            "ptxas",
+            "native",
+            "cublas"
+          ],
+          [
+            "native",
+            "cublas",
+            "ptxas"
+          ],
+          [
+            "ptxas",
+            "native",
+            "cublas"
+          ],
+          [
+            "native",
+            "ptxas",
+            "cublas"
+          ],
+          [
+            "cublas",
+            "native",
+            "ptxas"
+          ],
+          [
+            "ptxas",
+            "cublas",
+            "native"
+          ]
+        ],
+        "samples_ms": {
+          "native": [
+            0.5013759732246399,
+            0.5021439790725708,
+            0.5914880037307739,
+            0.5994240045547485,
+            0.6023679971694946,
+            0.5902720093727112,
+            0.5895040035247803,
+            0.5859839916229248
+          ],
+          "ptxas": [
+            0.4567680060863495,
+            0.5134080052375793,
+            0.5269119739532471,
+            0.5367040038108826,
+            0.5375360250473022,
+            0.5303040146827698,
+            0.528768002986908,
+            0.5299199819564819
+          ],
+          "cublas": [
+            0.5208879709243774,
+            0.5826560258865356,
+            0.6186879873275757,
+            0.6208000183105469,
+            0.6214399933815002,
+            0.6148480176925659,
+            0.6137599945068359,
+            0.6101760268211365
+          ]
+        },
+        "median_ms": {
+          "native": 0.5898880064487457,
+          "ptxas": 0.529343992471695,
+          "cublas": 0.6143040060997009
+        }
+      },
+      {
+        "round": 1,
+        "paired_orders": [
+          [
+            "cublas",
+            "ptxas",
+            "native"
+          ],
+          [
+            "cublas",
+            "ptxas",
+            "native"
+          ],
+          [
+            "native",
+            "ptxas",
+            "cublas"
+          ],
+          [
+            "cublas",
+            "ptxas",
+            "native"
+          ],
+          [
+            "cublas",
+            "native",
+            "ptxas"
+          ],
+          [
+            "native",
+            "cublas",
+            "ptxas"
+          ],
+          [
+            "cublas",
+            "ptxas",
+            "native"
+          ],
+          [
+            "cublas",
+            "native",
+            "ptxas"
+          ]
+        ],
+        "samples_ms": {
+          "native": [
+            0.5861120223999023,
+            0.5908480286598206,
+            0.5884799957275391,
+            0.5895040035247803,
+            0.5897600054740906,
+            0.5893759727478027,
+            0.5917440056800842,
+            0.5893759727478027
+          ],
+          "ptxas": [
+            0.5264639854431152,
+            0.5277439951896667,
+            0.5292800068855286,
+            0.5297279953956604,
+            0.5289599895477295,
+            0.5287039875984192,
+            0.5288959741592407,
+            0.5294079780578613
+          ],
+          "cublas": [
+            0.6098560094833374,
+            0.6100479960441589,
+            0.6131839752197266,
+            0.6183040142059326,
+            0.6149759888648987,
+            0.6135039925575256,
+            0.6131839752197266,
+            0.6142079830169678
+          ]
+        },
+        "median_ms": {
+          "native": 0.5894399881362915,
+          "ptxas": 0.5289279818534851,
+          "cublas": 0.6133439838886261
+        }
+      },
+      {
+        "round": 2,
+        "paired_orders": [
+          [
+            "ptxas",
+            "cublas",
+            "native"
+          ],
+          [
+            "native",
+            "cublas",
+            "ptxas"
+          ],
+          [
+            "native",
+            "cublas",
+            "ptxas"
+          ],
+          [
+            "native",
+            "ptxas",
+            "cublas"
+          ],
+          [
+            "cublas",
+            "native",
+            "ptxas"
+          ],
+          [
+            "native",
+            "cublas",
+            "ptxas"
+          ],
+          [
+            "native",
+            "ptxas",
+            "cublas"
+          ],
+          [
+            "ptxas",
+            "native",
+            "cublas"
+          ]
+        ],
+        "samples_ms": {
+          "native": [
+            0.5889279842376709,
+            0.5896959900856018,
+            0.5897600054740906,
+            0.5889919996261597,
+            0.5893120169639587,
+            0.58924800157547,
+            0.5893759727478027,
+            0.58924800157547
+          ],
+          "ptxas": [
+            0.5293440222740173,
+            0.528768002986908,
+            0.5296639800071716,
+            0.5294079780578613,
+            0.5310080051422119,
+            0.5286399722099304,
+            0.5309439897537231,
+            0.5297920107841492
+          ],
+          "cublas": [
+            0.6150400042533875,
+            0.6136959791183472,
+            0.6138240098953247,
+            0.6129279732704163,
+            0.6136320233345032,
+            0.6124799847602844,
+            0.6145920157432556,
+            0.6128000020980835
+          ]
+        },
+        "median_ms": {
+          "native": 0.5892800092697144,
+          "ptxas": 0.5295359790325165,
+          "cublas": 0.6136640012264252
+        }
+      }
+    ],
+    "matched_contract": true,
+    "library": "cuBLAS GemmEx FP16/BF16 inputs, FP32 output/compute, alpha1 beta0, no reduced precision reduction; not tuned cuBLASLt",
+    "scope": "fresh resident-input selected-kernel paired controls after candidate tuning; no packing or whole training"
+  },
+  "checkpoint": {
+    "volume": "openassembler-dispatch-evidence-20261110",
+    "path": "a100-production-shapes-copyinit-v5-20261110/selection/4096x6144x2048_f16",
+    "elapsed_seconds": 40.004647815000006
+  }
+}

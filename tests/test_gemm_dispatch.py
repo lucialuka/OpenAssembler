@@ -124,7 +124,9 @@ def test_64_multiple_shapes_use_baseline_tile_and_keep_invalid_policies_out():
     plan = GemmPlan(64, 192, 256, tile="64x64")
     assert dispatch.baseline(plan).tile == "64x64"
     candidates = dispatch.candidate_plans(plan)
-    assert set(candidates) == {"baseline", "tile64_direct"}
+    assert set(candidates) == {"baseline", "tile64_direct", "tile64_reuse",
+                               "tile64_reuse_direct", "tile64_reuse_direct_early",
+                               "tile64_direct_early", "pointer_early"}
     assert candidates["tile64_direct"].pointer_mode == "direct"
     assert dispatch.contract_key(plan) == dispatch.contract_key(dispatch.baseline(plan))
 

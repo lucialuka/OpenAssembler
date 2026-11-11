@@ -46,9 +46,11 @@ def compile_gemm(plan, out_dir: Path, name: str = "gemm", *, no_sass: bool = Fal
         source = project.artifact_path(out_dir, f'.build/generated/{name}.ptx')
         project.write_atomic(source, source_for(plan))
         if dispatch is not None:
-            project.write_atomic(project.artifact_path(out_dir, "gemm-dispatch.json"),
+            decision_path = project.artifact_path(out_dir, "gemm-dispatch.json")
+            project.write_atomic(decision_path,
                                  json.dumps({**dispatch, "plan": asdict(plan)}, indent=2) + "\n")
-            print(f"dispatch: {dispatch.get('mode', 'manual')} / {dispatch.get('policy', 'explicit')} "
+            policy = dispatch.get("policy", "explicit")
+            print(f"dispatch: {dispatch.get('mode', 'manual')} / {policy} "
                   f"({dispatch.get('reason', '')})")
         if emit_only:
             print(source)

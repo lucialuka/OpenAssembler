@@ -309,7 +309,7 @@ def rowwise_case(t: Target, out_dir: Path, reps: int, plan: Plan) -> None:
     from openassembler.kernels.reductions import ReductionPlan
     contract = t.kernel["rowwise"]
     try:
-        allowed = ("rows", "width", "op", "epsilon", "arch")
+        allowed = ("rows", "width", "op", "epsilon", "arch", "warps_per_cta")
         g = ReductionPlan(**{key: contract[key] for key in allowed if key in contract})
         if (contract.get("schema") != 1 or contract.get("launch") != g.launch
                 or t.label != g.op or t.kernel["params"] != [["u64", "X"], ["u64", "Y"]]):

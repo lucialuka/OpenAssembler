@@ -27,12 +27,15 @@ other precision, address overflow and unsupported policy combinations. Current
 hardware evidence uses 128-aligned model cases; it does not establish all
 possible 64-aligned shapes, tails, strides or transpose handling.
 
-The source intentionally lacks an inferred production GEMM annotation. The
-runner checks its explicit manual launch, exact output ownership, copy coverage
-and LDSM alignment/bounds. Hardware gates cover zero/integer/normal full
-outputs, canaries, poisoned buffers/graphs, unchanged inputs, bitwise agreement
-with baseline and same-policy ptxas, native build metadata, encoded controls,
-resources and shuffled paired timing. cuBLAS uses a matched FP32-output gate.
+The public `GemmPlan(tile="64x64")` generates the checked production PTX and
+launch annotation. Explicit plan fields enable direct pointer homes, early
+pointer advancement and `address_init="reuse"`, which derives copy bases using
+64-bit increments of `32*K` bytes. The default (original address setup) source
+remains byte-identical to its hardware-validated golden. Tests check logical
+copy coverage, shared swizzle/LDSM boundaries, K-order, and exact emitted-source
+identity. Hardware gates cover zero/integer/normal outputs, canaries, poisoned
+graphs, immutable inputs, same-policy/baseline ptxas bits, encoded controls,
+resources, and paired timing.
 
 ## Measured small output-projection case
 
@@ -133,13 +136,19 @@ on an A100. Unseen alignment classes, toolkit versions and whole-model
 substitution still need validation. A native model route and full
 forward/backward/optimizer state check remain separate integration gates.
 
+The production dispatch table currently fails closed to the 128×128 baseline:
+its fingerprint predates the expanded candidate set. The replacement 42-case
+campaign freezes the current source identity and compares tile64 with original
+and reused copy addresses, direct pointer homes, early/late advancement, the
+128×128 policies, load-next, Morton, and grouped-N where each plan is admissible.
+No new automatic entry is enabled until independent selection and held-out
+records pass the promotion auditor.
+
 The production table
 [`sm80_gemm_dispatch.json`](../../../openassembler/kernels/sm80_gemm_dispatch.json)
-contains current source-identity-locked tile64 rows for exact shape/dtype
-contracts. Unknown contracts use the reference. The current integrated pilot
-retains PTX, cubin and SASS and passes the full numerical, canary, input,
-poisoned-graph, disassembly and resource gates; matched ptxas and cuBLAS remain
-faster.
+retains the previous compiler identity and is not active for this source tree.
+Unknown/stale contracts use the reference. The current pilot records remain
+useful exact-shape history; matched ptxas and cuBLAS remain faster.
 
 ```sh
 .venv/bin/python -m exp.shape_coverage.audit_role_evidence

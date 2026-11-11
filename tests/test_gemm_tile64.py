@@ -32,6 +32,12 @@ _COPY_REUSE_SOURCES = {
     (128, 512, 512, "f16", "reuse_direct_early"):
         "eceba97465cd6cc25dd42bb4803b058553c28adda849b0a2fd1c06959887fb0a",
 }
+_POLICY_SOURCES = {
+    "tile64_direct_early":
+        "0c299afef266dcef290227fdf7cf7da14724c5a8fca3e31f4f64362c85c4cc8e",
+    "tile64_reuse_direct_early":
+        "eceba97465cd6cc25dd42bb4803b058553c28adda849b0a2fd1c06959887fb0a",
+}
 
 
 @pytest.mark.parametrize("m,n,k,dtype", _SOURCE_HASHES)
@@ -56,7 +62,7 @@ def test_tile64_source_matches_hardware_validated_experimental_bytes(m, n, k, dt
     {"m": 131072, "n": 131072}, {"n": 65536 * 64},
     {"schedule": "combined"}, {"cta_order": "morton8"},
     {"cta_order": "grouped_n8"},
-    {"pointer_advance": "early"}, {"pointer_advance": "auto"},
+    {"cta_order": "grouped_n8", "address_init": "reuse"},
     {"fragment_schedule": "load_next"}, {"epilogue": "bias_residual"},
     {"epilogue": "bias_residual_relu"}, {"output_dtype": "f16"},
     {"layout": "rrr"}, {"arch": "sm_90"},
@@ -113,7 +119,7 @@ def test_copy_address_reuse_matches_the_previous_hardware_experiment(m, n, k, dt
 @pytest.mark.parametrize("changes", [
     {"tile": "128x128", "address_init": "reuse"},
     {"address_init": "invalid"},
-    {"address_init": "reuse", "pointer_advance": "auto"},
+    {"address_init": "reuse", "cta_order": "grouped_n8"},
     {"address_init": "reuse", "fragment_schedule": "load_next"},
     {"address_init": "reuse", "epilogue": "bias_residual"},
 ])
@@ -122,6 +128,15 @@ def test_copy_reuse_contract_rejects_unvalidated_combinations(changes):
     args.update(changes)
     with pytest.raises(ValueError):
         GemmPlan(**args)
+
+
+@pytest.mark.parametrize("mode", list(_POLICY_SOURCES))
+def test_tile64_early_policy_matches_the_validated_source(mode):
+    options = {"tile": "64x64", "pointer_mode": "direct", "pointer_advance": "early"}
+    if "reuse" in mode:
+        options["address_init"] = "reuse"
+    source = generate(GemmPlan(128, 512, 512, "f16", **options))
+    assert sha256(source.encode()).hexdigest() == _POLICY_SOURCES[mode]
 
 
 def _trace(plan, tid):
@@ -245,8 +260,11 @@ def _trace(plan, tid):
 
 
 @pytest.mark.parametrize("k", [128, 256, 384, 4096])
-def test_actual_pipeline_preserves_every_k_dependency_and_visibility(k):
-    plan = GemmPlan(192, 320, k, tile="64x64")
+@pytest.mark.parametrize("address_init", ["original", "reuse"])
+@pytest.mark.parametrize("pointer_advance", ["late", "early"])
+def test_actual_pipeline_preserves_every_k_dependency_and_visibility(k, address_init, pointer_advance):
+    plan = GemmPlan(192, 320, k, tile="64x64", address_init=address_init,
+                    pointer_mode="direct", pointer_advance=pointer_advance)
     for tid in (0, 15, 16, 31, 32, 64, 127):
         _trace(plan, tid)
 

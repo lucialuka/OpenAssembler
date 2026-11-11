@@ -125,6 +125,23 @@ def test_pointer_advance_auto_is_shape_specific_and_round_trips():
     assert contract_from_source(source_for(wide))["pointer_advance"] == "auto"
 
 
+def test_copy_address_reuse_plan_and_cli_contract_round_trip(tmp_path):
+    from openassembler.gemm import contract_from_source
+    plan = GemmPlan(128, 512, 512, tile="64x64", address_init="reuse",
+                    pointer_mode="direct", pointer_advance="early")
+    assert contract_from_source(source_for(plan))["address_init"] == "reuse"
+    assert main(["gemm", "--m", "128", "--n", "512", "--k", "512",
+                 "--tile", "64x64", "--copy-address-init", "reuse",
+                 "--pointer-mode", "direct", "--pointer-advance", "early",
+                 "--emit-only", "--out-dir", str(tmp_path)]) == 0
+    source = (tmp_path/".build/generated/gemm.ptx").read_text()
+    contract = contract_from_source(source)
+    assert contract["address_init"] == "reuse"
+    assert contract["pointer_mode"] == "direct"
+    assert contract["pointer_advance"] == "early"
+    assert "add.u64 %d13,%d10,49152;" in source
+
+
 @pytest.mark.parametrize("dtype", ["f16", "bf16"])
 def test_load_next_fragment_schedule_cli_is_exact_shape_opt_in(dtype, tmp_path):
     assert main(["gemm", "--m", "1024", "--n", "4096", "--k", "1024",

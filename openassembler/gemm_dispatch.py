@@ -33,7 +33,7 @@ POLICIES = {
 }
 
 
-def compiler_identity() -> str:
+def compiler_inputs() -> dict[str, Path]:
     """Content identity of GEMM code generation, validation and encoding data.
 
     An unrelated rowwise kernel or CLI help edit must not invalidate measured
@@ -41,17 +41,28 @@ def compiler_identity() -> str:
     additionally bind each record to its actual implementation.
     """
     root = Path(__file__).resolve().parent.parent
-    paths = []
+    paths: dict[str, Path] = {}
     for folder in ("backend", "opt", "ptx", "isa", "container"):
-        paths += list((root / "openassembler" / folder).rglob("*.py"))
-    paths += [root / "openassembler" / name for name in
-              ("gemm.py", "gemm_dispatch.py", "gemm_tune.py", "gemm_tune_modal.py", "build.py",
-               "project.py", "oracle.py", "gpu/cuda_driver.py", "kernels/gemm.py", "kernels/_gemm64.py")]
-    paths += list((root / "specs" / "sm_80").glob("*.json"))
-    paths += [root / "corpus" / "sm_80" / name for name in ("pairs.jsonl", "machine_model.json")]
+        for path in (root / "openassembler" / folder).rglob("*.py"):
+            paths[path.relative_to(root).as_posix()] = path
+    for name in ("gemm.py", "gemm_dispatch.py", "gemm_tune.py", "gemm_tune_modal.py", "build.py",
+                 "project.py", "oracle.py", "gpu/cuda_driver.py", "kernels/gemm.py", "kernels/_gemm64.py"):
+        path = root / "openassembler" / name
+        paths[path.relative_to(root).as_posix()] = path
+    for path in (root / "specs" / "sm_80").glob("*.json"):
+        paths[path.relative_to(root).as_posix()] = path
+    for name in ("pairs.jsonl", "machine_model.json"):
+        path = root / "corpus" / "sm_80" / name
+        paths[path.relative_to(root).as_posix()] = path
+    return paths
+
+
+def compiler_identity() -> str:
+    root = Path(__file__).resolve().parent.parent
+    paths = compiler_inputs()
     h = hashlib.sha256()
-    for path in sorted(set(paths)):
-        h.update(path.relative_to(root).as_posix().encode() + b"\0")
+    for name, path in sorted(paths.items()):
+        h.update(name.encode() + b"\0")
         h.update(path.read_bytes())
         h.update(b"\0")
     return h.hexdigest()

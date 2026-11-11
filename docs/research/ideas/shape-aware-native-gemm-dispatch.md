@@ -32,12 +32,13 @@ requires 16-byte input and eight-byte output alignment. A semantic role such as
 Representable native candidates include the reference stage-pair mainloop,
 the combined-loop control, Morton8/grouped-N traversal, direct pointers,
 earlier pointer advancement, their admitted direct/early combination, bounded
-load-next fragments and a 64×64 CTA family. The automatic table currently has
-one production-promoted row (128×512×512 FP16, tile64/direct). The other 26
-shape rows remain validated candidates from earlier source-inclusive A100
-runs; their generated body hashes match, but current production cubins were
-not retained/replayed for every row, so they are excluded from automatic
-selection. `--autotune` can retest admissible candidates on the current A100.
+load-next fragments and a 64×64 CTA family. Tile64 now has independently
+selectable copy-address reuse, direct pointer homes and early advancement. The
+existing dispatch table fingerprint predates this expanded candidate set and
+is stale, so the selector currently falls back to the reference for every
+shape. A 42-contract production-source A100 campaign is testing the expanded
+policy set. Only independently held-out promotions will repopulate automatic
+dispatch. `--autotune` can test admissible choices on the current A100.
 `GemmPlan` rejects incompatible combinations before a build. Dispatch does not
 silently replace kernels with ptxas, cuBLAS or an Inductor graph.
 
@@ -52,8 +53,7 @@ combinations are not admitted merely by adding them to a search list.
 
 The built-in selector requires a unique exact contract, a promoted entry with
 passed gates, current compiler/data identity and the selected generated PTX
-body hash. It falls back to the reference on any mismatch. Only the current
-production pilot has an automatic entry. The checked PTX
+body hash. It falls back to the reference on any mismatch. The checked PTX
 annotation and ordinary manifest describe the actual selected launch; exact
 recompilation retains it. `gemm-dispatch.json` records the decision, scope and
 selected plan beside the artifacts.
@@ -61,20 +61,15 @@ selected plan beside the artifacts.
 The preceding [32-case role study](../../../exp/shape_coverage/a100-role-gemm_20261109T113850.802215Z.json)
 establishes why policy selection is needed: tile64 improves 18 cases and loses
 14, although all 1,296 input/method and 432 graph checks pass. It supplied
-validated candidates, not automatic production rows. The current production
-pilot on the exact 128×512×512 FP16 contract passes 72 full output/input/canary
-checks and 24 poisoned-graph checks; source, cubin and SASS are retained. Tile64
-direct is about 9.15 µs versus 9.60–9.66 µs for tile64 legacy and 18.94–19.01 µs
-for the best measured OA tile128 policy. Matched tile64 ptxas is about 7.04 µs
-and cuBLAS about 6.30 µs, so OA remains behind both. This is the sole automatic
-table row.
+historical candidates, not current automatic rows. The earlier integrated
+pilot on 128×512×512 FP16 found tile64/direct at 9.15 µs; same-source ptxas and
+cuBLAS were faster at about 7.04 and 6.30 µs.
 
-A later 12-shape production replay was attempted after integrating the dispatch
-path, but Modal terminated the application before returning its result bundle.
-It emitted no usable JSON, cubin, SASS or gate record and is excluded from the
-table. The retained pilot above is the current production evidence; the
-detached timing-only geometry summary remains experiment history rather than a
-promotion input.
+The first 12-shape production replay was interrupted and had no return bundle;
+it is excluded. Its replacement uses the expanded source identity and includes
+copy-address reuse. Each case retains raw JSON and PTX/cubin/SASS before the
+next case starts. Automatic entries remain disabled until current selection
+and independent held-out promotion gates pass.
 
 The table is a finite set of measurements, not a universal model of A100
 performance. An unknown shape can have a faster unmeasured alternative. Even

@@ -1,6 +1,6 @@
 # OpenAssembler architecture and status
 
-Updated **November 9, 2026**. This page describes the current source tree and
+Updated **November 10, 2026**. This page describes the current source tree and
 latest completed validation. The repository CLI update adds workflow/correctness
 checks; the separate November 7 native NN campaign adds GPU measurements and
 experimental candidates without promoting them into production. Full command syntax is in [COMMANDS.md](COMMANDS.md);
@@ -14,7 +14,7 @@ The cross-cutting reverse-engineering record is centralized in the
 |---|---|---|
 | Repository regression | 655 passed, one optional PyTorch module skipped | Current native/compiler integration checks; not a performance result |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
-| Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay | Explicit FP32 operators; same-source ptxas still faster on main shapes |
+| Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay; a 58-shape 1/2/4/8-warp A100 sweep and separate seven-case heldout recheck promote five exact rowwise policies | Explicit FP32 operators; selected CTA geometry improves five heldout OpenAssembler cases by at least 3% in all rounds; same-source ptxas remains faster on main shapes |
 | Native direct-pointer GEMM | 486 full method/input checks across three independent runs; six MLP products improve about 1.03–1.12× | Opt-in; tall GEMM regresses and default stays legacy |
 | Existing scalar operators | Paired native-before/native-after checks pass for ten cases, with unchanged resources and no observed slowdown | Scheduler correctness fixes do not establish another general speedup |
 | BF16 application state | All 127 tensors checked; two parameter tensors fail the unchanged gate | Improved diagnostics, not a numerical repair |
@@ -27,7 +27,7 @@ The cross-cutting reverse-engineering record is centralized in the
 | Grouped-N CTA traversal | Current production-path full gates pass; repeated 16384×4096×4096 is about 6.9–7.3% faster than m-fast and held-out tall FP16/BF16 cases improve | Explicit `--cta-order grouped_n8` only; wide/square auto-dispatch remains disabled |
 | Transformer role/shape coverage | Static audit covers 180 role/dtype rows: 44 direct kernel routes, 84 dimension-fit but blocked by layout or batching, and 52 dimension-contract rejections; QKV/output/FFN role runs pass 462 method/input checks, with corrected pointer and fragment replays retained separately | Initial direct-pointer labels were invalidated and rerun with checked compile contracts. Same-source ptxas remains faster on those medium roles; automatic model routing is separate |
 | Current role-matched counters | All 20 counters collected for six FP16 FFN-up methods; OA direct+early executes 4.371M versus ptxas 3.231M total instructions with identical 2.097M tensor work | Extra instructions and overlap both matter; cuBLAS is faster despite more instructions. Counter replay is separate from graph timing |
-| Smaller CTA family and measured dispatch | Historical 32-role study passes 1,296 method/input and 432 graph checks; tile64 wins 18 and loses 14. A current integrated A100 pilot passes 72 numerical/input/canary checks and 24 graph checks for 128×512×512 FP16 | The 64×64 generator and exact-contract selector are integrated. Only this exact tile64/direct contract is automatically promoted; 26 other table rows remain candidates pending current production replays. Current pilot: 9.15 µs versus 9.60–9.66 µs tile64 legacy, 18.94–19.01 µs best OA tile128, 7.04 µs matched ptxas and 6.30 µs cuBLAS. See the [tile dossier](research/ideas/small-grid-tensor-cta-tiles.md) and [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md) |
+| Shape-tuned GEMM and copy-address reuse | Historical tile64/CSE runs include 128×512×512 FP16 across both A100 variants with full gates; the new production-source 42-contract selection/held-out campaign is running with the expanded address-reuse candidate set | 64×64 CSE, direct/early pointer variants and current production tuner are integrated behind exact manual/autotune choices. The installed measured table fingerprint is deliberately stale, so auto dispatch currently fails closed to baseline until new two-session promotions finish. No old 27-row claim is active. See [copy-address and tile measurements](../exp/instruction_overhead/README.md) and the [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md) |
 | Per-boundary BF16 trajectory | 151/151 checkpoints captured across 30 updates: first observed output failure before update 3; first parameter failure after update 22 | Eager versus Inductor only; unchanged gates and optimizer policy. It does not localize the causal operation or repair native OA composition |
 
 These are measured snapshots, not promises for every shape, toolkit, GPU or
@@ -158,7 +158,7 @@ are research proposals, not additional shipping modules in this tree.
 | Bias/residual/ReLU epilogue | Explicit `--epilogue` | FP32 auxiliary buffers; selected square benefits, other shapes can regress |
 | Pointer-home copy elimination | Explicit `--pointer-mode direct` | Unfused `stagepair`/`m_fast`; preserves legacy default |
 | Early pointer advancement | Explicit `--pointer-advance early|auto` | `auto` selects only the measured 1024×4096×1024 shape; tall controls remain late |
-| Cooperative softmax/population LayerNorm | Explicit `rowwise` | Contiguous bounded finite FP32, widths 1–1024, tails; no affine/saved statistics/backward |
+| Cooperative softmax/population LayerNorm | `rowwise --dispatch auto` exact table, `--dispatch manual` reference, or explicit `--warps-per-cta` | Contiguous bounded finite FP32, widths 1–1024, tails; five exact A100 shape/op entries use 1/2/8 warps; all other shapes keep four warps; no affine/saved statistics/backward |
 | Scalar alias/WAR/reader/scoreboard repairs and warp synchronization | Scalar backend | Implemented full-mask butterfly shuffle form; unsupported forms fail closed |
 | Application capture/replay | Explicit `--frontend torch`/`triton`/`inductor` on configured PyTorch directories | Pinned supported runtime, captured arguments/shapes, retained runtime dependencies |
 | Complete state diagnostics | Application verification gate | All tensors checked, bounded error details, unchanged admission tolerances |
@@ -168,6 +168,15 @@ are research proposals, not additional shipping modules in this tree.
 The catalogue gives the complete per-idea classification, including validated
 but unintegrated work, correct-but-slower experiments, rejected candidates,
 source-only hypotheses and hardware-unavailable proposals.
+
+The rowwise CTA table is source-scoped and fails closed on a stale identity or
+PTX-body mismatch. It promotes only these heldout A100 contracts: softmax
+129×1023→2 warps, 4096×1→8, 4096×32→8; LayerNorm 4096×1→8 and 4096×32→8.
+Measured speedups are versus the four-warp OpenAssembler version (about 3.3–12.6%
+across the three paired rounds); they are not wins over ptxas or cuDNN. The
+LayerNorm 129×1023 and 4096×1024 candidates passed numerical/canary checks but
+missed the frozen 3% heldout cutoff and stay on four warps. See the
+[shape-aware rowwise dispatch dossier](research/ideas/shape-aware-rowwise-dispatch.md).
 
 ## Latest whole-transformer results
 

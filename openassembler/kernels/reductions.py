@@ -32,6 +32,7 @@ class ReductionPlan:
     op: str
     epsilon: float = 1e-5
     arch: str = "sm_80"
+    warps_per_cta: int = 4
 
     def __post_init__(self):
         if type(self.rows) is not int or self.rows <= 0 or self.rows >= 2**32:
@@ -44,6 +45,8 @@ class ReductionPlan:
             raise ValueError("op must be softmax or layernorm")
         if self.arch != "sm_80":
             raise ValueError("parallel row reductions require sm_80")
+        if type(self.warps_per_cta) is not int or self.warps_per_cta not in (1, 2, 4, 8):
+            raise ValueError("warps_per_cta must be one of 1, 2, 4 or 8")
         if (isinstance(self.epsilon, bool) or not isinstance(self.epsilon, (int, float))):
             raise ValueError("epsilon must be positive and finite")
         try:
@@ -55,14 +58,15 @@ class ReductionPlan:
 
     @property
     def launch(self):
-        return {"grid": [(self.rows+3)//4, 1, 1], "threads": 128, "smem": 0}
+        warps = self.warps_per_cta
+        return {"grid": [(self.rows+warps-1)//warps, 1, 1], "threads": warps*32, "smem": 0}
 
     @property
     def metadata(self):
         return {"kernel": self.op, "rows": self.rows, "width": self.width,
                 "op": self.op, "epsilon": self.epsilon, "arch": self.arch,
                 "input_dtype": "f32", "output_dtype": "f32", "accumulation": "f32",
-                "layout": "contiguous_row_major", "warps_per_cta": 4,
+                "layout": "contiguous_row_major", "warps_per_cta": self.warps_per_cta,
                 "lanes_per_row": 32, "finite_inputs_only": True,
                 "numerical_contract": "bounded finite FP32 inputs; FP32 differences, sums and squares must remain finite",
                 "affine": False, "input_alignment": 4, "output_alignment": 4}
@@ -78,7 +82,7 @@ def generate(plan):
              "ld.param.u64 %d0,[X]; ld.param.u64 %d1,[Y];",
              "mov.u32 %r0,%tid.x; mov.u32 %r1,%ctaid.x;",
              "and.b32 %r2,%r0,31; shr.u32 %r3,%r0,5;",
-             "mad.lo.u32 %r4,%r1,4,%r3;",
+             f"mad.lo.u32 %r4,%r1,{plan.warps_per_cta},%r3;",
              f"setp.ge.u32 %p0,%r4,{plan.rows}; @%p0 bra done;",
              f"mad.lo.u32 %r5,%r4,{plan.width},%r2;",
              "mul.wide.u32 %d2,%r5,4; add.u64 %d3,%d0,%d2; add.u64 %d4,%d1,%d2;"]
