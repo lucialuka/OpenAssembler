@@ -25,7 +25,8 @@ Every candidate should report:
 6. matched same-PTX ptxas output;
 7. paired randomized timing on the same GPU;
 8. counters when a stall or locality explanation is claimed; and
-9. held-out shapes before any dispatch promotion.
+9. independent held-out replay of a frozen policy before exact dispatch
+   promotion, with unseen-shape controls before any broader heuristic claim.
 
 ## Comparison boundaries
 
@@ -37,9 +38,9 @@ Every candidate should report:
 
 The complete per-feature status remains in [the research catalogue](../research/README.md).
 
-## November 9 current-source revalidation
+## November 9 source revalidation
 
-The current source-path load-next confirmation passes every gate on FP16/BF16
+The November 9 source-path load-next confirmation passes every gate on FP16/BF16
 1024×4096×1024 and 4096×1024×1024. It uses 24 more registers (216 to 240) and
 measures roughly 8–10% lower OA time than the source-order schedule in paired
 A100 rounds. Three held-out large FP16 shapes all regress, so the option is
@@ -50,7 +51,7 @@ fragment schedule results, not evidence that OA beats same-source ptxas.
 
 ## Role-matched FFN-up counters: November 9
 
-The [current six-method replay](../../exp/shape_coverage/a100-role-gemm_20261109T111551.304398Z.json)
+The [November 9 six-method replay](../../exp/shape_coverage/a100-role-gemm_20261109T111551.304398Z.json)
 profiles FP16 1024×4096×1024 on one A100-SXM4-40GB. All full-output,
 three-pattern, canary, input, same-policy and baseline-bitwise, poisoned-graph,
 native manifest and encoded-control checks pass first. All 20 requested
@@ -119,4 +120,35 @@ percentage does not make it faster; wait stalls and instruction overhead also
 matter. cuBLAS launches 64 CTAs and executes 243,200 total instructions while
 winning paired timing. See the [canonical tile dossier](../research/ideas/small-grid-tensor-cta-tiles.md)
 for timing, exact scope, held-out evidence and negative cases.
+
+## November 11 production selection and independent replay
+
+The [current 42-contract campaign](../../exp/dispatch_tuning/RESULTS.md)
+compiles 500 admissible production-source native candidates and matched ptxas
+controls per session. It retains 1,500 full candidate/input checks per session,
+all source/cubin/SASS artifacts, canary/input/finite/reference and bitwise
+checks, poisoned graph replay, resources and HMMA8/drain15 validation. Across
+selection and independent held-out sessions there are 84 raw records and 84
+archives with 5,000 retained members. Promotion re-encodes current native text
+and audits each frozen policy before installing any table row.
+
+The resulting table has 34 nonbaseline policies and eight measured baseline
+retentions. Every nonbaseline choice beats the OA reference by at least 2% in
+each of six paired rounds; ratios span 1.033–2.460×. These ratios use medians
+within a worker/session. They do not pool absolute runtimes across A100
+variants, and they exclude compilation, input transfer, packing and model
+integration.
+
+All nominal selected OA kernels remain slower than same-source ptxas in this
+campaign. Supplemental cuBLAS calls establish only a matched GemmEx baseline.
+Seven held-out records choose a different nominal winner from the pre-frozen
+policy; their library-control timings describe the nominal winner. Frozen
+policy promotion uses all-candidate native timings and exact per-policy
+correctness evidence, not a new selection after seeing held-out results.
+
+The tables above remain historical counter observations for their recorded
+variants. The later timing replay does not measure new Nsight counters or
+prove that copy-address reuse, tile size or Morton individually caused the
+combined gain. Collect counters on the installed exact variants before claiming
+a resolved stall mechanism or occupancy improvement.
 

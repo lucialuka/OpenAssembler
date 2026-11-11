@@ -79,8 +79,15 @@ outputs after capture, and times shuffled CUDA-Graph replays.
 
 ## Scope and next work
 
-This is an explicit shape-specialized compiler option, not an automatic
-optimization. Held-out large shapes remain rejected by the admission rule.
+The completed November 11 [42-contract production replay](../../../exp/dispatch_tuning/RESULTS.md)
+includes this option wherever `GemmPlan` admits it. No frozen winning entry
+selects load-next: other complete plans are faster or meet the selection gate
+more reliably. The option therefore remains explicit and available to bounded
+on-device tuning; this new result does not invalidate its older gains against
+the then-reference source-order plan. Generalized shape-dependent dispatch is
+implemented separately, with 34 other nonbaseline selections and eight
+reference retentions. Held-out large load-next shapes remain rejected by this
+option's admission rule.
 Alignment, workspace, tails, transpose layouts and fused epilogues remain
 separate contracts.
 

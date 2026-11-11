@@ -97,6 +97,16 @@ still have failed numerical gates; use the analyzer's eligibility fields.
   [native hybrid MLP](native-hybrid-mlp.md),
   [native direct-pointer option](direct-pointer-homes.md).
 
+## Subsequent native-kernel progress
+
+The completed November 11 [42-contract production replay](../../../exp/dispatch_tuning/RESULTS.md)
+promotes 34 exact GEMM policies and records eight reference retentions. Five
+separately held-out [rowwise contracts](shape-aware-rowwise-dispatch.md) now
+select measured CTA warp counts. Neither selector is automatically substituted
+into this AOTAutograd/Inductor transformer study. These isolated results do not
+change its nine admitted configurations, failed BF16 training gate, timing
+scope or missing stock compiled-PyTorch control.
+
 ## Remaining work
 
 Add tuned compiled-PyTorch controls, more model families, real KV-cache decode,

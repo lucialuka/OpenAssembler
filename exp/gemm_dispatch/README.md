@@ -7,9 +7,17 @@ The [grouped-N dossier](../../docs/research/ideas/grouped-n-cta-swizzle.md)
 owns its current integration status, while the files here preserve the exact
 historical experiment contracts.
 
+As of November 11, the production selector is backed by the separate
+[42-contract production replay](../dispatch_tuning/RESULTS.md), not these
+historical manifests. That campaign installs 34 nonbaseline policies and eight
+baseline retentions, including Morton8 for the two tall 16384×4096×4096
+FP16/BF16 contracts. No grouped-N policy cleared that frozen campaign's
+selection rule. Grouped-N remains a legal explicit/tuning option; its earlier
+shape-specific win was not a universal result or an automatic dispatch entry.
+
 `cta_swizzle.py` implements three logical traversals:
 
-* `m_fast`: the current OA launch, with `blockIdx.x` selecting the M tile;
+* `m_fast`: the reference OA launch, with `blockIdx.x` selecting the M tile;
 * `morton8`: the existing OA 8×8 Morton traversal;
 * `grouped_n8` (and narrower widths): the public CUTLASS grouped-N mapping,
   where a physical X group maps to one M tile and a consecutive group of N
@@ -24,21 +32,21 @@ math, shared layout, tensor instruction count or output epilogue.
 Run the CPU model and generate the manifest with:
 
 ```bash
-python3.13 -m pytest -q exp/gemm_dispatch/test_cta_swizzle.py
-python3.13 exp/gemm_dispatch/heuristic_manifest.py
+.venv/bin/python -m pytest -q exp/gemm_dispatch/test_cta_swizzle.py
+.venv/bin/python exp/gemm_dispatch/heuristic_manifest.py
 ```
 
 The generated `shape-alignment-workspace-manifest.json` is a candidate matrix,
 not a benchmark result. Its `untested` rows must not inherit results from a
 different shape, dtype, alignment or workspace. A dispatch entry requires a
-source-inclusive A100 run verifies full output, canaries, poisoned-input
+source-inclusive A100 run that verifies full output, canaries, poisoned-input
 execution, valid disassembly, register/shared-memory resources and paired
 held-out timing against the current OA traversal.
 
 The grouped mapping follows the public CUTLASS implementation in
 [`threadblock_swizzle.h`](https://github.com/NVIDIA/cutlass/blob/main/include/cutlass/gemm/threadblock/threadblock_swizzle.h).
 
-## A100 source-inclusive validation
+## Historical A100 source-inclusive validation
 
 Run the grouped-N, Morton and m-fast comparison with:
 
@@ -56,5 +64,8 @@ Later November 9 held-out and production-path confirmations are linked in the
 [canonical dossier](../../docs/research/ideas/grouped-n-cta-swizzle.md).
 `measured_dispatch_manifest.json` records exact shape/alignment/workspace
 entries from this run. A `validated-experiment-only` status means both timing
-repeats beat the current OA policy for that exact case. It does not extend to
+repeats beat the recorded OA policy for that exact case. It does not extend to
 unmeasured alignment, workspace, dtype or neighboring shapes.
+Do not import that status into the current production table; its current
+source/body and independent-replay gates are enforced separately in
+[`dispatch_tuning`](../dispatch_tuning/README.md).

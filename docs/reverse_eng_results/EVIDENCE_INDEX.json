@@ -6,62 +6,178 @@
     {
       "id": "sm80-encoding",
       "document": "03_SASS_ENCODING_CONTROL_FIELDS.md",
-      "production": ["openassembler/isa/encode.py", "openassembler/isa/word.py"],
-      "evidence": ["specs/sm_80", "corpus/sm_80/pairs.jsonl", "docs/research/ideas/sass-encoding.md"]
+      "production": [
+        "openassembler/isa/encode.py",
+        "openassembler/isa/word.py"
+      ],
+      "evidence": [
+        "specs/sm_80",
+        "corpus/sm_80/pairs.jsonl",
+        "docs/research/ideas/sass-encoding.md"
+      ]
     },
     {
       "id": "cubin-metadata",
       "document": "04_CUBIN_ELF_METADATA_AND_SPLICING.md",
-      "production": ["openassembler/container/elf.py", "openassembler/container/cubin.py", "openassembler/container/nvinfo.py"],
-      "evidence": ["corpus/sm_80/gpu_a100_40gb_bisect5.json", "docs/research/ideas/cubin-metadata-splicing.md"]
+      "production": [
+        "openassembler/container/elf.py",
+        "openassembler/container/cubin.py",
+        "openassembler/container/nvinfo.py"
+      ],
+      "evidence": [
+        "corpus/sm_80/gpu_a100_40gb_bisect5.json",
+        "docs/research/ideas/cubin-metadata-splicing.md"
+      ]
     },
     {
       "id": "scalar-latency",
       "document": "05_SCALAR_LATENCY_SCHEDULING_AND_REGISTERS.md",
-      "production": ["openassembler/backend/compile.py", "openassembler/backend/sched.py", "openassembler/backend/ra.py"],
-      "evidence": ["docs/evidence/a100-latency/latency-summary.json", "docs/evidence/a100-latency/gpu_a100_40gb_latsweep_corrected.json"]
+      "production": [
+        "openassembler/backend/compile.py",
+        "openassembler/backend/sched.py",
+        "openassembler/backend/ra.py"
+      ],
+      "evidence": [
+        "docs/evidence/a100-latency/latency-summary.json",
+        "docs/evidence/a100-latency/gpu_a100_40gb_latsweep_corrected.json"
+      ]
     },
     {
       "id": "tensor-mma",
       "document": "06_MMA_TENSOR_PIPELINE_SM80.md",
-      "production": ["openassembler/backend/tensor.py", "openassembler/backend/tensor_encoding.py", "openassembler/kernels/gemm.py"],
-      "evidence": ["exp/tensor_scheduler/clocked-loop-probes_20261109T064627.431181Z.json", "exp/tensor_scheduler/control-inventory.json", "exp/tensor_scheduler/load-next-compute-current_20261109T062433.496969Z.json", "docs/evidence/a100-mma/current-validation", "exp/tensor_scheduler/actual-block-audit_20261109.json", "exp/tensor_scheduler/candidate-search-a100-model_20261109.json"]
+      "production": [
+        "openassembler/backend/tensor.py",
+        "openassembler/backend/tensor_encoding.py",
+        "openassembler/kernels/gemm.py"
+      ],
+      "evidence": [
+        "exp/tensor_scheduler/clocked-loop-probes_20261109T064627.431181Z.json",
+        "exp/tensor_scheduler/control-inventory.json",
+        "exp/tensor_scheduler/load-next-compute-current_20261109T062433.496969Z.json",
+        "docs/evidence/a100-mma/current-validation",
+        "exp/tensor_scheduler/actual-block-audit_20261109.json",
+        "exp/tensor_scheduler/candidate-search-a100-model_20261109.json"
+      ]
     },
     {
       "id": "async-copy-shared-memory",
       "document": "07_ASYNC_COPY_LDSM_SHARED_MEMORY.md",
-      "production": ["openassembler/backend/tensor.py", "openassembler/kernels/gemm.py"],
-      "evidence": ["docs/evidence/a100-mma/phase5", "docs/research/ideas/shared-layout-swizzling.md", "docs/research/ideas/tensor-address-generation.md"]
+      "production": [
+        "openassembler/backend/tensor.py",
+        "openassembler/kernels/gemm.py"
+      ],
+      "evidence": [
+        "docs/evidence/a100-mma/phase5",
+        "docs/research/ideas/shared-layout-swizzling.md",
+        "docs/research/ideas/tensor-address-generation.md",
+        "exp/instruction_overhead/README.md",
+        "exp/dispatch_tuning/RESULTS.md"
+      ]
     },
     {
       "id": "arithmetic-division",
       "document": "08_ARITHMETIC_DIVISION_AND_FRAGMENTS.md",
-      "production": ["openassembler/backend/fragments.py", "openassembler/backend/ptxas_fragments.json", "openassembler/opt/divconst.py"],
-      "evidence": ["corpus/sm_80/div_const_survey.json", "corpus/sm_80/divconst_proofs.json", "docs/research/ideas/constant-division.md"]
+      "production": [
+        "openassembler/backend/fragments.py",
+        "openassembler/backend/ptxas_fragments.json",
+        "openassembler/opt/divconst.py"
+      ],
+      "evidence": [
+        "corpus/sm_80/div_const_survey.json",
+        "corpus/sm_80/divconst_proofs.json",
+        "docs/research/ideas/constant-division.md"
+      ]
     },
     {
       "id": "reductions",
       "document": "09_REDUCTIONS_AND_FUSED_NN_ARITHMETIC.md",
-      "production": ["openassembler/kernels/reductions.py", "openassembler/rowwise.py"],
-      "evidence": ["exp/weaknesses/reduction_overlap_ncu_20261108T061002.104721Z.json", "docs/research/ideas/fused-backward-reductions.md"]
+      "production": [
+        "openassembler/kernels/reductions.py",
+        "openassembler/rowwise.py",
+        "openassembler/rowwise_dispatch.py",
+        "openassembler/kernels/sm80_rowwise_dispatch.json"
+      ],
+      "evidence": [
+        "exp/weaknesses/reduction_overlap_ncu_20261108T061002.104721Z.json",
+        "docs/research/ideas/fused-backward-reductions.md",
+        "docs/research/ideas/shape-aware-rowwise-dispatch.md",
+        "exp/dispatch_tuning/rowwise_runs/rowwise_selection_20261110/frozen-heldout.json",
+        "exp/dispatch_tuning/rowwise_runs/rowwise_heldout_20261110/campaign.json"
+      ]
     },
     {
       "id": "cutlass-cublas",
       "document": "10_LAYOUT_SWIZZLE_CUBLAS_CUTLASS.md",
-      "production": ["openassembler/kernels/gemm.py"],
-      "evidence": ["exp/cutlass_cublas_research.md", "exp/gemm_dispatch/measured_dispatch_manifest.json", "exp/gemm_dispatch/grouped-n_20261109T062459.468958Z.json", "docs/research/ideas/cutlass-cublas-public-techniques.md"]
+      "production": [
+        "openassembler/kernels/gemm.py"
+      ],
+      "evidence": [
+        "exp/cutlass_cublas_research.md",
+        "exp/gemm_dispatch/measured_dispatch_manifest.json",
+        "exp/gemm_dispatch/grouped-n_20261109T062459.468958Z.json",
+        "docs/research/ideas/cutlass-cublas-public-techniques.md"
+      ]
     },
     {
       "id": "counters-validation",
       "document": "11_COUNTERS_PERFORMANCE_AND_VALIDATION.md",
-      "production": ["openassembler/runner.py", "openassembler/verify.py"],
-      "evidence": ["exp/a100_counters/counter-validation_20261109T064116.119142Z.json", "docs/research/WHOLE_STACK_RESULTS.md", "docs/research/ideas/tensor-counter-profiling.md", "exp/shape_coverage/a100-role-gemm_20261109T111551.304398Z.json", "exp/whole_stack/runs/bf16-first-observed-divergence-20261109T111158.926633Z.json", "exp/shape_coverage/a100-small-tile-counters_20261109T113502.971650Z.json"]
+      "production": [
+        "openassembler/runner.py",
+        "openassembler/verify.py"
+      ],
+      "evidence": [
+        "exp/a100_counters/counter-validation_20261109T064116.119142Z.json",
+        "docs/research/WHOLE_STACK_RESULTS.md",
+        "docs/research/ideas/tensor-counter-profiling.md",
+        "exp/shape_coverage/a100-role-gemm_20261109T111551.304398Z.json",
+        "exp/whole_stack/runs/bf16-first-observed-divergence-20261109T111158.926633Z.json",
+        "exp/shape_coverage/a100-small-tile-counters_20261109T113502.971650Z.json"
+      ]
     },
     {
       "id": "transformer-role-shape-coverage",
       "document": "10_LAYOUT_SWIZZLE_CUBLAS_CUTLASS.md",
-      "production": ["openassembler/kernels/gemm.py", "openassembler/runner.py"],
-      "evidence": ["exp/shape_coverage/role-coverage-manifest.json", "exp/shape_coverage/a100-role-gemm_20261109T075039.758591Z.json", "exp/shape_coverage/a100-role-gemm_20261109T080749.220619Z.json", "exp/shape_coverage/a100-role-gemm_20261109T081712.382539Z.json", "exp/shape_coverage/a100-role-gemm_20261109T082039.525666Z.json", "exp/shape_coverage/a100-role-gemm_20261109T082356.053685Z.json", "exp/shape_coverage/a100-role-gemm_20261109T083147.885491Z.json", "exp/shape_coverage/a100-role-gemm_20261109T083359.463266Z.json", "exp/shape_coverage/README.md", "exp/shape_coverage/evidence-ledger.json", "exp/shape_coverage/report_review.md", "exp/shape_coverage/a100-role-gemm_20261109T110806.491968Z.json", "exp/shape_coverage/a100-role-gemm_20261109T111245.728446Z.json", "exp/shape_coverage/a100-role-gemm_20261109T111551.304398Z.json", "exp/shape_coverage/a100-role-gemm_20261109T112003.101015Z.json", "exp/shape_coverage/a100-role-gemm_20261109T112122.548949Z.json", "exp/shape_coverage/a100-role-gemm_20261109T113850.802215Z.json", "exp/shape_coverage/a100-role-gemm_20261109T113154.637725Z.json", "exp/shape_coverage/a100-small-tile-counters_20261109T113502.971650Z.json", "exp/instruction_overhead/a100-pointer-init_20261109T232622.533492Z.json", "exp/instruction_overhead/a100-production-autotune_20261110.json", "exp/instruction_overhead/a100-production-autotune_20261110.artifacts.zip", "openassembler/kernels/sm80_gemm_dispatch.json", "docs/research/ideas/small-grid-tensor-cta-tiles.md", "docs/research/ideas/shape-aware-native-gemm-dispatch.md", "exp/dispatch_tuning/RESULTS.md", "exp/dispatch_tuning/README.md", "exp/dispatch_tuning/runs/a100-production-shapes-copyinit-v5-20261110/frozen-selection.json", "exp/dispatch_tuning/runs/a100-production-shapes-copyinit-v5-20261110/promotion-decisions.json"]
+      "production": [
+        "openassembler/kernels/gemm.py",
+        "openassembler/runner.py",
+        "openassembler/gemm_dispatch.py",
+        "openassembler/gemm_tune.py",
+        "openassembler/gemm_promotion.py",
+        "openassembler/kernels/_gemm64.py",
+        "openassembler/kernels/sm80_gemm_dispatch.json"
+      ],
+      "evidence": [
+        "exp/shape_coverage/role-coverage-manifest.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T075039.758591Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T080749.220619Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T081712.382539Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T082039.525666Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T082356.053685Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T083147.885491Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T083359.463266Z.json",
+        "exp/shape_coverage/README.md",
+        "exp/shape_coverage/evidence-ledger.json",
+        "exp/shape_coverage/report_review.md",
+        "exp/shape_coverage/a100-role-gemm_20261109T110806.491968Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T111245.728446Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T111551.304398Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T112003.101015Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T112122.548949Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T113850.802215Z.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T113154.637725Z.json",
+        "exp/shape_coverage/a100-small-tile-counters_20261109T113502.971650Z.json",
+        "exp/instruction_overhead/a100-pointer-init_20261109T232622.533492Z.json",
+        "exp/instruction_overhead/a100-production-autotune_20261110.json",
+        "exp/instruction_overhead/a100-production-autotune_20261110.artifacts.zip",
+        "openassembler/kernels/sm80_gemm_dispatch.json",
+        "docs/research/ideas/small-grid-tensor-cta-tiles.md",
+        "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
+        "exp/dispatch_tuning/RESULTS.md",
+        "exp/dispatch_tuning/README.md",
+        "exp/dispatch_tuning/runs/a100-production-shapes-copyinit-v5-20261110/frozen-selection.json",
+        "exp/dispatch_tuning/runs/a100-production-shapes-copyinit-v5-20261110/promotion-decisions.json",
+        "exp/dispatch_tuning/runs/a100-production-shapes-copyinit-v5-20261110/heldout-progress.json"
+      ]
     }
   ]
 }

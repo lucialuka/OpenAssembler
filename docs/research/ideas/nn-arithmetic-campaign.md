@@ -3,8 +3,12 @@
 Status: validated-not-integrated
 
 This is an experimental measurement framework and a set of tested candidates
-under `exp/nn_round2/`. None of its new templates, automatic selection policies,
-autograd adapters or inference caches is installed in the production compiler.
+under `exp/nn_round2/`. Its operator templates, autograd adapters and inference
+caches are not a production native training route. Subsequent independent
+GEMM work did promote exact shape-specific pointer/tile/address/traversal plans;
+those later integrations are documented in the
+[dispatch dossier](shape-aware-native-gemm-dispatch.md), rather than inferred
+from this November 7 network campaign.
 
 ## Question and boundary
 
@@ -83,7 +87,7 @@ Each idea has its own canonical dossier with exact numbers, methods and commands
 |---|---|
 | [Fused backward local reductions](fused-backward-reductions.md) | 240/240 initial cases, 16/16 separate-process selected confirmations, and 64/64 standard-width cases pass. At 4096 rows, standard widths 512/1024 gain about 1.16–1.31× over earlier OA forms. Smaller row counts can lose; same-source ptxas remains faster. |
 | [Stable GELU backward](stable-gelu-backward.md) | New equivalent analytic form passes 26/26 cases under the original gate; direct-tanh failures remain recorded. This repairs accuracy rather than establishing a ptxas speed win. |
-| [Earlier GEMM pointer updates](early-gemm-pointer-advance.md) | FP16/BF16 wide products gain about 7.0–7.6% over legacy OA, or 1.5–2.3% over direct mode. Tall controls regress. All 84 complete and 28 graph checks pass; not a default policy. |
+| [Earlier GEMM pointer updates](early-gemm-pointer-advance.md) | The November 7 wide study gains about 7.0–7.6% over legacy OA, or 1.5–2.3% over direct mode; tall controls regress. All 84 complete and 28 graph checks pass. Later exact dispatch promotes independently validated complete early-pointer plans; this historical experiment alone is not the promotion evidence. |
 | [Joint existing tensor options](joint-tensor-options.md) | Direct+Morton is mostly tied/slower; direct+fusion has limited conditional gains. The main 18-case tensor study passes 402 complete and 134 graph checks. |
 | [Immutable inference weight packing](inference-weight-packing-cache.md) | 26 method/network pairs pass accuracy, input-change graph checks and versioned eager invalidation. OA graph inference gains about 2.3–7.6% relative to its uncached form; equally cached ptxas remains faster. |
 

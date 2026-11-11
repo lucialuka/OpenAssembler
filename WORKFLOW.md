@@ -39,6 +39,14 @@ commands and limitations. Update its catalogue entry instead of adding another
 chronological phase report. Preserve raw successes, failures and superseded
 records, and distinguish correctness from speed and deployment.
 
+The current native policy evidence is the
+[42-contract GEMM replay](exp/dispatch_tuning/RESULTS.md) and the separate
+[rowwise dispatch dossier](docs/research/ideas/shape-aware-rowwise-dispatch.md).
+An ordinary compile uses exact installed tables; it does not launch a hidden
+GPU search. New shape policies require their own source/binary, correctness and
+independent paired timing evidence. Update the feature inventory and
+reverse-engineering evidence map when the linked dossiers or records change.
+
 Run the relevant tests and `python3 tools/check_docs.py`. For production changes,
 record the appropriate full-suite, encoding/emulator and hardware checks;
 not every documentation edit requires a new GPU benchmark. Do not call a stage

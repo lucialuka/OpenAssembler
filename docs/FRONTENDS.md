@@ -47,6 +47,17 @@ contains the experimental contract and original failures.
 Read the separate [softmax](research/ideas/cooperative-softmax.md) and
 [population LayerNorm](research/ideas/cooperative-layernorm.md) dossiers. These
 are explicit native generators, not automatic graph replacements.
+The [rowwise geometry selector](research/ideas/shape-aware-rowwise-dispatch.md)
+automatically chooses only five measured exact contracts; manual 1/2/4/8-warp
+plans remain available, with four warps as the unmeasured fallback.
+
+## Native tensor GEMM
+
+The [`gemm` generator and options](TENSOR_GEMM.md) cover full-tile FP16/BF16
+inputs with FP32 accumulation/output. Exact contract dispatch selects measured
+tile, address, pointer and traversal policies; optional A100 tuning checks
+admitted alternatives. This selection applies to the generated native kernel,
+not arbitrary matrix products discovered inside a PyTorch application graph.
 
 ## What --verify proves
 

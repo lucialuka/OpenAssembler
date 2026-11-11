@@ -11,3 +11,12 @@ records. Preflight can request a GPU. NCU availability/permissions are checked;
 a failed profile is not zero stall activity. Counter replay perturbs caches,
 so its duration is not the separate validated CUDA-graph benchmark latency.
 No experimental candidate is automatically installed in production by this driver.
+
+Documentation updated November 11, 2026. Counter records here retain their
+original source/device identities and describe those measured methods. The
+separate [completed production replay](../dispatch_tuning/RESULTS.md) installs
+34 exact nonbaseline GEMM choices and eight baseline retentions using full
+numerical/binary gates and paired graph timing. It does not contain a new NCU
+cohort for all 42 promoted contracts. Do not attribute older counters to a new
+policy or assume a shorter instruction stream explains every timing gain.
+The generalized tensor dependency scheduler remains unpromoted.

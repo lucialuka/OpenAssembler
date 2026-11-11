@@ -12,7 +12,12 @@ Apply bias, residual addition and optional ReLU while the matrix result is still
 
 The explicit `bias_residual` and `bias_residual_relu` plans compute `(A@B.T + Bias) + Residual`, then optional finite-value ReLU, with FP32 inputs to the epilogue and FP32 output. Bias is [N], residual is [M,N]; both pointers are required. The measured stage-pair mainloop prefix remains unchanged and registers remain 216.
 
-Current square 4096³ full-output tests show 4.95–5.34% less total OA time versus OA GEMM plus OA pointwise work. Same-source ptxas fusion is faster. Small smoke regressed about 20%, and tested MLP fusion was slightly slower. The option is explicit; it is not universal training fusion.
+The November 5 square 4096³ full-output tests show 4.95–5.34% less total OA time versus OA GEMM plus OA pointwise work. Same-source ptxas fusion is faster. Small smoke regressed about 20%, and tested MLP fusion was slightly slower. The option is explicit; it is not universal training fusion.
+
+The November 11 [42-contract dispatch replay](../../../exp/dispatch_tuning/RESULTS.md)
+only promotes unfused `epilogue=none` GEMMs. It adds no automatic fused row or
+full training interface. Explicit fused contracts remain available; an
+unfused timing win cannot be reused as evidence for their complete cost.
 
 ## Method and validity checks
 

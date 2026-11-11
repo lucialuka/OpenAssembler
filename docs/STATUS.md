@@ -1,9 +1,9 @@
 # OpenAssembler architecture and status
 
 Updated **November 11, 2026**. This page describes the current source tree and
-latest completed validation. The repository CLI update adds workflow/correctness
-checks; the separate November 7 native NN campaign adds GPU measurements and
-experimental candidates without promoting them into production. Full command syntax is in [COMMANDS.md](COMMANDS.md);
+latest completed validation. The November 11 native GEMM replay supplies the
+current exact policy table; the separate November 7 native NN composition
+campaign remains experimental. Full command syntax is in [COMMANDS.md](COMMANDS.md);
 every researched feature has a dossier in the [catalogue](research/README.md).
 The cross-cutting reverse-engineering record is centralized in the
 [reverse-engineering results hub](reverse_eng_results/README.md).
@@ -12,16 +12,16 @@ The cross-cutting reverse-engineering record is centralized in the
 
 | Area | Latest completed evidence | Interpretation |
 |---|---|---|
-| Repository regression | 655 passed, one optional PyTorch module skipped | Current native/compiler integration checks; not a performance result |
+| Repository regression | Earlier full-suite snapshot: 655 passed, one optional PyTorch module skipped; November 11 dispatch/generator/promotion regression: 221 passed | Separate test scopes; the 221-test run is not a new full-suite count or a performance result |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
 | Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay; a 58-shape 1/2/4/8-warp A100 sweep and separate seven-case heldout recheck promote five exact rowwise policies | Explicit FP32 operators; selected CTA geometry improves five heldout OpenAssembler cases by at least 3% in all rounds; same-source ptxas remains faster on main shapes |
-| Native direct-pointer GEMM | 486 full method/input checks across three independent runs; six MLP products improve about 1.03–1.12× | Opt-in; tall GEMM regresses and default stays legacy |
+| Native direct-pointer GEMM | Historical 486 full method/input checks across three runs; six MLP products improve about 1.03–1.12×; current exact selections are audited in the November 11 replay | Direct pointers are selected for measured contracts or explicitly requested; unknown contracts keep legacy pointers. Historical tall regressions remain valid for those tested plans |
 | Existing scalar operators | Paired native-before/native-after checks pass for ten cases, with unchanged resources and no observed slowdown | Scheduler correctness fixes do not establish another general speedup |
 | BF16 application state | All 127 tensors checked; two parameter tensors fail the unchanged gate | Improved diagnostics, not a numerical repair |
 | Repository CLI on Modal | Three native input languages plus an external include; transformer capture emits 67 kernels, replay checks 77 tensors across six optimizer steps with zero new GPU code generation | Shared compile/run/cnr source paths; integration smoke, not new performance estimates |
 | Native repository compilation runtime | Bounded parallel source builds are enabled by default; the 26-source repository compile fell from 29.18s serial to 19.62s with four workers, with identical 21-entry/61-kernel outputs ([raw run](../exp/runtime/native-default-20261108.json)) | CPU/toolkit contention can change the best worker count; `OPENASSEMBLER_BUILD_JOBS=1` restores serial behavior |
 | Native NN arithmetic campaign | 264/274 initial arithmetic configurations pass; 402/402 tensor checks plus 134 graph checks; six composed NN configurations with full-state gates | Experimental only; rejected gates and slower methods retained |
-| New conditional candidates | Backward FMA reductions improve selected standard-width cases about 1.16–1.31×; integrated early pointer placement gains about 1.5–2.3% over direct mode on one wide shape | Smaller/tall cases can regress; neither establishes general ptxas superiority |
+| Conditional reduction and pointer work | Historical backward FMA reductions improve selected standard-width cases about 1.16–1.31×; early/direct pointer policies now have exact production dispatch evidence | Backward FMA remains experimental; pointer choices are contract-specific. Neither establishes general ptxas superiority |
 | Full SM80 control inventory | 42 scalar producer/consumer families plus 14 tensor probes replayed on A100; fixed-pipe minima are mostly S4/S5 and predicate guards S13 | Pair-specific controls; no universal control-field rewrite is admitted |
 | CUTLASS-style load-next fragment schedule | Current production-path full gates pass for FP16/BF16 at 1024×4096×1024 and 4096×1024×1024; paired A100 runs are about 8–10% faster than source-order OA | Explicit `--fragment-schedule load_next` only; 24 more registers and held-out large FP16 cases regress; default stays source order |
 | Grouped-N CTA traversal | Current production-path full gates pass; repeated 16384×4096×4096 is about 6.9–7.3% faster than m-fast and held-out tall FP16/BF16 cases improve | Explicit `--cta-order grouped_n8` only; wide/square auto-dispatch remains disabled |
@@ -131,7 +131,7 @@ row reductions into Inductor graphs.
 | `backend/ra.py` | Native instruction selection, guarded definitions, grouped register allocation, DCE and copy handling |
 | `backend/compile.py`, `sched.py`, `unroll.py` | Scalar dependency scoreboards, latency-aware ordering and bounded loop unrolling |
 | `backend/tensor.py`, `tensor_encoding.py` | Tensor register groups, async-copy/LDSM/HMMA dependencies and deterministic SM80 tensor encoding |
-| `kernels/`, `gemm.py`, `gemm_dispatch.py`, `gemm_tune.py`, `rowwise.py` | Validated shape plans, exact-contract native policy selection, optional correctness-gated A100 tuning, generated PTX and checked launch contracts |
+| `kernels/`, `gemm.py`, `gemm_dispatch.py`, `gemm_tune.py`, `gemm_promotion.py`, `rowwise.py`, `rowwise_dispatch.py` | Validated plans, exact-contract GEMM/rowwise policy selection, optional A100 GEMM tuning, offline promotion auditing, generated PTX and checked launches |
 | `opt/divconst.py`, `backend/fragments.py` | Constant integer division/remainder and recorded arithmetic instruction sequences |
 | `isa/`, `container/` | Instruction words/fields/templates and CUDA ELF/cubin/metadata handling |
 | `emu/` | Functional SASS execution, warp behavior and recorded tensor numeric models |
@@ -153,17 +153,18 @@ are research proposals, not additional shipping modules in this tree.
 | Scalar unrolling/list scheduling | Selected by optimization level | Hardware-measured classes, not a universal latency table |
 | Cubin splicing, encoding, disassembly and emulation | Build/inspection/verification paths | SM80 and supported instructions; emulation does not prove timing correctness |
 | Dense FP16/BF16 GEMM | `gemm`, or supported tensor PTX | Full-tile `C=A@B.T`, contiguous K, FP32 accumulation/output; exact policy dispatch is shape aware |
-| Paired fragment loads, two-stage async copies, shared XOR layout and vector stores | Generated tensor mainloop | 128×128×64 reference tile or validated 64×64×128 tile, 128 threads and 64/32 KiB dynamic shared memory |
+| Paired fragment loads, two-stage async copies, shared XOR layout and vector stores | Generated tensor mainloop | 128×128×64 or 64×64×64 CTA tile, 128 threads and 64/32 KiB dynamic shared memory; K is a positive multiple of 128 for the paired loop |
 | Shape-aware native GEMM dispatch and optional A100 tuning | `--dispatch auto` (default), `--dispatch manual`, `--autotune local|modal` | Exact compiler/source/contract identity gates; unknown shapes fall back to baseline; tuning validates full outputs and resources before timing |
 | Protected tensor scoreboards, address WAR, HMMA8/drain15 and operand reuse | Default tensor backend | Existing measured dependencies are retained across optimization levels |
-| Morton8 CTA ordering | Explicit `--cta-order morton8`; table entry only after a current promotion | Complete 8×8 tile groups; the current table has no Morton8 rows |
+| Morton8 CTA ordering | Exact automatic FP16/BF16 entries at 16384×4096×4096, or explicit `--cta-order morton8` | Complete 8×8 groups of 128×128 output tiles; no inference to neighboring shapes or physical SM placement |
 | CUTLASS-style load-next/compute-current schedule | Explicit `--fragment-schedule load_next` | FP16/BF16 1024×4096×1024 and 4096×1024×1024, stagepair, legacy pointer, late advancement, unfused only |
 | Grouped-N CTA traversal | Explicit `--cta-order grouped_n8`; table entry only after a current promotion | N tile count divisible by 8; launch grid remaps to `(m_tiles×8,n_tiles/8)`; current table has no grouped-N rows |
 | Transformer role/shape audit | `exp/shape_coverage/` | Role-labelled contract matrix and current forward-role A100 measurements; role labels do not override exact layout/alignment contracts |
 | Bias/residual/ReLU epilogue | Explicit `--epilogue` | FP32 auxiliary buffers; selected square benefits, other shapes can regress |
-| Pointer-home copy elimination | Explicit `--pointer-mode direct` | Unfused `stagepair`/`m_fast`; preserves legacy default |
-| Early pointer advancement | Explicit `--pointer-advance early|auto` | `auto` selects only the measured 1024×4096×1024 shape; tall controls remain late |
-| Cooperative softmax/population LayerNorm | `rowwise --dispatch auto` exact table, `--dispatch manual` reference, or explicit `--warps-per-cta` | Contiguous bounded finite FP32, widths 1–1024, tails; five exact A100 shape/op entries use 1/2/8 warps; all other shapes keep four warps; no affine/saved statistics/backward |
+| Pointer-home copy elimination | Exact measured dispatch, optional tuning or explicit `--pointer-mode direct` | Unfused `stagepair`/`m_fast`, either tile family; unsupported or unmeasured automatic contracts keep the reference |
+| Early pointer advancement | Exact measured dispatch/tuning or explicit `--pointer-advance early\|auto` | Distinct from the full dispatcher: the explicit placement value `auto` chooses early updates only at 1024×4096×1024 in either tile family; exact measured dispatch may choose early placement on other shapes |
+| Copy-address reuse | Exact table/tuner policy or `--tile 64x64 --copy-address-init reuse` | 64-bit derived copy offsets, tile64 only; selected for 20 current exact contracts; no relaxation of address or synchronization checks |
+| Cooperative softmax/population LayerNorm | `rowwise --dispatch auto` exact table, `--dispatch manual` reference, or explicit `--warps-per-cta` | Contiguous bounded finite FP32, widths 1–1024, tails; five exact A100 shape/op entries use two/eight warps; all other shapes keep four warps; no affine/saved statistics/backward |
 | Scalar alias/WAR/reader/scoreboard repairs and warp synchronization | Scalar backend | Implemented full-mask butterfly shuffle form; unsupported forms fail closed |
 | Application capture/replay | Explicit `--frontend torch`/`triton`/`inductor` on configured PyTorch directories | Pinned supported runtime, captured arguments/shapes, retained runtime dependencies |
 | Complete state diagnostics | Application verification gate | All tensors checked, bounded error details, unchanged admission tolerances |
@@ -230,6 +231,11 @@ training invocations, so these runs do not show amortized startup gains.
 
 ### Native GEMM controls and options
 
+The following six-product/hybrid measurements predate the November 11 dispatch
+campaign. Their policy labels and device cohorts describe those original runs;
+the current 42-entry policy table and both-session ratios are in the
+[current dispatch results](../exp/dispatch_tuning/RESULTS.md).
+
 Same-PTX ptxas beat the original native OA compiler on all six isolated MLP
 products: OA was about 41–45% slower. OA beat the selected default GemmEx on two
 small shapes, which supports shape/dispatch selection rather than superior OA
@@ -239,9 +245,9 @@ work. It did not prove a specific operand-collector bottleneck.
 
 | Explicit option | Valid measured benefit | Important negative result |
 |---|---|---|
-| Morton8 | About 6.5–7.3% lower time than OA m_fast on 16384×4096×4096 | Still behind matched ptxas; small/other grids do not justify automatic selection |
+| Morton8 | Historical 6.5–7.3% lower time than OA m_fast on 16384×4096×4096; current independent replay promotes that exact FP16/BF16 pair | Still behind matched ptxas; other grids need their own evidence |
 | Bias/residual/ReLU | About 5% lower time than separate OA work on tested 4096³ cases | Fused ptxas remains faster; smoke and MLP cases can regress |
-| Direct pointer homes | About 1.03–1.12× paired median kernel gains on six MLP products; 486 full checks pass across three runs | 4096³ neutral; tall 16384×4096×4096 regresses; legacy stays default |
+| Direct pointer homes | Historical 1.03–1.12× paired median kernel gains on six MLP products; current dispatch selects direct/early combinations only where independently validated | Historical 4096³ neutral and tall regressions prohibit a global pointer-policy change |
 
 Direct-pointer timing is paired within each 40GB/80GB run. In two hybrid MLP
 runs, all forward/dX/dW/output/optimizer checks passed bitwise against the legacy
@@ -306,9 +312,12 @@ initial cases, 16 separate-process selected confirmations and 64 standard-width
 cases. At 4096 rows, widths 512/1024 improve about 1.16–1.31× over the earlier OA
 forms, while smaller row counts can lose. Same-source ptxas remains faster.
 [Earlier GEMM pointer updates](research/ideas/early-gemm-pointer-advance.md)
-help one wide shape in FP16/BF16 and regress tall controls; the
+help one wide shape in FP16/BF16 and regress tall controls in that cohort; the
 [joint option search](research/ideas/joint-tensor-options.md) does not justify
-an unconditional combination. These are not CLI defaults or new production passes.
+an unconditional combination. Backward FMA and whole-network candidates remain
+experimental. Pointer placement is now an explicit production option and part
+of the exact measured dispatch table; that does not validate the experimental
+native operator composition.
 
 A separate A100-80GB [inference packing study](research/ideas/inference-weight-packing-cache.md)
 admits 26 method/network pairs, including changed-input graph checks and eager
@@ -325,9 +334,12 @@ No whole-native-transformer or general faster-than-CUDA claim is admitted.
 
 ## Verification, dependencies and limits
 
-- The latest full local suite is **655 passed, one skipped**. The skip is optional
+- The retained earlier full local suite is **655 passed, one skipped**. The skip is optional
   PyTorch missing from the compiler-only environment; all 18 numerical tests
-  separately pass locally with PyTorch and in the pinned 2.7.1 GPU image.
+  separately pass locally with PyTorch and in the pinned 2.7.1 GPU image. The
+  November 11 targeted dispatch/generator/promotion/rowwise suite has **221
+  passing tests**. Documentation checking separately validates links, catalogue
+  consistency and CLI option coverage; it does not rerun hardware experiments.
 - Scalar scheduling repairs pass the paired ten-case native-before/native-after
   hardware regression with bitwise equality and no observed slowdown. Tensor
   default/direct complete-word hashes remain unchanged.
@@ -337,7 +349,8 @@ No whole-native-transformer or general faster-than-CUDA claim is admitted.
 - Compilation needs Python 3.12+ and CUDA tools. GPU execution needs a suitable
   Linux driver locally or an explicitly selected remote/Modal worker. SSH is
   implemented but not part of the latest claimed hardware audit.
-- Generated GEMM dimensions are multiples of 128 with contiguous-K storage.
+- Generated GEMM M/N dimensions fit full 64- or 128-wide tiles, and K is a
+  positive multiple of 128, with contiguous-K storage.
   General tails/strides/transposes, TF32 and arbitrary alpha/beta are outside it.
 - Row reductions do not provide saved statistics, affine parameters, backward,
   arbitrary layouts, masks or guarantees for NaN/Inf/overflowing finite inputs.
@@ -360,7 +373,7 @@ reductions, and native operator composition correctness.
 The catalogue records each experiment's actual status rather than treating a
 negative sample as a universal impossibility. Remaining priorities are
 counter-guided tensor scheduling, legal joint shared/register-layout search,
-small-grid tile selection, transpose/packing integration, normalization backward,
+expanded held-out shape/tile coverage, transpose/packing integration, normalization backward,
 whole-step attention/optimizer boundaries and competitive, precision-matched
 low-rank transforms. Timing must retain complete correctness gates and proven
 dependency edges.

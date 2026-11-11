@@ -34,14 +34,15 @@ the combined-loop control, Morton8/grouped-N traversal, direct pointers,
 earlier pointer advancement, their admitted direct/early combination, bounded
 load-next fragments and a 64×64 CTA family. Tile64 now has independently
 selectable copy-address reuse, direct pointer homes and early advancement. The
-current [42-contract production-source replay](../../../exp/dispatch_tuning/RESULTS.md)
+November 11 [42-contract production-source replay](../../../exp/dispatch_tuning/RESULTS.md)
 completed selection and independent frozen held-out validation. The installed
 table now contains 34 nonbaseline choices and eight measured baseline
 retentions. Across six paired rounds, the improved policies give 1.033–2.460×
 OA baseline/selected speed ratios. Copy-address reuse is selected in 20 exact
 contracts and Morton8 in both 16384×4096×4096 dtype contracts. No combined,
 grouped-N or load-next policy is selected in this campaign; those candidates
-remain available for exact future measurements. `--autotune` can test admissible choices on the current A100.
+remain available for exact future measurements. `--autotune` can test
+admissible choices on the current A100.
 `GemmPlan` rejects incompatible combinations before a build. Dispatch does not
 silently replace kernels with ptxas, cuBLAS or an Inductor graph.
 

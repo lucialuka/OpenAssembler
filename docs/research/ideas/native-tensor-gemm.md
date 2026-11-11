@@ -15,11 +15,25 @@ and FP32 accumulation/output. The reference is a 128×128×64 CTA tile with four
 64×64 warp tiles, 128 threads and 64 KiB dynamic shared memory; a checked
 64×64×64 CTA family uses four 32×32 warp tiles and 32 KiB. Exact-contract
 dispatch chooses a current promoted policy, while unknown/stale contracts keep
-the reference. Both families combine asynchronous copies, paired fragment
+the representable reference family. Both combine asynchronous copies, paired fragment
 loads, 7/7 shared swizzle, the protected HMMA8/drain15 schedule and vector
 stores.
 
-The promoted schedule bundle reduced time 16.13–26.69% versus the earlier direct schedule across six historical square/MLP/tall cases and reached 79.76–98.91% of matched default cuBLAS. This does not establish cuBLASLt parity, arbitrary GEMM support or a native transformer compiler.
+The historical schedule bundle reduced time 16.13–26.69% versus the earlier
+direct schedule across six square/MLP/tall cases and reached 79.76–98.91% of
+matched default cuBLAS. Those historical ratios are not current universal
+performance estimates.
+
+The completed November 11 [production-source dispatch replay](../../../exp/dispatch_tuning/RESULTS.md)
+validates 42 exact contracts in independent selection and held-out sessions:
+34 select faster OA plans, eight retain reference, 22 select tile64 and 20
+select copy-address reuse. Improved baseline/selected ratios span
+1.033–2.460× across six paired rounds. Every session's nominal selected OA
+kernel is still slower than its same-source ptxas control; seven held-out
+nominal selections differ from the pre-frozen installed policy, so their
+supplemental library ratios are not the installed policy's timings. None of
+these isolated GEMM results establishes cuBLASLt parity, arbitrary GEMM support
+or a native transformer compiler.
 
 ## Method and validity checks
 
@@ -47,4 +61,8 @@ modal run docs/evidence/a100-mma/current-validation/validate_modal.py
 
 ## What remains open
 
-The default remains behind matched ptxas on measured MLP shapes. Transposed storage, tails, arbitrary alpha/beta, TF32 generation and a full native forward/backward/optimizer graph need new contracts. See the separate direct-pointer option for a newer shape-specific improvement.
+Same-source ptxas remains faster in the latest nominal-selected GEMM cohort.
+Transposed storage, general strides/tails, arbitrary alpha/beta, TF32 generation
+and a full native forward/backward/optimizer graph need new contracts. The
+[dispatch dossier](shape-aware-native-gemm-dispatch.md) specifies current
+conditional routing; it is not an all-shapes optimum guarantee.

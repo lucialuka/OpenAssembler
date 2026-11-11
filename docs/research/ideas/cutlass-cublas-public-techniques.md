@@ -2,8 +2,11 @@
 
 Status: untested-or-hardware-unavailable
 
-Status applies to the public technique transfer described here. It does not
-claim access to or extraction of proprietary cuBLAS device code.
+Status applies to the still-unimplemented generalized pipeline, staged-
+epilogue, split-K and joint cost-model work in this dossier. It does not
+classify the separately implemented tile, traversal, load-next or exact-dispatch
+features as untested, and does not claim extraction of proprietary cuBLAS
+code. See the individual dossiers for those validated production contracts.
 
 ## Scope and source boundary
 
@@ -32,9 +35,11 @@ instructions. The loop order exposes independent work at multiple levels:
 * K groups are fully unrolled into MMA instruction groups;
 * the MMA instruction loop is the lowest tensor scheduling unit.
 
-OpenAssembler already has a 128×128×64 CTA tile and four 64×64 warp tiles. The
-missing part is a scheduler that sees the same hierarchy instead of receiving a
-flattened source-order HMMA list after physical allocation.
+OpenAssembler has a 128×128×64 CTA family with four 64×64 warp tiles and a
+64×64×64 family with four 32×32 warp tiles. The exact selector can choose
+between them using measured shape contracts. A generalized scheduler that sees
+the hierarchy, virtual-register liveness and tensor resources before physical
+allocation remains missing.
 
 ### Shared-memory and register double buffering
 
@@ -113,14 +118,16 @@ shape/layout/dtype/alignment
     -> cached shape-specific winner
 ```
 
-The current public `nvidia-matmul-heuristics` documentation describes its
-current heuristic coverage for Hopper and Blackwell rather than A100. OA should
-therefore reuse the heuristic methodology and candidate metadata, not claim
-that the current package directly supplies SM80 decisions.
+The retained public-source audit identified `nvidia-matmul-heuristics`
+coverage for Hopper and Blackwell; it did not validate an A100 integration.
+That source-only observation motivates the search methodology, not a claim
+that an imported package already supplies measured SM80 decisions.
 
-## What should be integrated into OA experiments
+## Further experiment candidates
 
-The first experiment-only candidate family should add these independent knobs:
+Several traversal/tile policies are already production options. New candidates
+should extend their checked search space with these independent axes rather
+than treating every public technique as missing:
 
 1. `stages`: two versus three only when full output and resource gates pass;
 2. `register_k_blocks`: bounded register-fragment pipeline depth;
@@ -138,29 +145,36 @@ source of copied device code.
 
 ## Current status
 
-The public techniques explain why cuBLAS/CUTLASS can outperform the current OA
-mainloop: they combine hierarchical tiling, a circular async-copy pipeline,
-register-fragment buffering, shape-specific traversal, separate epilogues and
-heuristic dispatch. OA currently has pieces of these mechanisms, but its fixed
-geometry and source-order tensor scheduling do not expose them to one joint
-cost model.
+Public sources identify concrete designs worth testing: hierarchical tiling,
+a circular async-copy pipeline, register-fragment buffering, shape-specific
+traversal, staged epilogues and heuristic dispatch. They motivate hypotheses;
+timing and counters must establish which choices explain a particular gap.
 
-The immediate implementation boundary remains experiment-only. The next
-candidate should add the CUTLASS-style register/K-block pipeline and targeted
-observer policy to the existing OA dependency graph, then compare held-out A100
-GEMMs and backward reductions against matched ptxas and cuBLAS controls.
+The completed November 11 [42-contract production replay](../../../exp/dispatch_tuning/RESULTS.md)
+installs 34 faster OA plans and eight reference retentions, including 22 tile64
+plans, 20 copy-address-reuse plans and two Morton8 entries. Load-next and
+grouped-N remain explicit production/tuning options but win no frozen row in
+that campaign. OA therefore has measured dispatch and multiple geometries;
+it does not yet have a joint tensor dependency/resource cost model. All
+candidates retain the source-order backend's HMMA8/drain15 safety controls.
+
+General register/K-block scheduling, targeted observer delays, staged epilogues
+and split-K remain experiment work. They require new source-inclusive
+correctness, resource and independent timing admission against matched ptxas
+and library controls before production integration.
 
 ## Source-inclusive A100 experiments
 
-The experiment layer now tests two concrete public ideas without changing the
-production compiler:
+The original source-inclusive experiments tested two public ideas under
+`exp/`. Both later obtained bounded explicit production options; the recorded
+initial timings below remain historical, not current dispatch claims:
 
 * `exp/tensor_scheduler/load_next_compute_current.py` alternates two fragment
   register windows and inserts the next K-fragment load between the current
   HMMA halves. It preserves the existing async-copy/barrier protocol and
   per-accumulator K order. On six FP16 A100 shapes it passed full outputs,
   canaries, poisoned graph replay, disassembly and resource checks. It beat
-  the current OA schedule on five non-square shapes, by about 1–10%, but
+  the then-reference OA schedule on five shapes, by about 1–10%, but
   regressed 4096×4096×4096 by about 10% and used 24 more registers per thread.
 
 * `exp/gemm_dispatch/cta_swizzle.py` and `grouped_n_modal.py` compare
@@ -172,7 +186,8 @@ The records are
 [`measured_dispatch_manifest.json`](../../../exp/gemm_dispatch/measured_dispatch_manifest.json),
 the [load-next dossier](cutlass-load-next-compute-current.md) and the
 [grouped-N dossier](grouped-n-cta-swizzle.md). These are shape-specific results.
-They do not justify copying cuBLAS kernels or applying a universal traversal
-rule. Alignment, workspace, BF16 and neighboring shapes remain separate
-manifest entries until measured.
+They do not justify a universal traversal rule. Later BF16 and held-out
+production-path confirmations are recorded in the individual dossiers. Any
+unmeasured alignment, workspace, dtype or neighboring shape still needs its own
+contract and evidence. No proprietary kernel code is incorporated.
 

@@ -12,7 +12,12 @@ Use more shared-memory stages or a larger matrix tile to hide memory delay and r
 
 For the tested 64-wide K tile, two stages beat three/four: approximately 1.003 ms versus 1.178/1.180 ms in the archived run. Larger 128×256 and 256×128 CTA variants passed but were slower. Three/four/five-stage follow-ups did not establish a repeatable win over the selected schedule. A smaller 64×32 warp tile increased active warps/tensor activity but still lost to the selected 64×64 tile on the tested large GEMMs.
 
-These are rejected implementations on measured workloads, not proof that deeper pipelines or alternate tiles can never win.
+These are rejected implementations on measured workloads, not proof that
+deeper pipelines or alternate tiles can never win. A distinct later
+[64×64 CTA family](small-grid-tensor-cta-tiles.md), with four 32×32 warp tiles
+and two stages, wins 22 exact contracts in the November 11 production replay.
+It does not share the older 64×32 warp-tile design or establish a deeper-stage
+win.
 
 ## Method and validity checks
 

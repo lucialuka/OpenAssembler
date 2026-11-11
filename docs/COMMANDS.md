@@ -206,8 +206,8 @@ contract, and the N tile count must fit CUDA's grid-y limit.
 | `--fragment-schedule MODE` | Selected policy / `source` reference | Explicit `source` or `load_next`; the latter is admitted only for FP16/BF16 at 1024×4096×1024 and 4096×1024×1024 with the 128×128 tile, stagepair, legacy pointers, late advancement and no epilogue. |
 | `--cta-order ORDER` | Selected policy / `m_fast` reference | Explicit `m_fast`, `morton8` or `grouped_n8`; Morton requires complete 8×8 output-tile groups, while grouped-N requires N tile count divisible by 8 and changes the launch grid to `(m_tiles×8, n_tiles/8)`. |
 | `--epilogue MODE` | `none` | `none`, `bias_residual`, `bias_residual_relu`. Nonempty modes require `stagepair` and append FP32 bias/residual pointers. |
-| `--pointer-mode MODE` | Selected policy / `legacy` reference | Explicit `legacy` or `direct` pointer homes. Direct requires the 128×128 tile, `stagepair`, `m_fast`, and `--epilogue none`. |
-| `--pointer-advance MODE` | Selected policy / `late` reference | Explicit `late`, `early`, or shape-specific `auto` placement for the validated 128×128/stagepair/m_fast/unfused pointer-update candidate. |
+| `--pointer-mode MODE` | Selected policy / `legacy` reference | Explicit `legacy` or `direct` pointer homes in either tile family. Direct requires `stagepair`, `m_fast`, and `--epilogue none`. |
+| `--pointer-advance MODE` | Selected policy / `late` reference | Explicit `late`, `early`, or bounded shape-specific `auto` placement in either tile family; requires stagepair/m-fast/unfused. The placement value `auto` uses early updates only at 1024×4096×1024; it is distinct from `--dispatch auto`, which selects a complete measured plan. |
 | `--autotune BACKEND` | Off | Compile, fully check and time the admitted native policies on an A100 using `local` or `modal`. Requires automatic dispatch, no explicit policy knobs and a real build. Excludes fused epilogues. |
 | `--tuning-record JSON` | None | With `--autotune`, retain the tuning result and companion binary/source/SASS archive; without it, explicitly reuse a current shape/compiler-matched record. |
 | `--tune-rounds N` | `3` | Paired GPU timing rounds, bounded to 3–10. |
@@ -222,7 +222,7 @@ shared-memory bytes; the 64×64 tile uses 32,768. The smaller tile uses
 stagepair, m-fast, source-order fragments and no fused epilogue. It has
 selectable legacy/direct pointer homes, late/early pointer placement, and
 original/reused copy-address initialization; every combination remains a
-separate candidate until its exact contract passes A100 gates. The generated
+separate candidate and is compared under its exact contract. The generated
 source annotation supplies the checked launch to `run`.
 Custom callers must use the recorded launch and opt into the shared-memory
 size. Fusion computes `(A @ B.T + Bias) + Residual`, optionally followed by
@@ -233,6 +233,14 @@ instructions or promises about which SM runs each block. Every policy has
 shape-specific wins and regressions. Automatic dispatch uses exact recorded
 contracts; it does not extrapolate a winner to neighboring shapes or silently
 switch to ptxas/cuBLAS. There is no `morton6` CLI option.
+
+The current table has 42 exact FP16/BF16 contracts: 34 tuned policies and eight
+measured baseline retentions. Twenty-two select tile64 variants, including 20
+with copy-address reuse; two select Morton8. The remaining tuned entries use
+128-tile pointer policies. These counts describe the current evidence, not a
+promise that neighboring shapes or a future toolkit have the same fastest
+policy. See the [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md)
+and [complete measured matrix](../exp/dispatch_tuning/RESULTS.md).
 
 To compare the current admitted native policies on a particular A100 and keep
 the result for a later compile:
@@ -275,8 +283,10 @@ openassembler rowwise --op layernorm --rows 4096 --width 32 --dispatch manual --
 
 Both operators read/write contiguous FP32 `[rows,width]`, with four-byte-aligned
 buffers. One warp cooperates on each row. The default four-warp plan uses 128
-threads and `ceil(rows/4)` blocks; exact measured A100 contracts may select one,
-two or eight warps per CTA. Every plan uses no shared memory. Row and column
+threads and `ceil(rows/4)` blocks. Five exact measured A100 contracts select
+two or eight warps per CTA; explicit manual choices additionally allow one
+warp. A chosen plan uses `32×warps` threads and `ceil(rows/warps)` blocks, with
+no shared memory. Row and column
 tails are supported. Input values and the relevant differences/sums/squares must
 remain finite in FP32; NaN/Inf and overflowing intermediate arithmetic are not
 covered. The entry ABI is `(u64 X, u64 Y)`; use separate input/output buffers.
@@ -300,6 +310,11 @@ affine weight/bias, saved mean/inverse deviation or backward. These explicit
 generators do not automatically replace arbitrary Python loops or operators
 inside captured PyTorch graphs. Tiny cases can regress; read the dossier's
 timing scope before treating the command as a dispatch recommendation.
+
+The [rowwise dispatch dossier](research/ideas/shape-aware-rowwise-dispatch.md)
+lists the five entries, independent replay gates and rejected near-threshold
+candidates. The CLI has no rowwise GPU-autotuning flag; its automatic route is
+the installed exact table, with manual geometry available for new experiments.
 
 ## `run`: existing kernel binaries or application replay
 

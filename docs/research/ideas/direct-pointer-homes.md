@@ -2,16 +2,18 @@
 
 Status: implemented
 
-The later [joint option search](joint-tensor-options.md) and
-[earlier pointer-placement experiment](early-gemm-pointer-advance.md) do not
-extend this production contract. They use isolated experiment compilers, retain
-the protected dependencies and show conditional gains plus tall-shape losses.
+The historical [joint option search](joint-tensor-options.md) and
+[earlier pointer-placement experiment](early-gemm-pointer-advance.md) tested
+additional combinations under isolated compilers. Direct+Morton/fusion remains
+outside the production contract; direct+early was subsequently admitted through
+a separate current-source, exact-shape replay. All retain protected dependencies
+and show conditional gains plus tall-shape losses.
 
 This remains an explicit `--pointer-mode direct` tuning option, and the current
-[exact shape dispatch](shape-aware-native-gemm-dispatch.md) selects direct/early
-combinations only after independent held-out validation. Unknown contracts
-retain `legacy`. The idea improves measured MLP products but regresses on the
-tall control; it is not faster for every shape.
+[exact shape dispatch](shape-aware-native-gemm-dispatch.md) selects direct,
+early and direct/early combinations only after independent held-out validation.
+Unknown contracts retain `legacy`. The idea improves selected products but
+regresses on tall controls; it is not faster for every shape.
 
 ## Idea in plain language
 
@@ -110,8 +112,11 @@ requires a working Nsight installation/permissions in the worker environment.
 
 The [post-allocation control](post-allocation-pointer-forwarding.md) yields
 identical streams, ruling out a changed physical register layout for these
-cases. Global selection, Morton/fusion combinations and more aggressive
-schedules require new matched tests before admission.
+cases. The November 11 exact replay now supplies the current global shape table for
+its 42 contracts. Morton/fusion combinations and more aggressive schedules
+still require new matched tests before admission; an unknown contract still
+falls back to legacy.
 
 
-The later [early pointer-placement policy](early-gemm-pointer-advance.md) is integrated separately as an explicit shape-guarded option. It does not change the legacy default or imply that direct pointers are universally faster.
+The later [early pointer-placement policy](early-gemm-pointer-advance.md) is integrated separately as an explicit shape-guarded option. It preserves legacy as the unknown-contract fallback and does not imply that
+direct pointers are universally faster.

@@ -10,9 +10,18 @@ Choose how much shared memory to devote to each operand, pipeline stage and epil
 
 ## Findings and implementation decision
 
-The production native GEMM has an explicit fixed contract: two 32 KiB shared operand regions, 64 KiB dynamic shared memory and 128 threads. Launch code opts into that allocation. Historical three/four-stage and larger-tile candidates measured the cost of other fixed designs; they were not an adaptive allocator.
+The production native GEMM has two checked fixed-layout families: a
+128×128×64 CTA tile with 64 KiB dynamic shared memory and a 64×64×64 tile with
+32 KiB. Both use 128 threads and two shared-memory stages. The current
+[exact shape selector](shape-aware-native-gemm-dispatch.md) can choose between
+these families; 22 of the 42 independently replayed contracts select tile64.
+That is bounded selection of complete kernels, not a general memory allocator.
 
-No measured runtime shared-memory budgeting policy or general shape-dependent memory-allocation compiler has been implemented. Dynamic CUDA allocation at launch is available, but changing a byte count without regenerating the stage layout would be incorrect. A100's physical shared-memory banks are not arbitrarily reconfigured by this idea.
+A measured policy that independently chooses operand, stage and epilogue
+budgets has not been implemented. Historical three/four-stage and larger-tile
+candidates tested other fixed designs and did not win their measured controls.
+Changing only the launch byte count without regenerating the layout would be
+incorrect. A100's physical banks are not arbitrarily reconfigured by this idea.
 
 ## Method and validity checks
 
@@ -22,10 +31,12 @@ A proposed policy must jointly choose CTA/warp tile, stage count, operand/epilog
 
 Run from the repository root. Use Python 3.12+ and an installed test environment. Commands that compile require the CUDA 12.8 toolkit; GPU commands additionally require an NVIDIA driver or an authenticated Modal client. Explicit skips mean a dependency/corpus is unavailable, not a passing hardware result.
 
-There is no adaptive-budget CLI switch. Establish the fixed control:
+There is no adaptive-budget CLI switch. Establish the explicit 128×128 control
+and compare the checked tile64 family:
 
 ```sh
-.venv/bin/python -m openassembler gemm --m 1024 --n 4096 --k 1024 --out-dir output/smem-budget-control
+.venv/bin/python -m openassembler gemm --m 1024 --n 4096 --k 1024 --dispatch manual --out-dir output/smem-budget-control
+.venv/bin/python -m openassembler gemm --m 1024 --n 4096 --k 1024 --tile 64x64 --out-dir output/smem-budget-tile64
 .venv/bin/python -m pytest -q tests/test_gemm_codegen.py tests/test_cli_gemm.py
 python3 -m json.tool docs/evidence/a100-mma/phase2/summary.json
 ```
@@ -40,4 +51,6 @@ The first command's manifest reports the selected shared-memory requirement. The
 
 ## What remains open
 
-Build and test a bounded shape/resource search with an explicit dispatch policy. More buffering must earn its register/occupancy/control cost; an adaptive policy cannot assume that the deepest pipeline is fastest.
+Extend the existing bounded tile/dispatch search to independently generated
+stage and epilogue storage plans. More buffering must earn its register,
+occupancy and control cost; the deepest pipeline is not assumed fastest.

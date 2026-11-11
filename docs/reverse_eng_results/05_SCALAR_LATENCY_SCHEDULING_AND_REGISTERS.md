@@ -40,3 +40,10 @@ fallbacks. A mined-latency scheduler promotion was rejected after full
 key reverse-engineering lesson: matching control fields on a probe does not
 prove that an arbitrary reordered block is legal.
 
+The November 11 GEMM table does not relax the scalar scheduler or dependency
+rules. Its shape choices select already validated geometry, address
+initialization, pointer placement or CTA traversal under exact contracts;
+HMMA8/drain15, scalar RAW/WAR, async-copy visibility and allocation invariants
+remain in force. The remaining instruction-count and scoreboard gaps are
+scheduler/compiler research targets, not claims solved by dispatch.
+

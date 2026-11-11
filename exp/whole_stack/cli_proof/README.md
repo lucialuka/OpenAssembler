@@ -12,3 +12,8 @@ commands and limitations are in the
 [application-capture dossier](../../../docs/research/ideas/pytorch-application-capture.md).
 The full synthetic-workload methodology is in
 [WHOLE_STACK_RESULTS.md](../../../docs/research/WHOLE_STACK_RESULTS.md).
+
+This is retained historical workflow evidence, not a November 11 model replay
+or a benchmark of the new exact GEMM/rowwise dispatch tables. Those native
+policies still require an explicit integration path before they can change
+the ordinary application-route workload.

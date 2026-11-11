@@ -84,14 +84,14 @@
       "title": "Cooperative population LayerNorm",
       "status": "implemented",
       "dossier": "docs/research/ideas/cooperative-layernorm.md",
-      "dossier_sha256": "5b9039d9ef3047bdf2556ba594b2078302d427f6cd0eaf74f6cc6942a75242a9",
+      "dossier_sha256": "b8132804ffc23410cc456046604aa39ae04ea16da1ddf79fb81e367178c11295",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/reductions.py",
         "openassembler/rowwise.py"
       ],
       "applicability": "Contiguous FP32 rows, width1..1024, positive normal finite FP32 epsilon; y-only population LayerNorm, no affine/saved statistics/backward.",
-      "current_selection": "Explicit rowwise command; one warp per row, exact measured CTA dispatch selects 2/8 warps on five promoted contracts; unknown shapes retain four. No native graph substitution.",
+      "current_selection": "Explicit rowwise command; one warp per row. Two exact LayerNorm contracts select eight warps; the complete rowwise table has five softmax/LayerNorm entries. Unknown shapes retain four. No native graph substitution.",
       "tuning_axes": [
         "rows",
         "width and tail",
@@ -107,6 +107,7 @@
       "retained_references": [
         "docs/research/ideas/cooperative-softmax.md",
         "docs/research/ideas/scalar-dependency-correctness.md",
+        "docs/research/ideas/shape-aware-rowwise-dispatch.md",
         "exp/weaknesses/reductions_a100.py",
         "exp/weaknesses/reductions_production_identity.json",
         "exp/weaknesses/reductions_runs/a100-20261106T133842.082727Z.json",
@@ -114,21 +115,21 @@
         "openassembler/rowwise.py",
         "tests/test_reduction_codegen.py"
       ],
-      "catalogue_summary": "Shifted population LayerNorm passes full finite-domain tests; affine, saved statistics and backward are absent."
+      "catalogue_summary": "Shifted warp-per-row population LayerNorm has measured exact CTA geometry; affine parameters, saved statistics and backward remain outside the production operator."
     },
     {
       "id": "cooperative-softmax",
       "title": "Cooperative FP32 row softmax",
       "status": "implemented",
       "dossier": "docs/research/ideas/cooperative-softmax.md",
-      "dossier_sha256": "5fed96217484a305b79c7c4cc8241b5eac2a8f4c5a39927c492d42f82da26f9c",
+      "dossier_sha256": "7cfc4195798fa551a4b38b94534b0c29f4be9724110bf9114c45581353734609",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/reductions.py",
         "openassembler/rowwise.py"
       ],
       "applicability": "Contiguous bounded finite FP32 rows, width1..1024; full-warp max/sum reductions, no mask/backward.",
-      "current_selection": "Exact measured CTA geometry selects 2/8 warps on five promoted rowwise contracts; unknown shapes retain four. Tails are semantic masks, not optional tuning.",
+      "current_selection": "Three exact softmax contracts select two/eight warps; the complete rowwise table has five softmax/LayerNorm entries. Unknown shapes retain four. Tails are semantic masks, not optional tuning.",
       "tuning_axes": [
         "rows",
         "width and tail",
@@ -143,6 +144,7 @@
       },
       "retained_references": [
         "docs/research/ideas/scalar-dependency-correctness.md",
+        "docs/research/ideas/shape-aware-rowwise-dispatch.md",
         "exp/weaknesses/cli_rowwise_smoke.json",
         "exp/weaknesses/reductions_a100.py",
         "exp/weaknesses/reductions_production_identity.json",
@@ -152,7 +154,7 @@
         "openassembler/runner.py",
         "tests/test_reduction_codegen.py"
       ],
-      "catalogue_summary": "Native warp-per-row softmax passes the full five-pattern contract; large serial-mapping gains, ptxas still faster."
+      "catalogue_summary": "Warp-per-row FP32 softmax has measured exact CTA geometry; earlier serial-mapping gains and current W4-relative geometry gains are separate, with no whole-model claim."
     },
     {
       "id": "cubin-metadata-splicing",
@@ -224,13 +226,13 @@
       "title": "CUTLASS-style load-next / compute-current fragment schedule",
       "status": "implemented",
       "dossier": "docs/research/ideas/cutlass-load-next-compute-current.md",
-      "dossier_sha256": "45aad0af9ef1540f3c397a826b040e89aeb8930eb1ce5bd5149e83c55f39b41f",
+      "dossier_sha256": "102a25c32511118f6a3a3c1b0994a131e4d7f43cd43a84e1037749ee35890006",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/gemm.py"
       ],
       "applicability": "128tile stagepair m_fast, legacy late pointers, unfused;1024x4096x1024 and4096x1024x1024 FP16/BF16 only.",
-      "current_selection": "Explicit fragment_schedule=load_next and an admitted GEMM tuning candidate; no universal auto row.",
+      "current_selection": "Explicit fragment_schedule=load_next and an admitted GEMM tuning candidate; no installed load-next row after the completed 42-contract replay.",
       "tuning_axes": [
         "M/N/K",
         "dtype",
@@ -238,17 +240,18 @@
         "register/live ranges",
         "tile"
       ],
-      "next_action": "Current production GEMM campaign compares it against direct/early and geometry choices; promote exact wins, retain large-shape regressions.",
+      "next_action": "Retest new contracts against direct/early and geometry choices; preserve earlier load-next gains against their original controls and current nonselection.",
       "code_sha256": {
         "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036"
       },
       "retained_references": [
+        "exp/dispatch_tuning/RESULTS.md",
         "exp/tensor_scheduler/load-next-compute-current_20261108T061236.040495Z.json",
         "exp/tensor_scheduler/load-next-compute-current_20261109T045855.363914Z.json",
         "exp/tensor_scheduler/load-next-compute-current_20261109T060813.116274Z.json",
         "exp/tensor_scheduler/load-next-compute-current_20261109T072411.844342Z.json"
       ],
-      "catalogue_summary": "Explicit load_next fragment scheduling is integrated for two exact wide FP16/BF16 shapes; full gates pass and the default source-order schedule remains unchanged."
+      "catalogue_summary": "Explicit load-next is admitted for two exact FP16/BF16 shapes; no load-next policy wins the current 42-contract frozen replay, while earlier gains remain valid against their recorded controls."
     },
     {
       "id": "dead-code-and-copy-elimination",
@@ -282,14 +285,14 @@
       "title": "Direct pointer homes for asynchronous GEMM copies",
       "status": "implemented",
       "dossier": "docs/research/ideas/direct-pointer-homes.md",
-      "dossier_sha256": "ac10037319c97c85ee47996bf5541ebeea83fb27a870d94bc223cca8f1c32e83",
+      "dossier_sha256": "c2c5f6a654d93ac1dab5a88aae487ee87b93edecc3823dd3a72147d7018418ff",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/backend/tensor.py",
         "openassembler/kernels/gemm.py"
       ],
       "applicability": "Aligned loop-carried64bit pointer homes; explicit stagepair m_fast unfused contract; no altered address WAR.",
-      "current_selection": "Manual pointer_mode=direct and exact current table; 34 nonbaseline GEMM policies passed independent frozen replay across 42 contracts.",
+      "current_selection": "Manual pointer_mode=direct or exact measured dispatch. Thirty-two current contracts select direct homes across both tile families; two other nonbaseline entries use Morton with legacy pointers.",
       "tuning_axes": [
         "M/N/K",
         "tile",
@@ -326,14 +329,14 @@
       "title": "Earlier pointer advancement in tensor mainloops",
       "status": "implemented",
       "dossier": "docs/research/ideas/early-gemm-pointer-advance.md",
-      "dossier_sha256": "4d94dc773d429bb6a77e77224d43c30910b83a769891a1b0301de8fbd1498e6b",
+      "dossier_sha256": "f9fcc3745beca104fc55e2e94c5dcb7a9d66f267e1db53e2dbabb65a7577db19",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/gemm.py",
         "openassembler/backend/tensor.py"
       ],
-      "applicability": "128tile stagepair m_fast unfused GEMM; early update preserves LDGSTS address-WAR and copy visibility dependencies.",
-      "current_selection": "Explicit late/early and narrow pointer_advance=auto for1024x4096x1024; global GEMM tuner compares legal policies.",
+      "applicability": "64/128tile stagepair m_fast unfused GEMM; early update preserves LDGSTS address-WAR and copy visibility dependencies.",
+      "current_selection": "Twenty-five exact installed plans use early placement. Explicit late/early and narrow pointer_advance=auto for1024x4096x1024 remain distinct from full exact dispatch.",
       "tuning_axes": [
         "M/N/K",
         "dtype",
@@ -348,6 +351,7 @@
       "retained_references": [
         "docs/research/ideas/direct-pointer-homes.md",
         "docs/research/ideas/joint-tensor-options.md",
+        "exp/dispatch_tuning/RESULTS.md",
         "exp/nn_round2/runs/tensor-followup-20261107T143807.885774Z.json",
         "exp/nn_round2/runs/tensor-followup-20261107T144047.961466Z.json",
         "exp/nn_round2/tensor_analyze.py",
@@ -360,7 +364,7 @@
         "exp/nn_round2/tensor_suite.py",
         "exp/nn_round2/test_tensor_followup.py"
       ],
-      "catalogue_summary": "Integrated as explicit early/late/shape-specific auto policy; early helps the measured wide shape and regresses tall controls, so auto remains narrow."
+      "catalogue_summary": "Explicit pointer-advance late/early/auto rules coexist with exact measured dispatch; current complete plans select 25 early policies while tall contracts keep legacy/late Morton."
     },
     {
       "id": "fused-adam-like-update",
@@ -399,7 +403,7 @@
       "title": "Fused FP32 bias, residual and ReLU epilogues",
       "status": "implemented",
       "dossier": "docs/research/ideas/fused-gemm-epilogues.md",
-      "dossier_sha256": "fdc4d70627594106b676b4e32e8e86bbf983c268e7d0ed9b2004f2dbd41c7ed0",
+      "dossier_sha256": "98dff61f404af8b0057a4fbf943fb43533af93aaa3758408d6330eebe9a5e1d9",
       "classification": "semantic-fusion-choice",
       "code_paths": [
         "openassembler/kernels/gemm.py"
@@ -422,6 +426,7 @@
         "docs/evidence/a100-mma/phase5/fusion-mlp-results.json",
         "docs/evidence/a100-mma/phase5/fusion-smoke-results.json",
         "docs/evidence/a100-mma/phase5/fusion-square-confirmation.json",
+        "exp/dispatch_tuning/RESULTS.md",
         "openassembler/kernels/gemm.py"
       ],
       "catalogue_summary": "The explicit `bias_residual` and `bias_residual_relu` plans compute `(A@B.T + Bias) + Residual`, then optional finite-value ReLU, with FP32 inputs to the epilogue and FP32 output."
@@ -469,13 +474,13 @@
       "title": "CUTLASS-style grouped-N CTA traversal",
       "status": "implemented",
       "dossier": "docs/research/ideas/grouped-n-cta-swizzle.md",
-      "dossier_sha256": "247991edb5d8589761db773ec54be70778efc6b3bfff1da6e955bb368c42dd74",
+      "dossier_sha256": "090b3b893e2d3462df5fa9a62a52235a6453540b1b43c8c3d55b26406712ea7d",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/gemm.py"
       ],
       "applicability": "128tile stagepair legacy/late unfused; Ntile count divisible8; exact transformed grid(Mtiles*8,Ntiles/8).",
-      "current_selection": "Explicit grouped_n8; available in current GEMM candidate set; held-out tall evidence exists, no global default.",
+      "current_selection": "Explicit grouped_n8 and current GEMM candidate; no installed grouped-N row after the completed 42-contract replay. Earlier tall evidence remains scoped to its controls.",
       "tuning_axes": [
         "M/N/K",
         "dtype",
@@ -488,11 +493,12 @@
         "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036"
       },
       "retained_references": [
+        "exp/dispatch_tuning/RESULTS.md",
         "exp/gemm_dispatch/grouped-n_20261108T062456.797718Z.json",
         "exp/gemm_dispatch/grouped-n_20261109T051142.571274Z.json",
         "exp/gemm_dispatch/grouped-n_20261109T061426.814828Z.json"
       ],
-      "catalogue_summary": "Explicit grouped_n8 CTA traversal is integrated with a checked launch grid; current A100 held-out FP16/BF16 tall cases pass while wide/square auto-dispatch remains disabled."
+      "catalogue_summary": "Explicit grouped_n8 traversal and checked launch mapping are integrated; no grouped-N policy wins the current 42-contract frozen replay, while older tall gains remain scoped evidence."
     },
     {
       "id": "loop-unrolling",
@@ -574,7 +580,7 @@
         "openassembler/kernels/gemm.py"
       ],
       "applicability": "Complete8x8 groups of128-outputtiles; changes CTA traversal, not MMA fragment storage layout.",
-      "current_selection": "Explicit morton8 and legal GEMM tuner candidate.",
+      "current_selection": "Two exact FP16/BF16 16384x4096x4096 entries select Morton8; also an explicit option and legal tuner candidate.",
       "tuning_axes": [
         "M/N/K",
         "dtype",
@@ -664,7 +670,7 @@
       "title": "Native SM80 tensor GEMM compiler and mainloop",
       "status": "implemented",
       "dossier": "docs/research/ideas/native-tensor-gemm.md",
-      "dossier_sha256": "88129959809bc2fa14b1a5099251e3c6036d032c12744181aafe5a19e0821b9b",
+      "dossier_sha256": "2d0b5e6a32595b449ac9e135978aee5c1c515e538eee8bbd6834b804e7d04fad",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/gemm.py",
@@ -691,11 +697,13 @@
       "retained_references": [
         "docs/evidence/a100-mma/current-validation/validate_modal.py",
         "docs/evidence/a100-mma/phase3/evidence-summary.json",
+        "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
+        "exp/dispatch_tuning/RESULTS.md",
         "openassembler/backend/tensor.py",
         "openassembler/backend/tensor_encoding.py",
         "openassembler/kernels/gemm.py"
       ],
-      "catalogue_summary": "The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128\u00d7128\u00d764 CTA tiles, four 64\u00d764 warp tiles, 128 threads and 64 KiB dynamic shared memory."
+      "catalogue_summary": "Contiguous FP16/BF16-to-FP32 GEMM has checked 128\u00d7128 and 64\u00d764 CTA families, protected tensor dependencies and 42 exact measured dispatch entries; this is not a complete native transformer compiler."
     },
     {
       "id": "operand-reuse-hints",
@@ -1081,7 +1089,7 @@
       "title": "Shape-aware native GEMM dispatch and on-device tuning",
       "status": "implemented",
       "dossier": "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
-      "dossier_sha256": "75b78164a2c4eda5689e9e251411183e249b72ff1146358a785e298326520e6c",
+      "dossier_sha256": "88664e44f1ce3e06a24d036124696245433dfea846094e901b90a9c993d60b95",
       "classification": "shape-and-environment-performance-policy",
       "code_paths": [
         "openassembler/gemm_dispatch.py",
@@ -1206,7 +1214,7 @@
         "openassembler/gemm_dispatch.py"
       ],
       "applicability": "64x64x64 CTA, four 32x32 warp tiles, 32KiB shared; M/N divisible by64, K by128, unfused stagepair/m_fast; original/reuse copy addresses and admitted direct/early pointer choices.",
-      "current_selection": "Exact-shape automatic row or manual tile; the current tuner compares 64 and128 families.",
+      "current_selection": "Twenty-two exact current contracts select tile64 variants, twenty with address reuse. Manual tile and the current tuner retain both 64/128 families.",
       "tuning_axes": [
         "M/N/K",
         "dtype",
@@ -1237,7 +1245,7 @@
       "title": "Two-tile stage-pair specialization and peeled drain",
       "status": "implemented",
       "dossier": "docs/research/ideas/stage-pair-specialization.md",
-      "dossier_sha256": "5378eca872e1356fb2afea475d348ecdf865f3f2f1735e3d8207fdb501e03b38",
+      "dossier_sha256": "386ef30558e7b992945f9bd005ef1ba05b93fecc2fda42538114bd717d5295ad",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/gemm.py"
@@ -1256,10 +1264,11 @@
       },
       "retained_references": [
         "docs/evidence/a100-mma/phase3/evidence-summary.json",
+        "exp/dispatch_tuning/RESULTS.md",
         "openassembler/kernels/gemm.py",
         "tests/test_gemm_codegen.py"
       ],
-      "catalogue_summary": "`--schedule stagepair` is the selected production plan."
+      "catalogue_summary": "All 42 installed GEMM plans retain the explicit two-stage stagepair protocol; combined remains an admissible comparison but wins no frozen row."
     },
     {
       "id": "state-verification-diagnostics",

@@ -12,7 +12,12 @@ Handle alternating shared-memory stages as a fixed pair of K tiles. Encode known
 
 `--schedule stagepair` is the selected production plan. It specializes alternating stage-zero/stage-one work into a two-tile loop and peels the final pair so no speculative out-of-range copy occurs. `--schedule combined` keeps an earlier dynamic-stage reference for comparison.
 
-This specialization is one component of the historical 16.13–26.69% mainloop bundle improvement. It did not replace a measured dependency model with optimistic stalls: HMMA8/drain15 and explicit copy completion are retained.
+This specialization is one component of the historical 16.13–26.69% mainloop
+bundle improvement. In the November 11 [42-contract replay](../../../exp/dispatch_tuning/RESULTS.md),
+all installed plans retain stagepair; no combined-loop candidate wins the
+pre-frozen selection and independent replay. Combined remains an admissible
+comparison where the full plan allows it. HMMA8/drain15 and explicit copy
+completion are retained; dispatch does not relax proven dependency edges.
 
 ## Method and validity checks
 

@@ -25,9 +25,10 @@ Run from the repository root. Use Python 3.12+ and an installed test environment
 ```sh
 python3 -m json.tool docs/evidence/a100-mma/phase5/layout-results.json
 python3 -m json.tool docs/evidence/a100-mma/phase5/layout-counters.json
-.venv/bin/python -m openassembler gemm --m 16384 --n 4096 --k 4096 --out-dir output/order-control
+.venv/bin/python -m openassembler gemm --m 16384 --n 4096 --k 4096 --dispatch manual --out-dir output/order-control
 ```
-The retained production command builds m_fast. There is no `--cta-order hilbert8` option. The complete original alternative-order sweep was retired; inspection of its JSON is not a fresh timing replay.
+The explicit manual production command builds m_fast; without that flag, the
+current exact selector chooses Morton8 for this shape. There is no `--cta-order hilbert8` option. The complete original alternative-order sweep was retired; inspection of its JSON is not a fresh timing replay.
 
 ## Code and retained evidence
 
@@ -37,4 +38,8 @@ The retained production command builds m_fast. There is no `--cta-order hilbert8
 
 ## What remains open
 
-A new shape-aware order search needs independent confirmations and a correctly decoded rectangular grid. Preserve negative/neutral results rather than choosing only the best isolated sample.
+The current bounded selector already measures m-fast, Morton8 and grouped-N
+where admitted; the November 11 replay selects two Morton8 contracts and no
+grouped-N row. Extending that search to Hilbert or grouped-M still needs a
+checked rectangular-grid permutation and independent confirmations. Preserve
+negative/neutral results rather than choosing the best isolated sample.

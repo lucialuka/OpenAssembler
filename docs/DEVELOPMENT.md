@@ -79,6 +79,14 @@ coverage, dossier status tags, local links/anchors and the command reference
 against the parser. It never dispatches a compile or GPU workload. Per-feature
 hardware/proof commands belong in that feature's dossier.
 
+For documentation changes, audit the substantive contracts as well as links:
+the checked CLI flags, generated plan restrictions, installed exact policy
+tables and current result records are the authorities. Keep dated experiments
+distinct from current production claims. The latest native dispatch evidence
+is the [42-contract A100 replay](../exp/dispatch_tuning/RESULTS.md); the
+[rowwise table](research/ideas/shape-aware-rowwise-dispatch.md) has a separate
+selection/replay contract. Neither establishes full native-model acceleration.
+
 The probe corpus is generated build output. If a dossier requires it, run its
 documented `openassembler corpus` preparation before the relevant checks.
 Do not turn an unavailable toolkit, unmodeled instruction or skipped test into
@@ -159,11 +167,25 @@ change, and COMMANDS only if CLI behavior changes. Run the documentation check.
 Evidence snapshots and hardware claims require their own validation; editing
 prose does not rerun them.
 
+After changing a dossier, regenerate the derived feature inventory with
+`.venv/bin/python -m exp.dispatch_tuning.feature_inventory`. Its stored dossier
+hashes describe the current explanatory text; the compiler and raw hardware
+source/binary identities remain unchanged. Update the relevant topic links in
+`docs/reverse_eng_results/EVIDENCE_INDEX.json` when evidence is added or moved.
+Check architecture illustrations under `visualizations/` against STATUS too.
+
 ## Evidence custody and retired documents
 
 Raw JSON, source/binary hashes, source snapshots and retained oracle inputs stay
 under `docs/evidence/` and `exp/`. The reorganization does not delete those
 records or alter measurement values.
+
+A historical snapshot manifest may also fingerprint compiler files or logs
+that later changed. Its checker reports that drift; it does not automatically
+validate the current compiler. Preserve the original manifest and report
+differences instead of using a bulk refresh to imply new hardware validation.
+Documentation-only custody changes must be labeled separately from original
+measurement and binary identities.
 
 The exact pre-catalogue narrative documents and documentation manifests are
 preserved in one [compressed provenance snapshot](evidence/documentation-history/README.md).

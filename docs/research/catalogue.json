@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-11-09",
+  "updated": "2026-11-11",
   "scope": "Current repository research and feature catalogue; one dossier per idea. Idea counts are not independent experiment counts.",
   "status_labels": {
     "implemented": "Validated within its stated contract and available in the current code",
@@ -35,7 +35,7 @@
       "title": "Adaptive shared-memory budgeting",
       "status": "untested-or-hardware-unavailable",
       "path": "docs/research/ideas/adaptive-shared-memory-budgeting.md",
-      "summary": "The production native GEMM has an explicit fixed contract: two 32 KiB shared operand regions, 64 KiB dynamic shared memory and 128 threads."
+      "summary": "Two fixed 32/64 KiB GEMM families are shape-selected; independent adaptive stage/operand/epilogue budgeting remains unimplemented."
     },
     {
       "id": "architecture-portability",
@@ -105,14 +105,14 @@
       "title": "Cooperative population LayerNorm",
       "status": "implemented",
       "path": "docs/research/ideas/cooperative-layernorm.md",
-      "summary": "Shifted population LayerNorm passes full finite-domain tests; affine, saved statistics and backward are absent."
+      "summary": "Shifted warp-per-row population LayerNorm has measured exact CTA geometry; affine parameters, saved statistics and backward remain outside the production operator."
     },
     {
       "id": "cooperative-softmax",
       "title": "Cooperative FP32 row softmax",
       "status": "implemented",
       "path": "docs/research/ideas/cooperative-softmax.md",
-      "summary": "Native warp-per-row softmax passes the full five-pattern contract; large serial-mapping gains, ptxas still faster."
+      "summary": "Warp-per-row FP32 softmax has measured exact CTA geometry; earlier serial-mapping gains and current W4-relative geometry gains are separate, with no whole-model claim."
     },
     {
       "id": "cubin-metadata-splicing",
@@ -147,14 +147,14 @@
       "title": "Public CUTLASS and cuBLASLt techniques for A100",
       "status": "untested-or-hardware-unavailable",
       "path": "docs/research/ideas/cutlass-cublas-public-techniques.md",
-      "summary": "Public CUTLASS pipelines and cuBLASLt dispatch controls identify transferable tiling, staging, epilogue, traversal and heuristic designs; proprietary cuBLAS kernels are not extracted."
+      "summary": "Tile, traversal, load-next and exact dispatch have separate implemented dossiers; generalized pipeline, staged-epilogue, split-K and joint cost-model transfers remain proposals."
     },
     {
       "id": "cutlass-load-next-compute-current",
       "title": "CUTLASS-style load-next / compute-current fragment schedule",
       "status": "implemented",
       "path": "docs/research/ideas/cutlass-load-next-compute-current.md",
-      "summary": "Explicit load_next fragment scheduling is integrated for two exact wide FP16/BF16 shapes; full gates pass and the default source-order schedule remains unchanged."
+      "summary": "Explicit load-next is admitted for two exact FP16/BF16 shapes; no load-next policy wins the current 42-contract frozen replay, while earlier gains remain valid against their recorded controls."
     },
     {
       "id": "dead-code-and-copy-elimination",
@@ -182,7 +182,7 @@
       "title": "Earlier pointer advancement in tensor mainloops",
       "status": "implemented",
       "path": "docs/research/ideas/early-gemm-pointer-advance.md",
-      "summary": "Integrated as explicit early/late/shape-specific auto policy; early helps the measured wide shape and regresses tall controls, so auto remains narrow."
+      "summary": "Explicit pointer-advance late/early/auto rules coexist with exact measured dispatch; current complete plans select 25 early policies while tall contracts keep legacy/late Morton."
     },
     {
       "id": "fused-adam-like-update",
@@ -217,7 +217,7 @@
       "title": "CUTLASS-style grouped-N CTA traversal",
       "status": "implemented",
       "path": "docs/research/ideas/grouped-n-cta-swizzle.md",
-      "summary": "Explicit grouped_n8 CTA traversal is integrated with a checked launch grid; current A100 held-out FP16/BF16 tall cases pass while wide/square auto-dispatch remains disabled."
+      "summary": "Explicit grouped_n8 traversal and checked launch mapping are integrated; no grouped-N policy wins the current 42-contract frozen replay, while older tall gains remain scoped evidence."
     },
     {
       "id": "hilbert-and-grouped-cta-order",
@@ -322,7 +322,7 @@
       "title": "Native SM80 tensor GEMM compiler and mainloop",
       "status": "implemented",
       "path": "docs/research/ideas/native-tensor-gemm.md",
-      "summary": "The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128\u00d7128\u00d764 CTA tiles, four 64\u00d764 warp tiles, 128 threads and 64 KiB dynamic shared memory."
+      "summary": "Contiguous FP16/BF16-to-FP32 GEMM has checked 128\u00d7128 and 64\u00d764 CTA families, protected tensor dependencies and 42 exact measured dispatch entries; this is not a complete native transformer compiler."
     },
     {
       "id": "nn-arithmetic-campaign",
@@ -525,7 +525,7 @@
       "title": "Two-tile stage-pair specialization and peeled drain",
       "status": "implemented",
       "path": "docs/research/ideas/stage-pair-specialization.md",
-      "summary": "`--schedule stagepair` is the selected production plan."
+      "summary": "All 42 installed GEMM plans retain the explicit two-stage stagepair protocol; combined remains an admissible comparison but wins no frozen row."
     },
     {
       "id": "state-verification-diagnostics",

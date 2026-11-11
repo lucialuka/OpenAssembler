@@ -4,6 +4,15 @@ This isolated A100 campaign builds native OpenAssembler and exact-source ptxas
 controls, checks their complete outputs before timing, and measures explicit
 networks as well as individual kernels. It changes no production compiler code.
 
+Documentation updated November 11, 2026. The records below are the source-bound
+November 7–9 campaign, not a replay of every current production policy. Later
+GEMM and rowwise promotion evidence lives in
+[`dispatch_tuning`](../dispatch_tuning/README.md): 34 nonbaseline GEMM choices,
+eight baseline retentions and five exact rowwise geometries. The backward
+reduction-overlap/FMA candidates and native composition failures here retain
+their original experiment-only admission; successful unrelated shape tuning
+does not promote a failed full-state network.
+
 The canonical methods, results, exclusions and reproduction commands are in the
 [campaign dossier](../../docs/research/ideas/nn-arithmetic-campaign.md). Individual
 new ideas have their own dossiers: [backward FMA reductions](../../docs/research/ideas/fused-backward-reductions.md),
@@ -31,8 +40,7 @@ commands before replay; JSON identities and measurement records are retained.
 Look at each method's admission field and its actual reference group. Capture
 errors and the initial CSV-parser failure are retained rather than overwritten.
 
-For the frozen campaign's read-only admission, source-custody and unchanged
-production-source checks:
+For the frozen campaign's read-only admission and source-custody checks:
 
 ```sh
 PYTHONPATH=. .venv/bin/python exp/nn_round2/check_campaign.py
@@ -43,4 +51,6 @@ The local campaign tests passed **100/100**. These exercise emitted arithmetic,
 emulated outputs, gradients, launch contracts and evidence parsing; they are
 distinct from the recorded A100 gates. The existing production regression
 record remains separately documented in STATUS. Generated caches can be rebuilt;
-an old manifest should not be re-sealed to conceal changed measurements.
+an old manifest should not be re-sealed to conceal changed measurements. Source
+snapshot mismatches after later integration indicate drift from that recorded
+campaign, not necessarily a current compiler failure.

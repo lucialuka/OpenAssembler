@@ -19,6 +19,14 @@ GEMM-only inference comparisons. See that dossier for its own 40GB/80GB records,
 conditional improvements, exclusions and reproduction. The tables below remain
 the original November 6 study and are not overwritten or pooled with the new one.
 
+The completed November 11 [production GEMM replay](../../exp/dispatch_tuning/RESULTS.md)
+adds 42 exact native contracts: 34 faster OA policies and eight reference
+retentions, with 22 tile64 and 20 copy-address-reuse selections. Five separately
+held-out [rowwise contracts](ideas/shape-aware-rowwise-dispatch.md) select
+measured CTA warp counts. Those isolated integrations do not replace the
+application backend used here or establish a new whole-model measurement. The
+latest same-source ptxas nominal-selected GEMMs remain faster than OA.
+
 ## What was compared
 
 The study has three distinct attribution levels:
@@ -301,13 +309,16 @@ bitwise equal; normal GELU, norm and Adam-like outputs are tolerance-only.
 | LayerNorm / 128×128 | 0.09830 | 0.08499 | 0.03482 |
 | LayerNorm / 1024×512 | 0.35533 | 0.29901 | 0.03686 |
 
-The current reduction examples assign a whole row to one scalar thread and
-loop serially across columns. Adjacent lanes read strided rows and these
-shapes launch only one or eight CTAs. ptxas is slow on the same source too:
-there is a major algorithm/work-mapping gap, plus an additional OA compiler
-gap. Cooperative parallel reductions and coalesced access should precede
-fine instruction scheduling on these examples. This is direct code/mapping
-evidence; the precise cycle-level breakdown still needs isolated probes.
+The serial reduction examples measured in this November 6 table assign a
+whole row to one scalar thread and loop across columns. Adjacent lanes read
+strided rows and these shapes launch only one or eight CTAs. ptxas is slow on
+the same source too: this exposed a major source-mapping gap in addition to the
+OA compiler gap. Subsequent production [softmax](ideas/cooperative-softmax.md)
+and [population LayerNorm](ideas/cooperative-layernorm.md) use warp-per-row
+cooperative reductions, and five exact rowwise contracts now choose measured
+CTA geometry. Their separate cohorts do not overwrite the old serial table or
+prove a complete training normalization interface. The cycle-level breakdown
+of remaining reduction gaps still requires matched probes/counters.
 
 The Adam-like formula is fused into one native kernel while its eager PyTorch
 control launches several operations and materializes intermediates. ptxas's
@@ -383,16 +394,20 @@ OA correctness. See the [state-trajectory method](ideas/state-verification-diagn
 for reproduction and scope.
 The measurements here describe the original study, not those later compiler changes.
 
-1. Build cooperative reduction kernels before tuning the current serial
-   softmax/norm examples. Their source mapping is a larger problem than the
-   OA-versus-ptxas backend difference.
+1. Extend the implemented cooperative forward reductions to production
+   backward/affine/saved-statistic contracts, and test load/tree/synchronization
+   overlap. The old serial source-mapping gap was addressed by the forward
+   rowwise kernels; five exact CTA-geometry wins do not close the remaining
+   ptxas gap or supply training interfaces.
 2. Reduce native tensor address/control/copy work and jointly search fragment
    ordering/register liveness. The equal-MMA, zero-conflict counter cases make
    this more targeted than another unconditional swizzle sweep.
-3. Extend the current exact-contract tile/CTA dispatch table for small grids.
-   The 64×64 native family now covers the measured alternative to the fixed
-   128×128 reference, but only current source-identity-locked entries should
-   be promoted; the 32-case study still contains both gains and regressions.
+3. Extend the exact-contract dispatch table beyond the completed 42-contract
+   replay only with current binaries and independent held-out evidence.
+   Twenty-two current contracts select tile64, 20 select copy-address reuse,
+   two select Morton8 and eight retain reference. Keep earlier shape regressions
+   visible and compare each frozen policy with its actual ptxas/library control;
+   kernel gains still need a controlled graph and full-state integration.
 4. Reduce dX/dW transposed packing and repeated conversion overhead, while
    measuring complete steps and keeping the same derivative/rounding contract.
 5. Preserve numerical gates in multi-step training. Treat near-invariant

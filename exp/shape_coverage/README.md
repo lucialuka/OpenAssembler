@@ -6,6 +6,16 @@ static coverage audit, not a performance claim and not a replacement for A100
 numerical/timing validation. The later 64×64 family and exact dispatch table
 are documented separately; this matrix is not a role-level production route.
 
+Documentation updated November 11, 2026. The raw role/counter runs below are
+November 9 exploratory evidence. Automatic dispatch now uses the separate
+[completed current-production replay](../dispatch_tuning/RESULTS.md): 42 exact
+contracts, 34 nonbaseline choices and eight measured baseline retentions.
+Twenty installed choices use copy-address reuse and the two large tall
+FP16/BF16 contracts use Morton8. No load-next or grouped-N policy is selected
+by that frozen campaign. Their earlier measured wins remain relevant candidate
+evidence, not current policy labels. Shape identity never supplies missing
+packing, transpose, batching or graph integration semantics.
+
 Run it from the repository root:
 
 ```sh
@@ -22,7 +32,7 @@ separates four decisions that must not be conflated:
   operation; and
 * an optional policy has exact evidence for that role and shape.
 
-The current audit covers the pasted report's `B=8,S=128,H=512` case, plus small,
+The retained audit covers the pasted report's `B=8,S=128,H=512` case, plus small,
 medium, long-context and ragged microbatch cases. It includes QKV, attention
 output, FFN up/down, vocabulary output, QKV/output/FFN dX/dW, single-head attention QK/AV and
 FP16/BF16. Many dX/dW shapes pass the dimension test but fail the direct
@@ -31,9 +41,9 @@ Attention QK/AV additionally require per-head batching, masking and layout
 semantics. These are the next contracts to implement and benchmark; padding
 alone must not be treated as support.
 
-## Current A100 role run
+## November 9 exploratory A100 role runs
 
-`a100_role_gemm_modal.py` measures the direct forward roles that fit the current
+`a100_role_gemm_modal.py` measures the direct forward roles that fit its declared
 RCR contract. The source-hashed run
 [`a100-role-gemm_20261109T075039.758591Z.json`](a100-role-gemm_20261109T075039.758591Z.json)
 covered QKV, attention output, FFN-up and FFN-down in FP16/BF16, with full
@@ -48,7 +58,7 @@ candidate reduced FFN-up OA time by about 9% in both dtypes, while grouped-N
 was mixed and Morton was neutral or slower. These are role-specific measurements
 on one A100 worker, not a whole-transformer result or an automatic dispatch rule.
 
-Reproduce the current role run:
+Re-run the exploratory role protocol with a fresh source/device identity:
 
 ```sh
 modal run exp/shape_coverage/a100_role_gemm_modal.py --rounds 2 --samples 8
@@ -64,7 +74,7 @@ excludes H2D, data loading, compilation and distributed communication.
 
 A held-out FFN-up run across small, medium and large model shapes is retained
 in [`a100-role-gemm_20261109T080749.220619Z.json`](a100-role-gemm_20261109T080749.220619Z.json).
-All 54 method/input checks pass. Load-next is selected only for the measured
+All 54 method/input checks pass. In that experiment, load-next is selected only for the measured
 medium 1024×4096×1024 role; the small 128×2048×512 and large 4096×8192×2048
 roles correctly fall back to the other policies and remain slower than ptxas.
 
@@ -99,7 +109,8 @@ modal run --detach exp/shape_coverage/a100_role_gemm_modal.py \
 
 ## Exact experimental dispatch gate
 
-[`measured_dispatch.py`](measured_dispatch.py) validates normalized proposals
+[`measured_dispatch.py`](measured_dispatch.py) is the historical proposal-level
+gate; it does not install the production table. It validates normalized proposals
 for another integration experiment. It requires exact role/shape/layout/
 alignment/workspace/numerical and implementation keys; current compiler and
 harness identities; complete numerical, binary and resource gates; matched
@@ -109,6 +120,10 @@ baseline by 2% in every round. That threshold is an experiment acceptance rule,
 not a hardware property. It reports losses to ptxas/cuBLAS explicitly and always
 returns `production_promoted: false`.
 
+The later production audit in `openassembler/gemm_promotion.py` and
+`exp/dispatch_tuning/promote.py` checks retained binaries, exact emitted source,
+resources and a pre-frozen winner across three paired rounds in each of two
+sessions. The proposal checker below is not a substitute for that audit.
 Existing raw records are not silently converted into dispatch entries.
 The selector verifies normalized evidence consistency, not the truth of manual
 assertions: an audited importer still has to connect each claim to raw data.
@@ -157,7 +172,9 @@ the harness validates and launches their bounded manual contract explicitly.
 experiment with four 32×32 warp tiles, 32 accumulator values per thread and
 32 KiB shared memory. Its layout checks exhaustively cover output ownership,
 copy coverage and LDSM bounds/alignment. It uses the baseline HMMA8/drain15
-policy and requires a separate manual launch; no production contract is changed.
+policy and requires a separate manual launch for this experimental source. The
+later production 64×64 generator has an annotated launch and independent
+promotion records; this wrapper's old result is not that proof.
 
 The [first 128×512×512 FP16 replay](a100-role-gemm_20261109T112122.548949Z.json)
 passes all 15 method/input and five graph checks. OA takes 11.01 µs versus
@@ -199,10 +216,11 @@ names, booleans or aggregated timings.
 
 The source-identity-locked production table is
 `openassembler/kernels/sm80_gemm_dispatch.json`. It is validated separately
-from the historical role JSONs. Original output arrays/cubin bytes were not
+from the historical role JSONs. Its current 42 entries point to the completed
+production-source campaign, not these older role labels. Original output arrays/cubin bytes were not
 retained in those older role JSONs; the audit records that limit and does not
-claim independent hardware rerunning. The candidate remains slower than
-matched tile64 ptxas and cuBLAS. Current table entries must use their own
+claim independent hardware rerunning. In the historical small-tile controls,
+OA remained slower than matched tile64 ptxas and cuBLAS. Current table entries must use their own
 source/body hash and full-gate evidence.
 
 ```sh

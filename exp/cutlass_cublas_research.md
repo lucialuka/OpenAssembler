@@ -3,6 +3,16 @@
 This is a source audit for experiment planning. It does not extract or copy
 closed cuBLAS binaries, and it does not modify OpenAssembler production code.
 
+This note records the earlier public-source audit, not a new vendor-source
+revision or performance reproduction. Documentation updated November 11,
+2026: load-next and grouped-N have since been implemented as bounded explicit
+production options, while the
+[completed exact-shape replay](dispatch_tuning/RESULTS.md) selected neither for
+automatic dispatch. That replay selected 34 other nonbaseline policies and
+retained eight baselines, including 20 copy-address-reuse contracts and two
+Morton8 tall contracts. These are independently generated OpenAssembler kernels;
+no cuBLAS device kernel was extracted.
+
 ## CUTLASS SM80 mainloop
 
 The public CUTLASS SM80 implementation exposes the tuning dimensions directly:
@@ -27,7 +37,7 @@ Sources:
 * <https://github.com/NVIDIA/cutlass/blob/main/include/cutlass/gemm/threadblock/mma_multistage.h>
 * <https://github.com/NVIDIA/cutlass/blob/main/include/cutlass/gemm/threadblock/mma_pipelined.h>
 
-This is a direct experiment target for OA: the current OA GEMM emits a group
+This was a direct experiment target for OA: the reference OA GEMM emits a group
 of LDSM operations and then a group of HMMA operations. A CUTLASS-like
 load-next/compute-current schedule can preserve each accumulator's K-order
 dependency while increasing independent HMMA overlap.
@@ -100,7 +110,10 @@ The public preference/configuration surface includes:
 
 Source: <https://docs.nvidia.com/cuda/cublas/index.html>
 
-The transferable OA feature is a persistent, shape/alignment/workspace-aware
-candidate cache. This is an integration of public policy ideas, not extraction
-of vendor kernels.
+The transferable OA feature is a shape/alignment/workspace-aware candidate
+cache. The production exact-contract table and optional A100 tuner now apply
+that policy idea within the current contiguous full-tile GEMM contract. They
+do not implement cuBLASLt's complete algorithm/layout/workspace space or prove
+a globally fastest kernel. This is independent implementation informed by
+public policy ideas, not extraction of vendor kernels.
 

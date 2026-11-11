@@ -2,11 +2,12 @@
 
 Status: implemented
 
-The result is conditional: moving these address updates helps the tested wide
-forward GEMM but hurts the tall control. The current compiler exposes the
-validated `--pointer-advance early|auto` policy with its existing shape guard;
-the combination with direct pointers remains an experiment and there is no
-general speedup claim.
+The result is conditional: moving these address updates helps selected wide
+and small products but hurts the historical tall control. The current compiler
+supports `--pointer-advance late|early|auto` together with admitted direct
+pointers. The separate default `--dispatch auto` selector now chooses complete
+source-validated plans for exact contracts; it is distinct from the older
+single-field `--pointer-advance auto` rule.
 
 ## Idea in plain language
 
@@ -114,6 +115,24 @@ No scheduling cause is claimed from these timings alone. In particular, the
 test does not prove an operand-collector or shared-bank bottleneck, and unchanged
 instruction count does not imply unchanged dynamic overlap.
 
+## Current production admission: November 11
+
+The completed [42-contract production replay](../../../exp/dispatch_tuning/RESULTS.md)
+freezes each selected plan before a separate held-out session and preserves
+HMMA8/drain15. It automatically installs nine 128×128 direct/early policies,
+plus 16 tile64 early policies (15 with address reuse). Each selected plan passes
+the complete output, canary, input-immutability, bitwise ptxas, poisoned-graph,
+resource and native re-encoding gates, and at least 2% improvement over the
+reference in all six paired rounds. These are complete-plan gains; they do not
+isolate pointer placement from tile/address changes. The two 16384×4096×4096
+contracts select Morton with legacy/late pointers instead. Unknown contracts
+retain the reference.
+
+`--pointer-advance auto` still resolves to early only for 1024×4096×1024 and to
+late elsewhere. `--dispatch auto` can select an independently validated early
+plan on other exact contracts, while any explicit implementation flag selects
+manual mode. No general dependency-scheduler relaxation was promoted.
+
 ## Reproduction and commands
 
 Use the compiler test environment, CUDA 12.8 tools and an authenticated Modal
@@ -171,9 +190,9 @@ These failures remain in the raw logs, and neither counts as a hardware test.
 
 ## What remains open
 
-Use counters to explain the favorable and unfavorable cases before generalizing
-the placement rule. Repeat the small incremental direct-mode gain independently
-and test other forward/dX/dW shapes, complete training state and whole-step
-cost. Promotion would need an explicit shape/contract policy, regression tests
-and a validated ordinary compiler path. No such production promotion is made
-in this research round.
+Use counters to explain the favorable and unfavorable cases before extending
+the exact placement policy. Current promotion covers complete native GEMM plans,
+not arbitrary forward/dX/dW layouts, saved state or full training steps. Keep
+the historical seven-method experiment above separate from the later current-
+source dispatch replay, and attribute each gain to the implementation actually
+measured.

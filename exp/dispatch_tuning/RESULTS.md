@@ -86,4 +86,4 @@ Each raw `selection/<case>/result.json` and `heldout/<case>/result.json` has a c
   exp/dispatch_tuning/runs/a100-production-shapes-copyinit-v5-20261110
 ```
 
-Add `--table openassembler/kernels/sm80_gemm_dispatch.json` only to install the audited complete campaign. This command neither changes raw evidence nor starts a GPU job. To measure again, use a new campaign name and follow selection → freeze → held-out order in the README.
+Without `--table`, the reporting command may reuse saved decisions when record/protocol hashes agree. A `--table` invocation bypasses that cache and rechecks every archive and current native encoding. Use an experiment output path for a fresh offline audit, or `--table openassembler/kernels/sm80_gemm_dispatch.json` to install the complete audited campaign. Neither path changes raw evidence or starts a GPU job. To measure again, use a new campaign name and follow selection → freeze → held-out order in the README.

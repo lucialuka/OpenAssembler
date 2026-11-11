@@ -12,8 +12,10 @@ Softmax needs the maximum and sum of a row before producing probabilities.
 The old example gave one entire row to one thread, which walked all columns
 serially. The new kernel lets a complete 32-thread warp share a row. Adjacent
 threads load adjacent values, keep their assigned columns in registers, and
-exchange partial results through synchronized butterfly shuffles. Four warps
-process four rows per block, with no shared-memory scratch.
+exchange partial results through synchronized butterfly shuffles. The reference
+launch groups four rows in four warps, with no shared-memory scratch. The
+[shape-aware rowwise selector](shape-aware-rowwise-dispatch.md) now chooses two
+or eight warps for three exact softmax contracts; each warp still owns one row.
 
 The kernel subtracts the row maximum, computes approximate FP32 exponentials,
 reduces their sum and applies a reciprocal. Out-of-range tail columns contribute
@@ -26,10 +28,12 @@ dependencies are documented in [the compiler-correctness dossier](scalar-depende
 Input/output are contiguous FP32 `[rows,width]` arrays, four-byte aligned, with
 ABI `(X,Y)` and no partially overlapping buffers. Width is 1–1024, rows fit an
 unsigned 32-bit comparison, and total element count is at most 2³². The launch
-is 128 threads, `ceil(rows/4)` blocks and zero shared memory. Inputs are bounded
+uses `32*warps_per_cta` threads, `ceil(rows/warps_per_cta)` blocks and zero
+shared memory. Four warps are the baseline for unknown/stale contracts;
+manual selection permits 1, 2, 4 or 8. Inputs are bounded
 finite FP32: extreme finite arithmetic overflow and NaN/Inf are not covered.
 
-Nine shapes include widths 1,31,33,127,128,512,513,1023,1024 and row tails.
+The original November 6 four-warp study tested nine shapes, including widths 1,31,33,127,128,512,513,1023,1024 and row tails.
 Each is checked on normal, zero, wide, alternating and large-offset/small-variance
 inputs against FP64 formulas evaluated on the exact FP32 inputs. The unchanged
 softmax gate is `rtol=5e-5, atol=1e-6`. Every native output and both guard regions
@@ -43,7 +47,8 @@ inputs; a failing candidate is not eligible for a speedup claim.
 
 ## Results and limits
 
-Final paired graph medians on the actual **A100-SXM4-80GB**, in microseconds:
+Original November 6 four-warp paired graph medians on the actual
+**A100-SXM4-80GB**, in microseconds:
 
 | Shape | New OA | Same-source ptxas | Old serial OA | PyTorch CUDA |
 |---|---:|---:|---:|---:|
@@ -58,6 +63,19 @@ control. No universal library or transformer-training acceleration is claimed.
 An earlier integrated candidate ran on 40 GB; all 18 native streams of both
 operator families match the promoted build byte for byte. Absolute times from
 the two device variants are not pooled.
+
+## Current shape-specific geometry
+
+The later November 10 selection and independent replay covered 58 rowwise
+operator/shape contracts. Three softmax entries passed the per-round 3% gate:
+129×1023 selects two warps; 4096×1 and 4096×32 select eight. Held-out gains
+against the four-warp OA control range from 1.034–1.126× on an A100-SXM4-40GB.
+All five-pattern full outputs, canaries, input immutability, poisoned graphs and
+bitwise OA-control checks passed. These are geometry gains, not changes to the
+softmax formula or a whole-model result. The
+[rowwise dispatch dossier](shape-aware-rowwise-dispatch.md) owns the exact
+records and rejected near-threshold candidates. Its 40GB times are not pooled
+with the original 80GB table.
 
 ## Reproduce
 

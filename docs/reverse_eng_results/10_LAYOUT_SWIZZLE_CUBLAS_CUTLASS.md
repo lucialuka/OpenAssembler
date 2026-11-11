@@ -12,16 +12,18 @@ The public CUTLASS SM80 code exposes a useful tuning vocabulary:
 * fused epilogues and reduction placement.
 
 The experiment layer implemented a load-next/compute-current fragment schedule
-and grouped-N traversal based on these public patterns. Current source-hashed
-A100 replays now expose both as explicit opt-in production options under exact
+and grouped-N traversal based on these public patterns. The November 9
+source-hashed replays admitted both as explicit production options under exact
 contracts. Load-next passes FP16/BF16 at 1024×4096×1024 and 4096×1024×1024;
 large held-out FP16 shapes regress. Grouped-N passes repeated FP16/BF16 tall
 cases and improves the 16384×4096×4096 case by about 6.9–7.3%, while wide and
-square cases remain unsuitable for automatic dispatch.
+square cases do not justify a general policy. Neither alternative is selected
+by the later 42-contract production table, which compares them with all other
+admitted policies.
 
 These are shape-specific experiment results, not universal dispatch rules.
 
-The current role-labelled A100 run extends this comparison beyond generic
+The November 9 role-labelled A100 run extended this comparison beyond generic
 matrix shapes. For medium `M=1024,H=1024` forward roles, all output/canary/
 graph/ptxas/resource gates pass, but OA remains slower than same-source ptxas:
 approximately 1.15x on QKV, 1.48x on the output projection, 1.40x on FFN-up and
@@ -30,16 +32,33 @@ OA in both FP16 and BF16; it does not close the ptxas gap. See the
 [role coverage experiment](../../exp/shape_coverage/README.md) and its raw
 source-hashed record.
 
-A [new 64×64 CTA family](../research/ideas/small-grid-tensor-cta-tiles.md)
-separately tests geometry rather than CTA traversal. The 32-case current-source
+A [64×64 CTA family](../research/ideas/small-grid-tensor-cta-tiles.md)
+separately tests geometry rather than CTA traversal. The earlier 32-case
 study passes all numerical/graph gates, improves 18 cases and regresses 14.
 Small-token roles improve roughly 45–54%, while large cases can regress about
-49%. Matched ptxas remains faster on the best tested geometry. The exact small
-output case now has a production 64×64 generator and can be selected only when
-the exact measured dispatch contract matches; otherwise the reference tile
-remains active. It is available through `gemm --tile 64x64` for manual testing
-and through `--dispatch auto` only after a current promoted table entry. This
-remains distinct from a cuBLAS kernel extraction.
+49%. Matched ptxas remains faster on the best tested geometry. Those results
+motivated current-source selection rather than a universal smaller-tile rule.
+
+## Completed shape-specific production selection
+
+The November 11 [42-contract replay](../../exp/dispatch_tuning/RESULTS.md)
+installed 34 nonbaseline policies and eight measured baseline retentions:
+
+| Installed policy family | Exact contracts | Interpretation |
+|---|---:|---|
+| Tile64 with copy-address reuse | 20 | Direct pointer homes plus early/late placement under the exact plan |
+| Tile64 without copy-address reuse | 2 | Direct pointer homes with the measured early/late choice |
+| Tile128 direct-pointer policies | 10 | Nine direct/early and one direct/late |
+| Morton8 traversal | 2 | FP16/BF16 at 16384×4096×4096 |
+| Reference policy | 8 | No qualifying frozen improvement; not proof that all alternatives always lose |
+
+The promoted policies give 1.033–2.460× OA reference/selected speed ratios
+across six paired rounds. The exact selector checks the full operation
+contract, compiler identity and generated body hash; unmeasured/stale contracts
+keep the representable reference. It does not infer a neighboring shape's
+winner or run a hidden search. Explicit `--tile`, `--cta-order`, pointer and
+fragment options remain available; `--autotune local|modal` tests admitted
+alternatives on the requested A100.
 
 ## cuBLAS and cuBLASLt boundary
 
@@ -48,6 +67,16 @@ reduction schemes, tiles, stages, split-K and epilogues. OpenAssembler can use
 that control vocabulary for an independent measured manifest. It cannot claim
 to have extracted proprietary cuBLAS kernels from public APIs, and no such
 extraction was performed.
+
+The current supplemental controls compare each session's nominal selected OA
+kernel with same-source ptxas and a matched cuBLAS GemmEx call. All 42 nominal
+OA policies remain slower than ptxas in both sessions. Six per session beat
+that cuBLAS call in every round; this is not a tuned cuBLASLt algorithm search.
+Seven held-out nominal winners differ from the pre-frozen installed policies,
+so their supplemental ratios cannot be reassigned to the frozen choice.
+Promotion uses the full per-policy native timing matrix instead. No
+whole-training or native graph integration result follows from these kernel
+measurements.
 
 ## CTA order and layout interpretation
 

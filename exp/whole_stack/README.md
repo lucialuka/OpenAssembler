@@ -14,6 +14,14 @@ methods, commands and limitations now have canonical dossiers:
 | BF16 sensitivity | [Adam epsilon diagnostic](../../docs/research/ideas/adam-epsilon-sensitivity.md) | `bf16_diagnostic.py` |
 | Per-update state trajectory | [Complete-state diagnostics](../../docs/research/ideas/state-verification-diagnostics.md) | `first_divergence.py`, `trajectory_gate.py` |
 
+Documentation updated November 11, 2026. The transformer timings here are the
+original eager-PyTorch versus Inductor/Triton study, not native OpenAssembler
+SASS model compilation. The later
+[production GEMM/rowwise tuning](../dispatch_tuning/README.md) changes exact
+standalone kernel dispatch. It does not supply a new whole-step benchmark or
+automatically substitute those kernels into this application route. The
+rejected BF16 state gate and bounded native-composition results remain rejected.
+
 `runs/` retains successful, failed and superseded JSON, and `native_static.json`
 retains the native instruction inventory. The dossiers label which records are
 admitted; a JSON timing beside a failed gate is not a speedup. Historical
@@ -25,7 +33,7 @@ contains duplicate native/attempt/operator narrative reports.
 ## Untimed first-observed-divergence diagnostic
 
 The original BF16 diagnostic checks parameter/gradient details at updates 1 and
-29. It cannot identify the first failing update. The new diagnostic observes
+29. It cannot identify the first failing update. The November 9 diagnostic observes
 an initial snapshot and five boundaries at every update: full pre-update
 logits, forward loss, raw backward, clipped backward, and post-update state.
 It clones all named parameters/buffers, explicit missing gradients, Adam
@@ -35,7 +43,7 @@ and the original `rtol=.05, atol=.005` gates remain fixed.
 
 ```sh
 modal run exp/whole_stack/first_divergence.py --steps 30
-python3.13 -m pytest -q exp/whole_stack/test_trajectory_gate.py \
+.venv/bin/python -m pytest -q exp/whole_stack/test_trajectory_gate.py \
   tests/test_torchfront_numerics.py
 ```
 

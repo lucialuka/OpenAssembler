@@ -53,3 +53,17 @@ its current replacement. Archive SHA-256:
 All original hardware JSON records, success/failure gates, cubins and source
 identities remain intact. Removing a duplicate narrative does not turn a
 historical experiment into a current compiler validation.
+
+## November 11 current-documentation refresh
+
+The [refresh record](current-docs-refresh-20261111.json) identifies the base
+revision, changed documentation hashes, current compiler/table identities and
+offline validation scope for the comprehensive current-docs update. It records
+no new GPU measurement. Original binary, benchmark and snapshot manifests stay
+unchanged; their dated source identity remains the authority for those runs.
+
+The older `exp/weaknesses/check_evidence.py` compares its frozen snapshot with
+files on disk. It now reports both documentation changes and compiler/test/log
+drift already present before this refresh. The refresh record separates those
+differences. A historical snapshot mismatch is not a failed fresh kernel test,
+and refreshing the old manifest would not revalidate that kernel.

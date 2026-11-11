@@ -4,21 +4,25 @@ The Homebrew formula installs the complete OpenAssembler source/data tree and
 the `openassembler` CLI. It also installs Homebrew's Modal client, so the
 documented remote workflow does not require a second Python environment.
 
-When the `CLI` branch is available on GitHub, install it from a local checkout
-while it is under review:
+From a checkout, install the maintained local formula with:
 
 ```sh
 brew install --build-from-source ./Formula/openassembler.rb
 ```
 
-After the branch is merged into the repository's default branch, add the
-repository as a tap and install the formula by name:
+Alternatively, add the repository as a tap and use its formula:
 
 ```sh
 brew tap lucialuka/openassembler \
   https://github.com/lucialuka/OpenAssembler
 brew install openassembler
 ```
+
+The current checked-in formula downloads the repository's `CLI` branch and
+labels it version 0.2.0; it does not pin a released source archive or the current
+local checkout. Check `Formula/openassembler.rb` before relying on a particular
+compiler/table revision. A documentation update does not publish a new formula
+or benchmark the installation.
 
 Check the installation and see every command:
 
@@ -36,10 +40,15 @@ PTX parser, SASS emulator, compiler data, Modal/SSH workers, research tools and
 documentation. It does not silently replace the existing optimization backend
 or generated code.
 
+The formula does not install the repository's full `exp/` evidence archive or
+`testcases/` tree. Documentation links to those paths describe research in a
+source checkout; use that checkout for the retained raw records and experiment
+reproduction rather than expecting them in the formula installation.
+
 ## Modal and SSH
 
 Modal is installed by the formula. Authenticate it once, then use the same
-repository command for capture, replay and combined execution:
+repository command for native build, execution and combined execution:
 
 ```sh
 modal setup
@@ -59,6 +68,10 @@ openassembler cnr /path/to/repo --backend user@a100 --verify
 The remote host still needs its compatible Linux Python/CUDA/PyTorch runtime as
 described in [REPOSITORY_WORKFLOW.md](REPOSITORY_WORKFLOW.md). SSH keys, ports
 and jump hosts belong in `~/.ssh/config`.
+
+For a configured PyTorch application, add `--frontend torch` to `compile` or
+`cnr`; application replay selects its saved build. Native discovery remains
+the default even when the repository has an application configuration.
 
 ## Native CUDA tools on macOS
 

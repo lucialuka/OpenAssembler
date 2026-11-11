@@ -57,3 +57,20 @@ candidate method. A historical experiment may be superseded; superseded data
 remain available but are labeled. Raw records are not silently rewritten to
 make a failed candidate look successful.
 
+## November 11 shape-dispatch evidence
+
+The current production replay covers 42 exact full-tile unbatched RCR GEMM
+contracts: FP16/BF16 inputs, FP32 accumulation/output, alpha=1, beta=0,
+aligned operands, no workspace and no tails. Selection was frozen before a
+distinct held-out session. The final audit checks retained source, cubin, SASS,
+resource, numerical, canary, graph and paired-timing evidence against that
+frozen choice. It promoted 34 policies over the OA reference and retained the
+reference for eight contracts; no unknown-shape extrapolation is made.
+
+Selection and held-out device variants are recorded separately. Ratios are
+computed within each worker/round; absolute times are not pooled across A100
+variants. In seven cases the held-out nominal winner differed from the frozen
+choice. Supplemental ptxas/cuBLAS comparisons for those records describe the
+nominal winner only; promotion evaluates the frozen policy from the retained
+all-candidate timing matrix. See [current replay results](../../exp/dispatch_tuning/RESULTS.md).
+

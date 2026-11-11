@@ -1,5 +1,10 @@
 # Tensor instruction overhead studies
 
+Updated November 11, 2026. The completed production-source selection and
+independent replay supersede the pilots below for automatic policy admission;
+the pilots remain source-bound evidence and explain why the candidates were
+tested.
+
 This directory tests changes that reduce scalar instructions around an SM80
 tensor mainloop. Each candidate keeps the established HMMA control value,
 post-chain drain, LDSM visibility/address dependencies, async-copy groups,
@@ -29,7 +34,7 @@ HMMA8 and sixteen post-HMMA drain NOPs. That is a static instruction reduction,
 not a predicted runtime percentage. The per-policy SASS and compiler resources
 must be checked for each shape before using this approach.
 
-## A100 evidence
+## Historical pilots and current A100 evidence
 
 `a100-pointer-init_20261109T121351.605036Z.json` is a one-shape pilot with
 retained PTX, cubin and SASS for each method. All full output, FP32 reference,
@@ -53,7 +58,7 @@ The geometry run was submitted detached. Its per-case timing lines survived in
 the local log, but the caller was stopped before its return payload could write
 the full gate records, compiler/source identity, or retained cubin/SASS files.
 Treat these twelve rows as a useful routing hypothesis, not promotion evidence.
-The synchronous production-source pilot
+The November 9 synchronous production-source pilot
 `a100-pointer-init_20261109T232622.533492Z.json` separately validates the
 128×512×512 FP16 tile64/direct policy with retained binaries and complete gates.
 The same pilot also tested tile64 copy-address reuse + direct homes + early
@@ -85,7 +90,7 @@ remains faster for all nominal selected policies. Supplemental controls refer
 to each session nominal choice, which differs from the frozen policy in seven
 held-out records; only all-candidate native timing decides promotion.
 
-The public CLI tuning path was then exercised synchronously on the same exact
+The November 10 public CLI tuning pilot was exercised synchronously on the same exact
 shape. `a100-production-autotune_20261110.json` records the seven admissible
 candidates, three numerical families, bitwise/canary/input checks, poisoned
 graphs, resources, hashes and 3×8 paired timings. It selected tile64/direct at
@@ -93,7 +98,11 @@ graphs, resources, hashes and 3×8 paired timings. It selected tile64/direct at
 `.artifacts.zip` contains 35 PTX/cubin/SASS files; the record was reused and
 the selected kernel rebuilt through the CLI. ptxas (about 7.04 µs) and cuBLAS
 (about 6.30 µs) remained faster. This validates the tuner and the exact
-production policy, not other shape rows.
+production policy at that time, not other shape rows or the newer installed
+winner. The complete November 11 replay now selects
+`tile64_reuse_direct_early` for 128×512×512 FP16 and BF16; its full contract,
+six paired-round ratios and current binaries are linked from the
+[completed campaign results](../dispatch_tuning/RESULTS.md).
 
 The run protocol and failed attempts are recorded in
 `tile-geometry-replay.json`; the pre-run matrix is in
@@ -102,7 +111,7 @@ candidate through the native selector and container splice, compares against
 same-source ptxas and cuBLAS, and writes checked PTX/cubin/SASS artifacts when
 the full response is returned.
 
-## Reproduction
+## Reproduce the exploratory pilot
 
 ```sh
 .venv/bin/python -m pytest -q exp/instruction_overhead/test_candidates.py
@@ -112,7 +121,11 @@ python3 -m modal run exp/instruction_overhead/a100_pointer_init_modal.py \
   --rounds 3 --samples 12
 ```
 
-Omit `--detach` so the local runner can retain the returned evidence. Timing is
+This older pilot relies on the remote return payload: omit `--detach` so the
+local runner can retain the returned evidence. For new promotion studies use
+the [checkpointed production campaign](../dispatch_tuning/README.md), which
+saves each case durably before the call returns and supports recovery after
+transport loss. Timing is
 for isolated GEMM graph replay; it excludes framework composition, packing,
 backward/optimizer state and whole-training steps. A tile policy should be
 selected against the best applicable OA shape policy, not compared only with

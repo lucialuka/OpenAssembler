@@ -1,12 +1,20 @@
 %% Canonical source mirrors docs/STATUS.md architecture.
 flowchart TB
+    REPO["Local repository"] --> ADAPT["Repository/build-system adapter"]
+    ADAPT --> DISC["Static kernel discovery and dependency context"]
+    DISC --> SELECT{"Per-kernel frontend/backend selection"}
+    SELECT -->|"native PTX / CUDA / @kernel"| N
+    SELECT -->|"explicit --frontend torch/triton/inductor"| A
+    SELECT -->|"unsupported native form + --fallback ptxas"| FALLBACK["ptxas fallback, labeled in manifest"]
+    SELECT -->|"host/library implementation"| HOST["Existing host/runtime implementation"]
     subgraph N["Native kernel compilation"]
         PY["Python kernel subset"] --> PF["pyfront: AST and types"]
         CU["CUDA C/C++ kernel"] --> NVCC["nvcc --ptx"]
         PF --> PTX["PTX module"]
         NVCC --> PTX
         RAW["PTX source"] --> PTX
-        GP["gemm / rowwise source generators"] --> PTX
+        GP["gemm / rowwise source generators"] --> DISPATCH["Exact contract dispatch / optional A100 tuner"]
+        DISPATCH --> PTX
         FM["fastmm research plans: FP32 kernels"] --> PTX
         PTX --> PARSE["Parse, validate and select entries"]
         PARSE --> ROUTE{"Tensor/copy instructions?"}
@@ -30,3 +38,5 @@ flowchart TB
     REPLAY --> RUN
     RUN --> GPU["CUDA driver and GPU execution"]
     CHECK -. "verification gate" .-> BUNDLE
+    FALLBACK --> CUBIN
+    HOST --> RUN

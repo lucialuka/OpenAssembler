@@ -126,8 +126,8 @@ Install OpenAssembler with Python 3.12+ and set up the optional Modal client:
 python3 -m pip install -e .
 python3 -m pip install modal
 modal setup
-openassembler cnr testcases/test_whole_repo --backend modal --verify --dry-run
-openassembler cnr testcases/test_whole_repo --backend modal --verify
+openassembler cnr testcases/test_whole_repo --frontend torch --backend modal --verify --dry-run
+openassembler cnr testcases/test_whole_repo --frontend torch --backend modal --verify
 ```
 
 The `modal` executable can belong to a separate environment, but must be on

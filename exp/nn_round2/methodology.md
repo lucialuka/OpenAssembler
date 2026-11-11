@@ -1,10 +1,16 @@
 # Prospective NN arithmetic experiment contract
 
 This is a test plan inside the experiment workspace, not a results dossier.
-[coverage.json](coverage.json) lists 23 arithmetic families, their current native
+[coverage.json](coverage.json) lists 23 arithmetic families, their native
 support boundaries, candidate improvements and required checks. A missing native
 implementation is a recorded coverage gap; a shared library operation is not
 silently credited to OpenAssembler's SASS backend.
+
+This contract belongs to the November 7–9 study. Documentation updated
+November 11: the later [exact-shape production replay](../dispatch_tuning/RESULTS.md)
+has its own frozen selection/heldout protocol and does not replace this
+whole-workload design. Shape-tuned native kernels are still not automatically
+substituted into ordinary captured PyTorch models.
 
 The most informative control for a compiler change is **identical PTX compiled
 by OpenAssembler and ptxas**, using the same buffers and launch shape. A vendor

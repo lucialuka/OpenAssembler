@@ -24,10 +24,27 @@ ptxas-built ELF container + selected text replacement
 cubin, SASS listing and manifest
 ```
 
-ptxas remains necessary for the reference cubin/container and for CUDA C/C++
-PTX generation. The reference is built from the same PTX that OpenAssembler
+ptxas remains necessary for the reference cubin/container; `nvcc` supplies CUDA
+C/C++ parsing and PTX generation. The reference is built from the same PTX that OpenAssembler
 receives. This keeps comparisons focused on backend code generation rather than
 different frontend semantics.
+
+## Checked generated-kernel dispatch
+
+The `gemm` and `rowwise` commands validate a declared operation before emitting
+PTX. Their automatic selectors use exact measured contracts and source
+identities: the current GEMM table contains 34 tuned choices and eight measured
+baseline retentions, while the FP32 softmax/LayerNorm table contains five
+geometry choices. They select OpenAssembler-generated policies, not a hidden
+ptxas/cuBLAS fallback. An unknown, ambiguous or stale contract keeps its
+representable reference plan. Explicit implementation options bypass measured
+dispatch, and `gemm --autotune local|modal` is the opt-in path that performs
+GPU search. Ordinary compilation does not launch a tuning job.
+
+The selected annotated PTX and manifest retain the actual tile, pointer/CTA
+policy, launch geometry and numerical contract so recompilation and execution
+do not silently change the policy. See [GEMM dispatch](../research/ideas/shape-aware-native-gemm-dispatch.md)
+and [rowwise dispatch](../research/ideas/shape-aware-rowwise-dispatch.md).
 
 ## Frontend selection
 

@@ -59,13 +59,21 @@ openassembler gemm --m 16384 --n 4096 --k 4096 \
   --cta-order grouped_n8 --out-dir output_grouped_n
 ```
 
-`measured_dispatch_manifest.json` records the exact FP16, 16-byte-aligned,
-zero-workspace entries. Unmeasured alignment, workspace, BF16 and neighboring
-shapes remain unclassified.
+The historical `measured_dispatch_manifest.json` records its original FP16,
+16-byte-aligned, zero-workspace research entries. Later FP16/BF16 production
+confirmations are separate records, not additions inferred from that old
+manifest. Unmeasured alignment, workspace and neighboring shapes remain
+unclassified.
 
 ## Scope and next work
 
-The result supports an explicit traversal option, not a universal swizzle
-rule or auto-dispatch. The public design reference is [CUTLASS
+The completed November 11 [42-contract production replay](../../../exp/dispatch_tuning/RESULTS.md)
+includes grouped-N where its checked launch/plan is representable. It selects
+no grouped-N row: the two large tall contracts freeze Morton8 and other shapes
+select other plans or retain the reference. Grouped-N remains a valid explicit
+and tuning candidate; that finite outcome does not make its prior measured
+gains false or predict every new grid. Automatic exact-contract dispatch is
+implemented separately and must not be confused with universal grouped-N
+selection. The public design reference is [CUTLASS
 threadblock swizzle](https://github.com/NVIDIA/cutlass/blob/main/include/cutlass/gemm/threadblock/threadblock_swizzle.h).
 

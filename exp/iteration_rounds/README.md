@@ -7,6 +7,15 @@ only after the relevant local checks passed. GPU ratios cited below come from
 the retained, independently checked A100 evidence in `exp/nn_round2/` and the
 attached audit package; no failed numerical result is promoted.
 
+This is a historical November 8 ledger. Its narrow pointer `auto` rule and
+test counts describe that iteration, not the full current GEMM dispatcher.
+The November 11 [production-source campaign](../dispatch_tuning/RESULTS.md)
+now installs 34 nonbaseline choices and eight measured baseline retentions for
+42 exact contracts, with independent frozen replay and retained binaries.
+It improves OA reference plans while same-source ptxas remains faster in every
+nominal-selected comparison. No general tensor-dependency scheduler or global
+HMMA-gap relaxation was promoted.
+
 | Iteration | Candidate | Result | Production decision |
 |---|---|---|---|
 | 1 | Exclude generated application output/cache trees from source discovery | Dry-run returns the intended five source files; the previous 141-file contamination disappears | Promoted; this fixes measurement and capture integrity |
@@ -74,9 +83,10 @@ PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -q \
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/check_docs.py
 ```
 
-The targeted compiler/GEMM/scheduler/encoder set passes after these changes.
-The complete repository suite should be rerun after the current changes settle;
-the earlier failure was the source-tree contamination described above.
+The targeted compiler/GEMM/scheduler/encoder set passed for these recorded
+changes. This ledger is not a current regression result; use the current
+[status page](../../docs/STATUS.md) and a fresh test invocation for the latest
+checkout. The earlier failure was the source-tree contamination described above.
 
 ## Remaining gap
 
@@ -85,4 +95,6 @@ and scalar work, rigid HMMA issue/drain scheduling, reduction contraction gaps,
 and state-correctness failures when native pointwise operators are composed in
 training. The next safe work is a virtual-register scheduler/allocation
 experiment and a fresh A100 holdout for the corrected mined model and the
-shape-specific pointer policy. No global HMMA-gap relaxation is justified.
+shape-specific pointer policy. The later exact-shape replay addresses that
+pointer-policy admission separately; the virtual-register/general scheduler
+work remains open. No global HMMA-gap relaxation is justified.

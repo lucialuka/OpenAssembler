@@ -12,9 +12,9 @@
  </a>
 </p>
 
-**A from-scratch NVIDIA SASS/CUDA Binary compiler, built entirely by reverse-engineering nvidia tools as a black box and applying kernel optimizations to the compiler.**
+**A native NVIDIA SASS/cubin compiler for SM80/A100, built through black-box reverse engineering and validated kernel optimizations.**
 
-Do you always feel like when the newest nvidia GPU come out with unbearable high price while your existing older GPUs are making you left behind in model serving and training? 
+OpenAssembler explores how much more performance existing GPUs can deliver for model serving and training through better native code generation.
 
 OpenAssembler generates native SASS and executable cubins for supported A100/SM80 kernels, with shape-specific kernel and compiler optimizations. Performance depends on the operation and comparison: measured improvements over earlier OA kernels do not imply a win over matched ptxas or cuBLAS, and a whole-native transformer-training speedup has not been established. The CLI supports standalone kernels and repository discovery for supported Python, CUDA C/C++ and PTX inputs. An explicit PyTorch application route uses Inductor/Triton for GPU code generation. Broader architecture support and end-to-end training acceleration remain research goals; see the measured contracts and limitations below.
 
@@ -37,6 +37,8 @@ OpenAssembler generates native SASS and executable cubins for supported A100/SM8
   tuned native policies and eight verified baseline retentions; unknown/stale
   shapes retain the reference. See the [measured results](exp/dispatch_tuning/RESULTS.md).
 - Generate cooperative FP32 softmax and population LayerNorm with row/column tails.
+  Five exact A100 contracts automatically select held-out-validated CTA geometry;
+  other contracts retain the four-warp reference.
 - Inspect cubins and SASS, emulate supported instructions, and run matched GPU
   checks locally, over SSH or on Modal.
 - Capture a configured PyTorch application's bounded workload and replay its

@@ -72,6 +72,13 @@ million for `ptxas`. In 4096x513 backward reductions, OpenAssembler had about
 with only about 5% more DRAM traffic. The first hypothesis is therefore
 instruction overhead and insufficient overlap, not an absent firmware unlock.
 
+The completed November 11 [42-contract native GEMM replay](../../../exp/dispatch_tuning/RESULTS.md)
+adds shape-specific tile/address/pointer/traversal selections, while every
+native candidate retains HMMA8/drain15. Its 34 OA-policy improvements therefore
+do not validate this graph scheduler or establish a general instruction-gap
+reduction. The matched nominal-selected ptxas controls remain faster, leaving
+both excess scalar work and dependency-aware overlap as open targets.
+
 ## Experimental implementation
 
 `exp/tensor_scheduler/dependency_scheduler.py` contains a deterministic graph

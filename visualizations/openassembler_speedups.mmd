@@ -5,10 +5,13 @@ flowchart TB
     S --> C["Measured scheduling and protected dependencies"]
     T["Native SM80 tensor backend"] --> P["Two-stage copies and paired matrix loads"]
     T --> A["Folded addresses, vector stores and operand reuse"]
-    T --> O["Explicit options: Morton, fused epilogues, direct pointers"]
-    O --> Q["Shape-specific wins and regressions; no universal default"]
+    T --> O["Options: tile, copy addresses, pointers, traversal, fragments and epilogue"]
+    O --> Q["Exact dispatch: 34 tuned GEMM policies, 8 baseline retentions"]
+    Q --> U["Unknown/stale contracts keep reference; optional A100 tuning"]
+    O --> X["General tensor reordering remains experimental"]
     W["Explicit cooperative row operators"] --> M["Warp-per-row mapping, synchronized reductions"]
     M --> G["Full output and guard checks before timing"]
+    M --> WQ["Five exact measured rowwise geometries; otherwise four warps"]
     F["Separate low-rank research path"] --> L["Verified factors and FP32 research kernels"]
     L --> N["No automatic native Tensor Core GEMM replacement"]
     I["Configured application route"] --> B["Inductor/Triton capture and fusion"]
@@ -17,6 +20,8 @@ flowchart TB
     click C href "../docs/research/ideas/scalar-dependency-correctness.md" "Dependency correctness"
     click P href "../docs/research/ideas/native-tensor-gemm.md" "Native tensor mainloop"
     click O href "../docs/research/ideas/direct-pointer-homes.md" "Explicit tuning and negative controls"
+    click Q href "../exp/dispatch_tuning/RESULTS.md" "Current exact-shape evidence"
+    click WQ href "../docs/research/ideas/shape-aware-rowwise-dispatch.md" "Exact rowwise evidence"
     click M href "../docs/research/ideas/cooperative-softmax.md" "Cooperative reductions"
     click L href "../docs/research/ideas/low-rank-factorization-library.md" "Low-rank scope"
     click B href "../docs/research/ideas/pytorch-application-capture.md" "Application code-generation ownership"

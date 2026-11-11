@@ -1,14 +1,23 @@
 # Validated-not-integrated revalidation
 
 This directory records the early November 9, 2026 pass over every idea that was
-previously labelled `validated-not-integrated`. The pass uses the current
-OpenAssembler source identity, current experiment tests, and current A100
+previously labelled `validated-not-integrated`. The pass used its then-current
+OpenAssembler source identity, experiment tests, and A100
 records where a hardware runner still existed. It separates compiler features
 from diagnostics and application studies. This is a source-bound historical
 ledger, not a live inventory of every later compiler change. The current
 [catalogue](../../docs/research/README.md) and each dossier own deployment
 status; later role/geometry studies are indexed in
 [shape coverage](../shape_coverage/README.md).
+
+As of November 11, automatic GEMM admission comes from the independent
+[42-contract production campaign](../dispatch_tuning/RESULTS.md), not this
+ledger. It installs 34 nonbaseline policies and eight baseline retentions.
+Load-next and grouped-N remain explicit/tuning options, but neither is selected
+by that frozen campaign; Morton8 is selected for two tall contracts. The
+separate rowwise study promotes five exact CTA geometries. The general tensor
+dependency scheduler remains validated-not-integrated: its component hardware
+measurements do not validate a scheduler-produced kernel.
 
 ## Revalidation commands
 
@@ -26,7 +35,7 @@ The two Modal runners perform complete outputs, canaries, poisoned CUDA-graph
 replays, matched ptxas bitwise checks, disassembly and resource checks before
 timing. The runs launched after integration also save current source hashes,
 Python package/runtime identity, CUDA version, `ptxas` version, `nvdisasm`
-version and device model. The current load-next production-path confirmations are
+version and device model. The November 9 load-next production-path confirmations are
 `exp/tensor_scheduler/load-next-compute-current_20261109T072411.844342Z.json`
 and the transposed-shape confirmation is
 `...060813.116274Z.json`; the held-out set is
@@ -35,7 +44,7 @@ production-path confirmation is
 `exp/gemm_dispatch/grouped-n_20261109T053553.114518Z.json` and the held-out
 set is `grouped-n_20261109T051142.571274Z.json`.
 
-Additional current-code A100 replays during the status review are retained in:
+Additional A100 replays made during that source-bound status review are retained in:
 
 - `exp/nn_round2/runs/operator-standard-fma-20261109T063211.248802Z.json`: 64/64 standard-width local-FMA cases pass full output/canary/graph checks; ptxas remains faster.
 - `exp/nn_round2/runs/operator-gelu-stable-20261109T063435.427437Z.json`: stable GELU passes all admitted rows, while the direct-tanh million-element controls retain 12 accuracy failures.

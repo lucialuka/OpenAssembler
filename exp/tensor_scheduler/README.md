@@ -1,15 +1,23 @@
 # Experiment: four-edge A100 tensor dependency scheduler
 
-This directory contains an experiment-only scheduler model inspired by the
+Updated November 11, 2026. This directory contains an experiment-only scheduler model inspired by the
 issue-rate separation discussed in [`gpu-unlock`](https://github.com/Zagitta/gpu-unlock).
-It is intentionally isolated from `openassembler/backend/tensor.py` until it
-has passed A100 SASS probes, full-output checks, disassembly checks and paired
-timing.
+Its bounded A100 dependency measurements are validated, but the generalized
+dependency scheduler is **validated-not-integrated** and no scheduler-produced
+GEMM order is encoded or promoted. The graph model remains isolated from
+`openassembler/backend/tensor.py`. Passing component probes does not establish
+whole-kernel readiness, visibility or register-reuse safety.
+
+The November 11 [production shape replay](../dispatch_tuning/RESULTS.md)
+promotes geometry, traversal and address/pointer policies while retaining the
+protected HMMA8/drain15 scheduler. Those OA timing wins do not validate general
+HMMA reordering or shorter drain controls.
 
 ## What this tests
 
-The production tensor path currently uses a fixed HMMA stall of 8 cycles and a
-15-cycle drain at the end of each HMMA run. Those values are useful as a
+The production tensor path emits HMMA control S8 and an S15 drain at the end
+of each HMMA run. These control fields are not the measured accumulator RAW
+latency or a universal effective issue interval. They are useful as a
 correctness baseline, but they conflate four different controls:
 
 1. dependent accumulator latency;
@@ -29,7 +37,7 @@ dependency edge just to shorten the instruction listing.
 From the repository root:
 
 ```bash
-PYTHONPATH=exp/tensor_scheduler pytest -q exp/tensor_scheduler/test_dependency_scheduler.py
+PYTHONPATH=exp/tensor_scheduler .venv/bin/python -m pytest -q exp/tensor_scheduler/test_dependency_scheduler.py
 ```
 
 The checks are model-level only. They check explicit accumulator, operand and
@@ -47,14 +55,16 @@ PYTHONPATH=exp/tensor_scheduler .venv/bin/python exp/tensor_scheduler/actual_blo
 ```
 
 `latency_profiles.py` records the exact retained clocked-evidence hash and uses
-approximate dependent-chain24/three-chain issue8 distances. LDSM, async-copy,
+approximate dependent-chain 24/three-chain issue 8 distances. LDSM, async-copy,
 observer, address-WAR and synchronization distances remain uncalibrated. These
 are static model estimates, not measured kernel cycles or minimum safe SASS
 stall fields. Neither profile authorizes encoding a reordered stream.
 
-## A100 validation gate
+## Remaining end-to-end A100 validation gate
 
-Before any production integration, generate tiny SASS probes for:
+Bounded probes already cover the classes below. Before production integration,
+their envelopes must be completed and connected to a full encoded candidate,
+with fresh coverage for any changed operand or synchronization arrangement:
 
 * a dependent HMMA chain reusing one accumulator group;
 * two and three independent HMMA chains using disjoint accumulator groups;
@@ -144,7 +154,7 @@ comparison used by the earlier latency campaign:
 ```bash
 modal run tools/gpu_modal.py --which dir:corpus/sm_80/latsweep \
   --trials 2 --budget 500 --suffix full_20261108
-python3.13 exp/tensor_scheduler/control_inventory.py
+.venv/bin/python exp/tensor_scheduler/control_inventory.py
 ```
 
 The source-inclusive record is `control-sweep-a100_20261108.json`; its
@@ -157,7 +167,7 @@ producer/consumer control edge. The canonical
 [scheduler dossier](../../docs/research/ideas/a100-tensor-dependency-scheduler.md#exact-sass-probe-envelope)
 records the measured minima and the limits of those pair-specific controls.
 
-## CUTLASS-style fragment schedule
+## Explicit CUTLASS-style fragment schedule and historical replay
 
 `load_next_compute_current.py` is an experiment-only source transformer based
 on the public CUTLASS SM80 multistage pattern. It alternates two fragment
@@ -176,6 +186,11 @@ generator now includes the admitted exact-shape option; see the
 [load-next dossier](../../docs/research/ideas/cutlass-load-next-compute-current.md)
 for current integration and dispatch scope. This older experiment driver is a
 control, not the current compiler policy.
+
+Load-next remains a legal exact-shape production option and tuning candidate,
+but no load-next entry was selected by the November 11 frozen campaign. A
+particular two-window source schedule that retains HMMA8/drain15 is distinct
+from the generalized dependency scheduler in this directory.
 
 ## Actual lowered blocks
 

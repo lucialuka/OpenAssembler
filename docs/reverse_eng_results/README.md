@@ -5,6 +5,15 @@ that underlies OpenAssembler. It explains what was learned from NVIDIA's
 `ptxas`, `nvdisasm`, CUDA cubins and A100 execution, how each result was
 validated, what became production code, and what remains experimental.
 
+Current production status includes the November 11, 2026 A100 replay: 42
+exact GEMM contracts were tested in independent selection and held-out
+sessions. The installed table contains 34 shape-specific policies and eight
+measured baseline retentions, all bound to compiler identity
+`a010742ea1aef39d0a251aeeb547cf206ef21e6b0ecb2c1941642741488327ae`. These
+policies improve OpenAssembler's own reference under their exact contracts;
+matched same-source `ptxas` remained faster in all 42 nominal comparisons.
+See [`RESULTS.md`](../../exp/dispatch_tuning/RESULTS.md).
+
 The raw records remain in `corpus/`, `docs/evidence/` and `exp/`. Those files
 contain large JSON payloads, SASS listings, cubins, hashes and machine-readable
 measurements. This directory provides the readable interpretation and points to
@@ -42,6 +51,11 @@ Each result is classified separately for correctness, performance and shipping:
 production-ready. A result becomes a production optimization only when its
 numerical, binary, resource, counter and held-out timing gates are all stated
 and satisfied.
+
+The current table does not promote the general tensor dependency scheduler;
+that remains experimental. Load-next fragment ordering and grouped-N traversal
+remain explicit production/tuning candidates, but neither is selected by this
+table. Unknown or stale contracts use the reference policy.
 
 ## Evidence roots
 

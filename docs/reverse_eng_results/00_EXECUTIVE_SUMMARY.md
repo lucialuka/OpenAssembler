@@ -27,26 +27,34 @@ The most reliable reverse-engineered results are:
   subtraction.
 * The production tensor path retains conservative HMMA8/drain15 and
   async-copy/LDSM/address-WAR protections. The generalized dependency scheduler
-  remains experiment-only. Exact measured policy dispatch can select bounded
-  fragment/layout policies, including load-next, grouped-N and 64×64 tiles;
-  unknown or stale contracts keep the reference schedule. Optional A100 tuning
-  validates and measures admitted candidates before writing a reusable record.
+  remains experiment-only. An exact A100 table now routes 34 of 42 tested GEMM
+  contracts to measured tile64/copy-address, pointer or Morton policies; eight
+  retain the reference. Load-next and grouped-N did not win the frozen replay
+  and are not selected by the table. Unknown or stale contracts keep the
+  reference, while optional tuning measures admitted candidates on the target
+  A100.
 * Constant 32-bit integer division/remainder lowering is proven for its stated
   domain. A historical division-by-seven loop improved from 0.629 ms to 0.464
   ms; this is a scalar result, not a Tensor Core claim.
-* The native GEMM path is correct under its full-tile FP16/BF16-to-FP32 contract,
-  but matched ptxas remains faster on most measured shapes. Public CUTLASS and
-  cuBLASLt techniques have been studied and some shape-specific experiments
-  pass, but proprietary cuBLAS kernels were not extracted.
+* The native GEMM path is correct under its full-tile FP16/BF16-to-FP32 contract.
+  In the November 11 replay, installed nonbaseline policies improved the OA
+  reference by 1.033–2.460× across six paired rounds. Matched same-source
+  ptxas remained faster in every nominal-policy comparison; cuBLAS is a
+  separate library baseline. Public CUTLASS and cuBLASLt techniques informed
+  candidates, but proprietary cuBLAS kernels were not extracted.
 * The largest persistent performance signal is excess non-tensor work and weak
   overlap. OA and ptxas often execute equal HMMA counts while OA emits more
   address/control instructions and sees larger wait or scoreboard stalls.
-* Native application capture is separate from the native compiler. A configured
+* Five exact FP32 rowwise softmax/LayerNorm contracts select measured two/eight
+  warp CTA geometry; other contracts retain the four-warp reference. This
+  changes grouping of independent rows, not their reduction arithmetic.
+* Application capture is separate from the native compiler. A configured
   PyTorch application uses TorchInductor/Triton only when explicitly selected;
   the application report records that distinction.
 
 The practical conclusion is precise: OpenAssembler has a validated native
-compiler foundation and several conditional optimizations, but it does not yet
-replace ptxas or cuBLAS across arbitrary transformer workloads. Every claim in
-this folder is tied to a contract, device, toolkit and evidence record.
+compiler foundation and a measured shape-specific GEMM table. It does not
+replace ptxas or cuBLAS across arbitrary transformer workloads, and these
+resident-kernel measurements do not establish a whole-training speedup. Every
+claim in this folder is tied to a contract, device, toolkit and evidence record.
 

@@ -52,5 +52,8 @@ effort that also changes live ranges, pointer homes, reuse and overlap.
 modal run exp/tensor_scheduler/non_tensor_overhead.py
 ```
 
-The experiment remains under `exp/`; no production compiler code was changed.
+This eight-no-op experiment remains under `exp/`; it did not change production
+compiler code. The separately validated [copy-address reuse](tensor-address-generation.md)
+uses a different rewrite and is now selected for 20 exact contracts. Those
+gains do not reclassify the eight-no-op-only experiment as a timing win.
 

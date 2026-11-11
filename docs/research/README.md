@@ -24,11 +24,15 @@ centralized in the [reverse-engineering results hub](../reverse_eng_results/READ
 Per-idea dossiers remain the authoritative status and reproduction records for
 individual features.
 
-The current role/shape coverage audit is under
-[`exp/shape_coverage`](../../exp/shape_coverage/README.md). It is a contract and
-measurement matrix, not a production dispatch policy.
+The role/shape coverage audit is under
+[`exp/shape_coverage`](../../exp/shape_coverage/README.md). That study remains a
+contract and measurement matrix. The separate completed
+[current production replay](../../exp/dispatch_tuning/RESULTS.md) supplies 42
+exact native GEMM dispatch entries: 34 tuned policies and eight reference
+retentions. Unknown or stale contracts keep the reference; the five rowwise
+entries have their own independent evidence.
 
-There are **80 dossiers**: **39 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
+Catalogue reviewed **November 11, 2026**. There are **80 dossiers**: **39 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
 
 ## 1. Validated and implemented
 
@@ -38,14 +42,14 @@ These are available in the current code under their stated contracts. Explicit t
 |---|---|
 | [Recovered arithmetic instruction sequences and rounding policy](ideas/arithmetic-instruction-selection.md) | The standard backend imports retained CUDA 12.8 arithmetic fragments and generates its own words. |
 | [Constant integer division and remainder lowering](ideas/constant-division.md) | The implemented 32-bit lowering removes a reciprocal-based path from direct PTX division/remainder sites. |
-| [Cooperative population LayerNorm](ideas/cooperative-layernorm.md) | Shifted population LayerNorm passes full finite-domain tests; affine, saved statistics and backward are absent. |
-| [Cooperative FP32 row softmax](ideas/cooperative-softmax.md) | Native warp-per-row softmax passes the full five-pattern contract; large serial-mapping gains, ptxas still faster. |
+| [Cooperative population LayerNorm](ideas/cooperative-layernorm.md) | Shifted warp-per-row population LayerNorm has measured exact CTA geometry; affine parameters, saved statistics and backward remain outside the production operator. |
+| [Cooperative FP32 row softmax](ideas/cooperative-softmax.md) | Warp-per-row FP32 softmax has measured exact CTA geometry; earlier serial-mapping gains and current W4-relative geometry gains are separate, with no whole-model claim. |
 | [Shape-aware rowwise CTA geometry](ideas/shape-aware-rowwise-dispatch.md) | Five exact heldout A100 contracts select 2/8 warps per CTA; unknown or stale shapes keep four warps. |
 | [Loadable cubins and metadata-safe code replacement](ideas/cubin-metadata-splicing.md) | The production container code parses/serializes CUDA ELF and .nv.info records, replaces kernel text, fixes exit offsets and declares the generated register count. |
 | [CUDA C/C++ frontend through nvcc PTX](ideas/cuda-cpp-frontend.md) | nvcc supplies CUDA parsing/PTX, while OpenAssembler supplies supported native SASS generation. |
 | [Dead-code removal, copy coalescing and local folding](ideas/dead-code-and-copy-elimination.md) | These passes are in the regular scalar and tensor compilation pipelines before allocation. |
 | [Direct pointer homes for asynchronous GEMM copies](ideas/direct-pointer-homes.md) | Direct homes remove pointer copies; exact current dispatch selects direct/early combinations while tall regressions retain other policies. |
-| [Earlier pointer advancement in tensor mainloops](ideas/early-gemm-pointer-advance.md) | Explicit `early` and shape-specific `auto` policies are integrated; tall controls remain on `late`. |
+| [Earlier pointer advancement in tensor mainloops](ideas/early-gemm-pointer-advance.md) | Explicit pointer-advance late/early/auto rules coexist with exact measured dispatch; current complete plans select 25 early policies while tall contracts keep legacy/late Morton. |
 | [Fused Adam-like scalar update example](ideas/fused-adam-like-update.md) | Fused example passes tolerance and beats the chosen eager expression; it is not complete AdamW or a tuned-optimizer comparison. |
 | [Fused FP32 bias, residual and ReLU epilogues](ideas/fused-gemm-epilogues.md) | The explicit `bias_residual` and `bias_residual_relu` plans compute `(A@B.T + Bias) + Residual`, then optional finite-value ReLU, with FP32 inputs to the epilogue and FP32 output. |
 | [GPU execution, explicit launch specifications and fault isolation](ideas/gpu-execution-and-launch-specs.md) | Typed launch planning, fault-isolated local/Modal/SSH transports implemented; Modal hardware is validated and latest real SSH evidence is absent. |
@@ -54,9 +58,9 @@ These are available in the current code under their stated contracts. Explicit t
 | [Morton8 logical CTA traversal](ideas/morton-cta-order.md) | Corrected 8×8 CTA traversal is selected for the two independently validated 16384×4096×4096 contracts; it is not an MMA storage layout. |
 | [Native tanh-approximation GELU example](ideas/native-gelu.md) | Tanh-GELU passes a predeclared FP64 tolerance, while the old exact gate failure remains and gains depend on size. |
 | [Native scalar ReLU example](ideas/native-relu.md) | Finite-input exact example passes; measured large-size PyTorch is faster, with no universal speedup. |
-| [Native SM80 tensor GEMM compiler and mainloop](ideas/native-tensor-gemm.md) | The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands and FP32 accumulation/output; exact 128×128 and 64×64 CTA families share the protected SM80 tensor pipeline. |
-| [CUTLASS-style load-next / compute-current fragment schedule](ideas/cutlass-load-next-compute-current.md) | The validated option remains available to the exact selector candidate set; the current promoted table has no load-next rows, so all other contracts keep the reference. |
-| [CUTLASS-style grouped-N CTA traversal](ideas/grouped-n-cta-swizzle.md) | The validated option remains available to the exact selector candidate set; the current promoted table has no grouped-N rows, so all other contracts keep the reference. |
+| [Native SM80 tensor GEMM compiler and mainloop](ideas/native-tensor-gemm.md) | Contiguous FP16/BF16-to-FP32 GEMM has checked 128×128 and 64×64 CTA families, protected tensor dependencies and 42 exact measured dispatch entries; this is not a complete native transformer compiler. |
+| [CUTLASS-style load-next / compute-current fragment schedule](ideas/cutlass-load-next-compute-current.md) | Explicit load-next is admitted for two exact FP16/BF16 shapes; no load-next policy wins the current 42-contract frozen replay, while earlier gains remain valid against their recorded controls. |
+| [CUTLASS-style grouped-N CTA traversal](ideas/grouped-n-cta-swizzle.md) | Explicit grouped_n8 traversal and checked launch mapping are integrated; no grouped-N policy wins the current 42-contract frozen replay, while older tall gains remain scoped evidence. |
 | [Operand reuse hints and ordering](ideas/operand-reuse-hints.md) | The tensor scheduler emits reuse hints for supported neighboring HMMA operands. |
 | [Paired B-fragment LDSM loads and register-group use](ideas/paired-fragment-loads.md) | The selected native kernel uses paired `LDSM.x4` B loads. |
 | [Native PTX input and compilation boundary](ideas/ptx-native-frontend.md) | Supported SM80 PTX routes to the native scalar/tensor backends with explicit verification limits. |
@@ -69,7 +73,7 @@ These are available in the current code under their stated contracts. Explicit t
 | [Register allocation, aligned groups and guarded definitions](ideas/scalar-register-allocation.md) | The scalar compiler uses virtual values, liveness, stable homes for repeated/guarded definitions and aligned register-group allocation. |
 | [Measured scalar instruction scheduling](ideas/scalar-scheduling.md) | Corrected fixed-pipe probes found four cycles for tested same-pipe ALU/FMA pairs, five across tested classes, and 13 from a predicate definition to tested guarded instructions/branches. |
 | [Shared-memory swizzling and bank conflicts](ideas/shared-layout-swizzling.md) | The selected GEMM uses the tested symmetric 7/7 XOR swizzle. |
-| [Two-tile stage-pair specialization and peeled drain](ideas/stage-pair-specialization.md) | `--schedule stagepair` is the selected production plan. |
+| [Two-tile stage-pair specialization and peeled drain](ideas/stage-pair-specialization.md) | All 42 installed GEMM plans retain the explicit two-stage stagepair protocol; combined remains an admissible comparison but wins no frozen row. |
 | [Complete application-state verification diagnostics](ideas/state-verification-diagnostics.md) | Checks all state groups under unchanged gates and bounded failure reports; exposes both BF16 parameter failures. |
 | [Carry-linked pointer updates and folded shared addresses](ideas/tensor-address-generation.md) | The earlier address work reduced one selected kernel from 1,898 to 1,812 static non-NOP instructions; six same-worker cases improved about 0.9–5.4%. |
 | [Vectorized FP32 result stores](ideas/vectorized-fp32-epilogue.md) | The native GEMM epilogue groups FP32 stores into pairs and passes an existing aligned register pair directly when possible. |
@@ -127,16 +131,16 @@ These are source-inspection conclusions, implementation proposals, missing hardw
 | Feature / idea | What is established or limited |
 |---|---|
 | [A100 feasibility: TMA, clusters, FP8, DPX and virtual grouping](ideas/a100-hardware-limits.md) | Missing hardware capabilities cannot be enabled by a compiler flag; software substitutes remain distinct proposals. |
-| [Adaptive shared-memory budgeting](ideas/adaptive-shared-memory-budgeting.md) | The production native GEMM has an explicit fixed contract: two 32 KiB shared operand regions, 64 KiB dynamic shared memory and 128 threads. |
+| [Adaptive shared-memory budgeting](ideas/adaptive-shared-memory-budgeting.md) | Two fixed 32/64 KiB GEMM families are shape-selected; independent adaptive stage/operand/epilogue budgeting remains unimplemented. |
 | [Cross-architecture encoding and cubin observations](ideas/architecture-portability.md) | Historical CUDA 12.8 probes examined common control fields on SM75/86/90/100/120 and parameter/ELF metadata changes. |
 | [Automatic equivalent SASS sequence search](ideas/automatic-sass-sequence-search.md) | Historical candidate searches explored several epilogue orders, fragment windows, pre-addressing, operand orders and scheduler variants; selected changes contributed to the current GEMM. |
 | [Python versus a compiled host implementation](ideas/compiler-language-and-host-latency.md) | No profile shows that rewriting the host compiler improves GPU instruction speed; profile individual host passes first. |
 | [Control-flow recovery and a SASS-to-PTX lifter](ideas/control-flow-lifting.md) | Useful instruction and reconvergence patterns were observed; a complete structured lifter is not shipped. |
-| [CUDA-L2 project source audit](ideas/cuda-l2-source-audit.md) | Pinned public source and contra cts were inspected; a faithful port and performance reproduction remain open. |
+| [CUDA-L2 project source audit](ideas/cuda-l2-source-audit.md) | Pinned public source and contracts were inspected; a faithful port and performance reproduction remain open. |
 | [Joint shared-layout and register-fragment search](ideas/joint-layout-register-search.md) | Existing swizzle experiments largely held register organization fixed; fragment-window and tile experiments explored other dimensions separately. |
 | [Fuse low-rank transforms into operand staging](ideas/low-rank-transform-fusion.md) | The existing runtime-factor and tiny compile-time studies identify this as promising future work. |
 | [Alternative multi-precision accumulation paths](ideas/multi-precision-accumulation.md) | The implemented tensor GEMM already uses mixed precision in the ordinary sense: FP16/BF16 inputs with FP32 accumulation and FP32 output. |
-| [Public CUTLASS and cuBLASLt techniques for A100](ideas/cutlass-cublas-public-techniques.md) | Public pipeline, tiling, epilogue, traversal and heuristic patterns are identified; proprietary cuBLAS device code is not extracted and A100 integration remains open. |
+| [Public CUTLASS and cuBLASLt techniques for A100](ideas/cutlass-cublas-public-techniques.md) | Tile, traversal, load-next and exact dispatch have separate implemented dossiers; generalized pipeline, staged-epilogue, split-K and joint cost-model transfers remain proposals. |
 
 ## How to use and maintain this catalogue
 

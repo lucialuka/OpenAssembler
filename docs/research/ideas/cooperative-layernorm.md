@@ -10,8 +10,10 @@ so it is not a drop-in replacement for a complete training LayerNorm module.
 
 Normalize a row by its population mean and variance using all 32 threads of a
 warp instead of a serial thread. Consecutive threads load consecutive columns;
-four warps process four rows per 128-thread block. Butterfly shuffles combine
-each thread's partial sum, without shared-memory scratch.
+the reference launch groups four rows in four warps. Butterfly shuffles
+combine each thread's partial sum, without shared-memory scratch. The
+[shape-aware rowwise selector](shape-aware-rowwise-dispatch.md) now chooses
+eight warps for two exact LayerNorm contracts, still one warp per row.
 
 The implementation first subtracts the row's first element, computes the mean
 of these differences, then reduces squared centered differences in a second
@@ -24,9 +26,10 @@ zero to the relevant sums; every lane participates in synchronization.
 
 The operation returns `(x-mean)/sqrt(population_variance+epsilon)` in contiguous
 FP32 `[rows,width]` output. Width is 1–1024; row/column tails are supported.
-Arrays are four-byte aligned, the launch is `ceil(rows/4)` blocks of 128 threads
-with no shared memory, row comparisons fit u32 and the total element count is
-at most 2³². Partial overlap is unsupported. Inputs, differences, sums and
+Arrays are four-byte aligned. The launch is `ceil(rows/warps_per_cta)` blocks
+of `32*warps_per_cta` threads with no shared memory; four warps remain the
+baseline, and manual choices are 1, 2, 4 or 8. Row comparisons fit u32 and the
+total element count is at most 2³². Partial overlap is unsupported. Inputs, differences, sums and
 squared differences must remain finite. NaN/Inf and arithmetic overflow are
 outside the validated domain.
 
@@ -35,7 +38,7 @@ a positive Python number is insufficient: it could round to zero or be flushed
 to zero by the chosen reciprocal-square-root instruction. Values below 2⁻¹²⁶,
 overflow, zero and nonfinite epsilon are rejected before writing artifacts.
 
-The nine-shape/five-pattern study uses FP64 formulas on exact FP32 inputs,
+The original November 6 nine-shape/five-pattern study uses FP64 formulas on exact FP32 inputs,
 `rtol=1e-4, atol=2e-5`, all outputs and both canaries. Normal, zero, wide,
 alternating and large-offset/small-variance inputs pass. The two reduction
 families together check 17,408,740 OA outputs. The shifted candidate and its
@@ -45,7 +48,8 @@ for this benchmark/gate, not a universal accuracy ranking.
 
 ## Results
 
-Final actual **A100-SXM4-80GB** graph medians, microseconds per operation:
+Original November 6 four-warp **A100-SXM4-80GB** graph medians, microseconds
+per operation:
 
 | Shape | New OA | Same-source ptxas | Old serial OA | PyTorch CUDA |
 |---|---:|---:|---:|---:|
@@ -63,6 +67,19 @@ Same-source ptxas remains faster. Width-one is about 0.2 µs slower than legacy.
 The main gain over the old OA source is cooperative work/data mapping, not a
 general proof of superior code generation. No whole-step training result is
 inferred from this standalone table.
+
+## Current shape-specific geometry
+
+The later November 10 selection and independent replay promotes eight-warps-
+per-CTA launches for LayerNorm 4096×1 and 4096×32 at epsilon `1e-5`. Their
+held-out OA-W4/selected ratios are 1.106–1.125× on an A100-SXM4-40GB. Formula,
+per-row reduction order and numerical gates are unchanged. LayerNorm
+129×1023/W2 and 4096×1024/W1 passed numerical checks but missed the frozen 3%
+per-round timing cutoff, so they retain four warps. See the
+[rowwise dispatch dossier](shape-aware-rowwise-dispatch.md) for all five-pattern,
+canary, poisoned-graph, bitwise-control and identity evidence. These later
+geometry measurements do not replace the original 80GB table or add affine,
+saved-statistic or backward interfaces.
 
 ## Reproduce
 

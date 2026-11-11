@@ -1,9 +1,20 @@
 # Critical review of the transformer procedure report
 
 The pasted report is a useful workload checklist, but several percentages and
-targets need stricter evidence labels. This review compares it with the current
-whole-stack results, the November 9 GEMM role experiments, and current compiler
-contracts. No percentages below should be read as a generic transformer mix.
+targets need stricter evidence labels. This review records the November 9
+whole-stack/role interpretation and its compiler contracts. No percentages
+below should be read as a generic transformer mix.
+
+Updated November 11, 2026: the exploratory role evidence below is superseded
+for automatic dispatch admission by the
+[42-contract production-source campaign](../dispatch_tuning/RESULTS.md).
+Thirty-four frozen exact policies pass independent heldout admission, while
+eight retain the reference. Copy-address reuse serves 20 contracts and Morton8
+the two large tall contracts. Load-next and grouped-N remain explicit tuning
+candidates but are not installed winners in that campaign. Same-source ptxas
+is faster on every nominal-selected GEMM, so the new gains are OA-vs-OA policy
+gains. None of this repairs the BF16 application gate or supplies full native
+training/attention integration.
 
 ## Claims that are correctly bounded
 
@@ -13,7 +24,7 @@ numbers (forward/loss, backward, optimizer) are tied to a small synthetic
 decoder study and exclude H2D, loader, startup, checkpoint and distributed
 communication costs. Those stage medians are non-additive.
 
-The first-priority state gate is also justified. The current-source BF16
+The first-priority state gate is also justified. The source-bound BF16
 diagnostic records a parameter failure at the step-29 checkpoint under epsilon
 `1e-8`: the failed groups are the two QKV bias tensors, while the component diagnostics
 show the key-bias slices have roughly `1.4e-6` to `1.9e-6` gradient L2 and many
@@ -45,7 +56,7 @@ HMMA scheduling or 1–4% from clipping) are hypotheses. The experiments below d
 not validate those numbers. They should be treated as test targets with explicit
 cost boundaries, not expected performance.
 
-## Current GEMM evidence by role
+## November 9 exploratory GEMM evidence by role
 
 The static matrix at `role-coverage-manifest.json` covers six model geometries,
 15 forward/backward/attention roles and FP16/BF16: 180 rows. It separates a
@@ -53,11 +64,12 @@ dimension-compatible `GemmPlan` from a role whose prepared operands can run as
 one kernel. There are 44 direct RCR routes, 84 rows whose dimensions fit but
 whose transpose/packing or batched-attention semantics block direct routing,
 and 52 rows rejected by the
-full-tile dimension contract.
+128-aligned full-tile dimension contract used by that audit. The later 64×64
+family does not retroactively change the retained static counts.
 These counts are coverage cases, not workload frequencies or an automatic
 native PyTorch route. Square dX/dW dimensions still require the right storage.
 
-Current A100 runs cover medium QKV, output projection, FFN-up/down roles and
+The November 9 A100 runs cover medium QKV, output projection, FFN-up/down roles and
 held-out small/large instances. All complete-output, three-pattern, canary,
 input-immutability, matched-ptxas bitwise, poisoned-graph, disassembly and
 resource checks pass: 156 checks for the repeated medium cohort, 54 for
@@ -67,7 +79,9 @@ At `M=1024,H=1024`, OA/ptxas is about 1.15x for QKV, 1.48x for output, 1.40x
 for FFN-up and 1.43x for FFN-down. These are isolated GEMMs; packing and whole
 training are not included.
 
-The role-specific policy sweep shows why exact dimensions and roles matter:
+The historical role-specific policy sweep shows why exact dimensions and roles matter.
+The decisions below describe that experiment's candidate set, not the installed
+November 11 policies:
 
 | Role and workload | Candidate versus OA m-fast | Decision |
 |---|---:|---|
@@ -146,7 +160,8 @@ OA candidate also beats the old 128-tile ptxas control (14.85 µs), but matched
 64-tile ptxas is faster at 8.45 µs and cuBLAS takes 7.68 µs. This separates a
 kernel-geometry improvement from backend/compiler quality. Larger grids may
 lose because smaller tiles repeat more operand traffic and scalar work. The
-candidate therefore needs role/shape validation before any dispatch decision.
+candidate therefore needed role/shape validation before any dispatch decision;
+the later production replay supplies separate exact-contract admission.
 
 The [completed 32-case sweep](a100-role-gemm_20261109T113850.802215Z.json)
 now supplies that broader comparison: all 1,296 method/input and 432 graph
@@ -180,9 +195,11 @@ cycle estimates are not hardware timings and no general permutation is encoded.
 The production contract still excludes tails, arbitrary strides, transposed
 storage, TF32, arbitrary alpha/beta, batched-head execution, fused attention
 backward, affine/saved-stat normalization, and a complete native optimizer
-route. The role manifest's `evidence_id` field is a proposed dispatch key; no
-automatic role/shape policy should be selected until its exact key has paired
-OA/ptxas/library evidence and a held-out case.
+route. The role manifest's `evidence_id` field is a historical proposed key,
+not a production selector. Current exact GEMM entries have their own paired
+source/binary checks and frozen independent replay under
+[`dispatch_tuning`](../dispatch_tuning/README.md); role labels never bypass
+the checked layout, dtype, alignment or launch contract.
 
 ## Experiment sequence
 
@@ -198,6 +215,6 @@ OA/ptxas/library evidence and a held-out case.
    in a captured graph and compare full outputs, gradients, parameters and
    optimizer state before timing a whole step.
 
-Reproduce the current studies with the commands and case keys in
+Re-run the exploratory studies with fresh identities using the commands and case keys in
 [`README.md`](README.md). Static support is not correctness evidence, and a
 kernel timing is not a whole-step result.
