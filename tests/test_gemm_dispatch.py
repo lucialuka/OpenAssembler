@@ -44,6 +44,28 @@ def test_dispatch_uses_exact_measured_contract_and_recomputes_source_hash():
     assert "source changed" in decision["reason"]
 
 
+def test_installed_dispatch_routes_only_current_independently_verified_contracts():
+    table = json.loads(dispatch.TABLE.read_text())
+    assert table["compiler_identity"] == dispatch.compiler_identity()
+    assert len(table["entries"]) == 42
+    assert sum(entry["policy"] != "baseline" for entry in table["entries"]) == 34
+    for entry in table["entries"]:
+        contract = entry["contract"]
+        plan = GemmPlan(contract["m"], contract["n"], contract["k"],
+                        dtype=contract["dtype"],
+                        tile="128x128" if contract["m"] % 128 == contract["n"] % 128 == 0 else "64x64")
+        chosen, decision = dispatch.select_plan(plan)
+        assert decision["reason"] == "exact measured contract"
+        assert decision["policy"] == entry["policy"]
+        assert chosen == dispatch.policy_plan(plan, entry["policy"])
+        assert {item["split"] for item in entry["evidence"]} == {"selection", "heldout"}
+        assert len({item["session"]["id"] for item in entry["evidence"]}) == 2
+        assert all(item["rounds"] >= 3 and min(item["samples_per_round"]) >= 8
+                   for item in entry["evidence"])
+        if entry["policy"] != "baseline":
+            assert min(entry["speedup_range"]) >= 1.02
+
+
 @pytest.mark.parametrize("entry_changes,reason", [
     ({"status": "validated-experiment-only"}, "promotion gates"),
     ({"status": "promoted", "gates_passed": False}, "promotion gates"),

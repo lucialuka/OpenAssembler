@@ -175,7 +175,7 @@
       "title": "Direct pointer homes for asynchronous GEMM copies",
       "status": "implemented",
       "path": "docs/research/ideas/direct-pointer-homes.md",
-      "summary": "Explicit mode improves tested MLP products but regresses on tall GEMM; legacy remains the default."
+      "summary": "Direct homes remove redundant pointer copies; exact current dispatch selects direct/early combinations while tall regressions retain other policies."
     },
     {
       "id": "early-gemm-pointer-advance",
@@ -287,7 +287,7 @@
       "title": "Morton8 logical CTA traversal",
       "status": "implemented",
       "path": "docs/research/ideas/morton-cta-order.md",
-      "summary": "Corrected 8×8 tile traversal helps tested tall grids; it is not an MMA storage layout or automatic policy."
+      "summary": "Corrected 8\u00d78 CTA traversal is automatically selected for the two independently validated 16384\u00d74096\u00d74096 contracts; it is not an MMA storage layout."
     },
     {
       "id": "multi-precision-accumulation",
@@ -322,7 +322,7 @@
       "title": "Native SM80 tensor GEMM compiler and mainloop",
       "status": "implemented",
       "path": "docs/research/ideas/native-tensor-gemm.md",
-      "summary": "The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128×128×64 CTA tiles, four 64×64 warp tiles, 128 threads and 64 KiB dynamic shared memory."
+      "summary": "The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands, FP32 accumulation/output, 128\u00d7128\u00d764 CTA tiles, four 64\u00d764 warp tiles, 128 threads and 64 KiB dynamic shared memory."
     },
     {
       "id": "nn-arithmetic-campaign",
@@ -378,7 +378,7 @@
       "title": "Software producer/consumer warp specialization",
       "status": "tested-not-selected",
       "path": "docs/research/ideas/producer-consumer-warps.md",
-      "summary": "The tested role-split variants passed four large-case A100 correctness checks but measured about 1.019–1.943 ms and lost to the unified-warp schedule."
+      "summary": "The tested role-split variants passed four large-case A100 correctness checks but measured about 1.019\u20131.943 ms and lost to the unified-warp schedule."
     },
     {
       "id": "ptx-native-frontend",
@@ -413,7 +413,7 @@
       "title": "Runtime-factor Triton low-rank lowering",
       "status": "tested-not-selected",
       "path": "docs/research/ideas/runtime-factor-low-rank-triton.md",
-      "summary": "The early A10040GB prototype was far slower: at 4096³ FP16, cuBLAS was about 0.511 ms, direct Triton 1.325 ms, Strassen 11.611 ms and AlphaTensor 13.041 ms."
+      "summary": "The early A10040GB prototype was far slower: at 4096\u00b3 FP16, cuBLAS was about 0.511 ms, direct Triton 1.325 ms, Strassen 11.611 ms and AlphaTensor 13.041 ms."
     },
     {
       "id": "sass-emulator-and-tensor-numerics",
@@ -476,7 +476,7 @@
       "title": "Shape-aware native GEMM dispatch and on-device tuning",
       "status": "implemented",
       "path": "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
-      "summary": "Exact contract dispatch and optional correctness-gated A100 tuning retain conditional native policies without extrapolating a winner."
+      "summary": "Current 42-contract independent replay installs 34 tuned native policies and eight measured baseline retentions; exact identity gates and optional GPU tuning preserve conditional choices."
     },
     {
       "id": "shape-aware-rowwise-dispatch",
@@ -497,7 +497,7 @@
       "title": "Smaller tensor CTA tiles for short transformer GEMMs",
       "status": "implemented",
       "path": "docs/research/ideas/small-grid-tensor-cta-tiles.md",
-      "summary": "The checked 64x64 CTA kernel and exact-contract dispatch use the current measured result when gated; shape regressions and ptxas gaps remain."
+      "summary": "Twenty-two exact current contracts select checked tile64 variants after independent replay; shape regressions and same-source ptxas gaps remain."
     },
     {
       "id": "software-register-caching",
@@ -539,7 +539,7 @@
       "title": "Carry-linked pointer updates and folded shared addresses",
       "status": "implemented",
       "path": "docs/research/ideas/tensor-address-generation.md",
-      "summary": "The earlier address work reduced one selected kernel from 1,898 to 1,812 static non-NOP instructions; six same-worker cases improved about 0.9–5.4%."
+      "summary": "The earlier address work reduced one selected kernel from 1,898 to 1,812 static non-NOP instructions; six same-worker cases improved about 0.9\u20135.4%."
     },
     {
       "id": "tensor-counter-profiling",
@@ -553,7 +553,7 @@
       "title": "Clocked tensor probes and synchronization sweeps",
       "status": "validated-not-integrated",
       "path": "docs/research/ideas/tensor-timing-and-synchronization.md",
-      "summary": "Corrected exact-SASS probes measured an approximately eight-cycle-per-operation slope for the tested dependent HMMA sequence and about 41 cycles per iteration for LDSM→LOP3→IADD3."
+      "summary": "Corrected exact-SASS probes measured an approximately eight-cycle-per-operation slope for the tested dependent HMMA sequence and about 41 cycles per iteration for LDSM\u2192LOP3\u2192IADD3."
     },
     {
       "id": "vectorized-fp32-epilogue",

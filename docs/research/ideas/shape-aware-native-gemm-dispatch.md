@@ -34,11 +34,14 @@ the combined-loop control, Morton8/grouped-N traversal, direct pointers,
 earlier pointer advancement, their admitted direct/early combination, bounded
 load-next fragments and a 64×64 CTA family. Tile64 now has independently
 selectable copy-address reuse, direct pointer homes and early advancement. The
-existing dispatch table fingerprint predates this expanded candidate set and
-is stale, so the selector currently falls back to the reference for every
-shape. A 42-contract production-source A100 campaign is testing the expanded
-policy set. Only independently held-out promotions will repopulate automatic
-dispatch. `--autotune` can test admissible choices on the current A100.
+current [42-contract production-source replay](../../../exp/dispatch_tuning/RESULTS.md)
+completed selection and independent frozen held-out validation. The installed
+table now contains 34 nonbaseline choices and eight measured baseline
+retentions. Across six paired rounds, the improved policies give 1.033–2.460×
+OA baseline/selected speed ratios. Copy-address reuse is selected in 20 exact
+contracts and Morton8 in both 16384×4096×4096 dtype contracts. No combined,
+grouped-N or load-next policy is selected in this campaign; those candidates
+remain available for exact future measurements. `--autotune` can test admissible choices on the current A100.
 `GemmPlan` rejects incompatible combinations before a build. Dispatch does not
 silently replace kernels with ptxas, cuBLAS or an Inductor graph.
 
@@ -66,10 +69,21 @@ pilot on 128×512×512 FP16 found tile64/direct at 9.15 µs; same-source ptxas a
 cuBLAS were faster at about 7.04 and 6.30 µs.
 
 The first 12-shape production replay was interrupted and had no return bundle;
-it is excluded. Its replacement uses the expanded source identity and includes
-copy-address reuse. Each case retains raw JSON and PTX/cubin/SASS before the
-next case starts. Automatic entries remain disabled until current selection
-and independent held-out promotion gates pass.
+it is excluded. Its completed replacement,
+`a100-production-shapes-copyinit-v5-20261110`, retains raw JSON and PTX/cubin/SASS
+for 500 candidate builds and 1,500 complete candidate/input checks in each
+session. The promotion audit independently re-encodes native words and checks
+the frozen source, contract, resources, numerical/graph gates and each paired
+round before installing any exact entry. Earlier incomplete campaigns are
+historical evidence only.
+
+All 42 nominal-selected native kernels remain slower than same-source ptxas in
+both sessions. Six nominal selections per session beat the matched cuBLAS
+GemmEx control in every round; this is not a tuned cuBLASLt search. Seven
+held-out nominal winners differ from the frozen installed policy, so their
+supplemental ptxas/cuBLAS comparisons describe only the nominal choice. Frozen
+policy promotion instead uses all-candidate native timings and the exact
+per-policy correctness checks. Variant absolute times are never pooled.
 
 The table is a finite set of measurements, not a universal model of A100
 performance. An unknown shape can have a faster unmeasured alternative. Even

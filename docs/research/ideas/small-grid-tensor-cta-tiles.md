@@ -136,19 +136,20 @@ on an A100. Unseen alignment classes, toolkit versions and whole-model
 substitution still need validation. A native model route and full
 forward/backward/optimizer state check remain separate integration gates.
 
-The production dispatch table currently fails closed to the 128×128 baseline:
-its fingerprint predates the expanded candidate set. The replacement 42-case
-campaign freezes the current source identity and compares tile64 with original
-and reused copy addresses, direct pointer homes, early/late advancement, the
-128×128 policies, load-next, Morton, and grouped-N where each plan is admissible.
-No new automatic entry is enabled until independent selection and held-out
-records pass the promotion auditor.
+The completed [42-contract current-source replay](../../../exp/dispatch_tuning/RESULTS.md)
+installs 34 faster OA policies and eight measured baseline retentions. Twenty-two
+contracts select tile64 variants; twenty select copy-address reuse. Selection
+and independent held-out sessions retain every current PTX/cubin/SASS and pass
+all output/bitwise/canary/poisoned-graph/resource gates. Original/reused copy
+addresses, direct homes, early/late updates, 128×128 controls, Morton/grouped-N
+and bounded load-next were compared wherever admitted.
 
-The production table
+The current production table
 [`sm80_gemm_dispatch.json`](../../../openassembler/kernels/sm80_gemm_dispatch.json)
-retains the previous compiler identity and is not active for this source tree.
-Unknown/stale contracts use the reference. The current pilot records remain
-useful exact-shape history; matched ptxas and cuBLAS remain faster.
+is active only with its exact compiler and generated-body identity. Unknown or
+stale contracts use the representable reference family. Same-source ptxas
+remains faster for every nominal-selected shape; a geometry gain over OA does
+not establish a CUDA-toolchain or complete-training win.
 
 ```sh
 .venv/bin/python -m exp.shape_coverage.audit_role_evidence

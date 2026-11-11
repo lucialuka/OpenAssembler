@@ -7,10 +7,11 @@ The later [joint option search](joint-tensor-options.md) and
 extend this production contract. They use isolated experiment compilers, retain
 the protected dependencies and show conditional gains plus tall-shape losses.
 
-This is an explicit `--pointer-mode direct` tuning option. The default remains
-`legacy`: the idea improves the measured MLP matrix products but regresses on
-the tall control. “Implemented” does not mean selected automatically or faster
-for every shape.
+This remains an explicit `--pointer-mode direct` tuning option, and the current
+[exact shape dispatch](shape-aware-native-gemm-dispatch.md) selects direct/early
+combinations only after independent held-out validation. Unknown contracts
+retain `legacy`. The idea improves measured MLP products but regresses on the
+tall control; it is not faster for every shape.
 
 ## Idea in plain language
 

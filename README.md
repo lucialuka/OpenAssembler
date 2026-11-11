@@ -33,8 +33,9 @@ OpenAssembler generates native SASS and executable cubins for supported A100/SM8
   include tile64 copy-address reuse and pointer placement, and optional
   correctness-gated A100 tuning can compare the complete admitted policy set.
   Automatic shape entries require a current compiler identity and independently
-  confirmed held-out evidence; the table is rebuilding after the policy set was
-  expanded, so stale entries currently fall back to the reference.
+  confirmed held-out evidence. The current 42-contract replay installs 34
+  tuned native policies and eight verified baseline retentions; unknown/stale
+  shapes retain the reference. See the [measured results](exp/dispatch_tuning/RESULTS.md).
 - Generate cooperative FP32 softmax and population LayerNorm with row/column tails.
 - Inspect cubins and SASS, emulate supported instructions, and run matched GPU
   checks locally, over SSH or on Modal.

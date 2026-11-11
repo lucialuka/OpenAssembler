@@ -6,8 +6,10 @@ post-chain drain, LDSM visibility/address dependencies, async-copy groups,
 barriers, K order and full-output contract. The tile64 CTA, direct pointer-home
 lowering, early advancement and checked copy-address reuse are now integrated
 as independently selectable production plan fields. Shape-specific automatic
-dispatch remains disabled while the expanded candidate set is revalidated on
-the current production source.
+dispatch is now installed for 42 exact current-source contracts: 34 tuned
+choices and eight measured reference retentions. Copy-address reuse is selected
+in 20 contracts. The [completed two-session replay](../dispatch_tuning/RESULTS.md)
+is the current authority; unknown or stale shapes retain the reference.
 
 ## Copy-address reuse
 
@@ -60,8 +62,9 @@ advancement. Its emitted PTX and native word sequence match the current
 byte-for-byte; across all 12 retained 64×64 cases in the earlier campaign, each
 production plan/PTX and independently regenerated native word sequence also
 match the retained artifact. This demonstrates source/encoder fidelity. The
-new production-source two-session campaign is still required to select exact
-automatic shape entries and compare CSE variants against the incumbent.
+completed production-source two-session campaign selects exact automatic
+shape entries and compares CSE variants against the incumbent; see the
+[current dispatch results](../dispatch_tuning/RESULTS.md).
 
 For the production pilot, direct pointer lowering removes 64 MOV instructions
 from the 64×64 native SASS listing (728→664), with HMMA 128, LDSM 64, sixteen
@@ -73,8 +76,14 @@ best tile128 OA control. Same-source tile64 ptxas is 7.04 µs and cuBLAS is
 A subsequent twelve-shape production replay attempt ended when Modal stopped
 the app before returning results. It emitted no usable raw result, artifact
 bundle or gate record and is excluded from promotion. The replacement
-`a100-production-shapes-copyinit-v3-20261110` campaign is running the larger
-42-contract production matrix with the address-reuse candidates included.
+`a100-production-shapes-copyinit-v5-20261110` completed all 42 production
+contracts in independent selection and held-out sessions, with address-reuse
+candidates included. Thirty-four frozen choices improve the OA baseline by at
+least 2% in every paired round, while eight retain baseline. The installed table
+requires the exact current compiler and generated body. Same-source ptxas
+remains faster for all nominal selected policies. Supplemental controls refer
+to each session nominal choice, which differs from the frozen policy in seven
+held-out records; only all-candidate native timing decides promotion.
 
 The public CLI tuning path was then exercised synchronously on the same exact
 shape. `a100-production-autotune_20261110.json` records the seven admissible

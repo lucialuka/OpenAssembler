@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "audit_date": "2026-11-10",
+  "audit_date": "2026-11-11",
   "scope": "all implemented research catalogue entries at generation",
-  "implemented_count": 38,
+  "implemented_count": 39,
   "principle": "Specialize measured performance choices by complete workload contract; keep semantic legality, dependencies and validation unconditional.",
   "not_an_all_shapes_performance_proof": true,
   "pending_nonimplemented_priority": [
@@ -10,8 +10,8 @@
       "id": "fused-backward-reductions",
       "status": "validated-not-integrated",
       "code": "exp/nn_round2/operator_candidates.py",
-      "reason": "FMAchangesroundingandfullbackwardoperatorcontractisoutsideproductionrowwise; narrowoldwinsnotgenericnormdispatch.",
-      "next_action": "Retestrows/width/tree/loadgeometryandexplicitcontractionpolicy,thenaddfull-stateverifiedproductionoperatorifadmitted."
+      "reason": "FMA changes rounding and full backward operators are outside production rowwise; narrow old wins are not a generic normalization dispatch rule.",
+      "next_action": "Retest rows/width/tree/load geometry and an explicit contraction policy, then add a full-state-verified production operator if admitted."
     }
   ],
   "features": [
@@ -91,7 +91,7 @@
         "openassembler/rowwise.py"
       ],
       "applicability": "Contiguous FP32 rows, width1..1024, positive normal finite FP32 epsilon; y-only population LayerNorm, no affine/saved statistics/backward.",
-      "current_selection": "Explicit rowwise command; one warp per row, four warps per CTA fixed. No native graph substitution.",
+      "current_selection": "Explicit rowwise command; one warp per row, exact measured CTA dispatch selects 2/8 warps on five promoted contracts; unknown shapes retain four. No native graph substitution.",
       "tuning_axes": [
         "rows",
         "width and tail",
@@ -99,10 +99,10 @@
         "register pressure",
         "tree/load overlap"
       ],
-      "next_action": "Run rowwise1/2/4/8-warp campaign on unchanged five-pattern gates; integrate only current exact shape winners.",
+      "next_action": "Five exact held-out rowwise policies are integrated; extend the 1/2/4/8-warp search under unchanged five-pattern gates for additional contracts.",
       "code_sha256": {
-        "openassembler/kernels/reductions.py": "8401a40578689acbcbc9bd75c02b518296313f71bb67224f801dc0bcddf9e58e",
-        "openassembler/rowwise.py": "2be791dc081667e3e526cde094dff31be47c9b9a9a1d8108f6ff76bb86c323cd"
+        "openassembler/kernels/reductions.py": "acef807ca573a2805acba477926b6fca5608682a54d40f650666767c28f95852",
+        "openassembler/rowwise.py": "475b61a9f59e4629586e95ca305ee5798dbbf358f65e8260e31894487c0d2314"
       },
       "retained_references": [
         "docs/research/ideas/cooperative-softmax.md",
@@ -128,7 +128,7 @@
         "openassembler/rowwise.py"
       ],
       "applicability": "Contiguous bounded finite FP32 rows, width1..1024; full-warp max/sum reductions, no mask/backward.",
-      "current_selection": "Explicit rowwise command with fixed four warps per CTA; tails are semantic masks, not optional tuning.",
+      "current_selection": "Exact measured CTA geometry selects 2/8 warps on five promoted rowwise contracts; unknown shapes retain four. Tails are semantic masks, not optional tuning.",
       "tuning_axes": [
         "rows",
         "width and tail",
@@ -136,10 +136,10 @@
         "register pressure",
         "load/tree overlap"
       ],
-      "next_action": "Run rowwise1/2/4/8-warp campaign and record shape-specific winners and regressions before promotion.",
+      "next_action": "Retain the 58-shape sweep and seven-case held-out evidence; extend exact geometry choices without relaxing masks or numerical gates.",
       "code_sha256": {
-        "openassembler/kernels/reductions.py": "8401a40578689acbcbc9bd75c02b518296313f71bb67224f801dc0bcddf9e58e",
-        "openassembler/rowwise.py": "2be791dc081667e3e526cde094dff31be47c9b9a9a1d8108f6ff76bb86c323cd"
+        "openassembler/kernels/reductions.py": "acef807ca573a2805acba477926b6fca5608682a54d40f650666767c28f95852",
+        "openassembler/rowwise.py": "475b61a9f59e4629586e95ca305ee5798dbbf358f65e8260e31894487c0d2314"
       },
       "retained_references": [
         "docs/research/ideas/scalar-dependency-correctness.md",
@@ -240,7 +240,7 @@
       ],
       "next_action": "Current production GEMM campaign compares it against direct/early and geometry choices; promote exact wins, retain large-shape regressions.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d"
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036"
       },
       "retained_references": [
         "exp/tensor_scheduler/load-next-compute-current_20261108T061236.040495Z.json",
@@ -282,14 +282,14 @@
       "title": "Direct pointer homes for asynchronous GEMM copies",
       "status": "implemented",
       "dossier": "docs/research/ideas/direct-pointer-homes.md",
-      "dossier_sha256": "9572e2c8ef6b533fbb50e2b46bd644da3c693841435b9c22335fe8a6c05383dd",
+      "dossier_sha256": "ac10037319c97c85ee47996bf5541ebeea83fb27a870d94bc223cca8f1c32e83",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/backend/tensor.py",
         "openassembler/kernels/gemm.py"
       ],
       "applicability": "Aligned loop-carried64bit pointer homes; explicit stagepair m_fast unfused contract; no altered address WAR.",
-      "current_selection": "Manual pointer_mode=direct; GEMM tuner tests legal shapes. One current exact tile64/direct automatic row at audit start.",
+      "current_selection": "Manual pointer_mode=direct and exact current table; 34 nonbaseline GEMM policies passed independent frozen replay across 42 contracts.",
       "tuning_axes": [
         "M/N/K",
         "tile",
@@ -297,16 +297,17 @@
         "pointer live ranges",
         "advance placement"
       ],
-      "next_action": "Revalidate all historical shapes through source-inclusive CLI and retain exact source/cubin/SASS before automatic routing.",
+      "next_action": "Current 42-contract selection/held-out replay is integrated with retained source/cubin/SASS; tune new contracts independently and retain unsupported-shape fallback.",
       "code_sha256": {
         "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7",
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d"
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036"
       },
       "retained_references": [
         "docs/research/ideas/early-gemm-pointer-advance.md",
         "docs/research/ideas/joint-tensor-options.md",
         "docs/research/ideas/native-hybrid-mlp.md",
         "docs/research/ideas/post-allocation-pointer-forwarding.md",
+        "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
         "exp/weaknesses/gemm_pointer_homes-20261106T130015.386450Z.json",
         "exp/weaknesses/gemm_pointer_homes-20261106T130456.021475Z.json",
         "exp/weaknesses/gemm_pointer_homes-20261106T131150.445587Z.json",
@@ -318,7 +319,7 @@
         "openassembler/kernels/gemm.py",
         "tests/test_tensor_pointer_homes.py"
       ],
-      "catalogue_summary": "Explicit mode improves tested MLP products but regresses on tall GEMM; legacy remains the default."
+      "catalogue_summary": "Direct homes remove redundant pointer copies; exact current dispatch selects direct/early combinations while tall regressions retain other policies."
     },
     {
       "id": "early-gemm-pointer-advance",
@@ -341,7 +342,7 @@
       ],
       "next_action": "Select exact repeated wins against all current controls; keep tall regressions and no shortening of dependency waits.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d",
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
         "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7"
       },
       "retained_references": [
@@ -414,7 +415,7 @@
       ],
       "next_action": "Add a separate fused-contract tuner and whole-boundary comparison; never rank against bare GEMM as if equal work.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d"
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036"
       },
       "retained_references": [
         "docs/evidence/a100-mma/current-validation/validation_20261105T074142.327676Z.json",
@@ -446,7 +447,7 @@
       ],
       "next_action": "Every tuned shape must retain its correct launch. Execution safety and validation stay mandatory regardless of speed.",
       "code_sha256": {
-        "openassembler/runner.py": "386512ff566afe5877674c6fb6ee9351f4aa067222c7adf1c84a8e4e703d95a0",
+        "openassembler/runner.py": "5ae69f7cead9323f080378e684a4041963573f5f0843f7161c7264edc40a6e30",
         "openassembler/gpu/cuda_driver.py": "55c9726c97c01e14de52ceed9b56685ed5536a67b19e9d00aed3a70deb67aef6",
         "openassembler/gpu/batch.py": "a68f270e9ccbc6268438d7b156f27a7e486a7e191b353eedf14dc9998eac77a4"
       },
@@ -484,7 +485,7 @@
       ],
       "next_action": "Revalidate tall controls as well as forward roles; preserve mfast/Morton alternatives for shapes where groupedN loses.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d"
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036"
       },
       "retained_references": [
         "exp/gemm_dispatch/grouped-n_20261108T062456.797718Z.json",
@@ -567,7 +568,7 @@
       "title": "Morton8 logical CTA traversal",
       "status": "implemented",
       "dossier": "docs/research/ideas/morton-cta-order.md",
-      "dossier_sha256": "94b7416dd874aeae5b929ed7f1c2af4aceb510d31712780a41457731e44aa5f6",
+      "dossier_sha256": "dcb99c2cfc9ff94106880ec3681d0aeb5f42ecc083a0c0446f89d753f97564e0",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/gemm.py"
@@ -580,17 +581,18 @@
         "CTA grid",
         "L2 locality"
       ],
-      "next_action": "Current campaign includes prior tall winners and broad role negatives; promote repeated exact wins only.",
+      "next_action": "Current two-session campaign promotes Morton8 for both 16384x4096x4096 dtype contracts; other shapes retain independently measured alternatives or baseline.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d"
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036"
       },
       "retained_references": [
         "docs/evidence/a100-mma/current-validation/validation_20261105T074142.327676Z.json",
         "docs/evidence/a100-mma/phase6-validation-20261104-superseded.json",
+        "exp/dispatch_tuning/RESULTS.md",
         "openassembler/kernels/gemm.py",
         "tests/test_gemm_codegen.py"
       ],
-      "catalogue_summary": "Corrected 8\u00d78 tile traversal helps tested tall grids; it is not an MMA storage layout or automatic policy."
+      "catalogue_summary": "Corrected 8\u00d78 CTA traversal is automatically selected for the two independently validated 16384\u00d74096\u00d74096 contracts; it is not an MMA storage layout."
     },
     {
       "id": "native-gelu",
@@ -669,8 +671,8 @@
         "openassembler/kernels/_gemm64.py",
         "openassembler/gemm.py"
       ],
-      "applicability": "Unbatched aligned contiguousRCR FP16/BF16 inputs, FP32acc/output, alpha1 beta0, full64/128M/Ntiles,K%128; contract excludes general layouts/tails.",
-      "current_selection": "Native CLI exact measured dispatch plus optionalGPUtuning; unknown/stale rows baseline.",
+      "applicability": "Unbatched aligned contiguous RCR FP16/BF16 inputs, FP32 accumulation/output, alpha=1 beta=0, full 64/128 output tiles, K divisible by128; excludes general layouts/tails.",
+      "current_selection": "Native CLI exact measured dispatch plus optional GPU tuning; unknown/stale rows use baseline.",
       "tuning_axes": [
         "M/N/K",
         "dtype",
@@ -682,9 +684,9 @@
       ],
       "next_action": "Current source-inclusive selection/held-out campaign retests all admitted alternatives and preserves exact negative controls.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d",
-        "openassembler/kernels/_gemm64.py": "042d0afa3e548a2564f8ad056c185a6a0857995b4b8a3427206c255b0c30b7af",
-        "openassembler/gemm.py": "55d9c0c9a42f1a16400633b6995a03e9748210d697dfb9cdd439a1d01a8749ba"
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
+        "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d",
+        "openassembler/gemm.py": "18df53657e291ac839b482ac7ec3e6c8d7334d93f8b2c8c8beb49c68c9b927bb"
       },
       "retained_references": [
         "docs/evidence/a100-mma/current-validation/validate_modal.py",
@@ -750,8 +752,8 @@
       ],
       "next_action": "Compare complete source families jointly with registers/layouts; the legal native-half pair rule remains a correctness invariant.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d",
-        "openassembler/kernels/_gemm64.py": "042d0afa3e548a2564f8ad056c185a6a0857995b4b8a3427206c255b0c30b7af",
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
+        "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d",
         "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7"
       },
       "retained_references": [
@@ -773,8 +775,8 @@
         "openassembler/ptx/parse.py",
         "openassembler/frontend.py"
       ],
-      "applicability": "Implemented PTX opcode/type/control subset and exact supportedSM80 architecture; unsupported forms refuse or explicitfallback.",
-      "current_selection": "Inputlanguage/IRcontent chooses native scalar or tensor backend.",
+      "applicability": "Implemented PTX opcode/type/control subset and exact supported SM80 architecture; unsupported forms refuse or use an explicit fallback.",
+      "current_selection": "Input language and IR content choose the native scalar or tensor backend.",
       "tuning_axes": [],
       "next_action": "Keep semantics and explicit unsupported boundaries; performance dispatch occurs after contract recognition.",
       "code_sha256": {
@@ -803,10 +805,10 @@
       "dossier_sha256": "0eec40e6718bd8f0f8f85241959438bb00377e64798c86bd410c429ea8bb6084",
       "classification": "frontend-contract",
       "code_paths": [
-        "openassembler/pyfront/compiler.py",
+        "openassembler/pyfront/compile.py",
         "openassembler/pyfront/types.py"
       ],
-      "applicability": "Typed numeric @kernel subset, fixedGPUinteger/floatsemantics and safe AST parsing; no arbitrary hostPython compilation.",
+      "applicability": "Typed numeric @kernel subset, fixed GPU integer/float semantics and safe AST parsing; no arbitrary host Python compilation.",
       "current_selection": "Source annotations/types and supported constructs, not shape labels.",
       "tuning_axes": [
         "compile-time specialization",
@@ -814,6 +816,7 @@
       ],
       "next_action": "Specialize declared constants safely; native GPU execution is SASS, so host-language rewriting is not a tensor throughput policy.",
       "code_sha256": {
+        "openassembler/pyfront/compile.py": "a1e298dbad8157a0ffc4eb23a4e920746cb34d4b18ea4ec54586df1d36318b30",
         "openassembler/pyfront/types.py": "b2b1cf6dce509e2c69fcfd8851387269c05226b1f0472f349671d25562536341"
       },
       "retained_references": [
@@ -843,15 +846,15 @@
         "openassembler/torchfront/frontend.py"
       ],
       "applicability": "Configured arguments/observed shapes/branches and exact state/runtime; Inductor/Triton own GPU code in this route.",
-      "current_selection": "Explicit configured application frontend; cache replay forbids uncapturedspecializations.",
+      "current_selection": "Explicit configured application frontend; cache replay forbids uncaptured specializations.",
       "tuning_axes": [
         "model/input shapes",
         "training/inference",
         "backend graph choices",
         "packing/launches",
-        "fullstate"
+        "full state"
       ],
-      "next_action": "Native kernel tuning does not automatically affect ordinaryPyTorch. Add controllednativegraphhook and first-divergence/fullstate gate before application speed claims.",
+      "next_action": "Native kernel tuning does not automatically affect ordinary PyTorch. Add a controlled native graph hook and first-divergence/full-state gate before application speed claims.",
       "code_sha256": {
         "openassembler/torchfront/worker.py": "7fb6e79dd3db093304c7fd63461421ee9a52412b795809dc065780c1598388e1",
         "openassembler/torchfront/frontend.py": "794f39fe795adce209bb7724dc028756f00cd2bd054ce7afb160ae75128f5efe"
@@ -883,14 +886,14 @@
         "openassembler/project.py",
         "openassembler/build.py"
       ],
-      "applicability": "Safe source discovery, naming/dependency context, atomic output,manifest publication andboundedparallelCPUbuilds.",
-      "current_selection": "Repository/input context; compileworker count is host-resource choice.",
+      "applicability": "Safe source discovery, naming/dependency context, atomic output, manifest publication and bounded parallel CPU builds.",
+      "current_selection": "Repository/input context; compile worker count is a host-resource choice.",
       "tuning_axes": [
         "source count",
         "host CPU/toolkit contention",
         "build jobs"
       ],
-      "next_action": "Measure compile/startup separately; hostbuildconcurrency does not select fastest GPU kernel by shape.",
+      "next_action": "Measure compile/startup separately; host build concurrency does not select the fastest GPU kernel by shape.",
       "code_sha256": {
         "openassembler/repository.py": "4978ef50eca43fba9a63f9d8d6ad481edfe3cff4b1b90b6e1e9f865f41bcd09f",
         "openassembler/project.py": "8bc1ebdda315d92915bc5f4c68a38d61e3c91193568544e7627a5dd689416701",
@@ -923,10 +926,10 @@
         "openassembler/emu/machine.py",
         "openassembler/emu/tensor.py"
       ],
-      "applicability": "Supported functionalSASS/warp/tensor arithmetic subset; no hardwaretimingmodel or allspecialvalueguarantee.",
-      "current_selection": "Explicit validation and regression coverage, not runtime throughputdispatch.",
+      "applicability": "Supported functional SASS/warp/tensor arithmetic subset; no hardware timing model or universal special-value guarantee.",
+      "current_selection": "Explicit validation and regression coverage, not runtime throughput dispatch.",
       "tuning_axes": [],
-      "next_action": "Retain poisoned-register/complete-output checks; hardwaretiming and canary/graphgates remain separate.",
+      "next_action": "Retain poisoned-register/complete-output checks; hardware timing and canary/graph gates remain separate.",
       "code_sha256": {
         "openassembler/emu/machine.py": "d27253ba85d82241af0ba7647ae8cd7a0b7878f65b51c6634778ee81eb5da108",
         "openassembler/emu/tensor.py": "2000285e5ede67cea8dd2ba5215391b5b8afa4cbf4cd630e30fbf1ee1d877bcb"
@@ -952,10 +955,10 @@
         "openassembler/backend/tensor_encoding.py",
         "specs/sm_80"
       ],
-      "applicability": "SupportedSM80 instruction forms, exactfields and generatedencodingdata.",
-      "current_selection": "Opcode/operandform selects encoding, with explicit refusal for unknownforms.",
+      "applicability": "Supported SM80 instruction forms, exact fields and generated encoding data.",
+      "current_selection": "Opcode/operand form selects encoding, with explicit refusal for unknown forms.",
       "tuning_axes": [
-        "equivalentlegalSASSforms under semantic proof"
+        "equivalent legal SASS forms under semantic proof"
       ],
       "next_action": "Do not shape-gate correct encoding. New forms require source-inclusive bits/disassembly/numerical evidence.",
       "code_sha256": {
@@ -983,10 +986,10 @@
         "openassembler/backend/compile.py",
         "openassembler/backend/sched.py"
       ],
-      "applicability": "Aliasbinding, predicates, implicitreaders, scoreboardgeneration retirement, sourceWAR and actualWARPSYNC.",
+      "applicability": "Alias binding, predicates, implicit readers, scoreboard-generation retirement, source WAR and actual WARPSYNC.",
       "current_selection": "Always preserved by safe/sched/opt/tensor policies.",
       "tuning_axes": [],
-      "next_action": "Neverdisable provenedges byshape or timing. Search schedules only within the legal dependency graph.",
+      "next_action": "Never disable proven edges by shape or timing. Search schedules only within the legal dependency graph.",
       "code_sha256": {
         "openassembler/backend/ra.py": "401914e05059134e177224378ce86e0d55e94350f92dfde00c72162089e3e4cc",
         "openassembler/backend/compile.py": "8e5e6d528ba786dba161d84195ebedec50fac0810c22ae26d76b21bb451bc2cb",
@@ -1017,16 +1020,16 @@
       "code_paths": [
         "openassembler/backend/ra.py"
       ],
-      "applicability": "Actual virtual-use/defliveness, guardeddefinitions, loopcarriedhomes and alignedgroups.",
-      "current_selection": "Allocation operates on actualIR/liveness; not tensor M/N/Ktable.",
+      "applicability": "Actual virtual use/def liveness, guarded definitions, loop-carried homes and aligned groups.",
+      "current_selection": "Allocation operates on actual IR/liveness, not a tensor M/N/K table.",
       "tuning_axes": [
-        "kernelIR",
+        "kernel IR",
         "schedule/allocation ordering",
         "pressure",
-        "groupplacement",
+        "group placement",
         "spills"
       ],
-      "next_action": "Explore pressureaware schedule/allocation candidates with exactkernel/workloadidentity; keepcorrectgroupconstraints mandatory.",
+      "next_action": "Explore pressure-aware schedule/allocation candidates with exact kernel/workload identity; keep correct group constraints mandatory.",
       "code_sha256": {
         "openassembler/backend/ra.py": "401914e05059134e177224378ce86e0d55e94350f92dfde00c72162089e3e4cc"
       },
@@ -1049,16 +1052,16 @@
         "openassembler/backend/compile.py",
         "openassembler/build.py"
       ],
-      "applicability": "Measured pairclasses plus scoreboards and mandatorydependencies; scalarminimumstalltable is not HMMApipeline latency.",
-      "current_selection": "Scalar safe/sched/opt policies; tensor uses separate protected sourceorderHMMA8/drain15.",
+      "applicability": "Measured pair classes plus scoreboards and mandatory dependencies; scalar minimum-stall tables do not give HMMA pipeline latency.",
+      "current_selection": "Scalar safe/sched/opt policies; tensor uses separate protected source-order HMMA8/drain15.",
       "tuning_axes": [
-        "kernelIR",
+        "kernel IR",
         "safe/sched/opt",
-        "issueoverlap",
-        "livepressure",
-        "runtimeworking set"
+        "issue overlap",
+        "live pressure",
+        "runtime working set"
       ],
-      "next_action": "Tune legal wholekernels under launch/workloadkey. Never universalS1 or globaldrainshortening from shape alone.",
+      "next_action": "Tune legal whole kernels under a launch/workload key. Never use universal S1 or global drain shortening from shape alone.",
       "code_sha256": {
         "openassembler/backend/sched.py": "5711333491c4a9dc19fb36c94334fb38df3126aadd8d1c3eed41df15e5ca2fd8",
         "openassembler/backend/compile.py": "8e5e6d528ba786dba161d84195ebedec50fac0810c22ae26d76b21bb451bc2cb",
@@ -1074,6 +1077,90 @@
       "catalogue_summary": "Corrected fixed-pipe probes found four cycles for tested same-pipe ALU/FMA pairs, five across tested classes, and 13 from a predicate definition to tested guarded instructions/branches."
     },
     {
+      "id": "shape-aware-native-gemm-dispatch",
+      "title": "Shape-aware native GEMM dispatch and on-device tuning",
+      "status": "implemented",
+      "dossier": "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
+      "dossier_sha256": "75b78164a2c4eda5689e9e251411183e249b72ff1146358a785e298326520e6c",
+      "classification": "shape-and-environment-performance-policy",
+      "code_paths": [
+        "openassembler/gemm_dispatch.py",
+        "openassembler/gemm_tune.py",
+        "openassembler/gemm_tune_modal.py"
+      ],
+      "applicability": "Exact M/N/K/dtype/layout/precision/alignment/epilogue/workspace/tails plus compiler identity/PTX body; A100 only.",
+      "current_selection": "Measured exact table or explicit current GPU tuning; unsupported/stale rows fall back; manual knobs retain reproducibility.",
+      "tuning_axes": [
+        "all admitted GEMM policies",
+        "actual A100 variant",
+        "toolkit/driver",
+        "paired timings",
+        "source/binary identity"
+      ],
+      "next_action": "Completed 42-contract replay installs 34 tuned policies and eight measured baseline retentions; all source/binary evidence retained, no unmeasured-shape extrapolation.",
+      "code_sha256": {
+        "openassembler/gemm_dispatch.py": "9f1b59e8c50ce46c8b7c9b410b16d26f2ccd6f99ac420ea1674525a42d916b3a",
+        "openassembler/gemm_tune.py": "fbb5b9c047990e09d8808dadad885c6c219383e6ad0512f35a95222367150f08",
+        "openassembler/gemm_tune_modal.py": "f5ae5826ef2f0bceccd997a73b75fb9a31cb24cf7252c8fb27e0d0b2ba761f7a"
+      },
+      "retained_references": [
+        "docs/COMMANDS.md",
+        "docs/research/ideas/small-grid-tensor-cta-tiles.md",
+        "exp/dispatch_tuning/RESULTS.md",
+        "exp/instruction_overhead/a100-production-autotune_20261110.artifacts.zip",
+        "exp/instruction_overhead/a100-production-autotune_20261110.json",
+        "exp/shape_coverage/a100-role-gemm_20261109T113850.802215Z.json",
+        "openassembler/gemm.py",
+        "openassembler/gemm_dispatch.py",
+        "openassembler/gemm_tune.py",
+        "openassembler/kernels/gemm.py"
+      ],
+      "catalogue_summary": "Current 42-contract independent replay installs 34 tuned native policies and eight measured baseline retentions; exact identity gates and optional GPU tuning preserve conditional choices."
+    },
+    {
+      "id": "shape-aware-rowwise-dispatch",
+      "title": "Shape-aware CTA geometry for rowwise kernels",
+      "status": "implemented",
+      "dossier": "docs/research/ideas/shape-aware-rowwise-dispatch.md",
+      "dossier_sha256": "1e837c053fe0fb387ea7b649864684ed4930cd642b1e5d1fa02158ec741b1001",
+      "classification": "shape-and-environment-performance-policy",
+      "code_paths": [
+        "openassembler/rowwise_dispatch.py",
+        "openassembler/rowwise.py",
+        "openassembler/kernels/reductions.py"
+      ],
+      "applicability": "Exact operator/rows/width/epsilon, one warp per row and checked FP32 numerical contract; source identity and generated body required.",
+      "current_selection": "Five independently held-out exact contracts select 2/8 warps per CTA; unknown or stale contracts retain four warps. Manual 1/2/4/8 choices remain available.",
+      "tuning_axes": [
+        "rows",
+        "width and tail",
+        "operator",
+        "warps per CTA",
+        "paired timing",
+        "source identity"
+      ],
+      "next_action": "Extend the measured table only after full-output five-pattern, canary, poisoned-graph, bitwise and held-out gates; preserve failed near-threshold candidates.",
+      "code_sha256": {
+        "openassembler/rowwise_dispatch.py": "8986caafc19b886800f5c2dcb8001ce05d1d0a9e34fbbd4609d0c329a27254b9",
+        "openassembler/rowwise.py": "475b61a9f59e4629586e95ca305ee5798dbbf358f65e8260e31894487c0d2314",
+        "openassembler/kernels/reductions.py": "acef807ca573a2805acba477926b6fca5608682a54d40f650666767c28f95852"
+      },
+      "retained_references": [
+        "exp/dispatch_tuning/rowwise_runs",
+        "exp/dispatch_tuning/rowwise_runs/rowwise_heldout_20261110",
+        "exp/dispatch_tuning/rowwise_runs/rowwise_selection_20261110/frozen-heldout.json",
+        "openassembler/kernels/reductions.py",
+        "openassembler/kernels/sm80_rowwise_dispatch.json",
+        "openassembler/rowwise.py",
+        "openassembler/rowwise_dispatch.py",
+        "openassembler/runner.py",
+        "tests/test_cli_rowwise.py",
+        "tests/test_reduction_codegen.py",
+        "tests/test_rowwise_dispatch.py"
+      ],
+      "catalogue_summary": "Five exact FP32 A100 rowwise contracts select heldout-validated CTA warp counts; unknown or stale contracts retain the four-warp plan."
+    },
+    {
       "id": "shared-layout-swizzling",
       "title": "Shared-memory swizzling and bank conflicts",
       "status": "implemented",
@@ -1084,19 +1171,19 @@
         "openassembler/kernels/gemm.py",
         "openassembler/kernels/_gemm64.py"
       ],
-      "applicability": "Selectedsymmetric7/7XORsharedmap with provedcopy/LDSMlane/addresscontracts.",
-      "current_selection": "Fixedselectedmap within each64/128kernel family; asymmetricsweeps remainresearch.",
+      "applicability": "Selected symmetric 7/7 XOR shared map with proved copy/LDSM lane/address contracts.",
+      "current_selection": "Fixed selected map within each 64/128 kernel family; asymmetric sweeps remain research.",
       "tuning_axes": [
         "tile",
-        "sharedswizzle",
-        "fragment/registerlayout",
-        "loadorder",
-        "banktraffic"
+        "shared swizzle",
+        "fragment/register layout",
+        "load order",
+        "bank traffic"
       ],
-      "next_action": "Jointlysearchshared/registerlayout using independentaddresscertificates and fullcurrentGPUchecks; no unmeasuredgeneralpolicy.",
+      "next_action": "Jointly search shared/register layout using independent address certificates and full current GPU checks; no unmeasured general policy.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d",
-        "openassembler/kernels/_gemm64.py": "042d0afa3e548a2564f8ad056c185a6a0857995b4b8a3427206c255b0c30b7af"
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
+        "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d"
       },
       "retained_references": [
         "docs/evidence/a100-mma/phase2/summary.json",
@@ -1111,30 +1198,31 @@
       "title": "Smaller tensor CTA tiles for short transformer GEMMs",
       "status": "implemented",
       "dossier": "docs/research/ideas/small-grid-tensor-cta-tiles.md",
-      "dossier_sha256": "3ab9f7b877b2ce7fe30735914f7c74dbc6f3e25d1d412969766b23a3d88083f5",
+      "dossier_sha256": "58e188296eced4111d2bc1527d315cce145d928746447b4d2a9a8152cb40c66d",
       "classification": "shape-sensitive-kernel",
       "code_paths": [
         "openassembler/kernels/_gemm64.py",
         "openassembler/kernels/gemm.py",
         "openassembler/gemm_dispatch.py"
       ],
-      "applicability": "64x64x64CTA, four32x32warptiles,32KiBshared; M/N%64,K%128,unfusedstagepairmfast; legacy/late or direct/late.",
-      "current_selection": "Exactshapeauto row or manualtile; current tuner compares64against128families.",
+      "applicability": "64x64x64 CTA, four 32x32 warp tiles, 32KiB shared; M/N divisible by64, K by128, unfused stagepair/m_fast; original/reuse copy addresses and admitted direct/early pointer choices.",
+      "current_selection": "Exact-shape automatic row or manual tile; the current tuner compares 64 and128 families.",
       "tuning_axes": [
         "M/N/K",
         "dtype",
         "tile",
-        "gridparallelism",
-        "pointerpolicy",
+        "grid parallelism",
+        "pointer policy",
         "resources"
       ],
-      "next_action": "Revalidateallpriorwins/currentbinaries, preserve14large/otherregressions from historical32case study and donotgeneralizesmallwins.",
+      "next_action": "Twenty-two exact current contracts select tile64 variants after selection/held-out validation; preserve historical regressions and do not generalize small-shape wins.",
       "code_sha256": {
-        "openassembler/kernels/_gemm64.py": "042d0afa3e548a2564f8ad056c185a6a0857995b4b8a3427206c255b0c30b7af",
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d",
-        "openassembler/gemm_dispatch.py": "cce236a5a472e1d246643658e70b44885de328419aeea6ed59a84e19a5a53cd4"
+        "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d",
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
+        "openassembler/gemm_dispatch.py": "9f1b59e8c50ce46c8b7c9b410b16d26f2ccd6f99ac420ea1674525a42d916b3a"
       },
       "retained_references": [
+        "exp/dispatch_tuning/RESULTS.md",
         "exp/shape_coverage/a100-role-gemm_20261109T113850.802215Z.json",
         "exp/shape_coverage/a100-small-tile-counters_20261109T113502.971650Z.json",
         "exp/shape_coverage/evidence-ledger.json",
@@ -1142,7 +1230,7 @@
         "exp/shape_coverage/test_small_tile_gemm.py",
         "openassembler/kernels/sm80_gemm_dispatch.json"
       ],
-      "catalogue_summary": "The checked 64x64 CTA kernel and exact-contract dispatch use the current measured result when gated; shape regressions and ptxas gaps remain."
+      "catalogue_summary": "Twenty-two exact current contracts select checked tile64 variants after independent replay; shape regressions and same-source ptxas gaps remain."
     },
     {
       "id": "stage-pair-specialization",
@@ -1154,17 +1242,17 @@
       "code_paths": [
         "openassembler/kernels/gemm.py"
       ],
-      "applicability": "Fulltiletwo-stageKloop; alternatestaticsharedstages versus combinedreference, preservingcpasynccommit/wait and barriers.",
-      "current_selection": "stagepairbaseline,combinedavailablemanualandGEMMtuner.",
+      "applicability": "Full-tile two-stage K loop; alternate static shared stages versus combined reference, preserving cp.async commit/wait and barriers.",
+      "current_selection": "stagepair baseline; combined is available manually and to the GEMM tuner.",
       "tuning_axes": [
-        "Ktripcount",
+        "K trip count",
         "M/N",
         "tile",
-        "register/codegrowth"
+        "register/code growth"
       ],
-      "next_action": "Keepcombinedasacorrectcandidateevenwherepreviouslylost; exactshapeGPUtuner decides,not globalhistory.",
+      "next_action": "Keep combined as a correct candidate even where it previously lost; the exact-shape GPU tuner decides, not global history.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d"
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036"
       },
       "retained_references": [
         "docs/evidence/a100-mma/phase3/evidence-summary.json",
@@ -1183,10 +1271,10 @@
       "code_paths": [
         "openassembler/torchfront/worker.py"
       ],
-      "applicability": "Fulloutputs,parameters,buffers,gradients,optimizerstate/settingsunderunchangedprecision/tolerances.",
-      "current_selection": "Verificationgates diagnoseBF16divergence;notanoptimizerrepairoroptionalperformancepolicy.",
+      "applicability": "Full outputs, parameters, buffers, gradients, optimizer state/settings under unchanged precision/tolerances.",
+      "current_selection": "Verification gates diagnose BF16 divergence; this is neither an optimizer repair nor an optional performance policy.",
       "tuning_axes": [],
-      "next_action": "Keepallstatechecks atintegrationboundaries; neverdispatchfasterinvalidcandidate orchangeepsilon/tolerance for speed.",
+      "next_action": "Keep all state checks at integration boundaries; never dispatch a faster invalid candidate or change epsilon/tolerance for speed.",
       "code_sha256": {
         "openassembler/torchfront/worker.py": "7fb6e79dd3db093304c7fd63461421ee9a52412b795809dc065780c1598388e1"
       },
@@ -1210,33 +1298,34 @@
       "title": "Carry-linked pointer updates and folded shared addresses",
       "status": "implemented",
       "dossier": "docs/research/ideas/tensor-address-generation.md",
-      "dossier_sha256": "5594fe84c0eea3ea15993c5eb533872639a7b4629bc20ff19ba0675c828f2b5e",
+      "dossier_sha256": "bdf19c551d498b2ed0b05f4e1fa68268c3e8ed84ce143af711ed02fb13828b98",
       "classification": "operand-and-layout-specialization",
       "code_paths": [
         "openassembler/kernels/gemm.py",
         "openassembler/kernels/_gemm64.py",
         "openassembler/backend/tensor.py"
       ],
-      "applicability": "ProvedU32elementindexbounds,widened64bitglobaladdresses,copydisplacements,alignedLDSMaddresses and addressWAR.",
-      "current_selection": "Generatorcontract+nativeinstructionselection;pointerhomepolicyseparate.",
+      "applicability": "Proved U32 element-index bounds, widened 64-bit global addresses, copy displacements, aligned LDSM addresses and address WAR.",
+      "current_selection": "Generator contract plus native instruction selection; pointer-home policy is separate.",
       "tuning_axes": [
         "M/N/K",
         "tile",
-        "addressCSE",
-        "copyinitializerreuse",
-        "directhomes",
-        "LEA/IMADforms"
+        "address CSE",
+        "copy initializer reuse",
+        "direct homes",
+        "LEA/IMAD forms"
       ],
-      "next_action": "Currentaddressreusecandidateisnotpromoted; requirecarry/addressidentity,fullbits/canaries andexactshapepairedbenefit.",
+      "next_action": "Copy-address reuse is integrated for 20 exact current contracts after carry/address identity, full bits/canaries and independent paired benefit gates. New shapes require the same audit.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d",
-        "openassembler/kernels/_gemm64.py": "042d0afa3e548a2564f8ad056c185a6a0857995b4b8a3427206c255b0c30b7af",
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
+        "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d",
         "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7"
       },
       "retained_references": [
         "docs/evidence/a100-mma/encoding/address-ldgsts-roundtrips.json",
         "docs/evidence/a100-mma/phase3/address-confirmation.json",
         "docs/research/ideas/direct-pointer-homes.md",
+        "exp/dispatch_tuning/RESULTS.md",
         "openassembler/backend/tensor.py",
         "openassembler/kernels/gemm.py"
       ],
@@ -1254,18 +1343,18 @@
         "openassembler/kernels/_gemm64.py",
         "openassembler/backend/tensor.py"
       ],
-      "applicability": "FP32adjacentoutputpairs,8byteCalignment,fulltileN andlegalconsecutiveregisterpair; mathematicalgroupingunchanged.",
-      "current_selection": "Selectedgeneratorstorepolicy;legalgroupreusevalidatedbyactualoperandidentities.",
+      "applicability": "Adjacent FP32 output pairs, 8-byte C alignment, full-tile N and legal consecutive register pairs; mathematical grouping unchanged.",
+      "current_selection": "Selected generator store policy; legal group reuse is validated by actual operand identities.",
       "tuning_axes": [
         "tile",
-        "Nstride/alignment",
-        "epiloguefusion",
-        "registerpairplacement"
+        "N stride/alignment",
+        "epilogue fusion",
+        "register-pair placement"
       ],
-      "next_action": "Futurestorewidthchoices needalignment/tailcontracts andcurrentmatchedGPUgates; do notoverridelegalpairidentitychecks.",
+      "next_action": "Future store-width choices need alignment/tail contracts and current matched GPU gates; do not override legal pair-identity checks.",
       "code_sha256": {
-        "openassembler/kernels/gemm.py": "1709d6278fbf7daadc0da9f951e61c9ffec80201c5c655839d085c44e9d65c2d",
-        "openassembler/kernels/_gemm64.py": "042d0afa3e548a2564f8ad056c185a6a0857995b4b8a3427206c255b0c30b7af",
+        "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
+        "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d",
         "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7"
       },
       "retained_references": [
@@ -1275,46 +1364,6 @@
         "tests/test_gemm_codegen.py"
       ],
       "catalogue_summary": "The native GEMM epilogue groups FP32 stores into pairs and passes an existing aligned register pair directly when possible."
-    },
-    {
-      "id": "shape-aware-native-gemm-dispatch",
-      "title": "Shape-aware native GEMM dispatch and on-device tuning",
-      "status": "implemented",
-      "dossier": "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
-      "dossier_sha256": "da140b298ce9c768e9c5b43611a686cfadbeb478d4644c34c32dad4f4f2da625",
-      "classification": "shape-and-environment-performance-policy",
-      "code_paths": [
-        "openassembler/gemm_dispatch.py",
-        "openassembler/gemm_tune.py",
-        "openassembler/gemm_tune_modal.py"
-      ],
-      "applicability": "ExactM/N/K/dtype/layout/precision/alignment/epilogue/workspace/tailspluscompileridentity/PTXbody; A100only.",
-      "current_selection": "Measuredexacttable or explicitcurrentGPUtuning;unsupported/stalerowsfallback; manualknobsretainreproducibility.",
-      "tuning_axes": [
-        "alladmittedGEMMpolicies",
-        "actualA100variant",
-        "toolkit/driver",
-        "pairedtimings",
-        "source/binaryidentity"
-      ],
-      "next_action": "Completecurrentselectionandindependentheldoutreplays,retainallartifacts,thenpromoteonlyrepeatedwins without extrapolation.",
-      "code_sha256": {
-        "openassembler/gemm_dispatch.py": "cce236a5a472e1d246643658e70b44885de328419aeea6ed59a84e19a5a53cd4",
-        "openassembler/gemm_tune.py": "fbb5b9c047990e09d8808dadad885c6c219383e6ad0512f35a95222367150f08",
-        "openassembler/gemm_tune_modal.py": "f5ae5826ef2f0bceccd997a73b75fb9a31cb24cf7252c8fb27e0d0b2ba761f7a"
-      },
-      "retained_references": [
-        "docs/COMMANDS.md",
-        "docs/research/ideas/small-grid-tensor-cta-tiles.md",
-        "exp/instruction_overhead/a100-production-autotune_20261110.artifacts.zip",
-        "exp/instruction_overhead/a100-production-autotune_20261110.json",
-        "exp/shape_coverage/a100-role-gemm_20261109T113850.802215Z.json",
-        "openassembler/gemm.py",
-        "openassembler/gemm_dispatch.py",
-        "openassembler/gemm_tune.py",
-        "openassembler/kernels/gemm.py"
-      ],
-      "catalogue_summary": "Exact contract dispatch and optional correctness-gated A100 tuning retain conditional native policies without extrapolating a winner."
     }
   ]
 }

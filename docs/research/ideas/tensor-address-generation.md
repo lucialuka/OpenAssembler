@@ -14,6 +14,16 @@ The earlier address work reduced one selected kernel from 1,898 to 1,812 static 
 
 This original in-place pointer-update feature is distinct from the newer `--pointer-mode direct`, which removes temporary transfer-source copies and has different shape-dependent results.
 
+The current tile64 generator also supports checked copy-base reuse through
+`--copy-address-init reuse`. The completed [42-contract independent replay](../../../exp/dispatch_tuning/RESULTS.md)
+selects reuse in 20 exact contracts. On 128×512×512 FP16, frozen reuse/direct/early
+time is about 3.8–4.8% below the prior exact tile64/direct incumbent across six
+paired rounds. The 2.237–2.261× gain versus tile128 baseline combines geometry,
+pointer and address changes; it must not be described as isolated CSE benefit.
+The address certificate includes 64-bit carry boundaries, copy/shared/LDSM
+identity and unchanged async dependencies; per-policy current PTX, cubin and
+SASS are retained.
+
 ## Method and validity checks
 
 Test both low-half wrap and carry into the high half, exact address ranges, stage identity, peeled final tiles and complete output coverage. A shorter address expression is not valid if it changes alignment, wraps a 32-bit element offset or overwrites an in-flight reader.

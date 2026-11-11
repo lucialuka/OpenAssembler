@@ -40,18 +40,18 @@ These are available in the current code under their stated contracts. Explicit t
 | [Constant integer division and remainder lowering](ideas/constant-division.md) | The implemented 32-bit lowering removes a reciprocal-based path from direct PTX division/remainder sites. |
 | [Cooperative population LayerNorm](ideas/cooperative-layernorm.md) | Shifted population LayerNorm passes full finite-domain tests; affine, saved statistics and backward are absent. |
 | [Cooperative FP32 row softmax](ideas/cooperative-softmax.md) | Native warp-per-row softmax passes the full five-pattern contract; large serial-mapping gains, ptxas still faster. |
-| [Shape-aware rowwise CTA geometry](ideas/shape-aware-rowwise-dispatch.md) | Five exact heldout A100 contracts select 1/2/8 warps per CTA; unknown or stale shapes keep four warps. |
+| [Shape-aware rowwise CTA geometry](ideas/shape-aware-rowwise-dispatch.md) | Five exact heldout A100 contracts select 2/8 warps per CTA; unknown or stale shapes keep four warps. |
 | [Loadable cubins and metadata-safe code replacement](ideas/cubin-metadata-splicing.md) | The production container code parses/serializes CUDA ELF and .nv.info records, replaces kernel text, fixes exit offsets and declares the generated register count. |
 | [CUDA C/C++ frontend through nvcc PTX](ideas/cuda-cpp-frontend.md) | nvcc supplies CUDA parsing/PTX, while OpenAssembler supplies supported native SASS generation. |
 | [Dead-code removal, copy coalescing and local folding](ideas/dead-code-and-copy-elimination.md) | These passes are in the regular scalar and tensor compilation pipelines before allocation. |
-| [Direct pointer homes for asynchronous GEMM copies](ideas/direct-pointer-homes.md) | Explicit mode improves tested MLP products but regresses on tall GEMM; legacy remains the default. |
+| [Direct pointer homes for asynchronous GEMM copies](ideas/direct-pointer-homes.md) | Direct homes remove pointer copies; exact current dispatch selects direct/early combinations while tall regressions retain other policies. |
 | [Earlier pointer advancement in tensor mainloops](ideas/early-gemm-pointer-advance.md) | Explicit `early` and shape-specific `auto` policies are integrated; tall controls remain on `late`. |
 | [Fused Adam-like scalar update example](ideas/fused-adam-like-update.md) | Fused example passes tolerance and beats the chosen eager expression; it is not complete AdamW or a tuned-optimizer comparison. |
 | [Fused FP32 bias, residual and ReLU epilogues](ideas/fused-gemm-epilogues.md) | The explicit `bias_residual` and `bias_residual_relu` plans compute `(A@B.T + Bias) + Residual`, then optional finite-value ReLU, with FP32 inputs to the epilogue and FP32 output. |
 | [GPU execution, explicit launch specifications and fault isolation](ideas/gpu-execution-and-launch-specs.md) | Typed launch planning, fault-isolated local/Modal/SSH transports implemented; Modal hardware is validated and latest real SSH evidence is absent. |
 | [Four-way counted-loop unrolling](ideas/loop-unrolling.md) | The `opt` scalar path applies four-way unrolling to the supported counted-loop form. |
 | [Exact AlphaTensor/Strassen factors and FP32 research plans](ideas/low-rank-factorization-library.md) | Exact factors and explicit FP32 research plans exist; sampled/interrupted timing records do not prove a general win. |
-| [Morton8 logical CTA traversal](ideas/morton-cta-order.md) | Corrected 8×8 tile traversal helps tested tall grids; it is not an MMA storage layout or automatic policy. |
+| [Morton8 logical CTA traversal](ideas/morton-cta-order.md) | Corrected 8×8 CTA traversal is selected for the two independently validated 16384×4096×4096 contracts; it is not an MMA storage layout. |
 | [Native tanh-approximation GELU example](ideas/native-gelu.md) | Tanh-GELU passes a predeclared FP64 tolerance, while the old exact gate failure remains and gains depend on size. |
 | [Native scalar ReLU example](ideas/native-relu.md) | Finite-input exact example passes; measured large-size PyTorch is faster, with no universal speedup. |
 | [Native SM80 tensor GEMM compiler and mainloop](ideas/native-tensor-gemm.md) | The production `gemm` path computes C=A@B.T with contiguous FP16/BF16 operands and FP32 accumulation/output; exact 128×128 and 64×64 CTA families share the protected SM80 tensor pipeline. |
@@ -73,8 +73,8 @@ These are available in the current code under their stated contracts. Explicit t
 | [Complete application-state verification diagnostics](ideas/state-verification-diagnostics.md) | Checks all state groups under unchanged gates and bounded failure reports; exposes both BF16 parameter failures. |
 | [Carry-linked pointer updates and folded shared addresses](ideas/tensor-address-generation.md) | The earlier address work reduced one selected kernel from 1,898 to 1,812 static non-NOP instructions; six same-worker cases improved about 0.9–5.4%. |
 | [Vectorized FP32 result stores](ideas/vectorized-fp32-epilogue.md) | The native GEMM epilogue groups FP32 stores into pairs and passes an existing aligned register pair directly when possible. |
-| [Shape-aware native GEMM dispatch and on-device tuning](ideas/shape-aware-native-gemm-dispatch.md) | Exact source/contract selection chooses only a promoted native policy; optional local/Modal tuning checks and times the admitted candidates on A100 before retaining a scoped record. Missing/stale table data falls back to the reference. |
-| [Smaller CTA tiles for short transformer GEMMs](ideas/small-grid-tensor-cta-tiles.md) | The checked 64×64 family is integrated; one 128×512×512 FP16 direct-pointer policy is automatically promoted, while other shape-specific rows remain candidates pending current production replay. |
+| [Shape-aware native GEMM dispatch and on-device tuning](ideas/shape-aware-native-gemm-dispatch.md) | Current 42-contract independent replay installs 34 tuned policies and eight measured baseline retentions; exact source/contract checks and optional local/Modal tuning preserve shape-specific alternatives. Missing/stale data falls back to the reference. |
+| [Smaller CTA tiles for short transformer GEMMs](ideas/small-grid-tensor-cta-tiles.md) | Twenty-two exact current contracts select checked tile64 variants after the 42-contract independent replay; shape regressions and same-source ptxas gaps remain. |
 
 ## 2. Validated, not integrated as a production optimization
 

@@ -61,6 +61,19 @@ compiler identity, generated source hashes, runtime/device information, raw
 samples, recorded gate values and artifact hashes. The archive is checked by
 the production record loader and the independent promotion auditor.
 
+## Completed current campaign
+
+The [November 11 results](RESULTS.md) cover all 42 exact contracts in selection
+and independent frozen held-out sessions. The current table installs 34 tuned
+policies and eight measured baseline retentions. Each split retains 500
+candidate builds and 1,500 complete candidate/input checks. Same-source ptxas
+is faster on every nominal-selected shape; these entries improve OA policy,
+not the CUDA toolchain. Supplemental library controls use the session nominal
+selection and must not be attributed to a different frozen policy.
+
+`promote.py` reuses the production promotion audit, saves each exact decision
+durably, and installs a table only when the whole frozen campaign is complete.
+
 ## Reproduce
 
 Use the authenticated Modal CLI from the repository root. Ordinary compilation
@@ -69,11 +82,20 @@ does not start this campaign implicitly.
 ```sh
 .venv/bin/python -m pytest -q exp/dispatch_tuning/test_campaign.py
 modal run exp/dispatch_tuning/modal_campaign.py \
-  --campaign a100-production-shapes-20261110 --session selection --samples 8
+  --campaign NEW-CAMPAIGN --session selection --start 0 --limit 4 --samples 8
 .venv/bin/python -m exp.dispatch_tuning.freeze \
-  exp/dispatch_tuning/runs/a100-production-shapes-20261110
+  exp/dispatch_tuning/runs/NEW-CAMPAIGN
 modal run exp/dispatch_tuning/modal_campaign.py \
-  --campaign a100-production-shapes-20261110 --session heldout --samples 8
+  --campaign NEW-CAMPAIGN --session heldout --start 0 --limit 4 --samples 8
+```
+
+Advance `--start` in bounded batches until all 42 selection cases complete,
+freeze once, then run all 42 held-out cases. Use `--detach` when transport is
+unreliable; completed cases are recovered from the evidence volume. Audit with:
+
+```sh
+.venv/bin/python -m exp.dispatch_tuning.promote \
+  exp/dispatch_tuning/runs/NEW-CAMPAIGN
 ```
 
 Use a new campaign name after changing source or the campaign protocol. Never

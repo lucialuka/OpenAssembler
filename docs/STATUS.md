@@ -1,6 +1,6 @@
 # OpenAssembler architecture and status
 
-Updated **November 10, 2026**. This page describes the current source tree and
+Updated **November 11, 2026**. This page describes the current source tree and
 latest completed validation. The repository CLI update adds workflow/correctness
 checks; the separate November 7 native NN campaign adds GPU measurements and
 experimental candidates without promoting them into production. Full command syntax is in [COMMANDS.md](COMMANDS.md);
@@ -27,8 +27,13 @@ The cross-cutting reverse-engineering record is centralized in the
 | Grouped-N CTA traversal | Current production-path full gates pass; repeated 16384×4096×4096 is about 6.9–7.3% faster than m-fast and held-out tall FP16/BF16 cases improve | Explicit `--cta-order grouped_n8` only; wide/square auto-dispatch remains disabled |
 | Transformer role/shape coverage | Static audit covers 180 role/dtype rows: 44 direct kernel routes, 84 dimension-fit but blocked by layout or batching, and 52 dimension-contract rejections; QKV/output/FFN role runs pass 462 method/input checks, with corrected pointer and fragment replays retained separately | Initial direct-pointer labels were invalidated and rerun with checked compile contracts. Same-source ptxas remains faster on those medium roles; automatic model routing is separate |
 | Current role-matched counters | All 20 counters collected for six FP16 FFN-up methods; OA direct+early executes 4.371M versus ptxas 3.231M total instructions with identical 2.097M tensor work | Extra instructions and overlap both matter; cuBLAS is faster despite more instructions. Counter replay is separate from graph timing |
-| Shape-tuned GEMM and copy-address reuse | Historical tile64/CSE runs include 128×512×512 FP16 across both A100 variants with full gates; the new production-source 42-contract selection/held-out campaign is running with the expanded address-reuse candidate set | 64×64 CSE, direct/early pointer variants and current production tuner are integrated behind exact manual/autotune choices. The installed measured table fingerprint is deliberately stale, so auto dispatch currently fails closed to baseline until new two-session promotions finish. No old 27-row claim is active. See [copy-address and tile measurements](../exp/instruction_overhead/README.md) and the [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md) |
+| Shape-tuned GEMM and copy-address reuse | Completed current production-source selection and independent frozen held-out replay: 42 exact contracts, 500 eligible candidates and 1,500 complete candidate/input checks per session; all binary, numerical, graph and resource gates pass | Automatic dispatch now installs 34 nonbaseline policies and eight measured baseline retentions. Selected policies improve OA baseline by 1.033–2.460× across the paired rounds; copy-address reuse serves 20 contracts and Morton8 the two large tall contracts. Unknown/stale contracts fall back. Same-source ptxas remains faster in all 42 nominal-selected comparisons; this is not a whole-model gain. See [current results](../exp/dispatch_tuning/RESULTS.md) and the [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md) |
 | Per-boundary BF16 trajectory | 151/151 checkpoints captured across 30 updates: first observed output failure before update 3; first parameter failure after update 22 | Eager versus Inductor only; unchanged gates and optimizer policy. It does not localize the causal operation or repair native OA composition |
+
+The GEMM campaign keeps A100 variants separate and uses within-worker paired
+ratios. Seven held-out nominal selections differ from the pre-frozen installed
+policy; their supplemental ptxas/cuBLAS timings refer to the nominal selection,
+while promotion evaluates the frozen policy using all-candidate native timing.
 
 These are measured snapshots, not promises for every shape, toolkit, GPU or
 training trajectory. Raw device metadata distinguishes A100-SXM4-40GB from
