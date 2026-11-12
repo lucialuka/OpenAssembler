@@ -109,6 +109,35 @@ def test_mse_unmeasured_or_rejected_sizes_keep_the_serial_policy(size):
     assert kernel.threads == 1 and 'shfl' not in kernel.ptx
 
 
+def test_parallel_mse_is_limited_to_the_measured_16k_contract():
+    kernel = emit_kernel('mse', [spec(128,128)]*2, spec())
+    assert kernel.name.startswith('oa_parallel_mse_')
+    assert kernel.threads == 256 and kernel.grid == (1,1,1)
+    assert '.shared .align 4 .b8 smem[1024];' in kernel.ptx
+    assert 'add.rn.f32' in kernel.ptx
+    assert emit_kernel('mse', [spec(16385)]*2, spec()).threads == 1
+    assert emit_kernel('mse', [spec(64,256)]*2, spec()).threads == 1
+
+
+def test_matrix_candidates_require_exact_measured_contracts_and_oa_source_identity():
+    selected = emit_kernel('linear',[spec(17,8),spec(16,8),spec(16)],spec(17,16),
+                           {'m':17,'n':16,'k':8})
+    assert selected.name.startswith('oa_ptr_') and selected.threads == 128
+    assert selected.grid == (1,17,1)
+    assert emit_kernel('linear',[spec(17,8),spec(16,8)],spec(17,16)).name.startswith('oa_model_')
+    assert emit_kernel('linear',[spec(17,8),spec(16,8)],spec(17,16),{'m':17,'n':16,'k':8}).name.startswith('oa_model_')
+
+
+def test_model_cache_excludes_vendor_donor_binary_files():
+    from openassembler.modelfront.model_cache import _cacheable
+    assert _cacheable('native/cubin/native.cubin')
+    assert _cacheable('native_tensor/stage/native.cubin')
+    assert not _cacheable('native/.build/reference/native.cubin')
+    assert not _cacheable('native/manifest.json')
+    assert not _cacheable('native_tensor/stage/reference.cubin')
+    assert not _cacheable('native_tensor/stage/.build/report.json')
+
+
 def test_transpose_and_reshape_no_runtime_division():
     values=list(range(15))
     kernel=emit_kernel("transpose2d",[spec(3,5)],spec(5,3))

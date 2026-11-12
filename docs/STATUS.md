@@ -37,17 +37,24 @@ and historical Inductor experiments. Current native model behavior is documented
 in the linked dossier; those historical gains are not reassigned to OA codegen.
 
 The [independent review response](../exp/review_response/RESULTS.md) adds
-validated optional CUDA graph training replay, exact-order coalesced MSE for five
-measured element counts, optional binary-only model builds, and activity-based
-profiler ownership. Replay improves resident-input host steps versus ordinary OA
-dispatch; serial loss and native GEMM remain distinct bottlenecks. These changes
-do not reassign the review's eager/Inductor or ptxas/cuBLAS comparisons to OA.
+validated optional CUDA graph training replay, exact-order coalesced MSE for four
+small measured element counts, a deterministic parallel MSE reduction for the
+128×128 contract, exact-shape FP32 matrix kernels, optional binary-only
+model builds, an OA-only content-addressed model bundle cache, and activity-based
+profiler ownership. The cache revalidates entries, refreshes weights and excludes
+ptxas donor cubins; repeated A100 builds are 13.9–16.1× faster on hits. Whole-step A100 graph checks
+pass for small regression, dense FP32 regression and attention training; the
+128×128 loss candidate is compared under the CPU reference's FP32
+tolerance. Matrix and loss evidence remains shape-scoped, and does not reassign
+the review's eager/Inductor or ptxas/cuBLAS comparisons to OA.
+The [five-task A100 comparison and per-region breakdown](../exp/ml_suite/RESULTS.md)
+records the current remaining gap against direct Triton and same-PTX ptxas.
 
 ## Headline validation
 
 | Area | Latest completed evidence | Interpretation |
 |---|---|---|
-| Repository regression | November 12 review-response full suite: 948 passed, two optional Torch modules skipped; separate Torch-enabled graph/numerics and import cohort: 94 passed | Separate interpreter scopes; new replay/loss/audit evidence is retained under exp/review_response |
+| Repository regression | November 13 production snapshot: 952 passed, two optional Torch modules skipped; separate A100 compiler/runtime campaigns are archived under `exp/ml_suite` | Separate interpreter scopes; new replay/loss/audit evidence is retained under exp/review_response |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
 | Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay; a 58-shape 1/2/4/8-warp A100 sweep and separate seven-case heldout recheck promote five exact rowwise policies | Explicit FP32 operators; selected CTA geometry improves five heldout OpenAssembler cases by at least 3% in all rounds; same-source ptxas remains faster on main shapes |
 | Native direct-pointer GEMM | Historical 486 full method/input checks across three runs; six MLP products improve about 1.03–1.12×; current exact selections are audited in the November 11 replay | Direct pointers are selected for measured contracts or explicitly requested; unknown contracts keep legacy pointers. Historical tall regressions remain valid for those tested plans |

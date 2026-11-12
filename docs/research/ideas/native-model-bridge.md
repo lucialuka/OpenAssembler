@@ -195,14 +195,30 @@ and 1.18–1.25× for the Tensor Core MLP, before changing loss kernels. These a
 resident-input OA-versus-OA measurements including host submission and
 synchronization; replay preparation is separate.
 
-Ordered MSE now coalesces the squared-product loads across one warp while
-retaining increasing-index FP32 additions. Exact element counts 112, 136, 513,
-16384 and 65539 have repeated bitwise/canary/immutable-input and paired timing
-evidence; other counts keep serial MSE. Measured kernel gains are 1.41–1.76×.
-One-element and 33-element candidates do not pass speed admission and remain
-serial. Optional sass_listings = false omits textual disassembly; paired
-fresh-output builds retain identical native cubin bytes and mandatory ownership
-validation. Listing-enabled builds remain the default.
+Ordered MSE coalesces squared-product loads across one warp while retaining
+increasing-index FP32 additions for exact counts 112, 136, 513 and 65539. A
+separate 256-thread shared-tree reduction handles exactly 128×128 tensors; its
+reduction association differs, so full-model comparison uses the documented
+FP32 reference tolerance. Two independent A100-SXM4-40GB campaigns measured
+3.61× FP32 and 5.90× FP16-RNE/FP32-accumulation full training-step replay gains
+for 128×128 dense regression, with changed-input gradients, updated weights,
+canaries, and direct PyTorch MSE checks passing. Other element counts retain
+their existing policies. Exact-shape FP32 matrix dispatch also passes complete
+training checks; a repeated A100-SXM4-80GB graph campaign with the combined
+parallel-loss and exact-matrix dispatch measured 1.064–1.073× for tiny regression,
+6.471–6.877× for dense FP32 regression, and 1.064–1.065× for attention. The
+large dense gain comes mainly from replacing the serial 16,384-value loss, while
+small-task gains reflect the exact matrix selections. Optional `sass_listings = false` omits textual disassembly;
+paired fresh-output builds retain identical native cubin bytes and mandatory
+ownership validation. Listing-enabled builds remain the default.
+
+Native model bundles also use a content-addressed warm-build cache keyed by the
+captured plan, generated OA kernel sources, compiler/toolchain identity, target,
+and build options. An A100 build campaign measured 13.9–16.1× faster repeated
+bundle materialization for both a scalar MLP and a Tensor Core MLP; refreshed
+weights and corrupted-cubin rebuilds passed, and reference cubins were absent
+from cache and hit outputs. CPU model capture and transport are outside that
+cache measurement.
 
 Profiler audits classify raw Kineto activities by category; names containing
 memcpy or memset receive no compute exemption. The conservative event-list API

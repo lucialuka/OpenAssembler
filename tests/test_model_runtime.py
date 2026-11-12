@@ -35,9 +35,9 @@ def compiled_bundle(tmp_path_factory):
 @pytest.mark.oracle
 def test_bundle_validates_real_oa_text_without_diagnostics(compiled_bundle,tmp_path):
     shutil.copytree(compiled_bundle,tmp_path,dirs_exist_ok=True)
-    shutil.rmtree(tmp_path/"sources")
-    shutil.rmtree(tmp_path/"native"/".build")
-    shutil.rmtree(tmp_path/"native"/"sass")
+    shutil.rmtree(tmp_path/"sources",ignore_errors=True)
+    shutil.rmtree(tmp_path/"native"/".build",ignore_errors=True)
+    shutil.rmtree(tmp_path/"native"/"sass",ignore_errors=True)
     p,ledger,raw=validate_bundle(tmp_path)
     assert p==plan()
     assert len(ledger["kernels"])==6
@@ -52,6 +52,30 @@ def test_omitting_optional_listings_preserves_native_cubin_bytes(compiled_bundle
     assert raw == before
     assert ledger['kernels'] == original['kernels']
     assert not list(tmp_path.rglob('*.sass'))
+
+
+@pytest.mark.oracle
+def test_persistent_model_cache_revalidates_and_never_retains_ptxas_donors(tmp_path):
+    cache=tmp_path/'cache';first=tmp_path/'first';second=tmp_path/'second';repaired=tmp_path/'repaired'
+    build_bundle(plan(),{},first,cache_dir=cache)
+    miss=json.loads((first/'model-cache-result.json').read_text())
+    assert miss['hit'] is False
+    assert not list(cache.rglob('reference.cubin')) and not list(cache.rglob('.build'))
+    build_bundle(plan(),{},second,cache_dir=cache)
+    hit=json.loads((second/'model-cache-result.json').read_text())
+    assert hit['hit'] is True
+    assert validate_bundle(first)[2]==validate_bundle(second)[2]
+    (second/'stale-reference.cubin').write_bytes(b'not an OA executable')
+    build_bundle(plan(),{},second,cache_dir=cache)
+    assert not list(second.rglob('*.cubin')) or {p.relative_to(second).as_posix() for p in second.rglob('*.cubin')}=={validate_bundle(second)[1]['cubin']}
+    binary=next(cache.rglob('native/cubin/*.cubin'))
+    raw=bytearray(binary.read_bytes());raw[-1]^=1;binary.write_bytes(raw)
+    build_bundle(plan(),{},repaired,cache_dir=cache)
+    repaired_record=json.loads((repaired/'model-cache-result.json').read_text())
+    assert repaired_record['hit'] is False
+    assert repaired_record['rebuild_reason']
+    assert validate_bundle(first)[2]==validate_bundle(repaired)[2]
+    assert not list(repaired.rglob('reference.cubin')) and not list(repaired.rglob('.build'))
 
 
 @pytest.mark.oracle

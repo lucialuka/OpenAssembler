@@ -230,10 +230,14 @@ def emit_kernel(op, inputs, output, attrs=None):
         store("%r2")
     lines += ["done:", "ret;", "}"]
     kernel = KernelSpec(name, op, shapes, out, attrs, grid, threads, "\n".join(lines)+"\n")
+    if op in ("linear", "linear_dx", "linear_dw"):
+        from .kernels_matmul import select as select_matrix_kernel
+        return select_matrix_kernel(kernel)
     if op == 'mse':
-        from .kernels_loss import ORDERED_MSE_ELEMENTS, ordered_mse
-        if math.prod(shapes[0]) in ORDERED_MSE_ELEMENTS:
-            return ordered_mse(kernel)
+        from .kernels_loss import ORDERED_MSE_ELEMENTS, PARALLEL_MSE_SHAPES, ordered_mse, parallel_mse
+        elements=math.prod(shapes[0])
+        if shapes[0] in PARALLEL_MSE_SHAPES:return parallel_mse(kernel)
+        if elements in ORDERED_MSE_ELEMENTS:return ordered_mse(kernel)
     return kernel
 
 
@@ -331,7 +335,7 @@ def prepare(plan):
     return specs, steps, kernels
 
 
-def build_bundle(plan, weights=None, output_dir=None, *, opt_level="opt", sass_listings=True):
+def _build_bundle_uncached(plan, weights=None, output_dir=None, *, opt_level="opt", sass_listings=True):
     """Compile all graph kernels with OA; ptxas is only the donor/reference tool.
 
     Accept ``build_bundle(plan, directory)`` or the frontend's three-argument
@@ -380,19 +384,40 @@ def build_bundle(plan, weights=None, output_dir=None, *, opt_level="opt", sass_l
               "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
               "cubin": cubin_path.relative_to(root).as_posix(), "cubin_sha256": hashlib.sha256(raw).hexdigest(),
               "kernels": records, "steps": steps,
-              "numerical_contract": "FP32 separate multiply/add; serial reductions; finite bounded inputs; no tensor-core substitution"}
+              "numerical_contract": "FP32 separate multiply/add; deterministic shape-selected reductions; finite bounded inputs; no tensor-core substitution"}
     recipes = tensor_recipes(plan,specs)
     if recipes:
         from .kernels_tensor import build_tensor_kernels
         ledger["tensor_kernels"] = build_tensor_kernels(root,recipes.values(),sass_listings=sass_listings)
         ledger["tensor_recipes"] = {name:recipe_record(recipe) for name,recipe in recipes.items()}
-        ledger["numerical_contract"] = "FP16 RNE operands and FP32 tensor accumulation/output; straight-through cast derivative; other arithmetic FP32"
+        ledger["numerical_contract"] = "FP16 RNE operands and FP32 tensor accumulation/output; straight-through cast derivative; deterministic shape-selected FP32 reductions"
     (root / "plan.json").write_bytes(canonical(plan))
     (root / "native-ledger.json").write_bytes(canonical(ledger))
     if weights is not None:
         from .runtime import save_weights
         save_weights(weights, plan, root)
     return ledger
+
+
+def build_bundle(plan, weights=None, output_dir=None, *, opt_level="opt", sass_listings=True,
+                 cache=True, cache_dir=None):
+    """Build an OA model bundle, reusing only validated OA executable artifacts.
+
+    ``cache=False`` forces a clean compilation for experiments and compiler
+    diagnostics. The default persistent cache excludes weights and all donor
+    reference cubins; every hit is validated against the current compiler and
+    plan before reuse.
+    """
+    if output_dir is None:
+        output_dir,weights=weights,None
+    if type(cache) is not bool:raise TypeError('cache must be a boolean')
+    if not cache:return _build_bundle_uncached(plan,weights,output_dir,opt_level=opt_level,sass_listings=sass_listings)
+    from .model_cache import cached_build_bundle
+    result=cached_build_bundle(plan,weights,output_dir,cache_dir=cache_dir,opt_level=opt_level,
+                               sass_listings=sass_listings,build=_build_bundle_uncached)
+    root=Path(output_dir);root.mkdir(parents=True,exist_ok=True)
+    (root/'model-cache-result.json').write_bytes(canonical({k:v for k,v in result.items() if k!='native_ledger'}))
+    return result['native_ledger']
 
 
 def recipe_record(recipe):

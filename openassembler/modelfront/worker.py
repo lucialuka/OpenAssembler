@@ -259,7 +259,7 @@ def process(request: dict) -> dict:
                 blob = base64.b64decode(request['source'], validate=True)
                 unpack(blob, source)
                 from openassembler.modelfront.graph import capture_model, extract_weights
-                from openassembler.modelfront.runtime import build_bundle
+                from openassembler.modelfront.kernels import build_bundle
                 started = time.perf_counter()
                 model = _model(source, config)
                 factory_ms = (time.perf_counter()-started)*1000
@@ -274,8 +274,10 @@ def process(request: dict) -> dict:
                                      reuse_storage=config.get('reuse_storage', False))
                 planning_ms = (time.perf_counter()-started)*1000
                 started = time.perf_counter()
-                build_bundle(plan, extract_weights(model, plan), output,
-                             sass_listings=config.get('sass_listings', True))
+                cache_dir=__import__('os').environ.get('OPENASSEMBLER_MODEL_CACHE')
+                build_bundle(plan,extract_weights(model, plan),output,
+                             sass_listings=config.get('sass_listings', True),cache_dir=cache_dir)
+                cache_result=json.loads((output/'model-cache-result.json').read_text()) if (output/'model-cache-result.json').is_file() else {'hit':False}
                 bundle_ms = (time.perf_counter()-started)*1000
                 (output / 'model-source.zip').write_bytes(blob)
                 (output / 'model.json').write_text(json.dumps({'schema': 1, 'backend': 'openassembler',
@@ -297,6 +299,7 @@ def process(request: dict) -> dict:
                 report['compile_stage_ms'] = {'cpu_factory': factory_ms, 'cpu_capture_autodiff': capture_ms,
                     'storage_planning': planning_ms, 'native_bundle_and_weights': bundle_ms}
                 report['compile_stage_scope'] = 'worker-local non-overlapping phases; excludes transport, independent repository source builds and validation'
+                report['model_bundle_cache']={key:value for key,value in cache_result.items() if key!='native_ledger'}
                 (output / 'model-build-report.json').write_text(json.dumps(report, indent=2, allow_nan=False))
                 files = {p.relative_to(output).as_posix(): p.read_bytes() for p in output.rglob('*')
                          if p.is_file() and p.name != 'writer.lock'}
