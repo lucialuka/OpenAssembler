@@ -206,7 +206,5 @@ The package is version **0.2.0**. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
  </picture>
 </a>
 
-<div align="center">
-  <h3>🇭🇰 Free Hong Kong</h3>
-</div>
+[🇭🇰 Free Hong Kong](https://en.wikipedia.org/wiki/Liberate_Hong_Kong,_revolution_of_our_times)
 
