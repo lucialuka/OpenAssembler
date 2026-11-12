@@ -6,6 +6,7 @@ from pathlib import Path
 import struct
 
 import pytest
+from tests.native_fixture import save_native_manifest
 
 from openassembler import oracle
 from openassembler.cli import main
@@ -61,12 +62,12 @@ def test_gemm_run_plan_keeps_half_precision_sizes_and_launch(tmp_path):
     legacy_contract.pop("cta_order")
     legacy_contract.pop("epilogue")
     legacy_contract.pop("pointer_mode")
-    project.save_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
+    save_native_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
         "source": str(source), "cubin": "ours.cubin", "reference": "ref.cubin",
         "kernels": [{"name": "gemm", "params": [["u64", x] for x in ("A", "B", "C")],
                      "compiled_by": "openassembler", "gemm": legacy_contract}]}])
     plan, _ = build_plan(RunOptions(out_dir=tmp_path, n=1, reps=0))
-    assert len(plan.jobs) == 2
+    assert len(plan.jobs) == 1
     for job in plan.jobs:
         assert job["buffers"] == {"A": 32768, "B": 65536, "C": 131072}
         assert job["steps"][0][2:5] == ((1, 2, 1), (128, 1, 1), 65536)
@@ -80,12 +81,12 @@ def test_fused_gemm_run_plan_allocates_bias_and_residual_without_host_random_fil
     source=tmp_path/"gemm.ptx";source.write_text(source_for(g))
     for name in ("ours.cubin","ref.cubin"):(tmp_path/name).write_bytes(b"test cubin")
     from openassembler import project
-    project.save_manifest(tmp_path,tmp_path,"sm_80","opt",[{
+    save_native_manifest(tmp_path,tmp_path,"sm_80","opt",[{
         "source":str(source),"cubin":"ours.cubin","reference":"ref.cubin",
         "kernels":[{"name":"gemm","params":[["u64",x] for x in ("A","B","C","Bias","Residual")],
                     "compiled_by":"openassembler","gemm":contract_from_source(source.read_text())}]}])
     plan,_=build_plan(RunOptions(out_dir=tmp_path,n=1,reps=0))
-    assert len(plan.jobs)==2
+    assert len(plan.jobs)==1
     for job in plan.jobs:
         assert job["buffers"]=={"A":32768,"B":32768,"C":65536,"Bias":512,"Residual":65536}
         assert job["init_rand"]=={}
@@ -162,13 +163,13 @@ def test_grouped_n8_runner_uses_transformed_grid_from_checked_contract(tmp_path)
     source.write_text(source_for(plan_spec))
     for name in ("ours.cubin", "ref.cubin"):
         (tmp_path / name).write_bytes(b"test cubin")
-    project.save_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
+    save_native_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
         "source": str(source), "cubin": "ours.cubin", "reference": "ref.cubin",
         "kernels": [{"name": "gemm", "params": [["u64", x] for x in ("A", "B", "C")],
                      "compiled_by": "openassembler", "gemm": contract_from_source(source.read_text())}]
     }])
     run_plan, _ = build_plan(RunOptions(out_dir=tmp_path, n=1, reps=0))
-    assert len(run_plan.jobs) == 2
+    assert len(run_plan.jobs) == 1
     assert all(job["steps"][0][2] == (8, 1, 1) for job in run_plan.jobs)
 
 
@@ -190,10 +191,10 @@ def test_raw_tensor_spec_uses_half_precision_buffers(dtype, expected, tmp_path):
     src.write_text('raw tensor source')
     (tmp_path / 'ours.cubin').write_bytes(b'ours')
     (tmp_path / 'ref.cubin').write_bytes(b'reference')
-    project.save_manifest(tmp_path, tmp_path, 'sm_80', 'opt', [{
+    save_native_manifest(tmp_path, tmp_path, 'sm_80', 'opt', [{
         'source': str(src), 'cubin': 'ours.cubin', 'reference': 'ref.cubin',
         'kernels': [{'name': 'raw', 'params': [['u64', 'A'], ['u64', 'B']],
-                     'tensor': {'architecture': 'sm_80'}}]}])
+                     'tensor': {'architecture': 'sm_80'}, 'compiled_by': 'openassembler'}]}])
     spec = tmp_path / 'launch.json'
     spec.write_text(json.dumps({'buffers': {
         'A': {'count': 3, 'dtype': dtype, 'init': [1.0]},

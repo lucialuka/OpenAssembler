@@ -306,7 +306,12 @@ class Compiler:
 # ---- scheduling: conservative control bits ---------------------------------------------
 
 MEM_ASYNC = ("LDG", "STG", "LDS", "STS", "LDL", "STL", "ATOMG", "ATOMS", "RED", "LDGSTS", "LDSM",
-             "MUFU", "SHFL")
+             "MUFU", "SHFL", "F2I")
+# F2I collects its source asynchronously, independently of result completion.
+# Runtime integer div/rem fragments can overwrite that source immediately after
+# conversion. A write scoreboard alone protects the result, not this WAR edge.
+# The A100 F2I-only ablation in exp/native_indexing fixes the original large-grid
+# indexing failure without changing the arithmetic, operands or instruction order.
 
 
 def _opname(text: str) -> str:

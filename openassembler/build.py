@@ -30,6 +30,7 @@ import struct
 import subprocess
 import sys
 import concurrent.futures
+import hashlib
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -464,6 +465,7 @@ class SourceOut:
     all_kernels: list[str] = field(default_factory=list)   # what the file has (for --kernel errors)
     files: dict[str, bytes | str] = field(default_factory=dict)
     rc: int = 0
+    native_ownership: dict | None = None
 
     @property
     def kept(self) -> list[KernelOut]:
@@ -480,6 +482,8 @@ class SourceOut:
     def entry(self, no_sass: bool) -> dict:
         e = {"source": str(self.src.resolve()), "source_sha256": self.sha, "language": self.language,
              **self.paths(no_sass), "kernels": [k.record() for k in self.kept]}
+        if self.native_ownership is not None:
+            e['native_ownership'] = self.native_ownership
         if self.failed:
             e["failed"] = [{"name": k.name, "error": k.error.splitlines()[0]} for k in self.failed]
         return e
@@ -637,6 +641,20 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
     regs = regcounts(cubin)
     for k in so.kept:
         k.registers = regs.get(k.name, k.registers)
+    # Bind deployed bytes to every exact OA instruction, even with --no-sass.
+    # Mixed fallback modules intentionally receive no native ownership ledger.
+    if all(k.compiled_by == 'openassembler' for k in so.kept):
+        from openassembler.container.cubin import text_words
+        from openassembler.native_ownership import record as ownership_record
+        try:
+            for k in so.kept:
+                if text_words(cubin,k.name) != k.words[0]:
+                    raise ValueError(f'{k.name}: cubin text differs from OA encoder output')
+            so.native_ownership = ownership_record(cubin,[k.record() for k in so.kept],
+                                                   ptx_sha256=hashlib.sha256(ptx.encode()).hexdigest())
+        except (ValueError,StopIteration,KeyError,IndexError,struct.error) as exc:
+            so.error,so.rc = f'could not establish native executable ownership: {exc}',1
+            return so
 
     # 5. the .sass listing of the final cubin
     sass = None

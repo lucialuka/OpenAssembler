@@ -2,7 +2,8 @@
 
 Repository inspection deliberately stays ahead of execution: it reads source
 text and configuration, discovers native kernel candidates, records build-system
-hints, and never imports or runs user code. The default policy is native-first.
+hints, and never imports or runs user code. An explicit [model] config selects native
+model capture; other repositories use static kernel discovery.
 PyTorch/Triton capture is an explicit frontend choice because it executes a
 bounded workload and specializes only observed shapes.
 """
@@ -17,7 +18,7 @@ import tomllib
 from openassembler import project
 
 
-APPLICATION_FRONTENDS = {"torch", "triton", "inductor"}
+APPLICATION_FRONTENDS = {"model", "torch"}
 BUILD_MARKERS = {
     "pyproject.toml": "python",
     "setup.py": "python",
@@ -70,6 +71,8 @@ def _application_config(root: Path) -> tuple[str | None, Path | None]:
         # explicitly selected. Native discovery should remain available even if
         # an unrelated application config is malformed.
         return None, path
+    if isinstance(obj.get('model'), dict):
+        return 'openassembler', path
     app = obj.get("application")
     frontend = app.get("frontend") if isinstance(app, dict) else None
     return frontend if isinstance(frontend, str) else None, path
@@ -127,7 +130,7 @@ def native_candidates(path: Path, out_dir: Path | None = None) -> tuple[project.
 
 
 def select_frontend(path: Path, out_dir: Path, requested: str = "auto") -> tuple[str, Path | None, RepositoryPlan | None]:
-    """Return ``(native|torch, application_root, plan)``.
+    """Return ``(native|model, model_root, plan)``.
 
     ``auto`` is intentionally native-first and does not fall through to
     application capture. This keeps a repository with both host training code
@@ -135,8 +138,11 @@ def select_frontend(path: Path, out_dir: Path, requested: str = "auto") -> tuple
     capture is selected only by ``--frontend torch|triton|inductor``.
     """
     requested = (requested or "auto").lower()
+    if requested in {'triton', 'inductor'}:
+        raise project.ProjectError('Triton/Inductor GPU compilation is disabled. Use --frontend model '
+                                   'with an OA [model] entrypoint; unsupported GPU operations reject.')
     if requested not in {"auto", "native", *APPLICATION_FRONTENDS}:
-        raise project.ProjectError(f"unknown frontend {requested!r}; use auto, native, torch, triton, or inductor")
+        raise project.ProjectError(f"unknown frontend {requested!r}; use auto, native, model, or torch")
     path = Path(path).resolve()
     if not path.is_dir():
         if requested in APPLICATION_FRONTENDS:
@@ -147,7 +153,9 @@ def select_frontend(path: Path, out_dir: Path, requested: str = "auto") -> tuple
         if plan.application_config is None:
             raise project.ProjectError(f"{path} has no openassembler.toml application configuration; "
                                        f"use --frontend native for discovered kernels")
-        return "torch", path, plan
+        return "model", path, plan
+    if requested == 'auto' and plan.application_frontend == 'openassembler':
+        return 'model', path, plan
     # Native is the default even when an application config is present.
     return "native", None, plan
 
@@ -157,8 +165,8 @@ def native_error(plan: RepositoryPlan) -> project.ProjectError:
         return project.ProjectError(
             f"no native kernels discovered in {plan.root}: {plan.summary()}. "
             "Host programs, build systems and PyTorch graphs are not implicitly "
-            "lowered by OpenAssembler. Use --frontend torch explicitly for the "
-            "configured TorchInductor/Triton capture, or add supported .ptx/.cu/.cpp "
+            "lowered by OpenAssembler. Use --frontend model with a [model] factory "
+            "for native model compilation, or add supported .ptx/.cu/.cpp "
             "kernels and Python @kernel functions.")
     return project.ProjectError(
         f"nothing to compile in {plan.root}: {plan.summary()}. "

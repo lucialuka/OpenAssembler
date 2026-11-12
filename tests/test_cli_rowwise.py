@@ -5,6 +5,7 @@ import json
 import struct
 
 import pytest
+from tests.native_fixture import save_native_manifest
 
 from openassembler import oracle, project
 from openassembler.cli import main
@@ -54,7 +55,7 @@ def _rowwise_plan(tmp_path, op, mutate=None):
               "compiled_by": "openassembler", "rowwise": contract_from_source(source.read_text())}
     if mutate:
         mutate(kernel)
-    project.save_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
+    save_native_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
         "source": str(source), "cubin": "ours.cubin", "reference": "ref.cubin", "kernels": [kernel]}])
     return build_plan(RunOptions(out_dir=tmp_path, n=1, reps=0))[0]
 
@@ -62,7 +63,7 @@ def _rowwise_plan(tmp_path, op, mutate=None):
 @pytest.mark.parametrize("op", ["softmax", "layernorm"])
 def test_run_has_exact_shape_zero_input_and_poisoned_output(op, tmp_path):
     plan = _rowwise_plan(tmp_path, op)
-    assert len(plan.jobs) == 2
+    assert len(plan.jobs) == 1
     for job in plan.jobs:
         assert job["buffers"] == {"X": 924, "Y": 924}
         assert job["init"] == {}
@@ -70,7 +71,8 @@ def test_run_has_exact_shape_zero_input_and_poisoned_output(op, tmp_path):
         assert job["init_byte"] == {"Y": 255}
         assert job["steps"][0][2:5] == ((2, 1, 1), (128, 1, 1), 0)
         assert job["outputs"] == {"Y": [(0, 924)]}
-    assert plan.jobs[0]["init_byte"] == plan.jobs[1]["init_byte"]
+    assert plan.cases[0].ref is None
+    assert all("ptxas" not in name for job in plan.jobs for name in job["modules"])
     assert plan.cases[0].expected_f32_constant == {"Y": 1 / 33 if op == "softmax" else 0.0}
 
 
@@ -84,7 +86,7 @@ def test_analytic_smoke_rejects_both_wrong_and_nonfinite(op, tmp_path):
     assert compare(plan, outputs(1.0))[0].status == "MISMATCH"
     assert compare(plan, outputs(float("nan")))[0].status == "MISMATCH"
     matching = outputs(expected)
-    matching[1]["out"]["Y"] = [struct.pack("<f", expected)]
+    matching[0]["out"]["Y"] = [struct.pack("<f", expected)]
     assert compare(plan, matching)[0].status == "MISMATCH"
 
 

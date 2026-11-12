@@ -5,6 +5,7 @@ import json
 from dataclasses import asdict
 
 import pytest
+from tests.native_fixture import save_native_manifest
 
 from openassembler import project
 from openassembler.cli import main
@@ -145,11 +146,11 @@ def test_runner_uses_rowwise_warp_geometry_in_launch_contract(tmp_path, warps):
     (tmp_path / "ref.cubin").write_bytes(b"ptxas cubin")
     kernel = {"name": "softmax", "params": [["u64", "X"], ["u64", "Y"]],
               "compiled_by": "openassembler", "rowwise": contract_from_source(source.read_text())}
-    project.save_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
+    save_native_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
         "source": str(source), "cubin": "ours.cubin", "reference": "ref.cubin", "kernels": [kernel]
     }])
     run_plan = build_plan(RunOptions(out_dir=tmp_path, n=1, reps=0))[0]
     expected_grid = (7 + warps - 1) // warps
-    assert len(run_plan.jobs) == 2
+    assert len(run_plan.jobs) == 1
     assert all(job["steps"][0][2:5] == ((expected_grid, 1, 1), (warps*32, 1, 1), 0)
                for job in run_plan.jobs)

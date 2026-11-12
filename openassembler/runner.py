@@ -1,43 +1,9 @@
-"""`openassembler run` (and the run half of `cnr`): execute already-compiled cubins on
-a real GPU, ours next to ptxas's, on identical inputs, and compare bit for bit.
+"""Execute saved OA native kernel artifacts on local Linux, SSH or Modal.
 
-Reads OUTDIR/manifest.json (schema: openassembler.project). For every selected kernel
-it builds two GPU jobs in openassembler.gpu.cuda_driver.run_plan_job's format -- one
-loading our cubin (cubin/<name>.cubin), one loading the ptxas -O3 reference build of
-the same PTX (.build/reference/<name>.cubin) -- with the same buffers, the same
-initial data and the same launches. Both run in openassembler.gpu.batch (a worker
-subprocess per fault, so one kernel faulting doesn't stop the others), every compared
-buffer is read back after the first run and compared byte for byte, then the step
-list is timed `reps` times (cuEvents, median reported).
-
-Inputs, two ways:
-  * auto-harness (default), like openassembler.verify: every pointer (.u64) param is a
-    buffer of N 4-byte elements filled with random f32 data in [-1, 1); integer params
-    named n/count/size/len/num/length (any case) are N, other integers are 16 (small:
-    they are usually dimensions or strides, and a big one would index past N); float
-    params are random. 1-D launch, block 256, grid ceil(N/256). Kernels with a
-    different geometry fault or read past the buffers -- that is reported per kernel,
-    with the hint to describe the launch with --spec.
-  * --spec SPEC.json, for real workloads and multi-kernel pipelines:
-      {"buffers": {"x": {"count": 4096, "dtype": "f32", "init": "random"},
-                   "y": {"count": 4096, "dtype": "i32", "init": "zeros"},      init: random | zeros | [values...]
-                   "w": {"count": 3, "dtype": "u32", "init": [1, 2, 3]}},      dtype: f32 | i32 | u32 (4 bytes each)
-       "steps": [{"kernel": "relu", "source": "examples/mlp/kernels.py",      source: only if the name is ambiguous
-                  "grid": 16, "block": [256, 1, 1], "smem": 0,                 grid/block: int or [x, y, z]
-                  "args": [{"buf": "x"}, {"buf": "y", "offset": 0},            offset in bytes (default 0)
-                           {"i32": 4096}, {"u32": 7}, {"f32": 0.5}, {"u64": 1}]}],
-       "compare": ["y"],                                                       default: every buffer
-       "reps": 20}                                                             default: --reps
-    Random i32/u32 data is uniform in [0, count) so it can serve as indices. Each step's
-    kernel runs from our cubin in the "ours" job and from the reference cubin in the
-    "ptxas" job; a pipeline is one comparison.
-
-Backends: local (this Linux machine's NVIDIA driver), user@host (SSH, like
-tools/gpu_run.py: copies only the stdlib-only openassembler/gpu package, a hard remote
-`timeout`, results copied back, remote dir removed), modal (openassembler/gpu/modal_app.py
-via the `modal` CLI, so modal can live in any Python env). --dry-run never touches a
-GPU: it prints the jobs, upload size and (modal) an estimated cost. The last report is
-saved to OUTDIR/run.json.
+Public run/cnr construct native-only plans. ptxas donor/reference binaries remain
+build diagnostics; research callers may explicitly construct paired Plan cases.
+The automatic harness provides bounded execution smoke checks, not general
+model correctness. Use the native model route for captured loss/backward/update.
 """
 
 from __future__ import annotations
@@ -95,7 +61,7 @@ class Case:
     name: str
     source: str
     ours: int
-    ref: int
+    ref: int | None
     compare: list[str]
     note: str = ""
     skip: str = ""                     # set: no jobs, reported as SKIP
@@ -108,6 +74,7 @@ class Plan:
     jobs: list[dict] = field(default_factory=list)
     cases: list[Case] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    reference_comparison: bool = True  # explicit research plans; public build_plan disables this
 
 
 # ---- manifest -> targets ---------------------------------------------------------------
@@ -145,7 +112,7 @@ def _matches_source(m: dict, e: dict, want: str) -> bool:
 
 
 def select(m: dict, out_dir: Path, kernel: str | None, source: str | None,
-           only: set[tuple[str, str]] | None = None) -> tuple[list[Target], list[str]]:
+           only: set[tuple[str, str]] | None = None, *, require_native_ownership: bool = False) -> tuple[list[Target], list[str]]:
     """Kernels to run (manifest order), plus warnings (stale sources). `only` restricts
     to (abs source, kernel) pairs -- cnr passes what it just compiled."""
     warns: list[str] = []
@@ -170,19 +137,38 @@ def select(m: dict, out_dir: Path, kernel: str | None, source: str | None,
     if not targets:
         raise RunError(f"{out_dir / P.MANIFEST} lists no compiled kernels")
     for e in {id(t.entry): t.entry for t in targets}.values():
+        if any(k.get('compiled_by') != 'openassembler' for k in e.get('kernels', [])):
+            raise RunError('native execution rejects modules containing vendor/fallback kernels; recompile with OA')
         if e.get("build_failed"):
             raise RunError(f"the latest build of {e['source']} failed; recompile successfully before running")
-        for key in ("cubin", "reference"):
+        for key in ("cubin",):
             if not e.get(key) or not (out_dir / e[key]).is_file():
                 raise RunError(f"{out_dir / (e.get(key) or '?')} is listed in the manifest but missing; "
                                f"recompile with openassembler compile {e['source']}")
         src = P.entry_source_abs(m, e)
+        if require_native_ownership:
+            validate_native_entry(e,out_dir)
         if not src.exists():
             warns.append(f"{e['source']} no longer exists; running the cubin compiled from it earlier")
         elif e.get("source_sha256") and P.sha256_file(src) != e["source_sha256"]:
             warns.append(f"{e['source']} changed since it was compiled: out of date, run "
                          f"openassembler cnr {e['source']} to recompile")
     return targets, warns
+
+
+def validate_native_entry(entry,out_dir):
+    """Freeze checked bytes into the plan so a later file swap cannot change code."""
+    from openassembler.native_ownership import validate
+    try:
+        binary=(Path(out_dir)/entry['cubin']).read_bytes()
+        validate(entry,binary)
+    except (ValueError,StopIteration,KeyError,IndexError,UnicodeError,struct.error) as exc:
+        raise RunError(str(exc)) from None
+    entry['_native_binary']=binary
+
+
+def _native_bytes(target,out_dir):
+    return target.entry['_native_binary'] if '_native_binary' in target.entry else (Path(out_dir)/target.entry['cubin']).read_bytes()
 
 
 # ---- jobs --------------------------------------------------------------------------
@@ -253,15 +239,16 @@ def auto_case(t: Target, out_dir: Path, n: int, reps: int, plan: Plan) -> None:
     steps_ours = [("ours", k["name"], (grid, 1, 1), (BLOCK, 1, 1), 0, args)]
     steps_ref = [("ref", k["name"], (grid, 1, 1), (BLOCK, 1, 1), 0, args)]
     outputs = {b: [(0, sz)] for b, sz in buffers.items()}
-    ours_bytes = (out_dir / t.entry["cubin"]).read_bytes()
-    ref_bytes = (out_dir / t.entry["reference"]).read_bytes()
+    ours_bytes = _native_bytes(t,out_dir)
+    ref_bytes = (out_dir / t.entry["reference"]).read_bytes() if plan.reference_comparison else None
     base = f"{t.entry['cubin']}:{k['name']}"
     i = len(plan.jobs)
     plan.jobs.append(_job(base + "#ours", {"ours": ours_bytes}, buffers, {}, init_rand, steps_ours, outputs, reps))
-    plan.jobs.append(_job(base + "#ptxas", {"ref": ref_bytes}, buffers, {}, init_rand, steps_ref, outputs, reps))
+    if plan.reference_comparison:
+        plan.jobs.append(_job(base + "#ptxas", {"ref": ref_bytes}, buffers, {}, init_rand, steps_ref, outputs, reps))
     note = "ptxas-fallback: our cubin holds ptxas's code for this kernel" \
         if k.get("compiled_by") == "ptxas-fallback" else ""
-    plan.cases.append(Case(k["name"], t.entry["source"], i, i + 1, list(buffers), note=note,
+    plan.cases.append(Case(k["name"], t.entry["source"], i, i + 1 if plan.reference_comparison else None, list(buffers), note=note,
                            describe=f"grid {grid} x block {BLOCK}; " + ", ".join(desc)))
 
 
@@ -289,15 +276,16 @@ def gemm_case(t: Target, out_dir: Path, reps: int, plan: Plan) -> None:
     args = [("buf", name, 0) for name in names]
     outputs = {"C": [(0, buffers["C"])]}
     i = len(plan.jobs)
-    for method, field in (("ours", "cubin"), ("ptxas", "reference")):
-        module = (out_dir/t.entry[field]).read_bytes()
+    methods = (("ours", "cubin"), ("ptxas", "reference")) if plan.reference_comparison else (("ours", "cubin"),)
+    for method, field in methods:
+        module = _native_bytes(t,out_dir) if field=='cubin' else (out_dir/t.entry[field]).read_bytes()
         steps = [(method, t.label, tuple(g.launch["grid"]), (g.launch["threads"], 1, 1),
                   g.launch["smem"], args)]
         job = _job(f"{t.entry['cubin']}:{t.label}#{method}", {method: module}, buffers, {}, {},
                    steps, outputs, reps)
         job["init_tensor16"] = initialize
         plan.jobs.append(job)
-    plan.cases.append(Case(t.label, t.entry["source"], i, i+1, ["C"],
+    plan.cases.append(Case(t.label, t.entry["source"], i, i+1 if plan.reference_comparison else None, ["C"],
                            note=("exact small-integer smoke comparison; floating accuracy uses separate GPU tests"
                                  if g.epilogue == "none" else "fused epilogue smoke uses zero bias/residual inputs"),
                            describe=f"{g.m}x{g.n}x{g.k} {g.dtype}->f32, grid {g.launch['grid']}, "
@@ -320,19 +308,20 @@ def rowwise_case(t: Target, out_dir: Path, reps: int, plan: Plan) -> None:
     buffers, outputs = {"X": size, "Y": size}, {"Y": [(0, size)]}
     args = [("buf", "X", 0), ("buf", "Y", 0)]
     i = len(plan.jobs)
-    for method, field in (("ours", "cubin"), ("ptxas", "reference")):
+    methods = (("ours", "cubin"), ("ptxas", "reference")) if plan.reference_comparison else (("ours", "cubin"),)
+    for method, field in methods:
         steps = [(method, t.label, tuple(g.launch["grid"]), (g.launch["threads"], 1, 1), 0, args)]
         job = _job(f"{t.entry['cubin']}:{t.label}#{method}",
-                   {method: (out_dir / t.entry[field]).read_bytes()},
+                   {method: _native_bytes(t,out_dir) if field=='cubin' else (out_dir / t.entry[field]).read_bytes()},
                    buffers, {}, {}, steps, outputs, reps)
         # 0xffffffff is an FP32 NaN. Any unwritten output fails the independent
         # finite analytic gate, including LayerNorm's expected zero output.
         job["init_byte"] = {"Y": 255}
         plan.jobs.append(job)
     expected = 1.0 / g.width if g.op == "softmax" else 0.0
-    plan.cases.append(Case(t.label, t.entry["source"], i, i + 1, ["Y"],
+    plan.cases.append(Case(t.label, t.entry["source"], i, i + 1 if plan.reference_comparison else None, ["Y"],
                            note="zero-input analytic smoke; separate A100 tests cover nonzero inputs and canaries",
-                           describe=f"{g.rows}x{g.width} contiguous f32 {g.op}, grid {g.launch['grid']}, block 128",
+                           describe=f"{g.rows}x{g.width} contiguous f32 {g.op}, grid {g.launch['grid']}, block {g.launch['threads']}",
                            expected_f32_constant={"Y": expected}))
 
 
@@ -413,14 +402,16 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
         if not isinstance(st.get("args", []), list):
             raise RunError(f"spec: step {si} args must be a list")
         try:
-            (t,), w = select(m, out_dir, st["kernel"], st.get("source"), only)
+            (t,), w = select(m, out_dir, st["kernel"], st.get("source"), only,
+                            require_native_ownership=not plan.reference_comparison)
         except RunError as e:
             raise RunError(f"spec step {si}: {e}") from None
         plan.warnings += [x for x in w if x not in plan.warnings]
         mod = t.entry["cubin"]
         if mod not in mods_ours:
-            mods_ours[mod] = (out_dir / t.entry["cubin"]).read_bytes()
-            mods_ref[mod] = (out_dir / t.entry["reference"]).read_bytes()
+            mods_ours[mod] = _native_bytes(t,out_dir)
+            if plan.reference_comparison:
+                mods_ref[mod] = (out_dir / t.entry["reference"]).read_bytes()
         if t.kernel.get("compiled_by") == "ptxas-fallback":
             notes.add(f"{t.label} is a ptxas-fallback kernel (same code in both)")
         grid, block = _dim(st.get("grid", 1), f"step {si} grid"), _dim(st.get("block", BLOCK), f"step {si} block")
@@ -481,12 +472,13 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
         raise RunError("spec: reps must be a non-negative integer")
     i = len(plan.jobs)
     plan.jobs.append(_job(label + "#ours", mods_ours, buffers, init, init_rand, steps_ours, outputs, r))
-    plan.jobs.append(_job(label + "#ptxas", mods_ref, buffers, init, init_rand, steps_ref, outputs, r))
+    if plan.reference_comparison:
+        plan.jobs.append(_job(label + "#ptxas", mods_ref, buffers, init, init_rand, steps_ref, outputs, r))
     if init_tensor16:
-        for job in plan.jobs[-2:]:
+        for job in plan.jobs[i:]:
             job['init_tensor16'] = init_tensor16
     kern = " -> ".join(s[1] for s in steps_ours)
-    plan.cases.append(Case(kern, label, i, i + 1, compare, note="; ".join(sorted(notes)),
+    plan.cases.append(Case(kern, label, i, i + 1 if plan.reference_comparison else None, compare, note="; ".join(sorted(notes)),
                            describe=f"{len(steps_ours)} step(s), buffers {', '.join(buffers)}"))
 
 
@@ -522,6 +514,30 @@ def compare(plan: Plan, results: dict) -> list[Outcome]:
     for c in plan.cases:
         if c.skip:
             outs.append(Outcome(c, "SKIP", c.skip))
+            continue
+        if c.ref is None:
+            result = results.get(c.ours, {'error': 'no result'})
+            bad = []
+            if result.get('error'):
+                outs.append(Outcome(c, 'FAULT', result['error']))
+                continue
+            for name in c.compare:
+                chunks = result.get('out', {}).get(name)
+                if chunks is None:
+                    bad.append(f'{name}: missing output buffer')
+                    continue
+                raw = b''.join(chunks)
+                expected = sum(n for _, n in plan.jobs[c.ours]['outputs'][name])
+                if len(raw) != expected:
+                    bad.append(f'{name}: expected {expected} bytes, received {len(raw)}')
+                if name in c.expected_f32_constant:
+                    value = c.expected_f32_constant[name]
+                    if len(raw) % 4 or any(not math.isfinite(x) or abs(x-value) > 1e-6 + 5e-5*abs(value)
+                                         for (x,) in struct.iter_unpack('<f', raw)):
+                        bad.append(f'{name}: analytic smoke failed')
+            outs.append(Outcome(c, 'MISMATCH' if bad else 'OK', '; '.join(bad) or
+                                'OA native execution; no vendor reference launched',
+                                (result.get('time_ms') or {}).get('median')))
             continue
         ro, rr = results.get(c.ours, {"error": "no result"}), results.get(c.ref, {"error": "no result"})
         eo, er = ro.get("error"), rr.get("error")
@@ -584,7 +600,9 @@ def report(outs: list[Outcome], device: str = "") -> int:
         if o.case.note:
             print(f"{'':<{w}}    note: {o.case.note}")
     ok = sum(o.status == "OK" for o in outs)
-    print(f"{ok}/{len(outs)} OK (bit-exact against ptxas's build on identical inputs)"
+    comparison = any(o.case.ref is not None for o in outs)
+    print(f"{ok}/{len(outs)} OK (" + ("bit-exact against ptxas's build on identical inputs" if comparison
+                                    else "native execution; analytic smoke only where specified") + ")"
           + ("; speedup = ptxas median / ours median" if any(o.speedup for o in outs) else ""))
     return 0 if outs and ok == len(outs) else 1
 
@@ -627,7 +645,7 @@ def estimate_seconds(jobs: list[dict]) -> float:
 
 def describe(plan: Plan, backend: str, gpu: str, budget: float, cmd: list[str] | None) -> None:
     blob = pickle.dumps(plan.jobs)
-    print(f"dry run: {len(plan.cases)} comparison(s), {len(plan.jobs)} GPU jobs on "
+    print(f"dry run: {len(plan.cases)} native case(s), {len(plan.jobs)} GPU jobs on "
           f"{'this machine' if backend == 'local' else backend}; nothing was run")
     for c in plan.cases:
         if c.skip:
@@ -795,18 +813,36 @@ def build_plan(o: RunOptions) -> tuple[Plan, dict]:
     validate_options(o)
     out_dir = Path(o.out_dir)
     m, warns = load(out_dir)
-    plan = Plan(warnings=warns)
+    plan = Plan(warnings=warns, reference_comparison=False)
     if o.spec is not None:
         if o.kernel:
             raise RunError("--spec names its kernels in its steps; drop --kernel (or drop --spec)")
         spec = load_spec(o.spec)
         spec_case(spec, m, out_dir, o.reps, plan, Path(o.spec).name, o.only)
-        return plan, m
-    targets, w = select(m, out_dir, o.kernel, o.source, o.only)
+        return _native_execution_plan(plan), m
+    targets, w = select(m, out_dir, o.kernel, o.source, o.only,require_native_ownership=True)
     plan.warnings += w
     for t in targets:
         auto_case(t, out_dir, o.n, o.reps, plan)
-    return plan, m
+    return _native_execution_plan(plan), m
+
+
+def _native_execution_plan(plan: Plan) -> Plan:
+    """References are diagnostic build artifacts, never production GPU jobs.
+
+    Research tools can still construct explicit paired plans. Public run/cnr
+    only upload and launch the OA arm on local, SSH and Modal alike.
+    """
+    jobs = []
+    for case in plan.cases:
+        if case.skip:
+            continue
+        native = plan.jobs[case.ours]
+        case.ours = len(jobs)
+        case.ref = None
+        jobs.append(native)
+    plan.jobs = jobs
+    return plan
 
 
 def execute(plan: Plan, o: RunOptions) -> tuple[dict, str]:

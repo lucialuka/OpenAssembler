@@ -1,6 +1,6 @@
 # OpenAssembler architecture and status
 
-Updated **November 11, 2026**. This page describes the current source tree and
+Updated **November 12, 2026**. This page describes the current source tree and
 latest completed validation. The November 11 native GEMM replay supplies the
 current exact policy table; the separate November 7 native NN composition
 campaign remains experimental. Full command syntax is in [COMMANDS.md](COMMANDS.md);
@@ -8,11 +8,39 @@ every researched feature has a dossier in the [catalogue](research/README.md).
 The cross-cutting reverse-engineering record is centralized in the
 [reverse-engineering results hub](reverse_eng_results/README.md).
 
+## November 12 native model implementation
+
+The [native model bridge](research/ideas/native-model-bridge.md) now captures a
+CPU model factory and emits OA-owned forward/backward, MSE and plain SGD kernels.
+The production CLI executes saved OA cubins locally, over SSH or on Modal;
+legacy Inductor/Triton capture/replay and vendor kernel fallback are disabled.
+Exact shapes and explicit FP32 versus FP16-RNE-operand/FP32-accumulation policies
+are guarded. Residual MLP, explicit Tensor Core MLP and attention/FFN graphs pass complete
+training checks in separate A100 workers. The attention API adds affine LayerNorm
+and 92 full-state fields; four exact cached-decoding buckets pass 12 output/cache
+checks. Immutable storage views measure 1.711–1.735× over the OA copy-based
+attention inference baseline in two independent A100 workers. Optional guarded
+forward/backward buffer reuse reduces attention private allocations from 61
+to 32, with bitwise paired complete-state checks. These bounded cases do not
+establish general transformer/serving coverage or superiority to NVIDIA;
+arithmetic, memory and performance evidence retain their separate scopes.
+
+The [runtime integer-indexing repair](research/ideas/runtime-integer-indexing.md)
+adds missing F2I source-register collection protection. Four expanded independent
+A100 calls each pass 432 exact checks; all retained 500 GEMM candidate streams
+and installed rowwise streams retain their binary/register identities. Original
+measurements remain dated evidence; a continuity audit refreshes only current
+compiler identities.
+
+The tables and application architecture below describe the November 11 snapshot
+and historical Inductor experiments. Current native model behavior is documented
+in the linked dossier; those historical gains are not reassigned to OA codegen.
+
 ## Headline validation
 
 | Area | Latest completed evidence | Interpretation |
 |---|---|---|
-| Repository regression | Earlier full-suite snapshot: 655 passed, one optional PyTorch module skipped; November 11 dispatch/generator/promotion regression: 221 passed | Separate test scopes; the 221-test run is not a new full-suite count or a performance result |
+| Repository regression | November 12 full suite: 926 passed, two optional Torch modules skipped; separate Torch-enabled CPU graph/numerics cohort: 49 passed | Separate interpreter scopes; later targeted storage-planner checks are also retained under the native model experiment |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
 | Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay; a 58-shape 1/2/4/8-warp A100 sweep and separate seven-case heldout recheck promote five exact rowwise policies | Explicit FP32 operators; selected CTA geometry improves five heldout OpenAssembler cases by at least 3% in all rounds; same-source ptxas remains faster on main shapes |
 | Native direct-pointer GEMM | Historical 486 full method/input checks across three runs; six MLP products improve about 1.03–1.12×; current exact selections are audited in the November 11 replay | Direct pointers are selected for measured contracts or explicitly requested; unknown contracts keep legacy pointers. Historical tall regressions remain valid for those tested plans |
@@ -61,64 +89,44 @@ for this update's hardware tests.
 
 ## Architecture
 
-OpenAssembler has a native-first repository route and an explicit application
-route with different code-generation ownership. Static repository discovery
-selects PTX, CUDA/C++ and `@kernel` sources for OpenAssembler's SASS backend;
-host programs, build systems and launch logic remain context. The configured
-application route is selected with `--frontend torch`/`triton`/`inductor` and
-owns capture, packaging, replay and checking while Inductor/Triton generates
-its GPU code.
+Configured Python models and static kernel sources share the OA machine backend.
+An explicit `[model]` CPU factory selects graph capture and symbolic autodiff.
+Static discovery compiles supported PTX, CUDA C/C++ and typed Python kernels;
+independent source discovery does not infer arbitrary host launch logic.
+Inductor/Triton application execution and vendor fallback are disabled.
 
 ```mermaid
 flowchart TB
-    REPO["Local repository"] --> ADAPT["Repository/build-system adapter"]
-    ADAPT --> DISC["Static kernel discovery and dependency context"]
-    DISC --> SELECT{"Per-kernel frontend/backend selection"}
-    SELECT -->|"native PTX / CUDA / @kernel"| N
-    SELECT -->|"explicit --frontend torch/triton/inductor"| A
-    SELECT -->|"unsupported native form + --fallback ptxas"| FALLBACK["ptxas fallback, labeled in manifest"]
-    SELECT -->|"host/library implementation"| HOST["Existing host/runtime implementation"]
-    subgraph N["Native kernel compilation"]
-        PY["Python kernel subset"] --> PF["pyfront: AST and types"]
-        CU["CUDA C/C++ kernel"] --> NVCC["nvcc --ptx"]
-        PF --> PTX["PTX module"]
-        NVCC --> PTX
-        RAW["PTX source"] --> PTX
-        GP["gemm / rowwise source generators"] --> DISPATCH["Exact contract dispatch / optional A100 tuner"]
-        DISPATCH --> PTX
-        FM["fastmm research plans: FP32 kernels"] --> PTX
-        PTX --> PARSE["Parse, validate and select entries"]
-        PARSE --> ROUTE{"Tensor/copy instructions?"}
-        ROUTE -->|"No"| SC["Scalar selection, liveness, allocation and optional list scheduling"]
-        ROUTE -->|"Yes"| TC["SM80 tensor selection and protected source-order scheduling"]
-        SC --> ENC["SM80 instruction encoding"]
-        TC --> ENC
-        PTX --> CON["ptxas ELF container and same-PTX reference"]
-        ENC --> SPLICE["Replace selected kernel text and metadata"]
-        CON --> SPLICE
-        SPLICE --> CUBIN["Native cubin, SASS listing and manifest"]
-    end
-    subgraph A["Configured PyTorch application"]
-        CFG["openassembler.toml and bounded workload"] --> CAP["Dynamo/AOTAutograd capture"]
-        CAP --> IND["Inductor/Triton GPU compilation"]
-        IND --> BUNDLE["Application source, runtime cache, cubins and manifest"]
-        CAP --> CHECK["Eager/compiled outputs and model-state checks"]
-    end
-    CUBIN --> RUN["Local Linux / SSH / Modal execution"]
-    BUNDLE --> REPLAY["Python/PyTorch cache replay"]
-    REPLAY --> RUN
-    RUN --> GPU["CUDA driver and GPU execution"]
-    CHECK -. "verification gate" .-> BUNDLE
-    FALLBACK --> CUBIN
-    HOST --> RUN
+    REPO[Local repository] --> MODEL[Configured CPU model factory]
+    REPO --> STATIC[Static PTX / CUDA C/C++ / typed Python discovery]
+    MODEL --> CAP[CPU FX capture and exact shape contracts]
+    CAP --> GRAPH[Supported tensor graph and symbolic backward]
+    GRAPH --> PLAN[Storage views / optional guarded liveness slots]
+    PLAN --> OPS[OA operators, packing, reductions, MSE and SGD]
+    OPS --> PTX[PTX contracts]
+    STATIC --> FRONT[Typed Python frontend / nvcc to PTX / raw PTX]
+    FRONT --> PTX
+    PTX --> BACK[OA instruction selection and register allocation]
+    BACK --> SCHED[Scalar scheduling / protected tensor dependencies]
+    SCHED --> ENC[OA SM80 instruction encoder]
+    PTX --> DONOR[ptxas donor container and research reference]
+    ENC --> SPLICE[Replace executable text and resource metadata]
+    DONOR --> SPLICE
+    SPLICE --> BUNDLE[Saved OA cubins, launch plan and ownership ledger]
+    BUNDLE --> CHECK[Validate every executable text section and launch contract]
+    CHECK --> RUN[Same runtime locally / over SSH / on Modal]
+    RUN --> DRIVER[CUDA driver launches]
+    DRIVER --> GPU[A100 execution]
 ```
 
-NVIDIA's tools remain necessary for the native container/reference and CUDA C++
-frontend. The compiler does not rebuild every cubin ABI feature from scratch.
-Python orchestrates compilation and host launches; the GPU executes native
-instructions. The application route retains Python/PyTorch/ATen and CUDA-library
-runtime dependencies. No arrow automatically substitutes native OA GEMMs or
-row reductions into Inductor graphs.
+NVIDIA tools still supply the native donor container/reference and CUDA C/C++
+parsing to PTX. The compiler does not yet rebuild every cubin ABI feature.
+Production execution admits OA-encoded machine text and excludes donor/reference
+cubins. PyTorch supplies CPU capture/reference, storage, DMA and stream access.
+The conventional custom-autograd adapter can interoperate with external PyTorch
+loss/optimizer arithmetic; complete OA ownership requires the native inference
+or MSE/backward/SGD entrypoints. Historical Inductor results below retain their
+original comparator scope.
 
 ### Current module responsibilities
 
@@ -136,7 +144,9 @@ row reductions into Inductor graphs.
 | `isa/`, `container/` | Instruction words/fields/templates and CUDA ELF/cubin/metadata handling |
 | `emu/` | Functional SASS execution, warp behavior and recorded tensor numeric models |
 | `runner.py`, `gpu/` | Buffers/launches, native/reference comparisons, local/SSH/Modal transport and bounded workers |
-| `torchfront/` | Application configuration, capture, source/cache packaging, runtime replay and state verification |
+| `modelfront/` | Constrained CPU graph capture, autodiff, OA kernel recipes, storage planning, reusable native launch runtime and model deployment |
+| `native_ownership.py` | Complete executable-text inventory, native instruction identity and artifact admission |
+| `torchfront/` | Retained archive/source helpers and historical comparator code; vendor execution entrypoints are disabled |
 | `fastmm/` | Explicit low-rank matrix-multiplication research path, not the default GEMM |
 | `specs/`, `corpus/`, `probes/`, `tools/` | Encoding data, reference inputs, oracle experiments and maintenance tools |
 | `exp/`, `docs/evidence/` | Experiment drivers and immutable measurement records; not production imports |
@@ -166,8 +176,8 @@ are research proposals, not additional shipping modules in this tree.
 | Copy-address reuse | Exact table/tuner policy or `--tile 64x64 --copy-address-init reuse` | 64-bit derived copy offsets, tile64 only; selected for 20 current exact contracts; no relaxation of address or synchronization checks |
 | Cooperative softmax/population LayerNorm | `rowwise --dispatch auto` exact table, `--dispatch manual` reference, or explicit `--warps-per-cta` | Contiguous bounded finite FP32, widths 1–1024, tails; five exact A100 shape/op entries use two/eight warps; all other shapes keep four warps; no affine/saved statistics/backward |
 | Scalar alias/WAR/reader/scoreboard repairs and warp synchronization | Scalar backend | Implemented full-mask butterfly shuffle form; unsupported forms fail closed |
-| Application capture/replay | Explicit `--frontend torch`/`triton`/`inductor` on configured PyTorch directories | Pinned supported runtime, captured arguments/shapes, retained runtime dependencies |
-| Complete state diagnostics | Application verification gate | All tensors checked, bounded error details, unchanged admission tolerances |
+| Native Python models | Explicit `[model]` or `--frontend model`/`torch` | Bounded exact-shape CPU graph capture and symbolic derivatives; OA inference/MSE/SGD cubins; unsupported nodes fail |
+| Complete state diagnostics | Native model verification and historical comparator gates | All tensors checked, bounded error details, unchanged admission tolerances |
 | ReLU/GELU/fused Adam-like examples | Compile the explicit example source | Not automatic model rewrites or a full optimized AdamW implementation |
 | AlphaTensor/Strassen factor research | Explicit `fastmm` command | Verified factorizations and bounded experiments; no established default tensor-GEMM win |
 

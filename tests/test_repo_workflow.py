@@ -7,6 +7,7 @@ import json
 import subprocess
 
 import pytest
+from tests.native_fixture import save_native_manifest
 
 from openassembler import build, project, remote_build, runner, transport
 from openassembler.cli import main
@@ -25,7 +26,7 @@ def native_manifest(out, root, sources):
         for key in ('cubin', 'reference'):
             project.write_atomic(out / entry[key], b'compiled')
         entries.append(entry)
-    project.save_manifest(out, root, 'sm_80', 'opt', entries)
+    save_native_manifest(out, root, 'sm_80', 'opt', entries)
 
 
 @pytest.fixture
@@ -150,56 +151,59 @@ def test_local_native_build_never_silently_ignores_a_build_watchdog(repo, comman
 
 @pytest.fixture
 def app(repo, monkeypatch):
-    (repo / 'train.py').write_text('print("train")')
+    (repo / 'model.py').write_text('def create_model(): pass')
     (repo / 'openassembler.toml').write_text(
-        '[application]\nfrontend="torch"\nentrypoint="train.py"\nbuild_backend="modal"\n')
+        '[model]\nentrypoint="model.py"\ninput_shapes=[[17,8]]\nbuild_backend="modal"\n')
     calls = []
-    def worker(request, config, root):
+    from openassembler.modelfront import frontend as native
+    from openassembler.modelfront import runtime
+    # This fixture isolates transport routing; ownership validation has its own
+    # real ELF and mutation tests and the A100 integration campaign.
+    monkeypatch.setattr(runtime, 'validate_bundle', lambda *a: None)
+    monkeypatch.setattr(native, 'deployment_files', lambda *a, **k: {})
+    def request(request, config):
         calls.append((request, config))
-        if request['mode'] == 'run':
-            return {'report': {'status': 'ok', 'new_gpu_codegen': 0, 'optimizer_steps': 2,
-                    'runtime': {'device': 'A100'}, 'verification': {'status': 'ok', 'tensors_checked': 2}}}
-        binary = b'unchanged GPU kernel'
-        return {'report': {'status': 'ok', 'graphs': [{'nodes': 1}],
-                'runtime': {'torch': '2.7.1+cu128', 'cuda': '12.8', 'python': '3.11.13',
-                            'capability': [8, 0], 'device': 'A100'},
-                'verification': {'status': 'ok', 'tensors_checked': 2},
-                'kernels': [{'name': 'k', 'artifact': 'k', 'cache_path': 'triton/k.cubin',
-                             'sha256': hashlib.sha256(binary).hexdigest()}]},
-                'artifacts': base64.b64encode(pack({'cubin/k.cubin': binary, 'graphs.json': b'[]',
-                             'cache.zip': pack({'triton/k.cubin': binary})})).decode()}
-    monkeypatch.setattr(frontend, '_worker_request', worker)
+        if request['action'] == 'run':
+            return {'report': {'passed': True, 'backend': 'openassembler', 'gpu_codegen_during_replay': 0}}
+        return {'report': {'passed': True}, 'artifacts': base64.b64encode(pack({
+            'plan.json': b'{}', 'native-ledger.json': b'{}', 'model.json': json.dumps({
+                'schema':1, 'backend':'openassembler', 'config':config, 'source_root':str(repo),
+                'source_digest': request['source_digest']}).encode()
+        })).decode()}
+    monkeypatch.setattr(native, '_request', request)
+    # These transport-only tests deliberately stub worker artifact semantics;
+    # real ownership rejection/publication gates have separate regression tests.
+    monkeypatch.setattr('openassembler.modelfront.runtime.validate_bundle',lambda *a,**k:({}, {}, b''))
     return repo, calls
 
 
 @pytest.mark.parametrize('destination', ['local', 'modal', 'user@a100'])
 def test_application_cnr_uses_one_destination_for_both_stages(app, destination):
     root, calls = app
-    assert main(['cnr', str(root), '--frontend', 'torch', '--backend', destination, '--verify',
-                 '--budget', '120', '--job-timeout', '90']) == 0
-    assert [c[0]['mode'] for c in calls] == ['compile', 'run']
+    assert main(['cnr', str(root), '--frontend', 'model', '--backend', destination, '--verify',
+                 '--budget', '120']) == 0
+    assert [c[0]['action'] for c in calls] == ['compile', 'run']
     for request, config in calls:
         assert config['build_backend'] == ('ssh' if '@' in destination else destination)
         assert config.get('build_host') == (destination if '@' in destination else None)
         assert request['verify'] is True
-        assert request['config']['job_timeout'] == 90
-    assert (root / 'output/manifest.json').is_file()
+    assert (root / 'output/model.json').is_file()
 
 
 def test_application_run_infers_bundle_and_allows_new_ssh_destination(app):
     root, calls = app
-    assert main(['compile', str(root), '--frontend', 'torch', '--backend', 'modal']) == 0
+    assert main(['compile', str(root), '--frontend', 'model', '--backend', 'modal']) == 0
     assert main(['run', str(root), '--backend', 'ssh', '--host', 'user@a100',
                  '--verify-application']) == 0
     assert calls[-1][1]['build_host'] == 'user@a100'
-    assert calls[-1][0]['mode'] == 'run'
+    assert calls[-1][0]['action'] == 'run'
     assert main(['run', str(root / 'output'), '--backend', 'gpu-alias', '--verify-application']) == 0
     assert calls[-1][1]['build_host'] == 'gpu-alias'
 
 
 def test_application_cnr_allows_separate_build_transport(app):
     root, calls = app
-    assert main(['cnr', str(root), '--frontend', 'torch', '--build-backend', 'modal', '--backend', 'user@a100']) == 0
+    assert main(['cnr', str(root), '--frontend', 'model', '--build-backend', 'modal', '--backend', 'user@a100']) == 0
     assert calls[0][1]['build_backend'] == 'modal'
     assert calls[1][1]['build_backend'] == 'ssh'
 
@@ -260,6 +264,7 @@ def test_native_runtime_contains_compiler_data_and_no_research_results():
 def test_remote_failed_rebuild_blocks_old_binary_but_kernel_filter_preserves_others(repo, monkeypatch, failure):
     out = repo / 'output'
     native_manifest(out, repo, [repo / 'k.ptx'])
+    original_binary = (out / 'cubin/k0.cubin').read_bytes()
     def request(host, req, res, runtime, module, budget):
         manifest = {'schema': 1, 'root': '/tmp/source', 'entries': []}
         res.write_text(json.dumps({'rc': 1 if failure else 0,
@@ -269,7 +274,7 @@ def test_remote_failed_rebuild_blocks_old_binary_but_kernel_filter_preserves_oth
     remote_build.compile_native(repo, out, build.Options(kernel='selected'), backend='ssh', host='user@a100')
     entry = project.load_manifest(out)['entries'][0]
     assert bool(entry.get('build_failed')) is failure
-    assert (out / 'cubin/k0.cubin').read_bytes() == b'compiled'
+    assert (out / 'cubin/k0.cubin').read_bytes() == original_binary
 
 
 def test_remote_build_refuses_busy_output_before_upload(repo, monkeypatch):

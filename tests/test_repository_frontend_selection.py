@@ -38,7 +38,7 @@ def test_auto_does_not_implicitly_capture_a_pytorch_only_repo(tmp_path, capsys):
     root = configured_repo(tmp_path, native=False)
     assert main(["compile", str(root), "--dry-run"]) == 1
     error = capsys.readouterr().err
-    assert "--frontend torch" in error
+    assert "--frontend model" in error
     assert "not implicitly lowered" in error
 
 
@@ -52,10 +52,9 @@ def test_application_frontend_requires_explicit_selection(tmp_path, frontend_nam
         return type("Result", (), {"rc": 0})()
 
     monkeypatch.setattr(torchfront, "compile_application", dry_compile)
-    assert main(["compile", str(root), "--frontend", frontend_name, "--dry-run"]) == 0
-    assert observed and observed[0][0] == root
-    assert observed[0][2]["dry_run"] is True
-    assert not capsys.readouterr().err
+    assert main(["compile", str(root), "--frontend", frontend_name, "--dry-run"]) == 1
+    assert not observed
+    assert "disabled" in capsys.readouterr().err
 
 
 def test_native_source_file_inside_configured_repo_never_selects_application(tmp_path, monkeypatch):

@@ -1,5 +1,12 @@
 # Build and execute a repository
 
+Current native Python models use an explicit `[model]` CPU factory and shape
+contract. Read [the native model guide](research/ideas/native-model-bridge.md).
+Configured native models are selected automatically and execute only OA artifacts
+on every transport. Old Inductor `[application]` capture/replay and vendor fallback
+are disabled. Use the native model, Tensor Core model and attention examples
+under the examples directory for current work.
+
 The same source path works with all three commands:
 
 ```sh
@@ -13,11 +20,11 @@ and executes the products of that invocation. `--dry-run` plans work without
 building, uploading or submitting jobs. All three accept `local`, `modal` or
 an SSH destination such as `user@a100` as their backend.
 
-The default frontend is native static discovery. A repository is scanned for
-PTX `.entry` kernels, CUDA/C++ `__global__` kernels and Python `@kernel`
-functions. A present `openassembler.toml` does not silently switch the build to
-TorchInductor/Triton. Select an application explicitly with `--frontend torch`,
-`--frontend triton`, or `--frontend inductor`.
+A repository with `[model]` in `openassembler.toml` selects native Python graph
+capture automatically. `--frontend model` or `--frontend torch` explicitly
+selects it. `--frontend native` forces static discovery of PTX, CUDA/C++ and
+typed Python `@kernel` files. Triton/Inductor execution and vendor fallbacks
+are disabled.
 
 ## Choose the repository's frontend
 
@@ -25,54 +32,50 @@ TorchInductor/Triton. Select an application explicitly with `--frontend torch`,
 scanned for `.ptx` entries, CUDA C/C++ `__global__` kernels and typed Python
 `@kernel` functions. Paths are mirrored into the output tree. NVIDIA's frontend
 handles CUDA C/C++ parsing; OpenAssembler handles supported PTX instruction
-selection, allocation, scheduling and encoding. Unsupported forms fail unless
-an explicitly labelled `--fallback ptxas` is requested. Host scripts, CMake,
+selection, allocation, scheduling and encoding. Unsupported forms fail;
+no vendor fallback is available. Host scripts, CMake,
 shell scripts and arbitrary Python functions are not inferred GPU kernels.
 
 Native execution needs the program's buffer and launch contract. For anything
 beyond a simple elementwise kernel or a checked `gemm`/`rowwise` plan, supply
 `--spec launch.json`. Discovery compiles independent sources; it does not infer
 how an entire host application should allocate data or call those kernels.
-The [command reference](COMMANDS.md#run-existing-kernel-binaries-or-application-replay)
+The [command reference](COMMANDS.md#run-saved-native-kernel-binaries-or-model-replay)
 documents the spec format and reference-comparison behavior.
 
-**PyTorch application:** put `openassembler.toml` in the supplied repository
-root. For example, adapt this to your actual training entry point and arguments:
+**Native Python model:** configure a CPU factory and exact shapes in the repository:
 
 ```toml
-[application]
-frontend = "torch"
-entrypoint = "train.py"
-args = ["--device", "cuda", "--steps", "8"]
-seed = 7
-torch = "2.7.1"
+[model]
+entrypoint = "model.py"
+factory = "create_model"
+input_shapes = [[17, 8]]
+math = "fp32"
+mode = "training"
+loss = "mse"
+optimizer = "sgd"
+steps = 3
 build_backend = "modal"
-gpu = "A100-40GB"
-budget = 900
-job_timeout = 600
-verification = "state"
 ```
 
-Capture executes that configured workload and saves its observed model
-specializations through TorchDynamo/AOTAutograd and TorchInductor/Triton.
-GPU kernels become cubins and SASS listings; Python/PyTorch and external CUDA
-libraries remain runtime dependencies. A whole repository is not converted to
-one standalone host executable, and unobserved shapes/branches are not compiled
-in advance. The native optimization research is preserved independently;
-native GEMMs and reductions are not silently substituted into application graphs.
+The initial operator set includes linear, residual/elementwise paths, batched
+products, permutations, concatenation, softmax, GELU and affine LayerNorm.
+Training differentiates the captured supported graph and emits OA MSE/backward/SGD
+kernels. The optional `f16_rne_f32_accum` mode has a separate explicit rounding
+contract and rejects unsupported full-tile GEMM shapes. Unsupported FX nodes,
+dynamic or unobserved shapes, layouts, dtypes, custom ops and optimizers reject;
+there is no vendor GPU fallback. See the [native model guide](research/ideas/native-model-bridge.md).
 
 ```sh
-openassembler compile /path/to/repo --frontend torch --backend modal --verify
-openassembler run /path/to/repo --backend modal --verify-application
+openassembler cnr /path/to/my_repo --frontend model --backend modal --verify
+openassembler run /path/to/my_repo --backend user@a100 --verify-application
 ```
 
-The source path automatically selects its saved application. Use
-`--application NAME` when a build contains multiple application choices.
-`--verify` on `cnr` checks both capture and replay. Replay blocks new GPU
-code generation; changed model arguments need a new capture. See the
-[application dossier](research/ideas/pytorch-application-capture.md) for runtime,
-state-check and numerical limitations. The included
-[transformer example](../testcases/test_whole_repo/README.md) needs no dataset download.
+Static repository discovery separately compiles independent CUDA/C/C++/PTX and
+typed-Python kernels through OA. CUDA C/C++ uses nvcc only to emit PTX. This
+does not rewrite host launch stubs or infer calls from the captured model; only
+operators in the model graph are part of its executable plan. `examples/native_mixed_repo`
+shows both artifact sets in one repo bundle.
 
 ## Output location and selection
 
@@ -126,15 +129,15 @@ Install OpenAssembler with Python 3.12+ and set up the optional Modal client:
 python3 -m pip install -e .
 python3 -m pip install modal
 modal setup
-openassembler cnr testcases/test_whole_repo --frontend torch --backend modal --verify --dry-run
-openassembler cnr testcases/test_whole_repo --frontend torch --backend modal --verify
+openassembler cnr examples/native_model --frontend model --backend modal --verify --dry-run
+openassembler cnr examples/native_model --frontend model --backend modal --verify
 ```
 
 The `modal` executable can belong to a separate environment, but must be on
 `PATH` and authenticated. No local CUDA toolkit or GPU is needed for remote
 compilation. Native compilation uses a CPU-only CUDA 12.8.1 development image
 with Python 3.12; native execution uses the existing bounded A100 runner.
-Application capture/replay uses the pinned PyTorch 2.7.1/CUDA 12.8 image.
+Native model capture/replay uses the pinned PyTorch 2.7.1/CUDA 12.8 image.
 The default GPU request is `A100-40GB`; returned hardware is recorded in results.
 
 Source/cache archives are bounded to 256 MiB and 20,000 files each. Native
@@ -180,9 +183,9 @@ Native compilation needs Python 3.12+, CUDA toolkit tools and a compatible host
 C++ compiler for CUDA input. Native execution needs Python 3, GNU `timeout`,
 an NVIDIA driver and the matching A100; it does not need a toolkit. Application
 capture needs PyTorch 2.7.1 and its CUDA dependencies on the remote `python3`.
-Application replay must match the saved Python, torch, CUDA and SM capability;
-a bundle captured on Modal is not automatically portable to a differently
-versioned SSH environment. Capture and replay on that host when necessary.
+Model replay requires compatible Python, torch, CUDA and SM capability. A saved
+OA bundle never JIT compiles and rejects a mismatched A100 runtime. SSH compiles
+with the toolkit installed on that host and then loads its saved OA cubins.
 The OpenAssembler worker/compiler is uploaded automatically; installing
 OpenAssembler on the remote host is not required for workstation dispatch.
 

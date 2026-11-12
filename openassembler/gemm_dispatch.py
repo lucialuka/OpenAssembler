@@ -46,7 +46,7 @@ def compiler_inputs() -> dict[str, Path]:
         for path in (root / "openassembler" / folder).rglob("*.py"):
             paths[path.relative_to(root).as_posix()] = path
     for name in ("gemm.py", "gemm_dispatch.py", "gemm_tune.py", "gemm_tune_modal.py", "build.py",
-                 "project.py", "oracle.py", "gpu/cuda_driver.py", "kernels/gemm.py", "kernels/_gemm64.py"):
+                 "project.py", "oracle.py", "native_ownership.py", "gpu/cuda_driver.py", "kernels/gemm.py", "kernels/_gemm64.py"):
         path = root / "openassembler" / name
         paths[path.relative_to(root).as_posix()] = path
     for path in (root / "specs" / "sm_80").glob("*.json"):

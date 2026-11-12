@@ -22,7 +22,7 @@ def identity_inputs() -> dict[str, Path]:
     for relative in (
         "openassembler/kernels/reductions.py", "openassembler/rowwise.py",
         "openassembler/rowwise_dispatch.py", "openassembler/build.py",
-        "openassembler/project.py", "openassembler/oracle.py",
+        "openassembler/project.py", "openassembler/oracle.py", "openassembler/native_ownership.py",
         "openassembler/gpu/cuda_driver.py",
     ):
         path = root / relative

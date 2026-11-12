@@ -1,0 +1,39 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+.visible .entry vector_add(.param .u64 a, .param .u64 b, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .f32 %f<4>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [b];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u64 %rd3, [out];
+ cvta.to.global.u64 %rd3, %rd3;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %ctaid.x;
+ mov.u32 %r4, %ntid.x;
+ mul.lo.s32 %r5, %r3, %r4;
+ add.s32 %r6, %r2, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd4, %r7, 4;
+ add.s64 %rd4, %rd1, %rd4;
+ ld.global.f32 %f1, [%rd4];
+ mul.wide.u32 %rd5, %r7, 4;
+ add.s64 %rd5, %rd2, %rd5;
+ ld.global.f32 %f2, [%rd5];
+ add.f32 %f3, %f1, %f2;
+ mul.wide.u32 %rd6, %r7, 4;
+ add.s64 %rd6, %rd3, %rd6;
+ st.global.f32 [%rd6], %f3;
+L_endif_1:
+L_exit:
+ ret;
+}

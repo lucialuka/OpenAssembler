@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import pytest
+from tests.native_fixture import save_native_manifest
 
 from openassembler.runner import (Case, Plan, RunError, RunOptions, _first_diff, compare, load_spec, report,
                                   run_command)
@@ -64,7 +65,7 @@ def test_modal_dry_run_builds_plan_without_credentials(tmp_path, monkeypatch, ca
              "reference": ".build/reference/k.cubin",
              "kernels": [{"name": "k", "params": [["u64", "out"], ["u64", "in"], ["u32", "n"]],
                           "compiled_by": "openassembler"}]}
-    project.save_manifest(out, tmp_path, "sm_80", "opt", [entry])
+    save_native_manifest(out, tmp_path, "sm_80", "opt", [entry])
     monkeypatch.setattr(runner, "modal_ready", lambda: "no modal credentials")
     assert run_command(RunOptions(out_dir=out, backend="modal", dry_run=True, n=32, reps=0)) == 0
     text = capsys.readouterr().out

@@ -1,0 +1,6478 @@
+{
+  "schema": 1,
+  "passed": true,
+  "device": "NVIDIA A100-SXM4-40GB",
+  "torch": "2.7.1+cu128",
+  "cuda": "12.8",
+  "checks": [
+    {
+      "method": "copies",
+      "input": 0,
+      "passed": true,
+      "max_abs": 2.384185791015625e-07,
+      "canaries": {
+        "passed": true,
+        "allocations": 105
+      }
+    },
+    {
+      "method": "views",
+      "input": 0,
+      "passed": true,
+      "max_abs": 2.384185791015625e-07,
+      "canaries": {
+        "passed": true,
+        "allocations": 61
+      }
+    },
+    {
+      "method": "copies",
+      "input": 1,
+      "passed": true,
+      "max_abs": 4.76837158203125e-07,
+      "canaries": {
+        "passed": true,
+        "allocations": 105
+      }
+    },
+    {
+      "method": "views",
+      "input": 1,
+      "passed": true,
+      "max_abs": 4.76837158203125e-07,
+      "canaries": {
+        "passed": true,
+        "allocations": 61
+      }
+    },
+    {
+      "method": "copies",
+      "input": 2,
+      "passed": true,
+      "max_abs": 3.5762786865234375e-07,
+      "canaries": {
+        "passed": true,
+        "allocations": 105
+      }
+    },
+    {
+      "method": "views",
+      "input": 2,
+      "passed": true,
+      "max_abs": 3.5762786865234375e-07,
+      "canaries": {
+        "passed": true,
+        "allocations": 61
+      }
+    }
+  ],
+  "artifacts": {
+    "copies": {
+      "plan_sha256": "861a0d118179fc32b2e5b288d093b5d44ad4217ac8bd33e5aae46e18d623968a",
+      "native_ledger": {
+        "arch": "sm_80",
+        "backend": "openassembler-native",
+        "cubin": "native/cubin/native.cubin",
+        "cubin_sha256": "d6c3dcb587642e5d85f3329dc70cf699bbb52207bd33a935f84535bcb6d3993b",
+        "kernels": {
+          "oa_model_09408308339448232127": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  4
+                ],
+                [
+                  4,
+                  7,
+                  7
+                ]
+              ],
+              "op": "bmm_dw",
+              "output": [
+                4,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "c2c8aa5eab152962b473a0682e9cf271f505615e58bed8ac3672112d5347ec7e"
+          },
+          "oa_model_143284c4fe6427faedef": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "value": 1.0
+              },
+              "inputs": [],
+              "op": "fill",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "70191634cfb6793a581bb05271ad0b180ee15135eee5b5978e4d55843770d4fe"
+          },
+          "oa_model_15428ee5e910727c2a76": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "bias_grad",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "fc03a302d9788a1f6018d5fcd73ada5e1ffa76d80e1357f0ec93d7a31c1440b8"
+          },
+          "oa_model_184663155000b9e3c111": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  4
+                ],
+                [
+                  4,
+                  7,
+                  4
+                ]
+              ],
+              "op": "bmm_dx",
+              "output": [
+                4,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "c90128803693e787986ba34948c6b3f3f2106f445635ddb97ffc057fe76d24af"
+          },
+          "oa_model_218d62a2a15ae61babe1": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                4,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "epsilon": 1e-05
+              },
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "layernorm",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "29b9c48f159e54a7a5ef6c0eb8cadba7710c82e3ac423833bd7f0f2abdf4c7ab"
+          },
+          "oa_model_22ddd8b685df414f84b5": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  16,
+                  8
+                ],
+                [
+                  16,
+                  8
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                16,
+                8
+              ]
+            },
+            "text_sha256": "30b6c5c5ae826ccbab74cfd5dbb1fefa76be3a2dec978adae8bb79e897a4fc51"
+          },
+          "oa_model_30c1a7c0e0c11d0dbd85": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                7,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ]
+              ],
+              "op": "softmax",
+              "output": [
+                2,
+                2,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "70c8c9a212e7228e9d68283e92ec5e37cb28d7476f4cf1d76ad9d13e089067a5"
+          },
+          "oa_model_3735526125d88689ee19": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 16
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  16,
+                  8
+                ],
+                [
+                  16
+                ]
+              ],
+              "op": "linear",
+              "output": [
+                14,
+                16
+              ]
+            },
+            "text_sha256": "43e35fd6952231f8a00de833499ce00ddce8a0957fe773b5b9a701284b76a1ce"
+          },
+          "oa_model_37c3a02c3ab82b6c2aa6": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 16,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "bias_grad",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "fc03a302d9788a1f6018d5fcd73ada5e1ffa76d80e1357f0ec93d7a31c1440b8"
+          },
+          "oa_model_396946a65945b78894cd": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "channel_mul",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "7d42164a40f6d31f78c391b4a32b51a3e9dd182365225cf834d4540ec308ed54"
+          },
+          "oa_model_3d10658e1ee31cc994a2": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "8662bf46ee9934bf94d85c9bab9469ed77c2f401fc716d8288ed58c3e8ff0f39"
+          },
+          "oa_model_40869388c44d8d072078": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  8,
+                  16
+                ],
+                [
+                  8,
+                  16
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                8,
+                16
+              ]
+            },
+            "text_sha256": "30b6c5c5ae826ccbab74cfd5dbb1fefa76be3a2dec978adae8bb79e897a4fc51"
+          },
+          "oa_model_42ebe7ff3e2f590e259a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 16
+              },
+              "inputs": [
+                [
+                  14,
+                  16
+                ]
+              ],
+              "op": "bias_grad",
+              "output": [
+                16
+              ]
+            },
+            "text_sha256": "5b91871b9af1faf847c6ce39eb92edcf8391ccc7406618033329b112c5da648c"
+          },
+          "oa_model_4322621872c9cf3dcd4a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  2,
+                  4,
+                  7
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                4,
+                4,
+                7
+              ]
+            },
+            "text_sha256": "8662bf46ee9934bf94d85c9bab9469ed77c2f401fc716d8288ed58c3e8ff0f39"
+          },
+          "oa_model_4885d0c27ae7343d86ee": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "8662bf46ee9934bf94d85c9bab9469ed77c2f401fc716d8288ed58c3e8ff0f39"
+          },
+          "oa_model_4e0a92791e4db810647d": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                4,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  7
+                ],
+                [
+                  4,
+                  7,
+                  4
+                ]
+              ],
+              "op": "bmm_dw",
+              "output": [
+                4,
+                4,
+                7
+              ]
+            },
+            "text_sha256": "44a604ffe33265bf2256f27ad5b4bd6a55bfcb4fa7a89278e1e7bdc3e3466bbd"
+          },
+          "oa_model_4e45a35672ac1dbb4614": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                4,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 17,
+            "signature": {
+              "attrs": {
+                "epsilon": 1e-05
+              },
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "layernorm_backward",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "a9e9af7e389556b298492839b91ae5c6ccc105fb5997de70285295d8fca93468"
+          },
+          "oa_model_61a08a0037e5d9239192": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  16
+                ],
+                [
+                  16
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                16
+              ]
+            },
+            "text_sha256": "b8bf01a5b1fea4128eaf7978c656f031e0da1f3d8062f26abf37840619bbb391"
+          },
+          "oa_model_64df27e3eb13cf7e0d19": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  8,
+                  8
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "linear",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "9d0f0184c3d57eb2da6b419f3e642303d05e17682cd42294d37e94716ea15c7e"
+          },
+          "oa_model_66cde613ecd6d57f2b6a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 1
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "mse",
+              "output": []
+            },
+            "text_sha256": "1157d50efa49851e66a0e3ef9754ac3a622ee32f972e5a277fc83643752034fe"
+          },
+          "oa_model_73c5b64a15aeb8232a6c": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "axes": [
+                  0,
+                  1,
+                  3,
+                  2
+                ]
+              },
+              "inputs": [
+                [
+                  2,
+                  2,
+                  4,
+                  7
+                ]
+              ],
+              "op": "permute",
+              "output": [
+                2,
+                2,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "805a53b594b2580aa8c27cc57a3b5b7e5737304f5def3514db5603058f9b590a"
+          },
+          "oa_model_78b57e90d47f353fe250": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "scalar": 0.5
+              },
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ]
+              ],
+              "op": "mul",
+              "output": [
+                2,
+                2,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "5a199604fa4cb0075d3262b247154f3e7bacf9e810f0dddb6225b515886c03c3"
+          },
+          "oa_model_7cd3c8b479c467469d13": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  4
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                4,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "8662bf46ee9934bf94d85c9bab9469ed77c2f401fc716d8288ed58c3e8ff0f39"
+          },
+          "oa_model_85c782ccb64185554a2c": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                2,
+                7,
+                2,
+                4
+              ]
+            },
+            "text_sha256": "8662bf46ee9934bf94d85c9bab9469ed77c2f401fc716d8288ed58c3e8ff0f39"
+          },
+          "oa_model_91e1f9c5fb5599416ab0": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                4,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "axes": [
+                  0,
+                  1,
+                  3,
+                  2
+                ]
+              },
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  4
+                ]
+              ],
+              "op": "permute",
+              "output": [
+                2,
+                2,
+                4,
+                7
+              ]
+            },
+            "text_sha256": "aff8a66640e8ee18ddf81f0ed855a79c1503c777dd676b07a97b4fc910895f53"
+          },
+          "oa_model_92b390c7f28044af607a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  8,
+                  8
+                ],
+                [
+                  8,
+                  8
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                8,
+                8
+              ]
+            },
+            "text_sha256": "d2652fb4ef8b32ca497a8989e1383e339ec3d485c299a534d3c9f37969c4126b"
+          },
+          "oa_model_936ed16d63e58e55a91b": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  7
+                ],
+                [
+                  4,
+                  4,
+                  7
+                ]
+              ],
+              "op": "bmm_dx",
+              "output": [
+                4,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "d1d2d55be19ec0a82de01c3de4fd562b9bba33831a93c7f2e294771f8bb53381"
+          },
+          "oa_model_9779dba0adda1d00c798": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                8,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 16,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  14,
+                  16
+                ]
+              ],
+              "op": "linear_dw",
+              "output": [
+                8,
+                16
+              ]
+            },
+            "text_sha256": "c4affc755f318319c244131610e0aa16369ccf83d01db761e55b8efbd6a7f68a"
+          },
+          "oa_model_a8a7a425700582609417": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  8
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "911991014ed5c45f232a9c00b4ccdda4e98a1f90d7d83435d1cd6c3ce312e8fc"
+          },
+          "oa_model_af8ea3e8f2c02cb5d078": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "channel_sum",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "8c9ce007d1249746f28b6adb9c6e3a6fb0423add8f69b9603c054dc2bc970188"
+          },
+          "oa_model_b09352d6e7b758a8b968": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  2,
+                  4
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "8662bf46ee9934bf94d85c9bab9469ed77c2f401fc716d8288ed58c3e8ff0f39"
+          },
+          "oa_model_b6baa90e9139118f26fa": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                8,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "linear_dw",
+              "output": [
+                8,
+                8
+              ]
+            },
+            "text_sha256": "61cea9a9b350acdcc8c044c2c681dd1c56550245400bb24bea2393de6e8c5664"
+          },
+          "oa_model_b83290f6b11d7f3d93dc": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "add",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "48518d610b7649afd7a4cad6d9f327b4e1c957607710b12990f3afee34ca1e12"
+          },
+          "oa_model_b8a2755ddca652d520d8": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  7
+                ],
+                [
+                  4,
+                  7,
+                  4
+                ]
+              ],
+              "op": "bmm",
+              "output": [
+                4,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "78051df813431f99f3432dd2c20a79a06f235ca51a6900df5913d53fb80a2543"
+          },
+          "oa_model_baae05f1306fecdb61b7": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  8,
+                  8
+                ]
+              ],
+              "op": "linear_dx",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "1dda98917bfc24fb10f902a695da002e10779fe855758dd7c208d9e8f8b638bb"
+          },
+          "oa_model_baddd9261bf8f41b2775": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  4,
+                  7
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                2,
+                2,
+                4,
+                7
+              ]
+            },
+            "text_sha256": "8662bf46ee9934bf94d85c9bab9469ed77c2f401fc716d8288ed58c3e8ff0f39"
+          },
+          "oa_model_bb46634a8d932da735d1": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                2,
+                14
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "axes": [
+                  0,
+                  2,
+                  1,
+                  3
+                ]
+              },
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  4
+                ]
+              ],
+              "op": "permute",
+              "output": [
+                2,
+                7,
+                2,
+                4
+              ]
+            },
+            "text_sha256": "a0d819d37a27d360775bf6b3932dabc4100c7af7264ba5fc559ba60020e23946"
+          },
+          "oa_model_bd98a9f5f6a7353fe3ac": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                4,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "9874beb2cd7cc1a79e9e7828923f0233e2666e698bcbf47afacbe1e220308eb9"
+          },
+          "oa_model_bf53733f290845d6d2a5": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  4
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                2,
+                2,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "8662bf46ee9934bf94d85c9bab9469ed77c2f401fc716d8288ed58c3e8ff0f39"
+          },
+          "oa_model_c0aae02d6e4d475ff550": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "mse_grad",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "926773110ca5309471a500520c0034f83b9efea312fa5318fa309691dd642059"
+          },
+          "oa_model_c5a1491f40bbe9b4d6e1": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  14,
+                  16
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                2,
+                7,
+                16
+              ]
+            },
+            "text_sha256": "6f0998981472281c8b0540f867fbadcfcc8a4cc33d7c9a6e99f9fddb5ce4947e"
+          },
+          "oa_model_c97ffe8e04b5d1feda17": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  16
+                ]
+              ],
+              "op": "gelu",
+              "output": [
+                2,
+                7,
+                16
+              ]
+            },
+            "text_sha256": "cc13577b75237143e9b79ee52bf6ca3cf63ca68781cf0904237d53f0603e5938"
+          },
+          "oa_model_ca942eafbfc7c39a4d45": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 16
+              },
+              "inputs": [
+                [
+                  14,
+                  16
+                ],
+                [
+                  16,
+                  8
+                ]
+              ],
+              "op": "linear_dx",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "67fa7614d4f441ac0b8f445a85fd6e82b682899d23bb66bf6527a03b70029e15"
+          },
+          "oa_model_cb3935cedd27671ebef0": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 16,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  8,
+                  16
+                ]
+              ],
+              "op": "linear_dx",
+              "output": [
+                14,
+                16
+              ]
+            },
+            "text_sha256": "d8570d94b91a9417455519e17dbf443b115a347eb13e0df41ff76e7b2e1460b3"
+          },
+          "oa_model_ccf4c02304c0249efe73": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  7
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                2,
+                2,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "9874beb2cd7cc1a79e9e7828923f0233e2666e698bcbf47afacbe1e220308eb9"
+          },
+          "oa_model_d85c931b7adc05774a20": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                16,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 16
+              },
+              "inputs": [
+                [
+                  14,
+                  16
+                ],
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "linear_dw",
+              "output": [
+                16,
+                8
+              ]
+            },
+            "text_sha256": "73562aec54d9226c5ebbfccc4377e72fdea319d5b6b08cb1f2e4e12482cda716"
+          },
+          "oa_model_dc2b050babd85bb33cdb": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "value": 0.0
+              },
+              "inputs": [],
+              "op": "fill",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "c60482935612a36e36afb92a8480602781f94bf5d289e7430a7c0fd669b32dc1"
+          },
+          "oa_model_dd6dfa57718c4116a0c3": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "channel_grad",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "93bb40485d27832380f7d068486c28dd04161b6676f4c26a18d138da7a624c30"
+          },
+          "oa_model_ea66608b2c561908adfc": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                7,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ],
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ]
+              ],
+              "op": "softmax_backward",
+              "output": [
+                2,
+                2,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "23a3b5872a2b5b238eba20959e583281e0fff60f046bd3e05023e8b16eb65d3b"
+          },
+          "oa_model_ef4147d54bf609940c92": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  4
+                ],
+                [
+                  4,
+                  4,
+                  7
+                ]
+              ],
+              "op": "bmm",
+              "output": [
+                4,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "330b41f9310cb76b35796e17278201a848880e4757f90f352aa01876e512e8d4"
+          },
+          "oa_model_eff6ad58392cd3ef393d": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 16,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  16
+                ],
+                [
+                  8,
+                  16
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "linear",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "27593acca756722a727341cff2a3e9344455fec40eb435e1ec264b85b6b5c979"
+          },
+          "oa_model_f1838bfa9be09a325e65": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  16
+                ]
+              ],
+              "op": "copy",
+              "output": [
+                14,
+                16
+              ]
+            },
+            "text_sha256": "6f0998981472281c8b0540f867fbadcfcc8a4cc33d7c9a6e99f9fddb5ce4947e"
+          },
+          "oa_model_f29467dc9d3ca814a82e": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "axes": [
+                  0,
+                  2,
+                  1,
+                  3
+                ]
+              },
+              "inputs": [
+                [
+                  2,
+                  7,
+                  2,
+                  4
+                ]
+              ],
+              "op": "permute",
+              "output": [
+                2,
+                2,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "b5d544aef39b03721081020bc14ba6cd61009134074fada0d3e35b3666436897"
+          },
+          "oa_model_f7f9c9c4c46f6a2a40c6": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  16
+                ],
+                [
+                  2,
+                  7,
+                  16
+                ]
+              ],
+              "op": "gelu_backward",
+              "output": [
+                2,
+                7,
+                16
+              ]
+            },
+            "text_sha256": "1f9822d902bcc10cc9c0f21aeb84e365c8977295cd151b9f0173c339fa3c430d"
+          },
+          "oa_model_fb16e06f58eec9d5e68a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  8
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "channel_affine",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "981bd33c51d133634166c787f1e0e3ee76c1cb1478e3162d1a1e255851dae332"
+          }
+        },
+        "numerical_contract": "FP32 separate multiply/add; serial reductions; finite bounded inputs; no tensor-core substitution",
+        "plan_sha256": "861a0d118179fc32b2e5b288d093b5d44ad4217ac8bd33e5aae46e18d623968a",
+        "schema": 1,
+        "source_sha256": "27cba993809abb0129c6b8ae44cb54c5b2136c0cf81365191da54d05355bd353",
+        "steps": [
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "x"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_1",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_64df27e3eb13cf7e0d19",
+            "inputs": [
+              "_oa_linear_input_1",
+              "parameter:q.weight",
+              "parameter:q.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_2",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_linear_output_2"
+            ],
+            "kernel": "copy",
+            "output": "q",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_85c782ccb64185554a2c",
+            "inputs": [
+              "q"
+            ],
+            "kernel": "copy",
+            "output": "reshape",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_f29467dc9d3ca814a82e",
+            "inputs": [
+              "reshape"
+            ],
+            "kernel": "permute",
+            "output": "permute",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "x"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_3",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_64df27e3eb13cf7e0d19",
+            "inputs": [
+              "_oa_linear_input_3",
+              "parameter:k.weight",
+              "parameter:k.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_4",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_linear_output_4"
+            ],
+            "kernel": "copy",
+            "output": "k",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_85c782ccb64185554a2c",
+            "inputs": [
+              "k"
+            ],
+            "kernel": "copy",
+            "output": "reshape_1",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_f29467dc9d3ca814a82e",
+            "inputs": [
+              "reshape_1"
+            ],
+            "kernel": "permute",
+            "output": "permute_1",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "x"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_5",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_64df27e3eb13cf7e0d19",
+            "inputs": [
+              "_oa_linear_input_5",
+              "parameter:v.weight",
+              "parameter:v.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_6",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_linear_output_6"
+            ],
+            "kernel": "copy",
+            "output": "v",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_85c782ccb64185554a2c",
+            "inputs": [
+              "v"
+            ],
+            "kernel": "copy",
+            "output": "reshape_2",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_f29467dc9d3ca814a82e",
+            "inputs": [
+              "reshape_2"
+            ],
+            "kernel": "permute",
+            "output": "permute_2",
+            "phase": "forward"
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                1,
+                3,
+                2
+              ]
+            },
+            "entry": "oa_model_91e1f9c5fb5599416ab0",
+            "inputs": [
+              "permute_1"
+            ],
+            "kernel": "permute",
+            "output": "transpose",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_7cd3c8b479c467469d13",
+            "inputs": [
+              "permute"
+            ],
+            "kernel": "copy",
+            "output": "_oa_bmm_left_7",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4322621872c9cf3dcd4a",
+            "inputs": [
+              "transpose"
+            ],
+            "kernel": "copy",
+            "output": "_oa_bmm_right_8",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_ef4147d54bf609940c92",
+            "inputs": [
+              "_oa_bmm_left_7",
+              "_oa_bmm_right_8"
+            ],
+            "kernel": "bmm",
+            "output": "_oa_bmm_output_9",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_ccf4c02304c0249efe73",
+            "inputs": [
+              "_oa_bmm_output_9"
+            ],
+            "kernel": "copy",
+            "output": "matmul",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "scalar": 0.5
+            },
+            "entry": "oa_model_78b57e90d47f353fe250",
+            "inputs": [
+              "matmul"
+            ],
+            "kernel": "mul",
+            "output": "mul",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_30c1a7c0e0c11d0dbd85",
+            "inputs": [
+              "mul"
+            ],
+            "kernel": "softmax",
+            "output": "softmax",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_bd98a9f5f6a7353fe3ac",
+            "inputs": [
+              "softmax"
+            ],
+            "kernel": "copy",
+            "output": "_oa_bmm_left_10",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_7cd3c8b479c467469d13",
+            "inputs": [
+              "permute_2"
+            ],
+            "kernel": "copy",
+            "output": "_oa_bmm_right_11",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b8a2755ddca652d520d8",
+            "inputs": [
+              "_oa_bmm_left_10",
+              "_oa_bmm_right_11"
+            ],
+            "kernel": "bmm",
+            "output": "_oa_bmm_output_12",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_bf53733f290845d6d2a5",
+            "inputs": [
+              "_oa_bmm_output_12"
+            ],
+            "kernel": "copy",
+            "output": "matmul_1",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_bb46634a8d932da735d1",
+            "inputs": [
+              "matmul_1"
+            ],
+            "kernel": "permute",
+            "output": "permute_3",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b09352d6e7b758a8b968",
+            "inputs": [
+              "permute_3"
+            ],
+            "kernel": "copy",
+            "output": "reshape_3",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "reshape_3"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_13",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_64df27e3eb13cf7e0d19",
+            "inputs": [
+              "_oa_linear_input_13",
+              "parameter:o.weight",
+              "parameter:o.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_14",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_linear_output_14"
+            ],
+            "kernel": "copy",
+            "output": "o",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "o",
+              "x"
+            ],
+            "kernel": "add",
+            "output": "add",
+            "phase": "forward"
+          },
+          {
+            "attrs": {
+              "epsilon": 1e-05
+            },
+            "entry": "oa_model_218d62a2a15ae61babe1",
+            "inputs": [
+              "add"
+            ],
+            "kernel": "layernorm",
+            "output": "_oa_normalized_15",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_fb16e06f58eec9d5e68a",
+            "inputs": [
+              "_oa_normalized_15",
+              "parameter:norm.weight",
+              "parameter:norm.bias"
+            ],
+            "kernel": "channel_affine",
+            "output": "norm",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "norm"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_16",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 16
+            },
+            "entry": "oa_model_3735526125d88689ee19",
+            "inputs": [
+              "_oa_linear_input_16",
+              "parameter:up.weight",
+              "parameter:up.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_17",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_c5a1491f40bbe9b4d6e1",
+            "inputs": [
+              "_oa_linear_output_17"
+            ],
+            "kernel": "copy",
+            "output": "up",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_c97ffe8e04b5d1feda17",
+            "inputs": [
+              "up"
+            ],
+            "kernel": "gelu",
+            "output": "gelu",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_f1838bfa9be09a325e65",
+            "inputs": [
+              "gelu"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_18",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 16,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_eff6ad58392cd3ef393d",
+            "inputs": [
+              "_oa_linear_input_18",
+              "parameter:down.weight",
+              "parameter:down.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_19",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_linear_output_19"
+            ],
+            "kernel": "copy",
+            "output": "down",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "down",
+              "norm"
+            ],
+            "kernel": "add",
+            "output": "add_1",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "_oa_grad_seed_1"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_2",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 16,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_cb3935cedd27671ebef0",
+            "inputs": [
+              "_oa_grad_copy_2",
+              "parameter:down.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_3",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 16,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_9779dba0adda1d00c798",
+            "inputs": [
+              "_oa_grad_copy_2",
+              "_oa_linear_input_18"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_4",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 16,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_37c3a02c3ab82b6c2aa6",
+            "inputs": [
+              "_oa_grad_copy_2"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_5",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_c5a1491f40bbe9b4d6e1",
+            "inputs": [
+              "_oa_grad_linear_dx_3"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_6",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_f7f9c9c4c46f6a2a40c6",
+            "inputs": [
+              "_oa_grad_copy_6",
+              "up"
+            ],
+            "kernel": "gelu_backward",
+            "output": "_oa_grad_gelu_backward_7",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_f1838bfa9be09a325e65",
+            "inputs": [
+              "_oa_grad_gelu_backward_7"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_8",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 16
+            },
+            "entry": "oa_model_ca942eafbfc7c39a4d45",
+            "inputs": [
+              "_oa_grad_copy_8",
+              "parameter:up.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_9",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 16
+            },
+            "entry": "oa_model_d85c931b7adc05774a20",
+            "inputs": [
+              "_oa_grad_copy_8",
+              "_oa_linear_input_16"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_10",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 16
+            },
+            "entry": "oa_model_42ebe7ff3e2f590e259a",
+            "inputs": [
+              "_oa_grad_copy_8"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_11",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_grad_linear_dx_9"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_12",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "_oa_grad_seed_1",
+              "_oa_grad_copy_12"
+            ],
+            "kernel": "add",
+            "output": "_oa_grad_add_13",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_396946a65945b78894cd",
+            "inputs": [
+              "_oa_grad_add_13",
+              "parameter:norm.weight"
+            ],
+            "kernel": "channel_mul",
+            "output": "_oa_grad_channel_mul_14",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_dd6dfa57718c4116a0c3",
+            "inputs": [
+              "_oa_grad_add_13",
+              "_oa_normalized_15"
+            ],
+            "kernel": "channel_grad",
+            "output": "_oa_grad_channel_grad_15",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_af8ea3e8f2c02cb5d078",
+            "inputs": [
+              "_oa_grad_add_13"
+            ],
+            "kernel": "channel_sum",
+            "output": "_oa_grad_channel_sum_16",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "epsilon": 1e-05
+            },
+            "entry": "oa_model_4e45a35672ac1dbb4614",
+            "inputs": [
+              "_oa_grad_channel_mul_14",
+              "add"
+            ],
+            "kernel": "layernorm_backward",
+            "output": "_oa_grad_layernorm_backward_17",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "_oa_grad_layernorm_backward_17"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_18",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_baae05f1306fecdb61b7",
+            "inputs": [
+              "_oa_grad_copy_18",
+              "parameter:o.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_19",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_b6baa90e9139118f26fa",
+            "inputs": [
+              "_oa_grad_copy_18",
+              "_oa_linear_input_13"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_20",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_15428ee5e910727c2a76",
+            "inputs": [
+              "_oa_grad_copy_18"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_21",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_grad_linear_dx_19"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_22",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_85c782ccb64185554a2c",
+            "inputs": [
+              "_oa_grad_copy_22"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_23",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_f29467dc9d3ca814a82e",
+            "inputs": [
+              "_oa_grad_copy_23"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_24",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_7cd3c8b479c467469d13",
+            "inputs": [
+              "_oa_grad_permute_24"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_25",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_184663155000b9e3c111",
+            "inputs": [
+              "_oa_grad_copy_25",
+              "_oa_bmm_right_11"
+            ],
+            "kernel": "bmm_dx",
+            "output": "_oa_grad_bmm_dx_26",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_09408308339448232127",
+            "inputs": [
+              "_oa_grad_copy_25",
+              "_oa_bmm_left_10"
+            ],
+            "kernel": "bmm_dw",
+            "output": "_oa_grad_bmm_dw_27",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_bf53733f290845d6d2a5",
+            "inputs": [
+              "_oa_grad_bmm_dw_27"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_28",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_ccf4c02304c0249efe73",
+            "inputs": [
+              "_oa_grad_bmm_dx_26"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_29",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_ea66608b2c561908adfc",
+            "inputs": [
+              "_oa_grad_copy_29",
+              "softmax"
+            ],
+            "kernel": "softmax_backward",
+            "output": "_oa_grad_softmax_backward_30",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "scalar": 0.5
+            },
+            "entry": "oa_model_78b57e90d47f353fe250",
+            "inputs": [
+              "_oa_grad_softmax_backward_30"
+            ],
+            "kernel": "mul",
+            "output": "_oa_grad_mul_31",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_bd98a9f5f6a7353fe3ac",
+            "inputs": [
+              "_oa_grad_mul_31"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_32",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_936ed16d63e58e55a91b",
+            "inputs": [
+              "_oa_grad_copy_32",
+              "_oa_bmm_right_8"
+            ],
+            "kernel": "bmm_dx",
+            "output": "_oa_grad_bmm_dx_33",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4e0a92791e4db810647d",
+            "inputs": [
+              "_oa_grad_copy_32",
+              "_oa_bmm_left_7"
+            ],
+            "kernel": "bmm_dw",
+            "output": "_oa_grad_bmm_dw_34",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_baddd9261bf8f41b2775",
+            "inputs": [
+              "_oa_grad_bmm_dw_34"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_35",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_bf53733f290845d6d2a5",
+            "inputs": [
+              "_oa_grad_bmm_dx_33"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_36",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                1,
+                3,
+                2
+              ]
+            },
+            "entry": "oa_model_73c5b64a15aeb8232a6c",
+            "inputs": [
+              "_oa_grad_copy_35"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_37",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_bb46634a8d932da735d1",
+            "inputs": [
+              "_oa_grad_copy_28"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_38",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b09352d6e7b758a8b968",
+            "inputs": [
+              "_oa_grad_permute_38"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_39",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "_oa_grad_copy_39"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_40",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_baae05f1306fecdb61b7",
+            "inputs": [
+              "_oa_grad_copy_40",
+              "parameter:v.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_41",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_b6baa90e9139118f26fa",
+            "inputs": [
+              "_oa_grad_copy_40",
+              "_oa_linear_input_5"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_42",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_15428ee5e910727c2a76",
+            "inputs": [
+              "_oa_grad_copy_40"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_43",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_grad_linear_dx_41"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_44",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "_oa_grad_layernorm_backward_17",
+              "_oa_grad_copy_44"
+            ],
+            "kernel": "add",
+            "output": "_oa_grad_add_45",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_bb46634a8d932da735d1",
+            "inputs": [
+              "_oa_grad_permute_37"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_46",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b09352d6e7b758a8b968",
+            "inputs": [
+              "_oa_grad_permute_46"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_47",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "_oa_grad_copy_47"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_48",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_baae05f1306fecdb61b7",
+            "inputs": [
+              "_oa_grad_copy_48",
+              "parameter:k.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_49",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_b6baa90e9139118f26fa",
+            "inputs": [
+              "_oa_grad_copy_48",
+              "_oa_linear_input_3"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_50",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_15428ee5e910727c2a76",
+            "inputs": [
+              "_oa_grad_copy_48"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_51",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_grad_linear_dx_49"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_52",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "_oa_grad_add_45",
+              "_oa_grad_copy_52"
+            ],
+            "kernel": "add",
+            "output": "_oa_grad_add_53",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_bb46634a8d932da735d1",
+            "inputs": [
+              "_oa_grad_copy_36"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_54",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b09352d6e7b758a8b968",
+            "inputs": [
+              "_oa_grad_permute_54"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_55",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_3d10658e1ee31cc994a2",
+            "inputs": [
+              "_oa_grad_copy_55"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_56",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_baae05f1306fecdb61b7",
+            "inputs": [
+              "_oa_grad_copy_56",
+              "parameter:q.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_57",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_b6baa90e9139118f26fa",
+            "inputs": [
+              "_oa_grad_copy_56",
+              "_oa_linear_input_1"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_58",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_15428ee5e910727c2a76",
+            "inputs": [
+              "_oa_grad_copy_56"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_59",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4885d0c27ae7343d86ee",
+            "inputs": [
+              "_oa_grad_linear_dx_57"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_60",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "_oa_grad_add_53",
+              "_oa_grad_copy_60"
+            ],
+            "kernel": "add",
+            "output": "_oa_grad_add_61",
+            "phase": "backward"
+          }
+        ]
+      },
+      "view_count": 0,
+      "allocations": 105,
+      "forward_launch_count": 42
+    },
+    "views": {
+      "plan_sha256": "b3e64532af78f8c49d3e7028e82b9e75ac192d5eecf2d4898073307c62505ecd",
+      "native_ledger": {
+        "arch": "sm_80",
+        "backend": "openassembler-native",
+        "cubin": "native/cubin/native.cubin",
+        "cubin_sha256": "a7e9bd408197eb83016d5c3f257511651fc0d5b99a6795763b4a5690c8dddf36",
+        "kernels": {
+          "oa_model_09408308339448232127": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  4
+                ],
+                [
+                  4,
+                  7,
+                  7
+                ]
+              ],
+              "op": "bmm_dw",
+              "output": [
+                4,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "c2c8aa5eab152962b473a0682e9cf271f505615e58bed8ac3672112d5347ec7e"
+          },
+          "oa_model_143284c4fe6427faedef": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "value": 1.0
+              },
+              "inputs": [],
+              "op": "fill",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "70191634cfb6793a581bb05271ad0b180ee15135eee5b5978e4d55843770d4fe"
+          },
+          "oa_model_15428ee5e910727c2a76": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "bias_grad",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "fc03a302d9788a1f6018d5fcd73ada5e1ffa76d80e1357f0ec93d7a31c1440b8"
+          },
+          "oa_model_184663155000b9e3c111": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  4
+                ],
+                [
+                  4,
+                  7,
+                  4
+                ]
+              ],
+              "op": "bmm_dx",
+              "output": [
+                4,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "c90128803693e787986ba34948c6b3f3f2106f445635ddb97ffc057fe76d24af"
+          },
+          "oa_model_218d62a2a15ae61babe1": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                4,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "epsilon": 1e-05
+              },
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "layernorm",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "29b9c48f159e54a7a5ef6c0eb8cadba7710c82e3ac423833bd7f0f2abdf4c7ab"
+          },
+          "oa_model_22ddd8b685df414f84b5": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  16,
+                  8
+                ],
+                [
+                  16,
+                  8
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                16,
+                8
+              ]
+            },
+            "text_sha256": "30b6c5c5ae826ccbab74cfd5dbb1fefa76be3a2dec978adae8bb79e897a4fc51"
+          },
+          "oa_model_30c1a7c0e0c11d0dbd85": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                7,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ]
+              ],
+              "op": "softmax",
+              "output": [
+                2,
+                2,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "70c8c9a212e7228e9d68283e92ec5e37cb28d7476f4cf1d76ad9d13e089067a5"
+          },
+          "oa_model_3735526125d88689ee19": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 16
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  16,
+                  8
+                ],
+                [
+                  16
+                ]
+              ],
+              "op": "linear",
+              "output": [
+                14,
+                16
+              ]
+            },
+            "text_sha256": "43e35fd6952231f8a00de833499ce00ddce8a0957fe773b5b9a701284b76a1ce"
+          },
+          "oa_model_37c3a02c3ab82b6c2aa6": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 16,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "bias_grad",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "fc03a302d9788a1f6018d5fcd73ada5e1ffa76d80e1357f0ec93d7a31c1440b8"
+          },
+          "oa_model_396946a65945b78894cd": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "channel_mul",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "7d42164a40f6d31f78c391b4a32b51a3e9dd182365225cf834d4540ec308ed54"
+          },
+          "oa_model_40869388c44d8d072078": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  8,
+                  16
+                ],
+                [
+                  8,
+                  16
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                8,
+                16
+              ]
+            },
+            "text_sha256": "30b6c5c5ae826ccbab74cfd5dbb1fefa76be3a2dec978adae8bb79e897a4fc51"
+          },
+          "oa_model_42ebe7ff3e2f590e259a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 16
+              },
+              "inputs": [
+                [
+                  14,
+                  16
+                ]
+              ],
+              "op": "bias_grad",
+              "output": [
+                16
+              ]
+            },
+            "text_sha256": "5b91871b9af1faf847c6ce39eb92edcf8391ccc7406618033329b112c5da648c"
+          },
+          "oa_model_4e0a92791e4db810647d": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                4,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  7
+                ],
+                [
+                  4,
+                  7,
+                  4
+                ]
+              ],
+              "op": "bmm_dw",
+              "output": [
+                4,
+                4,
+                7
+              ]
+            },
+            "text_sha256": "44a604ffe33265bf2256f27ad5b4bd6a55bfcb4fa7a89278e1e7bdc3e3466bbd"
+          },
+          "oa_model_4e45a35672ac1dbb4614": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                4,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 17,
+            "signature": {
+              "attrs": {
+                "epsilon": 1e-05
+              },
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "layernorm_backward",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "a9e9af7e389556b298492839b91ae5c6ccc105fb5997de70285295d8fca93468"
+          },
+          "oa_model_61a08a0037e5d9239192": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  16
+                ],
+                [
+                  16
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                16
+              ]
+            },
+            "text_sha256": "b8bf01a5b1fea4128eaf7978c656f031e0da1f3d8062f26abf37840619bbb391"
+          },
+          "oa_model_64df27e3eb13cf7e0d19": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  8,
+                  8
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "linear",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "9d0f0184c3d57eb2da6b419f3e642303d05e17682cd42294d37e94716ea15c7e"
+          },
+          "oa_model_66cde613ecd6d57f2b6a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 1
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "mse",
+              "output": []
+            },
+            "text_sha256": "1157d50efa49851e66a0e3ef9754ac3a622ee32f972e5a277fc83643752034fe"
+          },
+          "oa_model_73c5b64a15aeb8232a6c": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "axes": [
+                  0,
+                  1,
+                  3,
+                  2
+                ]
+              },
+              "inputs": [
+                [
+                  2,
+                  2,
+                  4,
+                  7
+                ]
+              ],
+              "op": "permute",
+              "output": [
+                2,
+                2,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "805a53b594b2580aa8c27cc57a3b5b7e5737304f5def3514db5603058f9b590a"
+          },
+          "oa_model_78b57e90d47f353fe250": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "scalar": 0.5
+              },
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ]
+              ],
+              "op": "mul",
+              "output": [
+                2,
+                2,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "5a199604fa4cb0075d3262b247154f3e7bacf9e810f0dddb6225b515886c03c3"
+          },
+          "oa_model_91e1f9c5fb5599416ab0": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                4,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "axes": [
+                  0,
+                  1,
+                  3,
+                  2
+                ]
+              },
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  4
+                ]
+              ],
+              "op": "permute",
+              "output": [
+                2,
+                2,
+                4,
+                7
+              ]
+            },
+            "text_sha256": "aff8a66640e8ee18ddf81f0ed855a79c1503c777dd676b07a97b4fc910895f53"
+          },
+          "oa_model_92b390c7f28044af607a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  8,
+                  8
+                ],
+                [
+                  8,
+                  8
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                8,
+                8
+              ]
+            },
+            "text_sha256": "d2652fb4ef8b32ca497a8989e1383e339ec3d485c299a534d3c9f37969c4126b"
+          },
+          "oa_model_936ed16d63e58e55a91b": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  7
+                ],
+                [
+                  4,
+                  4,
+                  7
+                ]
+              ],
+              "op": "bmm_dx",
+              "output": [
+                4,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "d1d2d55be19ec0a82de01c3de4fd562b9bba33831a93c7f2e294771f8bb53381"
+          },
+          "oa_model_9779dba0adda1d00c798": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                8,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 16,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  14,
+                  16
+                ]
+              ],
+              "op": "linear_dw",
+              "output": [
+                8,
+                16
+              ]
+            },
+            "text_sha256": "c4affc755f318319c244131610e0aa16369ccf83d01db761e55b8efbd6a7f68a"
+          },
+          "oa_model_a8a7a425700582609417": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  8
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "sgd",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "911991014ed5c45f232a9c00b4ccdda4e98a1f90d7d83435d1cd6c3ce312e8fc"
+          },
+          "oa_model_af8ea3e8f2c02cb5d078": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "channel_sum",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "8c9ce007d1249746f28b6adb9c6e3a6fb0423add8f69b9603c054dc2bc970188"
+          },
+          "oa_model_b6baa90e9139118f26fa": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                8,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "linear_dw",
+              "output": [
+                8,
+                8
+              ]
+            },
+            "text_sha256": "61cea9a9b350acdcc8c044c2c681dd1c56550245400bb24bea2393de6e8c5664"
+          },
+          "oa_model_b83290f6b11d7f3d93dc": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "add",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "48518d610b7649afd7a4cad6d9f327b4e1c957607710b12990f3afee34ca1e12"
+          },
+          "oa_model_b8a2755ddca652d520d8": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  7
+                ],
+                [
+                  4,
+                  7,
+                  4
+                ]
+              ],
+              "op": "bmm",
+              "output": [
+                4,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "78051df813431f99f3432dd2c20a79a06f235ca51a6900df5913d53fb80a2543"
+          },
+          "oa_model_baae05f1306fecdb61b7": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  8,
+                  8
+                ]
+              ],
+              "op": "linear_dx",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "1dda98917bfc24fb10f902a695da002e10779fe855758dd7c208d9e8f8b638bb"
+          },
+          "oa_model_bb46634a8d932da735d1": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                2,
+                14
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "axes": [
+                  0,
+                  2,
+                  1,
+                  3
+                ]
+              },
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  4
+                ]
+              ],
+              "op": "permute",
+              "output": [
+                2,
+                7,
+                2,
+                4
+              ]
+            },
+            "text_sha256": "a0d819d37a27d360775bf6b3932dabc4100c7af7264ba5fc559ba60020e23946"
+          },
+          "oa_model_c0aae02d6e4d475ff550": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "mse_grad",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "926773110ca5309471a500520c0034f83b9efea312fa5318fa309691dd642059"
+          },
+          "oa_model_c97ffe8e04b5d1feda17": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  16
+                ]
+              ],
+              "op": "gelu",
+              "output": [
+                2,
+                7,
+                16
+              ]
+            },
+            "text_sha256": "cc13577b75237143e9b79ee52bf6ca3cf63ca68781cf0904237d53f0603e5938"
+          },
+          "oa_model_ca942eafbfc7c39a4d45": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 16
+              },
+              "inputs": [
+                [
+                  14,
+                  16
+                ],
+                [
+                  16,
+                  8
+                ]
+              ],
+              "op": "linear_dx",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "67fa7614d4f441ac0b8f445a85fd6e82b682899d23bb66bf6527a03b70029e15"
+          },
+          "oa_model_cb3935cedd27671ebef0": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 16,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  8
+                ],
+                [
+                  8,
+                  16
+                ]
+              ],
+              "op": "linear_dx",
+              "output": [
+                14,
+                16
+              ]
+            },
+            "text_sha256": "d8570d94b91a9417455519e17dbf443b115a347eb13e0df41ff76e7b2e1460b3"
+          },
+          "oa_model_d85c931b7adc05774a20": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                16,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 8,
+                "m": 14,
+                "n": 16
+              },
+              "inputs": [
+                [
+                  14,
+                  16
+                ],
+                [
+                  14,
+                  8
+                ]
+              ],
+              "op": "linear_dw",
+              "output": [
+                16,
+                8
+              ]
+            },
+            "text_sha256": "73562aec54d9226c5ebbfccc4377e72fdea319d5b6b08cb1f2e4e12482cda716"
+          },
+          "oa_model_dc2b050babd85bb33cdb": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "value": 0.0
+              },
+              "inputs": [],
+              "op": "fill",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "c60482935612a36e36afb92a8480602781f94bf5d289e7430a7c0fd669b32dc1"
+          },
+          "oa_model_dd6dfa57718c4116a0c3": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  2,
+                  7,
+                  8
+                ]
+              ],
+              "op": "channel_grad",
+              "output": [
+                8
+              ]
+            },
+            "text_sha256": "93bb40485d27832380f7d068486c28dd04161b6676f4c26a18d138da7a624c30"
+          },
+          "oa_model_ea66608b2c561908adfc": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                7,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ],
+                [
+                  2,
+                  2,
+                  7,
+                  7
+                ]
+              ],
+              "op": "softmax_backward",
+              "output": [
+                2,
+                2,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "23a3b5872a2b5b238eba20959e583281e0fff60f046bd3e05023e8b16eb65d3b"
+          },
+          "oa_model_ef4147d54bf609940c92": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 18,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  4,
+                  7,
+                  4
+                ],
+                [
+                  4,
+                  4,
+                  7
+                ]
+              ],
+              "op": "bmm",
+              "output": [
+                4,
+                7,
+                7
+              ]
+            },
+            "text_sha256": "330b41f9310cb76b35796e17278201a848880e4757f90f352aa01876e512e8d4"
+          },
+          "oa_model_eff6ad58392cd3ef393d": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "k": 16,
+                "m": 14,
+                "n": 8
+              },
+              "inputs": [
+                [
+                  14,
+                  16
+                ],
+                [
+                  8,
+                  16
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "linear",
+              "output": [
+                14,
+                8
+              ]
+            },
+            "text_sha256": "27593acca756722a727341cff2a3e9344455fec40eb435e1ec264b85b6b5c979"
+          },
+          "oa_model_f29467dc9d3ca814a82e": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                7,
+                4
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {
+                "axes": [
+                  0,
+                  2,
+                  1,
+                  3
+                ]
+              },
+              "inputs": [
+                [
+                  2,
+                  7,
+                  2,
+                  4
+                ]
+              ],
+              "op": "permute",
+              "output": [
+                2,
+                2,
+                7,
+                4
+              ]
+            },
+            "text_sha256": "b5d544aef39b03721081020bc14ba6cd61009134074fada0d3e35b3666436897"
+          },
+          "oa_model_f7f9c9c4c46f6a2a40c6": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                2,
+                1,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  16
+                ],
+                [
+                  2,
+                  7,
+                  16
+                ]
+              ],
+              "op": "gelu_backward",
+              "output": [
+                2,
+                7,
+                16
+              ]
+            },
+            "text_sha256": "1f9822d902bcc10cc9c0f21aeb84e365c8977295cd151b9f0173c339fa3c430d"
+          },
+          "oa_model_fb16e06f58eec9d5e68a": {
+            "compiled_by": "openassembler",
+            "launch": {
+              "grid": [
+                1,
+                14,
+                1
+              ],
+              "smem": 0,
+              "threads": 128
+            },
+            "registers": 16,
+            "signature": {
+              "attrs": {},
+              "inputs": [
+                [
+                  2,
+                  7,
+                  8
+                ],
+                [
+                  8
+                ],
+                [
+                  8
+                ]
+              ],
+              "op": "channel_affine",
+              "output": [
+                2,
+                7,
+                8
+              ]
+            },
+            "text_sha256": "981bd33c51d133634166c787f1e0e3ee76c1cb1478e3162d1a1e255851dae332"
+          }
+        },
+        "numerical_contract": "FP32 separate multiply/add; serial reductions; finite bounded inputs; no tensor-core substitution",
+        "plan_sha256": "b3e64532af78f8c49d3e7028e82b9e75ac192d5eecf2d4898073307c62505ecd",
+        "schema": 1,
+        "source_sha256": "596c684635f7b5803209db7d467eceb1c0e6203155670fa50f0913769b04266b",
+        "steps": [
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "x"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_1",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_64df27e3eb13cf7e0d19",
+            "inputs": [
+              "_oa_linear_input_1",
+              "parameter:q.weight",
+              "parameter:q.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_2",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_linear_output_2"
+            ],
+            "kernel": "copy",
+            "output": "q",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "q"
+            ],
+            "kernel": "copy",
+            "output": "reshape",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_f29467dc9d3ca814a82e",
+            "inputs": [
+              "reshape"
+            ],
+            "kernel": "permute",
+            "output": "permute",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "x"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_3",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_64df27e3eb13cf7e0d19",
+            "inputs": [
+              "_oa_linear_input_3",
+              "parameter:k.weight",
+              "parameter:k.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_4",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_linear_output_4"
+            ],
+            "kernel": "copy",
+            "output": "k",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "k"
+            ],
+            "kernel": "copy",
+            "output": "reshape_1",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_f29467dc9d3ca814a82e",
+            "inputs": [
+              "reshape_1"
+            ],
+            "kernel": "permute",
+            "output": "permute_1",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "x"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_5",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_64df27e3eb13cf7e0d19",
+            "inputs": [
+              "_oa_linear_input_5",
+              "parameter:v.weight",
+              "parameter:v.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_6",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_linear_output_6"
+            ],
+            "kernel": "copy",
+            "output": "v",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "v"
+            ],
+            "kernel": "copy",
+            "output": "reshape_2",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_f29467dc9d3ca814a82e",
+            "inputs": [
+              "reshape_2"
+            ],
+            "kernel": "permute",
+            "output": "permute_2",
+            "phase": "forward"
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                1,
+                3,
+                2
+              ]
+            },
+            "entry": "oa_model_91e1f9c5fb5599416ab0",
+            "inputs": [
+              "permute_1"
+            ],
+            "kernel": "permute",
+            "output": "transpose",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "permute"
+            ],
+            "kernel": "copy",
+            "output": "_oa_bmm_left_7",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "transpose"
+            ],
+            "kernel": "copy",
+            "output": "_oa_bmm_right_8",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_ef4147d54bf609940c92",
+            "inputs": [
+              "_oa_bmm_left_7",
+              "_oa_bmm_right_8"
+            ],
+            "kernel": "bmm",
+            "output": "_oa_bmm_output_9",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_bmm_output_9"
+            ],
+            "kernel": "copy",
+            "output": "matmul",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "scalar": 0.5
+            },
+            "entry": "oa_model_78b57e90d47f353fe250",
+            "inputs": [
+              "matmul"
+            ],
+            "kernel": "mul",
+            "output": "mul",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_30c1a7c0e0c11d0dbd85",
+            "inputs": [
+              "mul"
+            ],
+            "kernel": "softmax",
+            "output": "softmax",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "softmax"
+            ],
+            "kernel": "copy",
+            "output": "_oa_bmm_left_10",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "permute_2"
+            ],
+            "kernel": "copy",
+            "output": "_oa_bmm_right_11",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b8a2755ddca652d520d8",
+            "inputs": [
+              "_oa_bmm_left_10",
+              "_oa_bmm_right_11"
+            ],
+            "kernel": "bmm",
+            "output": "_oa_bmm_output_12",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_bmm_output_12"
+            ],
+            "kernel": "copy",
+            "output": "matmul_1",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_bb46634a8d932da735d1",
+            "inputs": [
+              "matmul_1"
+            ],
+            "kernel": "permute",
+            "output": "permute_3",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "permute_3"
+            ],
+            "kernel": "copy",
+            "output": "reshape_3",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "reshape_3"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_13",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_64df27e3eb13cf7e0d19",
+            "inputs": [
+              "_oa_linear_input_13",
+              "parameter:o.weight",
+              "parameter:o.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_14",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_linear_output_14"
+            ],
+            "kernel": "copy",
+            "output": "o",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "o",
+              "x"
+            ],
+            "kernel": "add",
+            "output": "add",
+            "phase": "forward"
+          },
+          {
+            "attrs": {
+              "epsilon": 1e-05
+            },
+            "entry": "oa_model_218d62a2a15ae61babe1",
+            "inputs": [
+              "add"
+            ],
+            "kernel": "layernorm",
+            "output": "_oa_normalized_15",
+            "phase": "forward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_fb16e06f58eec9d5e68a",
+            "inputs": [
+              "_oa_normalized_15",
+              "parameter:norm.weight",
+              "parameter:norm.bias"
+            ],
+            "kernel": "channel_affine",
+            "output": "norm",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "norm"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_16",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 16
+            },
+            "entry": "oa_model_3735526125d88689ee19",
+            "inputs": [
+              "_oa_linear_input_16",
+              "parameter:up.weight",
+              "parameter:up.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_17",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_linear_output_17"
+            ],
+            "kernel": "copy",
+            "output": "up",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_c97ffe8e04b5d1feda17",
+            "inputs": [
+              "up"
+            ],
+            "kernel": "gelu",
+            "output": "gelu",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "gelu"
+            ],
+            "kernel": "copy",
+            "output": "_oa_linear_input_18",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 16,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_eff6ad58392cd3ef393d",
+            "inputs": [
+              "_oa_linear_input_18",
+              "parameter:down.weight",
+              "parameter:down.bias"
+            ],
+            "kernel": "linear",
+            "output": "_oa_linear_output_19",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_linear_output_19"
+            ],
+            "kernel": "copy",
+            "output": "down",
+            "phase": "forward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "down",
+              "norm"
+            ],
+            "kernel": "add",
+            "output": "add_1",
+            "phase": "forward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_seed_1"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_2",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 16,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_cb3935cedd27671ebef0",
+            "inputs": [
+              "_oa_grad_copy_2",
+              "parameter:down.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_3",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 16,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_9779dba0adda1d00c798",
+            "inputs": [
+              "_oa_grad_copy_2",
+              "_oa_linear_input_18"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_4",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 16,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_37c3a02c3ab82b6c2aa6",
+            "inputs": [
+              "_oa_grad_copy_2"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_5",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_linear_dx_3"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_6",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_f7f9c9c4c46f6a2a40c6",
+            "inputs": [
+              "_oa_grad_copy_6",
+              "up"
+            ],
+            "kernel": "gelu_backward",
+            "output": "_oa_grad_gelu_backward_7",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_gelu_backward_7"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_8",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 16
+            },
+            "entry": "oa_model_ca942eafbfc7c39a4d45",
+            "inputs": [
+              "_oa_grad_copy_8",
+              "parameter:up.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_9",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 16
+            },
+            "entry": "oa_model_d85c931b7adc05774a20",
+            "inputs": [
+              "_oa_grad_copy_8",
+              "_oa_linear_input_16"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_10",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 16
+            },
+            "entry": "oa_model_42ebe7ff3e2f590e259a",
+            "inputs": [
+              "_oa_grad_copy_8"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_11",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_linear_dx_9"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_12",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "_oa_grad_seed_1",
+              "_oa_grad_copy_12"
+            ],
+            "kernel": "add",
+            "output": "_oa_grad_add_13",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_396946a65945b78894cd",
+            "inputs": [
+              "_oa_grad_add_13",
+              "parameter:norm.weight"
+            ],
+            "kernel": "channel_mul",
+            "output": "_oa_grad_channel_mul_14",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_dd6dfa57718c4116a0c3",
+            "inputs": [
+              "_oa_grad_add_13",
+              "_oa_normalized_15"
+            ],
+            "kernel": "channel_grad",
+            "output": "_oa_grad_channel_grad_15",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_af8ea3e8f2c02cb5d078",
+            "inputs": [
+              "_oa_grad_add_13"
+            ],
+            "kernel": "channel_sum",
+            "output": "_oa_grad_channel_sum_16",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "epsilon": 1e-05
+            },
+            "entry": "oa_model_4e45a35672ac1dbb4614",
+            "inputs": [
+              "_oa_grad_channel_mul_14",
+              "add"
+            ],
+            "kernel": "layernorm_backward",
+            "output": "_oa_grad_layernorm_backward_17",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_layernorm_backward_17"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_18",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_baae05f1306fecdb61b7",
+            "inputs": [
+              "_oa_grad_copy_18",
+              "parameter:o.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_19",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_b6baa90e9139118f26fa",
+            "inputs": [
+              "_oa_grad_copy_18",
+              "_oa_linear_input_13"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_20",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_15428ee5e910727c2a76",
+            "inputs": [
+              "_oa_grad_copy_18"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_21",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_linear_dx_19"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_22",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_copy_22"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_23",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_f29467dc9d3ca814a82e",
+            "inputs": [
+              "_oa_grad_copy_23"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_24",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_permute_24"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_25",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_184663155000b9e3c111",
+            "inputs": [
+              "_oa_grad_copy_25",
+              "_oa_bmm_right_11"
+            ],
+            "kernel": "bmm_dx",
+            "output": "_oa_grad_bmm_dx_26",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_09408308339448232127",
+            "inputs": [
+              "_oa_grad_copy_25",
+              "_oa_bmm_left_10"
+            ],
+            "kernel": "bmm_dw",
+            "output": "_oa_grad_bmm_dw_27",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_bmm_dw_27"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_28",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_bmm_dx_26"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_29",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_ea66608b2c561908adfc",
+            "inputs": [
+              "_oa_grad_copy_29",
+              "softmax"
+            ],
+            "kernel": "softmax_backward",
+            "output": "_oa_grad_softmax_backward_30",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "scalar": 0.5
+            },
+            "entry": "oa_model_78b57e90d47f353fe250",
+            "inputs": [
+              "_oa_grad_softmax_backward_30"
+            ],
+            "kernel": "mul",
+            "output": "_oa_grad_mul_31",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_mul_31"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_32",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_936ed16d63e58e55a91b",
+            "inputs": [
+              "_oa_grad_copy_32",
+              "_oa_bmm_right_8"
+            ],
+            "kernel": "bmm_dx",
+            "output": "_oa_grad_bmm_dx_33",
+            "phase": "backward"
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_4e0a92791e4db810647d",
+            "inputs": [
+              "_oa_grad_copy_32",
+              "_oa_bmm_left_7"
+            ],
+            "kernel": "bmm_dw",
+            "output": "_oa_grad_bmm_dw_34",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_bmm_dw_34"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_35",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_bmm_dx_33"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_36",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                1,
+                3,
+                2
+              ]
+            },
+            "entry": "oa_model_73c5b64a15aeb8232a6c",
+            "inputs": [
+              "_oa_grad_copy_35"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_37",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_bb46634a8d932da735d1",
+            "inputs": [
+              "_oa_grad_copy_28"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_38",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_permute_38"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_39",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_copy_39"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_40",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_baae05f1306fecdb61b7",
+            "inputs": [
+              "_oa_grad_copy_40",
+              "parameter:v.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_41",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_b6baa90e9139118f26fa",
+            "inputs": [
+              "_oa_grad_copy_40",
+              "_oa_linear_input_5"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_42",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_15428ee5e910727c2a76",
+            "inputs": [
+              "_oa_grad_copy_40"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_43",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_linear_dx_41"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_44",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "_oa_grad_layernorm_backward_17",
+              "_oa_grad_copy_44"
+            ],
+            "kernel": "add",
+            "output": "_oa_grad_add_45",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_bb46634a8d932da735d1",
+            "inputs": [
+              "_oa_grad_permute_37"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_46",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_permute_46"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_47",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_copy_47"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_48",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_baae05f1306fecdb61b7",
+            "inputs": [
+              "_oa_grad_copy_48",
+              "parameter:k.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_49",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_b6baa90e9139118f26fa",
+            "inputs": [
+              "_oa_grad_copy_48",
+              "_oa_linear_input_3"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_50",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_15428ee5e910727c2a76",
+            "inputs": [
+              "_oa_grad_copy_48"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_51",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_linear_dx_49"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_52",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "_oa_grad_add_45",
+              "_oa_grad_copy_52"
+            ],
+            "kernel": "add",
+            "output": "_oa_grad_add_53",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "axes": [
+                0,
+                2,
+                1,
+                3
+              ]
+            },
+            "entry": "oa_model_bb46634a8d932da735d1",
+            "inputs": [
+              "_oa_grad_copy_36"
+            ],
+            "kernel": "permute",
+            "output": "_oa_grad_permute_54",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_permute_54"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_55",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_copy_55"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_56",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_baae05f1306fecdb61b7",
+            "inputs": [
+              "_oa_grad_copy_56",
+              "parameter:q.weight"
+            ],
+            "kernel": "linear_dx",
+            "output": "_oa_grad_linear_dx_57",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_b6baa90e9139118f26fa",
+            "inputs": [
+              "_oa_grad_copy_56",
+              "_oa_linear_input_1"
+            ],
+            "kernel": "linear_dw",
+            "output": "_oa_grad_linear_dw_58",
+            "phase": "backward"
+          },
+          {
+            "attrs": {
+              "k": 8,
+              "m": 14,
+              "n": 8
+            },
+            "entry": "oa_model_15428ee5e910727c2a76",
+            "inputs": [
+              "_oa_grad_copy_56"
+            ],
+            "kernel": "bias_grad",
+            "output": "_oa_grad_bias_grad_59",
+            "phase": "backward"
+          },
+          {
+            "alias": true,
+            "attrs": {},
+            "inputs": [
+              "_oa_grad_linear_dx_57"
+            ],
+            "kernel": "copy",
+            "output": "_oa_grad_copy_60",
+            "phase": "backward",
+            "view": true
+          },
+          {
+            "attrs": {},
+            "entry": "oa_model_b83290f6b11d7f3d93dc",
+            "inputs": [
+              "_oa_grad_add_53",
+              "_oa_grad_copy_60"
+            ],
+            "kernel": "add",
+            "output": "_oa_grad_add_61",
+            "phase": "backward"
+          }
+        ]
+      },
+      "view_count": 44,
+      "allocations": 61,
+      "forward_launch_count": 20
+    }
+  },
+  "profiler_audits": {
+    "copies": {
+      "passed": true,
+      "observed_compute_launches": 42,
+      "kernel_counts": {
+        "oa_model_3d10658e1ee31cc994a2": 5,
+        "oa_model_64df27e3eb13cf7e0d19": 4,
+        "oa_model_4885d0c27ae7343d86ee": 5,
+        "oa_model_85c782ccb64185554a2c": 3,
+        "oa_model_f29467dc9d3ca814a82e": 3,
+        "oa_model_91e1f9c5fb5599416ab0": 1,
+        "oa_model_7cd3c8b479c467469d13": 2,
+        "oa_model_4322621872c9cf3dcd4a": 1,
+        "oa_model_ef4147d54bf609940c92": 1,
+        "oa_model_ccf4c02304c0249efe73": 1,
+        "oa_model_78b57e90d47f353fe250": 1,
+        "oa_model_30c1a7c0e0c11d0dbd85": 1,
+        "oa_model_bd98a9f5f6a7353fe3ac": 1,
+        "oa_model_b8a2755ddca652d520d8": 1,
+        "oa_model_bf53733f290845d6d2a5": 1,
+        "oa_model_bb46634a8d932da735d1": 1,
+        "oa_model_b09352d6e7b758a8b968": 1,
+        "oa_model_b83290f6b11d7f3d93dc": 2,
+        "oa_model_218d62a2a15ae61babe1": 1,
+        "oa_model_fb16e06f58eec9d5e68a": 1,
+        "oa_model_3735526125d88689ee19": 1,
+        "oa_model_c5a1491f40bbe9b4d6e1": 1,
+        "oa_model_c97ffe8e04b5d1feda17": 1,
+        "oa_model_f1838bfa9be09a325e65": 1,
+        "oa_model_eff6ad58392cd3ef393d": 1
+      },
+      "unknown_compute_kernels": [],
+      "scope": "independent CUDA profiler kernel activities matched by name/count to driver launch ledger"
+    },
+    "views": {
+      "passed": true,
+      "observed_compute_launches": 20,
+      "kernel_counts": {
+        "oa_model_64df27e3eb13cf7e0d19": 4,
+        "oa_model_f29467dc9d3ca814a82e": 3,
+        "oa_model_91e1f9c5fb5599416ab0": 1,
+        "oa_model_ef4147d54bf609940c92": 1,
+        "oa_model_78b57e90d47f353fe250": 1,
+        "oa_model_30c1a7c0e0c11d0dbd85": 1,
+        "oa_model_b8a2755ddca652d520d8": 1,
+        "oa_model_bb46634a8d932da735d1": 1,
+        "oa_model_b83290f6b11d7f3d93dc": 2,
+        "oa_model_218d62a2a15ae61babe1": 1,
+        "oa_model_fb16e06f58eec9d5e68a": 1,
+        "oa_model_3735526125d88689ee19": 1,
+        "oa_model_c97ffe8e04b5d1feda17": 1,
+        "oa_model_eff6ad58392cd3ef393d": 1
+      },
+      "unknown_compute_kernels": [],
+      "scope": "independent CUDA profiler kernel activities matched by name/count to driver launch ledger"
+    }
+  },
+  "rounds": [
+    {
+      "round": 0,
+      "samples_ms": {
+        "copies": [
+          0.09606999903917313,
+          0.09080799669027328,
+          0.08919399976730347,
+          0.0888499990105629,
+          0.08813799917697906,
+          0.08783800154924393,
+          0.08771999925374985,
+          0.08739600330591202,
+          0.08737999945878983,
+          0.0873359963297844,
+          0.08719799667596817,
+          0.08714400231838226,
+          0.08719199895858765,
+          0.0869859978556633,
+          0.08692199736833572
+        ],
+        "views": [
+          0.05697000026702881,
+          0.053199999034404755,
+          0.05143800005316734,
+          0.05076200142502785,
+          0.051357999444007874,
+          0.05052400007843971,
+          0.050505999475717545,
+          0.05036799982190132,
+          0.05039599910378456,
+          0.050294000655412674,
+          0.0503540001809597,
+          0.050360001623630524,
+          0.05027399957180023,
+          0.05035199970006943,
+          0.050294000655412674
+        ]
+      },
+      "paired_order": [
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ]
+      ],
+      "copies_over_views": 1.7341853492363621
+    },
+    {
+      "round": 1,
+      "samples_ms": {
+        "copies": [
+          0.0870480015873909,
+          0.08701200038194656,
+          0.0870480015873909,
+          0.08689600229263306,
+          0.08695799857378006,
+          0.08692000061273575,
+          0.08698400110006332,
+          0.08742199838161469,
+          0.08694200217723846,
+          0.08688800036907196,
+          0.08879999816417694,
+          0.08699800074100494,
+          0.08693800121545792,
+          0.0869939997792244,
+          0.08701000362634659
+        ],
+        "views": [
+          0.0502999983727932,
+          0.05025999993085861,
+          0.05028799921274185,
+          0.050241999328136444,
+          0.05031599849462509,
+          0.05028599873185158,
+          0.05016599968075752,
+          0.0502920001745224,
+          0.05031599849462509,
+          0.050328001379966736,
+          0.05028200149536133,
+          0.05025799944996834,
+          0.050262000411748886,
+          0.050321999937295914,
+          0.050317998975515366
+        ]
+      },
+      "paired_order": [
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ]
+      ],
+      "copies_over_views": 1.7299157083422414
+    },
+    {
+      "round": 2,
+      "samples_ms": {
+        "copies": [
+          0.08696799725294113,
+          0.08696799725294113,
+          0.0874439999461174,
+          0.08695600181818008,
+          0.08699200302362442,
+          0.08696000277996063,
+          0.08693599700927734,
+          0.08695399761199951,
+          0.08698999881744385,
+          0.0869079977273941,
+          0.08692000061273575,
+          0.08694399893283844,
+          0.08701799809932709,
+          0.08698400110006332,
+          0.08699200302362442
+        ],
+        "views": [
+          0.05031599849462509,
+          0.050221998244524,
+          0.05030599981546402,
+          0.05029600113630295,
+          0.050220001488924026,
+          0.05038600042462349,
+          0.05025000125169754,
+          0.050283998250961304,
+          0.05027199909090996,
+          0.0503619983792305,
+          0.050303999334573746,
+          0.05025799944996834,
+          0.05024399980902672,
+          0.05022599920630455,
+          0.05022599920630455
+        ]
+      },
+      "paired_order": [
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "views",
+          "copies"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "copies",
+          "views"
+        ],
+        [
+          "views",
+          "copies"
+        ]
+      ],
+      "copies_over_views": 1.7299490536604987
+    }
+  ],
+  "source_sha256": {
+    "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639",
+    "openassembler/runner.py": "ccc7cd8c91bf96ffb93045eaa71de6b2bf87e6bf20ed96289d74391ad54e388b",
+    "openassembler/transport.py": "547b63cb68f492dc95cad1962eaf4940a0909461bd2b48ecdf89dc7d58ee488e",
+    "openassembler/rowwise_dispatch.py": "f54d2e5068de37e61b7e3fac2f7439a09dc06a2828345497dc15426c51a1bd74",
+    "openassembler/gemm.py": "18df53657e291ac839b482ac7ec3e6c8d7334d93f8b2c8c8beb49c68c9b927bb",
+    "openassembler/gemm_tune.py": "fbb5b9c047990e09d8808dadad885c6c219383e6ad0512f35a95222367150f08",
+    "openassembler/native_ownership.py": "b3b30a5e55e498e1ee256b426b49c0e9803e03b355b095c464360ec330400b32",
+    "openassembler/frontend.py": "f077b947a316d644a5533d50f8c5a5255840833985359af0a9668e7787f6cbbc",
+    "openassembler/__init__.py": "74d11fd8fcfaed0c46234d00cce97ca03778ba3478aca6ad449b5852f08b1cb8",
+    "openassembler/gemm_promotion.py": "c3253baf912f33c59f02949d6b4be4db8e99ea74f2e4a93cf666447058241da7",
+    "openassembler/build_modal.py": "0b2ac5914af577a64872b75e4b1d9264eb15b44a2aaeee0539e35fbebe33f900",
+    "openassembler/gemm_dispatch.py": "aca37670abeb40f80af8ec45d8a6ae7579ad08a2edcddff4f95c2a6996a37ae0",
+    "openassembler/cli.py": "c55c9399f9b21b45563fda1e4851a3e46c4359447c007e08503d510075449afa",
+    "openassembler/remote_build.py": "ff5a81217deb8cf2bcf43095a2f4a15ca43e080e3d6230296065e92be1796aec",
+    "openassembler/workflow.py": "a6eb6162380db437bdda51fc0d6aec2f57cfec1b41cd92116eeff9ca77891f04",
+    "openassembler/oracle.py": "627456041315055edfe796e6f4f45f0a036e8fd7a1fff6b369f803f25dd64497",
+    "openassembler/gemm_tune_modal.py": "f5ae5826ef2f0bceccd997a73b75fb9a31cb24cf7252c8fb27e0d0b2ba761f7a",
+    "openassembler/verify.py": "82ce424fa60e608814cd780278aeaee723c8a7074167e0880d29730fd10349bb",
+    "openassembler/repository.py": "a7a27da691f222eaa20d71a91a882bd0ec9e4803a71c48b47572846c805850d9",
+    "openassembler/rowwise.py": "475b61a9f59e4629586e95ca305ee5798dbbf358f65e8260e31894487c0d2314",
+    "openassembler/cppfront.py": "dbb79ae6283406c70148f64a6c601fa8a6d8b338e3ffd19998536a8c69cf1892",
+    "openassembler/__main__.py": "1c8cc0014757550f4b2e1f1d35af3d12ce8eaf6636d3ac162b001ba218bf2f6d",
+    "openassembler/project.py": "8bc1ebdda315d92915bc5f4c68a38d61e3c91193568544e7627a5dd689416701",
+    "openassembler/ui/repl.py": "eeb750d95269f589d61e347c0f455c1dd4cc50cc383fbe412961244df1fc2eb4",
+    "openassembler/ui/session.py": "57ab4f80794e2af12efca3e00689b4c02c1195b6865b3733126ddbf80ab6dd3f",
+    "openassembler/ui/__init__.py": "5f4c1b4f2079591935cd23e152f9d7bef5be8183010d91c77d789fe637ced8ea",
+    "openassembler/ui/logo.py": "78f73b632eb97706477de464213803c118829de2759c414e1006e9d99e31e1be",
+    "openassembler/ui/banner.py": "c25a617921d87671f6115e2f695922e482ee38841084a6c14e32579508bca2ae",
+    "openassembler/ui/colors.py": "d9e9a9a284d43d0e406d13b0e5875eeb454482fb978a26ce97ae630243e43366",
+    "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
+    "openassembler/kernels/__init__.py": "0b7694564460b96acabaeb138d3856e08fcfc91d0a08764e4124b75231e304f7",
+    "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d",
+    "openassembler/kernels/reductions.py": "acef807ca573a2805acba477926b6fca5608682a54d40f650666767c28f95852",
+    "openassembler/emu/fp.py": "650b040866848d3ec4c520a351caa4a834617c4ba515ca451db06fad58688e8e",
+    "openassembler/emu/operands.py": "800507473fa3619dd3105570f8bb911b9f9ca96563ed0081b8a34eb4c17cb64c",
+    "openassembler/emu/__init__.py": "22794895d04b8cad24c79902987a9238da727fcaf2060eb763fa8459d98b1677",
+    "openassembler/emu/tensor.py": "2000285e5ede67cea8dd2ba5215391b5b8afa4cbf4cd630e30fbf1ee1d877bcb",
+    "openassembler/emu/ops.py": "39c2a3c17f5bf2f3fbc30932004107561b5c341609ac2f8f1f0ba63f5d8fd3de",
+    "openassembler/emu/machine.py": "d27253ba85d82241af0ba7647ae8cd7a0b7878f65b51c6634778ee81eb5da108",
+    "openassembler/emu/probe.py": "5cb86c75c70d49ccb8dda38d729311d38c6487f34b7425e759e6c99028495d83",
+    "openassembler/emu/program.py": "456029c96fed68bb71f6606aa00d94ba9dc5d571812cb62385c2340e9bd0a5d5",
+    "openassembler/modelfront/worker.py": "664dafd8623efb9bc19654b66add8ad735e156e55c15f1b5870fc32929e73849",
+    "openassembler/modelfront/kernels_nn.py": "6cffe750781ac82d4c5ca6840e8027d25cbc848d62aa81214f5bee0dd57bb1a4",
+    "openassembler/modelfront/kernels_tensor.py": "81721f6e010f9bf0cb7a067bb9be125e58dfa7c6b726f82006f2a99c2a59b79f",
+    "openassembler/modelfront/graph.py": "981b4886e68090f882483311517f89c5ae4fe79f189d52fc6a2cf03670834016",
+    "openassembler/modelfront/optimization.py": "4f65d62e4c695cd528acecaedc6617952e7fd55c71c05843ad7e7feae9a239c9",
+    "openassembler/modelfront/frontend.py": "b538979b83715a5fd21a612ca7750364555a2278ffb73f46fb07b4fa9bbc576f",
+    "openassembler/modelfront/__init__.py": "8021cec486ec40ebacbdb5e6649f5cc0758e3ff9649356a2a0e2aefe404592c6",
+    "openassembler/modelfront/modal_app.py": "34242a078c8437ac9eb73e7522376f2e4c4bee4e2283c4d7217db451c23783ea",
+    "openassembler/modelfront/runtime.py": "0e9e355af0c0313fcb93475a02ce31df21df2d03313db2edb50baf3db8c29a32",
+    "openassembler/modelfront/kernels_batched.py": "b9b0700af60b7a6d4eebefaa15b13e8f37dc44fd45ca71cde7e9ea62e9bc9abc",
+    "openassembler/modelfront/autograd.py": "e631aec1fac467be72a1d50c6a96fa340b4059e24169e16cddc05bd62b7b427b",
+    "openassembler/modelfront/kernels.py": "fcf89cf1ff74c329776cdba5eb4aff5a1897abe84ca9642daf672a078c891832",
+    "openassembler/modelfront/reference.py": "329ed927a9924e88fbec17dc7e33f736daa2c6f51c1dac66fdb615bb1834b0a7",
+    "openassembler/modelfront/kernels_concat.py": "644a09a57892682a6b97228062db6dfc34fb5db3c83acea781939adea456fedc",
+    "openassembler/gpu/cuda_driver.py": "55c9726c97c01e14de52ceed9b56685ed5536a67b19e9d00aed3a70deb67aef6",
+    "openassembler/gpu/batch.py": "a68f270e9ccbc6268438d7b156f27a7e486a7e191b353eedf14dc9998eac77a4",
+    "openassembler/gpu/__init__.py": "5c20d8549f39f88b5c8efec6f6c91dd9c9c4ed3cf6f8f2f7314b4cf7831110a1",
+    "openassembler/gpu/modal_app.py": "b38b55c7fae2f172a25ea59e741e0c25f5479f7d99488db93dd554b06b5bdb50",
+    "openassembler/ptx/semantics.py": "e18525f72cda4ddbd9e7914d8f99c1b06fcdebe491b3213108c576e7a374b1d1",
+    "openassembler/ptx/__init__.py": "795691db5fb416d0d1ac34094884c254cef88b465489ce758dbb74fb26997998",
+    "openassembler/ptx/semantics_fp.py": "dcd7d92edbd6985de2f47a00c86ff9dd0ed8687e8bcd38aa67749815f455a832",
+    "openassembler/ptx/interp.py": "1c229dbf583b829ee11130bb5276f006c236abbbfc89cc7dd08c20a214b840ab",
+    "openassembler/ptx/parse.py": "dfddfb0e3c3507a2d1d38968c84d2524f031b1f086f6dd09e56828ad984c7d39",
+    "openassembler/isa/encode.py": "655c78308e23c1dfe2464194fd8548579269ee74941a9496932453d27562ff36",
+    "openassembler/isa/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "openassembler/isa/word.py": "1e4bd5ae3c482c3296a58f938dea85339526476c5c2a0c5c088c6bc07a9131e8",
+    "openassembler/pyfront/__init__.py": "138aab10f3aec3decde8ab07752d334179f13ff27869e7f106f3a73134ec00b1",
+    "openassembler/pyfront/types.py": "b2b1cf6dce509e2c69fcfd8851387269c05226b1f0472f349671d25562536341",
+    "openassembler/pyfront/intrinsics.py": "269656c48d8ba188ccf927e2b46508813414694d66a6912351caa9ceb04bde08",
+    "openassembler/pyfront/compile.py": "a1e298dbad8157a0ffc4eb23a4e920746cb34d4b18ea4ec54586df1d36318b30",
+    "openassembler/backend/unroll.py": "47bc6999b3b6ac41e2e8d0b2176bd33f1dfd5d010b8e4aafb713adcd3d17c453",
+    "openassembler/backend/__init__.py": "db0ce3f4987c6190f6c2e6013a400787ce7a16c1e62816c9adc537fd508aa495",
+    "openassembler/backend/tensor_encoding.py": "885730c203401d42bef163b93dc8df69db3e75feedf47fabafe9dced34c056eb",
+    "openassembler/backend/naive.py": "fc84e723a0536e58ebbf96c6314aca3713a2f3d1f946ec646ae68225a2d244a7",
+    "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7",
+    "openassembler/backend/compile.py": "e6c32400dad0153344f78baa18d224a711f30bf62f06f7c1c93ca2a42e46dbe9",
+    "openassembler/backend/sched.py": "5711333491c4a9dc19fb36c94334fb38df3126aadd8d1c3eed41df15e5ca2fd8",
+    "openassembler/backend/fragments.py": "0ed402508df118a74a7134c4c82add23fed615975073c171898e006e6819e176",
+    "openassembler/backend/ra.py": "401914e05059134e177224378ce86e0d55e94350f92dfde00c72162089e3e4cc",
+    "openassembler/container/__init__.py": "0593c682966fdca026aad58b2c613bc72130d2f991e77f2968ae40a2f9235bc1",
+    "openassembler/container/cubin.py": "4118f7124090e942a535ab7e0cae71cc12bb21deef8e9d83c16e4932be93bfdb",
+    "openassembler/container/elf.py": "d996eca5fab4efcc9034c8a44bd8554e4bb07a0aeb225839a30e98e7c0cc129d",
+    "openassembler/container/nvinfo.py": "0e0e4e4a419f095ef96aeea165330809adb9957d0e82e471fced15c171c10210",
+    "openassembler/fastmm/plan.py": "97ac7d9cb0fef28c73880ee2f7918f8398b57ff75d7a68e90eeef7fbddd501ce",
+    "openassembler/fastmm/factors.py": "7411135cba31863206b265126059963611c16bdc82aa842aa86b86ea09d45861",
+    "openassembler/fastmm/__init__.py": "9213bac95b7f440450be0e0e8a24a20f163f5e52ad2d74b3c77f7a1254d4a408",
+    "openassembler/fastmm/kernels.py": "d93435508bda92ba55bcd4af7b92a9c7e93419a937844e202de73f357135db8a",
+    "openassembler/opt/divconst.py": "fa29f618e10e06a98d6792a1e752e98a2c07f472884fd63ce9ef3d5f9f18773e",
+    "openassembler/opt/__init__.py": "8ca712dcb26058a07e5ad303f5b3e810cdc853711050b1cc3291b4e9679214b0",
+    "openassembler/torchfront/worker.py": "8ff6e6414947cacea0762f207496743f328b19f43ca01bfbdf7d2b2561d958cc",
+    "openassembler/torchfront/frontend.py": "68ee59e30c5c5060cb0e72cbfc931d07c435834ad071e37e14868b61a6e05ac4",
+    "openassembler/torchfront/__init__.py": "d20ac464d16215e07836d0d449864bc85a947bafa36338cce371646624d12562",
+    "openassembler/torchfront/modal_app.py": "1ad817618c8abf91f028b9bf236a4ec1db019efa4a1344373aaeac113ecfd7cf",
+    "openassembler/torchfront/archive.py": "186bfa4ebdddb51fa475c43f488e5f2a4ee0d1b1ece9a9a67631bb1fa392b5ee",
+    "openassembler/torchfront/instrument.py": "eba92e85e3605fa22602aefd9a4d90bca9863d5db9339fdd937b02f5829d6708",
+    "openassembler/kernels/sm80_gemm_dispatch.json": "191169676caa761157a6f2e7515c9f8184ac81c97667bceb1a8414818531b242",
+    "openassembler/kernels/sm80_rowwise_dispatch.json": "e1fb86f4f55e2bd63dd588f733281e9f9f5e4ee5dab0aeddbd9f830b27bdb137",
+    "openassembler/backend/ptxas_fragments.json": "15a5263e189be6dfe19f04a9c37ee683eba60ff84b4cc07d7fe25992cb849edf",
+    "specs/sm_80/synth_templates.json": "dabae8aa91bd5e6e02ea3da38ca60a37d2af36dae2370530a11c92377c4cd59d",
+    "specs/sm_80/bitflip.json": "1d03d8838c9e4992edd9a0ed2b247e9f1774730a7172e175bf4975554d78da0d",
+    "specs/sm_80/synth_fieldmaps.json": "10100a9b31d6110e9aba29446003c1f0d261f9ca859ea4bde423c5ed33a7f2e1",
+    "specs/sm_80/arithmetic_templates.json": "1c3fc5163ab05bc4305260c12d51bfc270ab83d89fbb487fcbe5854c9179bfe1",
+    "tools/stall_holdout.py": "7b2847b4a5751f0068632f912f6eee30fdedbd9e2130abdd26188b0d4da68620",
+    "tools/bitflip.py": "5835b6eca2e4e672bf94e12e677a7a64f6f7280ba83a9b6a6158a656feb7b826",
+    "tools/fastmm_import.py": "54bd3a8c3c877cb9218e26d3402b15894bfa67f48006decc97c42cad82d5aa09",
+    "tools/check_docs.py": "e0b808d630d714b587ada8f58a1b8b94c444b3d6a6a6076d68e79cade881c093",
+    "tools/cli_benchmark.py": "9b4f7f920f5ddb5183e879a0248f385be96e2a0731893726d9b83a18eafbe015",
+    "tools/mlp_build.py": "b82e360c6f9f879cfa57a95c33a5bf23ca667e1ee2bc270d18ae43a976a7358e",
+    "tools/mlp_run.py": "1ab3017e3057a19d15ea9d5e1a1e838625101884273208f7322f08495a1890b8",
+    "tools/encoder_eval.py": "207ea7652633cba037fe996adf0231e1c47a8e5ae0d084f64c183f37bbf77471",
+    "tools/gpu_bisect.py": "4d321c588cd56d009de70736e6e2dbc464723904e4c3a0d334c877f731fdbe2a",
+    "tools/ptxas_fragments.py": "bb9a3b2c5316f909b9efdac1b5dfdbbad7f891b91d8265e00bd4ad12eb6e4122",
+    "tools/diff_emu.py": "c13dba88f8c19e8de8097213a467385976b8a340c913ba50b13dcb3fa36c43f7",
+    "tools/mine_latency.py": "6372f47c7ed24b25c6de23f4953cdc556cb94d078fd7f99d316de00b43517053",
+    "tools/predict_stall.py": "4e1114f6ca4d96a3301073789f59c2273cb451879eb39cb5a52c9925ac80ead8",
+    "tools/fit_mma.py": "7924343e4a8eb7de6d1e6c658c7ae3e480e34328560550888428a66666289cc0",
+    "tools/build_corpus.py": "6eb390ed8d306166ea76b18f717b5ac02c0811c9bf24581d2f67428a52e2bbe6",
+    "tools/sb_policy.py": "70f613dcd5f05c4af7cb5ac321750c72497816bc45114e8fd306e5e84dbafcc8",
+    "tools/ptx_probes.py": "d2d8c4793af35fe3ceaca40c0495209dcbbe0a104568f8987a5fdd4b00c35aa6",
+    "tools/gpu_modal.py": "7b4060ef4d5f7e6d841ceed1745eab0221fa164b2c01f5fbf6499bbf63ab75e4",
+    "tools/fit_mma_nominal.py": "3359654c841a2ae45af29321dd51ed0860fd0ea5b499045d516e01f98f8a175d",
+    "tools/nn_study.py": "c53882d2b09726ed5c1c730fa3da231ae75698f0d7c79b9bd3b6cd898953418d",
+    "tools/compile_check.py": "56382fde627f057fdc2f58a2f6224c14beceefa4a09a0028aa1f04d56ae5e89c",
+    "tools/verify_divconst_exhaustive.py": "b190175ac4399201ac63903d6b2f59040a2133b67de8036c9a7cd9bdcf08f76f",
+    "tools/prove_divconst.py": "a463b699fe1978065bcd31849f5cc6309e2aa99b1b04c0dcabf706cc9ff531f0",
+    "tools/reencode_cubin.py": "f4f9d62b3d50eabc8dd3e575f7d8244cee021c3bc3bd91dc47ba2208941ebde8",
+    "tools/div_const_survey.py": "44ee26846adbe15fcf3a3dc29194492853456d6c7b2b54317051d0ee37e807bf",
+    "tools/gpu_run.py": "07814e6aeb36658253c3cca76422a06372c554fe8900665b986829903016f8a8",
+    "tools/gpu_common.py": "33d8f20bfad092ac76123a6c622c2dced604332c7841fa8a45540b241db778bc",
+    "tools/fastmm_build.py": "6abb4b97e911ecb78e0c257829503b710eff501f5f650df3b0a9f0f81ecb0253",
+    "tools/gpu_replay.py": "01a4f6688138f7e3d5544c931c2b9e9269e6a343d5ad7747cdd7222b17a763d3",
+    "tools/lat_sweep.py": "03261db8a3c39af3b895d9e40dae76838e49c47cf9cae00a71bc8cbf690895ec",
+    "tools/bench_kernels.py": "e59d7de406c528049f2256a0b3fc0af2c2b30fc4e088554d2839cdfc3735822e",
+    "tools/bench_build.py": "067c9ca0a7dd43ca39baa27623136bab70ff91709ecb845c0580512f037c403f",
+    "tools/fastmm_run.py": "fedbfb37176a960882de7cbb384334a5d0c8373c57bc3c4b7d9876075d27549b",
+    "corpus/sm_80/pairs.jsonl": "c619303020b016b27eb8b93eb68652563f11c7a7a78bf7eaba4eca5d172bb491",
+    "corpus/sm_80/machine_model.json": "4361d09abc0a24d350d07dbf480cebecddc06d18af15428e7dafd0acc6c660bf",
+    "env/cuda.sh": "3fa52c80dc061b07c541e5206dce74d38a81bb67709821c79687de6f602cda23"
+  },
+  "scope": "complete resident-input FP32 attention+LayerNorm+GELU inference; 16-invocation graphs; paired same-worker copies/views; excludes capture, compile, allocation and transfer; no vendor-performance comparison"
+}

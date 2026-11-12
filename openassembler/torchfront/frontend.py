@@ -144,59 +144,8 @@ def artifact_files(blob: bytes) -> dict[str, bytes]:
 
 
 def _worker_request(request: dict, config: dict, repo_root: Path) -> dict:
-    request_file = result_file = None
-    try:
-        with tempfile.TemporaryDirectory(prefix='oa-torch-request-') as directory:
-            request_file, result_file = Path(directory) / 'request.json', Path(directory) / 'result.json'
-            request_file.write_text(json.dumps(request))
-            package_root = str(Path(__file__).resolve().parents[2])
-            working_dir = Path(repo_root) if Path(repo_root).is_dir() else Path(package_root)
-            env = dict(os.environ)
-            env['PYTHONPATH'] = package_root + os.pathsep + env.get('PYTHONPATH', '')
-            if config['build_backend'] == 'local':
-                command = [sys.executable, '-m', 'openassembler.torchfront.worker',
-                           '--request', str(request_file), '--result', str(result_file)]
-                try:
-                    completed = subprocess.run(command, cwd=working_dir, text=True,
-                                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                               timeout=config['budget'], env=env)
-                except subprocess.TimeoutExpired:
-                    raise ApplicationError(f"local PyTorch worker exceeded {config['budget']} seconds") from None
-                print(completed.stdout, end='')
-                if completed.returncode and not result_file.exists():
-                    raise ApplicationError(f"local PyTorch worker failed (exit {completed.returncode})")
-            elif config['build_backend'] == 'modal':
-                from openassembler import runner
-                if (why := runner.modal_ready()):
-                    raise ApplicationError(why)
-                app_file = Path(__file__).with_name('modal_app.py')
-                command = ['modal', 'run', str(app_file), '--request', str(request_file),
-                           '--result', str(result_file), '--gpu', config['gpu'], '--budget', str(config['budget'])]
-                try:
-                    completed = subprocess.run(command, cwd=working_dir, text=True,
-                                               stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                               timeout=config['budget'] + 300)
-                except subprocess.TimeoutExpired:
-                    raise ApplicationError("Modal application capture timed out; inspect `modal app list`") from None
-                print(completed.stdout, end='')
-                if completed.returncode and not result_file.exists():
-                    raise ApplicationError(f"Modal PyTorch worker failed (exit {completed.returncode})")
-            elif config['build_backend'] == 'ssh':
-                from openassembler.transport import runtime_files, ssh_request, TransportError
-                try:
-                    ssh_request(config.get('build_host'), request_file, result_file,
-                                pack(runtime_files()), 'openassembler.torchfront.worker', config['budget'])
-                except TransportError as exc:
-                    raise ApplicationError(str(exc)) from None
-            else:
-                raise ApplicationError("PyTorch application backend must be local, modal, or ssh")
-            if not result_file.is_file():
-                raise ApplicationError("PyTorch worker returned no capture result")
-            return decode_result(result_file.read_text())
-    except (OSError, ValueError, subprocess.SubprocessError) as exc:
-        if isinstance(exc, ApplicationError):
-            raise
-        raise ApplicationError(f"PyTorch worker could not run: {exc}") from None
+    raise ApplicationError('legacy Inductor/Triton application execution is disabled; '
+                           'configure [model] and use the OA native model frontend')
 
 
 def compile_application(root: Path, out_dir: Path, *, output_name: str | None = None,

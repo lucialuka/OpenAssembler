@@ -2,12 +2,11 @@
 <p align="center"><img src="figs/openassembler_logo.png" width="680" alt="OpenAssembler"></p>
 
 # OpenAssembler
-
 **A native NVIDIA SASS/cubin compiler for SM80/A100, built through black-box reverse engineering and validated kernel optimizations.**
 
 OpenAssembler explores how much more performance existing GPUs can deliver for model serving and training through better native code generation.
 
-OpenAssembler generates native SASS and executable cubins for supported A100/SM80 kernels, with shape-specific kernel and compiler optimizations. Performance depends on the operation and comparison: measured improvements over earlier OA kernels do not imply a win over matched ptxas or cuBLAS, and a whole-native transformer-training speedup has not been established. The CLI supports standalone kernels and repository discovery for supported Python, CUDA C/C++ and PTX inputs. An explicit PyTorch application route uses Inductor/Triton for GPU code generation. Broader architecture support and end-to-end training acceleration remain research goals; see the measured contracts and limitations below.
+OpenAssembler generates native SASS and executable cubins for supported A100/SM80 kernels, with shape-specific kernel and compiler optimizations. Performance depends on the operation and comparison: measured improvements over earlier OA kernels do not imply a win over matched ptxas or cuBLAS, and a whole-native transformer-training speedup has not been established. The CLI supports standalone kernels and repository discovery for supported Python, CUDA C/C++ and PTX inputs. A constrained Python model route captures CPU graphs and emits OA-owned forward/backward/loss/update cubins; Inductor/Triton execution is disabled. Broader architecture support and end-to-end training acceleration remain research goals; see the measured contracts and limitations below.
 
 [Architecture and status](docs/STATUS.md) · [All commands](docs/COMMANDS.md) ·
 [Research catalogue](docs/research/README.md) · [Development setup](docs/DEVELOPMENT.md)
@@ -28,6 +27,26 @@ OpenAssembler generates native SASS and executable cubins for supported A100/SM8
 > ⚠️ **IMPORTANT NOTICE**
 > This project is currently under **active heavy development** for kernel optimization and assembly language edge case handling. If you encounter any bugs/compiler inefficiency during deployment, please feel free to open an Issue. Your feedback will help us build a better version!
 
+## Native Python models
+
+A repository with a `[model]` factory and exact input shapes now compiles supported
+Python tensor graphs, their backward pass, MSE loss and SGD updates through OA.
+The default FP32 contract and explicit FP16-operand Tensor Core contract have
+separate numerical gates. Local, Modal and SSH execution use saved OA cubins.
+Unsupported operations fail; vendor GPU fallback is disabled.
+
+```sh
+openassembler cnr examples/native_model --backend modal --verify
+openassembler cnr examples/native_tensor_model --backend modal --verify
+openassembler cnr examples/native_attention_model --backend modal --verify
+openassembler run examples/native_model --backend user@a100 --verify-application
+```
+
+See the [native model contract](docs/research/ideas/native-model-bridge.md).
+This constrained route does not yet compile arbitrary repositories or establish
+performance superiority over the NVIDIA toolchain. Earlier Inductor application
+studies below remain historical comparator evidence.
+
 ## What you can do
 
 - Compile standalone kernels or discover supported kernels in a repository.
@@ -43,8 +62,8 @@ OpenAssembler generates native SASS and executable cubins for supported A100/SM8
   other contracts retain the four-warp reference.
 - Inspect cubins and SASS, emulate supported instructions, and run matched GPU
   checks locally, over SSH or on Modal.
-- Capture a configured PyTorch application's bounded workload and replay its
-  saved compiler/runtime cache with state verification.
+- Capture supported Python model graphs, generate OA forward/backward/loss/update
+  kernels, and replay their saved native launch plans with state verification.
 - Study factorized matrix multiplication, compiler encodings and scheduling
   through the retained research tools and evidence.
 - Audit transformer QKV/output/FFN roles and shape/layout coverage before
@@ -82,22 +101,23 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-For Modal, set up its optional client once. The local machine does not need a
-CUDA toolkit or GPU when both compilation and execution are remote:
+For Modal, set up its optional client once. The workstation needs Python and Modal; remote compilation supplies the
+CUDA toolkit, and remote execution supplies the GPU driver:
 
 ```sh
 pip install modal
 modal setup
-openassembler compile testcases/test_whole_repo --frontend torch --backend modal --verify
-openassembler run testcases/test_whole_repo --backend modal --verify-application
+openassembler compile examples/native_model --frontend model --backend modal --verify
+openassembler run examples/native_model --backend modal --verify-application
 # Or capture and replay in one command:
-openassembler cnr testcases/test_whole_repo --frontend torch --backend modal --verify
+openassembler cnr examples/native_model --frontend model --backend modal --verify
 ```
 
-Replace that example with your repository path. A PyTorch repository provides
-`openassembler.toml` with its entry point and bounded workload; a native-kernel
-repository needs no application configuration. Directory builds default to
-`REPO/output/cubin/`, `REPO/output/sass/` and `REPO/output/manifest.json`.
+Replace that example with your repository path. A model repository provides
+`openassembler.toml` with its CPU factory and exact input shapes; a native-kernel
+repository needs no application configuration. Directory builds default to `REPO/output/`: native kernels have `cubin/`,
+`sass/` and `manifest.json`; native models have `plan.json`, `native-ledger.json`,
+weights and their native kernel tree.
 For a custom location, use the same `--out-dir DIR` on `compile` and `run`.
 Independent native source files build with up to four bounded workers by
 default; set `OPENASSEMBLER_BUILD_JOBS=1` for serial reproducibility.
@@ -146,11 +166,11 @@ openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order grouped_n8 --out-dir 
 openassembler rowwise --op softmax --rows 1024 --width 512 --out-dir output/softmax
 ```
 
-A configured application is captured only when the application frontend is
-selected explicitly. Inspect either route before submitting any work:
+A `[model]` configuration selects native graph capture automatically;
+`--frontend native` requests static kernel discovery. Inspect work before submission:
 
 ```sh
-openassembler compile testcases/test_whole_repo --frontend torch --verify --dry-run
+openassembler compile examples/native_model --frontend model --verify --dry-run
 openassembler cnr /path/to/my_repo --backend user@a100 --dry-run
 ```
 
@@ -185,3 +205,8 @@ The package is version **0.2.0**. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=lucialuka/openassembler&type=date&legend=top-left" />
  </picture>
 </a>
+
+<div align="center">
+  <h3>🇭🇰 Free Hong Kong</h3>
+</div>
+

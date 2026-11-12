@@ -54,7 +54,7 @@ def test_repeated_app_publication_keeps_native_entries_and_removes_stale_sass(ap
     assert project.entry_source_abs(manifest, manifest['entries'][0]) == native
     assert not (out / first.entry['kernels'][0]['sass']).exists()
     assert second.entry['kernels'][0]['sass'] is None
-    assert main(['run', str(out), '--application', 'training', '--dry-run']) == 0
+    assert main(['run', str(out), '--application', 'training', '--dry-run']) == 1
     (out / second.entry['cache']).write_bytes(b'tampered')
     assert main(['run', str(out), '--application', 'training', '--dry-run']) == 1
 
@@ -107,8 +107,8 @@ def test_application_auto_backend_uses_modal_on_macos(app_repo, tmp_path, monkey
     monkeypatch.setattr(platform, 'system', lambda: 'Darwin')
     monkeypatch.setattr(importlib.util, 'find_spec', lambda _: object())
     assert main(['compile', str(app_repo), '--frontend', 'torch', '--out-dir', str(tmp_path / 'output'),
-                 '--build-backend', 'auto', '--dry-run']) == 0
-    assert 'build: modal' in capsys.readouterr().out
+                 '--build-backend', 'auto', '--dry-run']) == 1
+    assert 'legacy Inductor' in capsys.readouterr().err
 
 
 def test_explicit_verification_cannot_be_silently_disabled(app_repo, tmp_path, capsys):
@@ -116,7 +116,7 @@ def test_explicit_verification_cannot_be_silently_disabled(app_repo, tmp_path, c
     config.write_text(config.read_text() + 'verification="none"\n')
     assert main(['compile', str(app_repo), '--frontend', 'torch', '--verify', '--dry-run',
                  '--out-dir', str(tmp_path / 'output')]) == 1
-    assert 'verification' in capsys.readouterr().err
+    assert 'disabled' in capsys.readouterr().err
 
 
 def test_application_replay_saves_report_and_forwards_watchdog(app_repo, tmp_path, monkeypatch):
@@ -143,15 +143,15 @@ def test_missing_requirements_and_output_overlap_fail_before_capture(app_repo, c
     config = app_repo / 'openassembler.toml'
     config.write_text(config.read_text() + 'requirements=["missing.txt"]\n')
     assert main(['compile', str(app_repo), '--frontend', 'torch', '--dry-run']) == 1
-    assert 'requirements file is missing' in capsys.readouterr().err
+    assert 'disabled' in capsys.readouterr().err
     assert main(['compile', str(app_repo), '--frontend', 'torch', '--out-dir', str(app_repo), '--dry-run']) == 1
-    assert 'inside the output folder' in capsys.readouterr().err
+    assert 'disabled' in capsys.readouterr().err
 
 
 def test_explicit_application_selection_never_falls_through_to_kernel_execution(tmp_path, capsys):
     project.save_manifest(tmp_path, tmp_path, 'sm_80', 'opt', [])
     assert main(['run', str(tmp_path), '--application', 'missing', '--dry-run']) == 1
-    assert 'no application' in capsys.readouterr().err
+    assert 'legacy Inductor' in capsys.readouterr().err
     assert main(['run', str(tmp_path), '--application', 'app', '--spec', 'pipeline.json']) == 1
     assert 'cannot be combined' in capsys.readouterr().err
 

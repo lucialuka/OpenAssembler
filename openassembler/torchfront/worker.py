@@ -190,6 +190,11 @@ def compare_states(reference: bytes, actual: bytes, rtol: float, atol: float,
 
 def execute_program(root: Path, config: dict, state_path: Path, *, compiled: bool, report_path: Path,
                     timing_path: Path | None = None):
+    raise RuntimeError('legacy Inductor/Triton execution is disabled; use the OA native model worker')
+
+
+def _historical_execute_program(root: Path, config: dict, state_path: Path, *, compiled: bool,
+                                report_path: Path, timing_path: Path | None = None):
     """One fresh process per eager/compiled invocation gives both the same seed/import state."""
     import torch
     info = runtime_info()
@@ -352,7 +357,12 @@ def _child(root, config, scratch, tag, compiled, budget):
 
 
 def process(request: dict) -> dict:
-    """Compile or replay a configured project, returning a bounded artifact archive."""
+    """Reject retired vendor capture/replay before initialization or GPU work."""
+    raise RuntimeError("Inductor/Triton application worker is disabled; use openassembler.modelfront.worker")
+
+
+def _historical_process(request: dict) -> dict:
+    """Retained implementation for reading historical experiments; no worker dispatch."""
     info = runtime_info()
     config = request['config']
     if info['capability'] != [8, 0]:

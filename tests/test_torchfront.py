@@ -20,12 +20,8 @@ EXAMPLE = ROOT / "testcases" / "test_whole_repo"
 
 def test_transformer_repo_dry_run_selects_its_configured_workload(tmp_path, capsys):
     out = tmp_path / "output"
-    assert main(["compile", str(EXAMPLE), "--frontend", "torch", "--out-dir", str(out), "--verify", "--dry-run"]) == 0
-    report = capsys.readouterr().out
-    assert "PyTorch application test_whole_repo: 5 files" in report
-    config = load_config(EXAMPLE / "openassembler.toml")
-    assert shlex.join([config["entrypoint"], *config["args"]]) in report
-    assert "eager/compiled state verification on" in report
+    assert main(["compile", str(EXAMPLE), "--frontend", "torch", "--out-dir", str(out), "--verify", "--dry-run"]) == 1
+    assert 'legacy Inductor application frontend is disabled' in capsys.readouterr().err
     assert not out.exists()
 
 

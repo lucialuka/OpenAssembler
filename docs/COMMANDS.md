@@ -18,6 +18,31 @@ Running compiled kernels needs a Linux NVIDIA driver locally or on a remote
 machine. Modal is optional and can be installed in a separate authenticated
 Python environment: the CLI invokes its `modal` executable.
 
+## Native model route and current ownership policy
+
+A repository with `[model]` in `openassembler.toml` automatically uses the native
+model frontend; `--frontend model` or `--frontend torch` explicitly selects it.
+See [the native model contract](research/ideas/native-model-bridge.md) for config,
+operator/numerical/shape scope and Python API. All workload GPU kernels are OA
+artifacts on local, Modal and SSH workers. `--frontend triton`, `--frontend inductor`
+and `--fallback ptxas` reject. Old `[application]` Inductor bundles cannot replay
+through the production CLI. The legacy application sections below describe the
+retained historical experiment APIs, not a supported vendor execution route.
+
+`run` and `cnr` now launch only OA modules; ptxas donor/reference cubins remain
+build diagnostics. Standalone execution reports execution success and available
+analytic smoke checks, rather than claiming bitwise vendor comparison. Paired
+same-PTX research tools retain explicit comparison plans. Native model `--verify`
+and `run --verify-application` compare CPU references, complete gradients/state,
+changed inputs and workspace guards. `--budget` bounds each worker stage;
+`--job-timeout` and standalone launch selectors do not apply to model plans.
+
+```sh
+openassembler cnr examples/native_model --backend modal --verify
+openassembler cnr examples/native_tensor_model --backend modal --verify
+openassembler run examples/native_model --backend user@a100 --verify-application
+```
+
 ## Find a command
 
 | Command | Purpose |
@@ -25,10 +50,10 @@ Python environment: the CLI invokes its `modal` executable.
 | `openassembler` | Open the interactive command shell. |
 | `openassembler --help` | List the top-level commands. |
 | `openassembler --version` | Print the installed OpenAssembler version. |
-| `openassembler compile SRC` | Statically discover/compile native kernels; use `--frontend torch`/`triton`/`inductor` to explicitly capture a configured PyTorch application. |
+| `openassembler compile SRC` | Compile discovered OA kernels or a configured native Python model graph. |
 | `openassembler gemm ...` | Generate and compile a checked native A100 FP16/BF16 GEMM. |
 | `openassembler rowwise ...` | Generate and compile cooperative native FP32 softmax or LayerNorm. |
-| `openassembler run [PATH]` | Execute existing kernel cubins or replay a bundled application. |
+| `openassembler run [PATH]` | Execute existing kernel cubins or replay a bundled OA-native model. |
 | `openassembler cnr SRC` | Compile, then run the outputs built by this invocation. |
 | `openassembler verify CUBIN PTX --kernel NAME` | Compare a probe-ABI cubin's emulated SASS with the PTX interpreter. |
 | `openassembler corpus` | Build the instruction-probe corpus with NVIDIA's tools. |
@@ -73,14 +98,14 @@ shell and does not execute pipes, redirection or arbitrary Python. When
 `~/.openassembler_history` and completes top-level command names. The built-in
 `help` accepts no command argument: use `compile --help`, not `help compile`.
 
-## `compile`: kernel files, source trees and applications
+## `compile`: kernel files, source trees and native model graphs
 
 ```sh
 openassembler compile examples/div_by_const.ptx -o division --verify
 openassembler compile examples/vector_add.py --out-dir output_python
 openassembler compile examples/vector_add.cu -I include --nvcc-flag=-DTILE=32 --out-dir output_cuda
 openassembler compile my_kernel_repo/ --out-dir output_repo
-openassembler compile testcases/test_whole_repo --frontend torch --verify --backend modal
+openassembler compile examples/native_model --frontend model --verify --backend modal
 ```
 
 `SRC` is required. A standalone `.ptx` file goes to the native backend; a
@@ -90,12 +115,10 @@ code is not translated into a GPU program. Directory discovery respects Git's
 tracked/non-ignored files and recognizes kernel sources; output paths mirror
 the source tree. A directory build does not accept a single output name.
 
-A directory with `[application] frontend="torch"` in `openassembler.toml` still
-uses the native repository route by default. Use `--frontend torch` (or the
-aliases `triton`/`inductor`) to explicitly run the configured TorchDynamo/
-AOTAutograd and Inductor/Triton capture. This is not native OpenAssembler SASS
-generation for the complete model. A file inside that directory always takes
-the standalone native-kernel route.
+A `[model]` configuration selects native Python graph capture automatically.
+`--frontend model` or `--frontend torch` explicitly chooses it. Supported model
+factories run on CPU; OA emits executable GPU computation. `--frontend native`
+selects static source discovery. Triton/Inductor compilation is disabled.
 
 ### Compilation options
 
@@ -103,29 +126,29 @@ These options are also accepted by `cnr`.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `-o NAME`, `--out NAME` | Source stem; application default name | Name one file's output or an application bundle. Use a name, not a path; use `--out-dir` for its directory. |
+| `-o NAME`, `--out NAME` | Source stem | Name one file's kernel output. Use a name, not a path; use `--out-dir` for its directory. |
 | `--out-dir DIR` | `REPO/output` for directory builds; `./output` for files | Build root; use the same override with `run REPO`. |
 | `--kernel NAME` | All entries | Compile only the named entry in a standalone source. |
 | `--arch ARCH` | `sm_80` | Target architecture. The validated native product target is SM80/A100; accepting an architecture string is not a support guarantee. |
 | `--opt-level LEVEL` | `opt` | One of `safe`, `mined`, `sched`, `opt`; see below. |
-| `--verify` | Off | Check standalone semantics with the emulator/PTX checker; for an application, compare eager/compiled observable state on CUDA. |
+| `--verify` | Off | Check standalone semantics with the emulator/PTX checker; for a native model, compare CPU references, gradients/state and GPU ownership. |
 | `--trials N` | `6` | Random standalone semantic-check trials. |
-| `--fallback ptxas` | Disabled | Explicitly keep vendor code for an unsupported kernel. The manifest marks it `ptxas-fallback`; it is not an OA code-generation result. |
+| `--fallback ptxas` | Disabled | Retained parser spelling; rejected by the production CLI. Unsupported forms need OA implementation. |
 | `-I DIR`, `--include DIR` | None | Additional CUDA include directory; repeatable. The source file's directory is included; directory builds also add the discovered repository root. |
 | `--nvcc-flag FLAG` | None | Additional CUDA compiler flag; repeatable. Use `--nvcc-flag=-DNAME=VALUE` when a value begins with `-`. |
 | `--dump-ptx` | Off | Print generated/input PTX. |
 | `--no-sass` | Off | Omit the readable `nvdisasm` listing; still produce cubins and metadata. |
-| `--backend MODE` | `auto` | Shared build/run destination: `local`, `modal`, `user@host`, or `ssh` with `--host`. Native auto builds locally; applications use configuration. |
+| `--backend MODE` | `auto` | Shared build/run destination: `local`, `modal`, `user@host`, or `ssh` with `--host`. Native auto builds locally; models use configuration. |
 | `--host USER@HOST` | None | SSH target or SSH config alias. Ports/keys/ProxyJump come from SSH configuration. |
-| `--gpu TYPE` | Application config / `A100-40GB` | Modal GPU for application capture/execution. Native remote compilation is CPU-only. |
-| `--budget SECONDS` | Application config / native build `900` | Per-stage budget. Remote native compilation accepts 30–1800 seconds. |
-| `--job-timeout SECONDS` | Application config | Application capture watchdog; native compiler work is bounded by its build budget. |
-| `--build-backend MODE` | Shared `--backend` / application config | Override only compilation, e.g. build on Modal and execute via SSH. Also accepts legacy `ssh`. |
-| `--build-host USER@HOST` | Shared `--host` / application config | Override the SSH compilation target. The application bundle records its capture host. |
-| `--build-gpu GPU` | Application configuration | Requested Modal GPU for application capture. Actual returned hardware is recorded separately. |
+| `--gpu TYPE` | Model config / `A100-40GB` | Modal GPU for native model capture/execution. Native remote compilation is CPU-only. |
+| `--budget SECONDS` | Model config / native build `900` | Per-stage budget. Remote native compilation accepts 30–1800 seconds. |
+| `--job-timeout SECONDS` | Standalone kernel `60` | Native model workers use `--budget` for their stage watchdog. |
+| `--build-backend MODE` | Shared `--backend` / model config | Override only compilation, e.g. build on Modal and execute via SSH. Also accepts legacy `ssh`. |
+| `--build-host USER@HOST` | Shared `--host` / model config | Override the SSH compilation target. The model bundle records its build host. |
+| `--build-gpu GPU` | Model configuration | Requested Modal GPU for native model capture. Actual returned hardware is recorded separately. |
 | `--build-budget SECONDS` | Shared `--budget` / configuration | Override only compilation time budget. |
-| `--dry-run` | Off | Plan native compilation or application capture, without writing outputs, uploading sources or running workloads. `cnr` plans both stages. |
-| `--frontend MODE` | `auto` | `auto`/`native` statically discover native kernels and use OpenAssembler; `torch`, `triton` and `inductor` explicitly select the configured application capture. `auto` never silently invokes TorchInductor. |
+| `--dry-run` | Off | Plan native compilation or model capture, without writing outputs, uploading sources or running workloads. `cnr` plans both stages. |
+| `--frontend MODE` | `auto` | `auto` selects `[model]` capture when configured, otherwise static kernels. `native` forces static discovery. `model`/`torch` select OA model compilation. `triton`/`inductor` reject. |
 
 For scalar kernels, `safe` uses conservative in-order scheduling; `mined`
 uses dependency-distance stall selection; `sched` adds list scheduling; `opt`
@@ -133,29 +156,16 @@ also applies the supported bounded loop unrolling. They are compiler policies,
 not promises that increasing the level always improves a workload. Native
 tensor kernels use their separate validated tensor policy at every level.
 
-Application capture currently requires `--arch sm_80`. Standalone-only flags
-(`--kernel`, `--fallback`, `-I`, `--nvcc-flag`, `--dump-ptx`, and nondefault
-`--opt-level`/`--trials`) are rejected for applications. Transport selection
-works for both frontends. Native repository discovery is static: host programs,
-build systems, imports and launch logic are reported as context but are not
-executed or translated into a GPU program. `--backend` applies to both stages of `cnr`; an
-explicit `--build-backend` overrides only compilation. Native remote builds
-ship the same compiler and encoding data and publish their results locally,
-without requiring a local toolkit. Local native compilation has no build
-watchdog and rejects explicit build-budget requests; `cnr --budget` still
-bounds GPU execution. See [repository setup](REPOSITORY_WORKFLOW.md).
+Native models require SM80, a CPU FP32 factory and explicit exact input shapes.
+Model compilation rejects standalone frontend/selection flags, output renaming,
+`--no-sass`, nondefault optimization/trial flags and `--job-timeout`; use `--budget`
+for its stage watchdog. The model configuration controls precision, seed, steps,
+verification tolerances and default transport. See the native model dossier.
 
-Capture `--build-backend auto` selects local execution on Linux when a `torch`
-module is discoverable, otherwise Modal. This selection is not a GPU or pinned
-runtime compatibility test; choose a transport explicitly when necessary.
-
-The worker requires PyTorch 2.7.1 and SM80. The pinned Modal image uses CUDA
-12.8 and recorded Python 3.11; those versions are not independent universal
-constraints on every compatible local capture environment. Replay must match
-the bundle's recorded PyTorch, CUDA, Python and device capability. Configuration
-also fixes entrypoint arguments, seed, requirements, verification tolerances,
-transport and budgets. Different model arguments require reconfiguration and
-recompilation.
+Native remote builds ship this compiler/data and publish artifacts locally.
+`--backend` applies to both `cnr` stages; `--build-backend` overrides compilation.
+Standalone native local compilation has no build watchdog and rejects explicit
+build budgets; remote build and model workers have bounded subprocesses.
 
 ### Output artifacts
 
@@ -166,10 +176,11 @@ by OpenAssembler and spliced into a ptxas-built ELF container; the reference
 cubin is a separate ptxas compilation. A cubin is launched through the driver,
 not executed as a host program.
 
-Application builds instead add source/runtime/cache/graph/report bundles and
-Inductor-generated cubins to the manifest. Their runtime dependencies remain
-necessary. Builds lock each output directory; use separate output roots for
-concurrent builds.
+Model builds add `model.json`, `plan.json`, `weights.json`, raw FP32 weight files,
+`native-ledger.json`, and scalar/tensor cubin trees. `model-artifacts.json` binds
+publication bytes. Model replay transports only the enumerated native modules,
+plan and weights; CPU source accompanies explicit verification. Neither PTX nor
+ptxas references are deployment inputs. Output publication obeys writer locks.
 
 ## `gemm`: checked native A100 tensor GEMM
 
@@ -316,25 +327,24 @@ lists the five entries, independent replay gates and rejected near-threshold
 candidates. The CLI has no rowwise GPU-autotuning flag; its automatic route is
 the installed exact table, with manual geometry available for new experiments.
 
-## `run`: existing kernel binaries or application replay
+## `run`: saved native kernel binaries or model replay
 
 ```sh
 openassembler run output_gemm --backend modal --budget 300 --job-timeout 120
 openassembler run output_softmax --backend modal --dry-run
 openassembler run output_repo --source kernels/ops.ptx --kernel relu --spec launch.json --backend user@host
-openassembler run output_app --application test_whole_repo --backend modal --verify-application
+openassembler run examples/native_model --backend modal --verify-application
 ```
 
 `PATH` accepts a source repository/file or an existing build directory.
 `run REPO` reads `REPO/output/manifest.json`; custom builds use
 `run REPO --out-dir DIR`. A source path restricts execution to its own saved
-records; a sole matching application is selected automatically. It never
-compiles or recaptures. `run DIR` still accepts a directory containing a
-manifest, and bare `run` retains the `./output` workflow. Legacy builds in
-`./output` are found only when their recorded source matches the supplied
-repository. The repository-local build takes priority over that legacy path;
-ambiguous single-file builds require `--out-dir`. With an explicit
-mixed kernel/application build directory, select `--application NAME`.
+records. A configured model is selected through its matching model.json metadata.
+It never compiles or recaptures. A saved native kernel directory uses its manifest;
+bare run retains the ./output workflow. Legacy native builds are selected only
+when their recorded source matches the requested repository. The repository-local
+build takes priority; ambiguous single-file builds require an explicit output
+directory. Legacy Inductor application bundles reject.
 
 ### Kernel and shared execution options
 
@@ -342,7 +352,7 @@ These flags are also accepted by `cnr`, except where its section says otherwise.
 
 | Option | Default for standalone kernels | Meaning |
 |---|---|---|
-| `--backend MODE` | `auto`, resolved to `local` for kernels | `local`, `modal`, `user@host`, or `ssh` with `--host`. Applications reuse their saved capture transport in auto mode. |
+| `--backend MODE` | `auto`, resolved to `local` for kernels | `local`, `modal`, `user@host`, or `ssh` with `--host`. Native models reuse their saved build transport in auto mode. |
 | `--host USER@HOST` | Saved application host when using `ssh` | Select or override the SSH destination; SSH config aliases work. |
 | `--out-dir DIR` | `REPO/output` | Build root when PATH names sources; bare `run --out-dir DIR` also selects an artifact directory. |
 | `--spec FILE` | None | JSON buffer/launch/pipeline specification; replaces guessed auto-harness arguments. |
@@ -369,22 +379,16 @@ runner, not a full CUDA toolkit. Modal execution needs the authenticated
 | `--kernel NAME` | All selected native entries | Select a kernel. |
 | `--source FILE` | All matching sources | Select its source when entry names repeat across compiled files. |
 | `--from-results RES.pkl` | None | Re-report an existing GPU results pickle rather than execute jobs. The manifest/job selection must still describe that run. |
-| `--application NAME` | Auto when unambiguous | Select a saved application bundle. Cannot combine with `--kernel`, `--source`, `--spec`, `--from-results`, or `--save-jobs`. |
-| `--app-arg ARG` | Saved arguments | Repeatable application-argument entries. A supplied list must exactly match the saved argument list; it does not specialize a new shape. Use `--app-arg=--flag` for a token beginning with `-`. |
-| `--verify-application` | Off | Compare eager/compiled application state on replay using the saved numerical policies. Requires a selected application, inferred from the repository or an unambiguous application-only build. |
+| `--application NAME` | Disabled | Retained compatibility spelling; legacy Inductor bundles reject. Cannot combine with `--kernel`, `--source`, `--spec`, `--from-results`, or `--save-jobs`. |
+| `--app-arg ARG` | Disabled | Retained compatibility spelling; native model input data is passed to its native call API. A supplied list must exactly match the saved argument list; it does not specialize a new shape. Use `--app-arg=--flag` for a token beginning with `-`. |
+| `--verify-application` | Off | Verify a native model replay against its CPU reference, checking outputs, gradients, parameters, workspace guards and profiler ownership. |
 
-For applications, `--backend auto` chooses the saved capture transport. The
-accepted replay transports are `local`, `modal`, and SSH targets. Use
-`--backend user@host` directly, or `--backend ssh --host user@host`; a saved
-SSH host remains usable with `--backend auto` or `--backend ssh`.
-Application `--gpu`, `--budget` and `--job-timeout` default to saved values;
-budgets must be 30–1800 seconds and the watchdog must be positive and no larger
-than that budget. Nondefault `-n` or `--reps` is rejected with explicit application
-selection. Model arguments are saved in the bundle. Cache-only replay blocks
-new GPU code generation and rejects missing or changed runtime artifacts.
-Both `--app-arg` and `--verify-application` accept the application inferred
-from a repository path; an explicit `--application NAME` is only needed when
-selection is ambiguous.
+For native models, `--backend auto` reuses the saved transport. Override it with
+`local`, `modal`, `user@host` or `ssh --host HOST`. `--verify-application` checks
+saved CPU references and full native state. Standalone flags `--application` and
+`--app-arg` are retired vendor compatibility spellings and reject. `--reps`,
+`-n`, `--spec`, `--save-jobs`, `--from-results` and `--job-timeout` also do not
+apply to native models; configure steps in `[model]` and use `--budget`.
 
 ### What the native auto-harness verifies
 
@@ -394,18 +398,16 @@ arguments named `n/count/size/len/num/length` receive N; other integers receive
 is one-dimensional, block 256, grid `ceil(N/256)`. This is a convenience for
 simple elementwise kernels, not a valid launch for arbitrary user code.
 
-A checked generated GEMM gets its real half-precision buffers, tile launch and
-shared memory. It uses exact small integers and compares all FP32 output bits
-with ptxas; fused bias/residual inputs are zero in this smoke test. A checked
+A checked generated GEMM gets its exact declared buffers, tile launch and shared memory, using exact small integers in this smoke test. A checked
 rowwise kernel gets zero input and NaN-poisoned output; every result must match
-the analytic constant, remain finite, and also match ptxas bitwise. These smoke
+the analytic constant and remain finite. These smoke
 checks do not replace full nonzero numerical/canary/paired-performance tests.
 
-Standalone `run` compares selected output buffers bit for bit; it does not
-silently apply a floating-point tolerance. A numerical difference, missing
-output, fault or skipped case yields nonzero status. Results are saved in
-`OUTDIR/run.json` and timestamped `OUTDIR/runs/*.json`. Event timing measures
-the specified launch sequence; it is not automatically a complete training step.
+Standalone `run` checks successful OA execution, requested output sizes and any
+specified analytic smoke conditions. It does not launch a vendor reference or
+claim general accuracy from arbitrary input values. Faults, missing outputs and
+skipped cases yield nonzero status. Results are saved in `OUTDIR/run.json` and
+`OUTDIR/runs/*.json`. Timing covers the specified native launch sequence.
 
 ### Describe an actual launch with `--spec`
 
@@ -443,13 +445,13 @@ byte `offset`, or one scalar key: `i32`, `u32`, `f32`, `u64`. Offsets must be
 aligned and inside their buffer. Multiple steps describe a pipeline; `compare`
 defaults to all buffers. Spec-level `reps` overrides the CLI repetition count.
 
-## `cnr`: compile and run
+## `cnr`: compile and run OA artifacts
 
 ```sh
 openassembler cnr examples/vector_add.py --spec examples/run_spec.json --backend modal --out-dir output_cnr
 openassembler cnr examples/vector_add.cu --backend user@host --out-dir output_cnr
 openassembler cnr examples/div_by_const.ptx --verify --dry-run --out-dir output_cnr
-openassembler cnr testcases/test_whole_repo --frontend torch --verify --backend modal
+openassembler cnr examples/native_model --frontend model --verify --backend modal
 ```
 
 `SRC` is required. `cnr` accepts the compilation-option table and the shared
@@ -463,11 +465,11 @@ The complete option spellings are also valid with the command prefix:
 `openassembler cnr --frontend torch`.
 
 `--frontend native` selects static kernel discovery and OpenAssembler compilation;
-`--frontend torch`/`triton`/`inductor` selects the configured application route.
+`--frontend model`/`torch` selects the configured native model route.
 `--backend` selects the transport for either frontend.
 `--build-backend` optionally separates those locations. `--dry-run` plans both
 stages without builds, uploads, output writes or GPU jobs, including for native
-sources. `--verify` also requests application replay verification. Application
+sources. `--verify` also requests native model replay verification. Application
 `cnr` rejects `--spec`, `--save-jobs` and nondefault `-n`/`--reps`. Both native
 and application workflows accept SSH target strings directly. Each stage has
 its own budget; a `cnr` budget is not a combined end-to-end wall-time cap.
@@ -615,7 +617,7 @@ argument-usage error or an unverified compiler-check outcome, and 130 for an
 interrupted command. External research wrappers may propagate their tool's
 exit code. `compile --verify` can produce a `not-verified` result when a
 construct is outside the functional checker; that is not a semantic pass.
-Unsupported native compilation fails unless explicit ptxas fallback is allowed.
+Unsupported native compilation fails; vendor GPU fallback is disabled.
 
 For ambiguous kernels, inspect the manifest and use `--source`/`--kernel`.
 For an incorrect guessed launch, provide `--spec` rather than increasing N at

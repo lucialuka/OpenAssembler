@@ -32,7 +32,7 @@ exact native GEMM dispatch entries: 34 tuned policies and eight reference
 retentions. Unknown or stale contracts keep the reference; the five rowwise
 entries have their own independent evidence.
 
-Catalogue reviewed **November 11, 2026**. There are **80 dossiers**: **39 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
+Catalogue reviewed **November 12, 2026**. There are **82 dossiers**: **41 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
 
 ## 1. Validated and implemented
 
@@ -40,6 +40,8 @@ These are available in the current code under their stated contracts. Explicit t
 
 | Feature / idea | What is established or limited |
 |---|---|
+| [Exact runtime indexing and F2I source collection](ideas/runtime-integer-indexing.md) | Repairs a real large-grid conversion-source hazard with permanent A100 regression and binary continuity evidence. |
+| [Native Python model graphs and launch plans](ideas/native-model-bridge.md) | CPU capture and symbolic backward lower supported graphs to OA-only artifacts and guarded MSE/SGD execution; precision and shape contracts remain explicit. |
 | [Recovered arithmetic instruction sequences and rounding policy](ideas/arithmetic-instruction-selection.md) | The standard backend imports retained CUDA 12.8 arithmetic fragments and generates its own words. |
 | [Constant integer division and remainder lowering](ideas/constant-division.md) | The implemented 32-bit lowering removes a reciprocal-based path from direct PTX division/remainder sites. |
 | [Cooperative population LayerNorm](ideas/cooperative-layernorm.md) | Shifted warp-per-row population LayerNorm has measured exact CTA geometry; affine parameters, saved statistics and backward remain outside the production operator. |

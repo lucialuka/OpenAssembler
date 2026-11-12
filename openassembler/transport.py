@@ -55,6 +55,8 @@ def runtime_files(*, native: bool = False) -> dict[str, bytes]:
     root = Path(__file__).resolve().parent.parent
     paths = list((root / 'openassembler').rglob('*.py'))
     if native:
+        paths += list((root / 'openassembler/kernels').glob('*.json'))
+        paths += list((root / 'openassembler/backend').glob('*.json'))
         paths += list((root / 'specs/sm_80').rglob('*.json'))
         paths += list((root / 'tools').glob('*.py'))
         paths += [root / 'corpus/sm_80/pairs.jsonl', root / 'corpus/sm_80/machine_model.json',

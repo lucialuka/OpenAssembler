@@ -4,6 +4,15 @@ This short entry point preserves paths used by compiler diagnostics and older
 links. The canonical feature contracts and reproduction commands are in the
 linked dossiers; complete flag syntax is in [COMMANDS.md](COMMANDS.md).
 
+## Native Python model graphs
+
+The [native model bridge](research/ideas/native-model-bridge.md) adds CPU graph
+capture, symbolic backward and OA-only launch plans for supported exact-shape
+models. `[model]` selects it automatically, or use `--frontend model`/`torch`.
+The former Inductor/Triton application route is disabled. Its retained dossiers
+below document historical measurements and infrastructure, not current GPU
+backend selection. CUDA C/C++ continues to use nvcc only as a PTX frontend.
+
 ## Python
 
 Read [Typed Python kernel frontend](research/ideas/python-kernel-frontend.md)
@@ -18,29 +27,27 @@ CUDA and emits PTX; OpenAssembler's supported native backend handles that PTX.
 ## PTX
 
 Read [Native PTX input](research/ideas/ptx-native-frontend.md). Unsupported forms
-fail or use only an explicitly requested, labeled fallback.
+fail; the production CLI does not permit vendor GPU fallback.
 
 ## Repository builds
 
 Start with [the repository workflow guide](REPOSITORY_WORKFLOW.md) for the shared
 `compile REPO`, `run REPO`, `cnr REPO` interface and local/SSH/Modal setup.
 
-Repository builds are native-first. `auto` and `native` statically discover
-supported PTX, CUDA/C++ and Python `@kernel` sources even when the repository
-also contains an `openassembler.toml`. Host code, build systems, imports and
-launch logic are recorded as context and skipped from GPU compilation. Select
-the configured application capture explicitly with `--frontend torch`,
-`--frontend triton`, or `--frontend inductor`.
+Repository builds select `[model]` automatically for a configured CPU Python
+factory; `--frontend native` requests static PTX, CUDA/C++ and typed `@kernel`
+discovery. Host code and build systems remain context and are not rewritten into
+launch stubs. Triton/Inductor compilation is disabled.
 
 [Discovery, manifests and publication](research/ideas/repository-builds.md)
 explains what directory compilation finds, output ownership and limits.
 
 ## PyTorch training applications
 
-[Application capture and saved replay](research/ideas/pytorch-application-capture.md)
-explains configuration, supported runtime, captured shapes and Inductor/Triton
-ownership. [Whole-transformer evaluation](research/ideas/whole-transformer-evaluation.md)
-contains the experimental contract and original failures.
+[Native Python model capture and replay](research/ideas/native-model-bridge.md)
+describes the supported FX nodes, autodiff, numerical modes and OA artifact
+ownership. The following whole-transformer and BF16 dossiers describe historical
+Inductor comparisons, not the current execution backend.
 
 ## Cooperative FP32 row reductions
 
@@ -61,7 +68,7 @@ not arbitrary matrix products discovered inside a PyTorch application graph.
 
 ## What --verify proves
 
-Native emulation, probe verification, hardware bitwise smoke and application
+Native emulation, probe verification, standalone execution smoke and native model
 state verification have different scopes. See [Native PTX verification](research/ideas/ptx-native-frontend.md),
 [GPU launches and comparisons](research/ideas/gpu-execution-and-launch-specs.md),
 [state diagnostics](research/ideas/state-verification-diagnostics.md), and

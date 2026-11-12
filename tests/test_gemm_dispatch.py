@@ -6,6 +6,7 @@ import hashlib
 import json
 
 import pytest
+from tests.native_fixture import save_native_manifest
 
 from openassembler import gemm_dispatch as dispatch
 from openassembler.kernels.gemm import GemmPlan, generate
@@ -202,13 +203,13 @@ def test_runner_preserves_tile64_contract_and_launch_from_manifest(tmp_path):
     contract = {**dispatch.contract_key(plan), **asdict(plan), "schema": 1,
                 "launch": plan.launch, "input_layout": "A[M,K] and B[N,K], contiguous in K; C=A@B.T",
                 "output_dtype": "f32", "accumulation": "f32"}
-    project.save_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
+    save_native_manifest(tmp_path, tmp_path, "sm_80", "opt", [{
         "source": str(source), "cubin": "ours.cubin", "reference": "ref.cubin",
         "kernels": [{"name": "gemm", "params": [["u64", x] for x in ("A", "B", "C")],
                      "compiled_by": "openassembler", "gemm": contract}],
     }])
     run_plan, _ = build_plan(RunOptions(out_dir=tmp_path, n=1, reps=0))
-    assert len(run_plan.jobs) == 2
+    assert len(run_plan.jobs) == 1
     assert all(job["steps"][0][2:5] == ((1, 2, 1), (128, 1, 1), 32768)
                for job in run_plan.jobs)
 

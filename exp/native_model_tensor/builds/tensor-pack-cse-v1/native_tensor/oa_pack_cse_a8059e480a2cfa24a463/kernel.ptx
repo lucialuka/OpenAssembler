@@ -1,0 +1,42 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.visible .entry oa_pack_cse_a8059e480a2cfa24a463(.param .u64 input,.param .u64 output) {
+.reg .b32 %r<40>; .reg .b64 %d<8>; .reg .f32 %f<4>; .reg .pred %p<4>;
+ld.param.u64 %d0,[input]; ld.param.u64 %d1,[output];
+mov.u32 %r0,%tid.x; mov.u32 %r1,%ctaid.x; mov.u32 %r2,%ctaid.y;
+mad.lo.u32 %r3,%r1,128,%r0;
+setp.ge.u32 %p0,%r3,128; @%p0 bra done;
+mul.lo.u32 %r4,%r3,2;
+add.u32 %r5,%r4,0;
+mad.lo.u32 %r6,%r2,256,%r5;
+mul.wide.u32 %d2,%r6,4; add.u64 %d3,%d0,%d2;
+ld.global.b32 %r7,[%d3];
+shr.u32 %r8,%r7,16; and.b32 %r8,%r8,32768;
+and.b32 %r9,%r7,2147483647;
+shr.u32 %r10,%r9,13; and.b32 %r10,%r10,1;
+add.u32 %r11,%r9,3355447295; add.u32 %r11,%r11,%r10; shr.u32 %r11,%r11,13;
+mov.b32 %f0,%r9; add.rn.f32 %f1,%f0,0f3f000000; mov.b32 %r12,%f1;
+sub.u32 %r12,%r12,1056964608;
+setp.lt.u32 %p1,%r9,947912704; selp.u32 %r13,%r12,%r11,%p1;
+setp.ge.u32 %p1,%r9,1199566848; selp.u32 %r13,31744,%r13,%p1;
+setp.gt.u32 %p1,%r9,2139095040; selp.u32 %r13,32256,%r13,%p1;
+or.b32 %r20,%r13,%r8;
+ld.global.b32 %r7,[%d3+4];
+shr.u32 %r8,%r7,16; and.b32 %r8,%r8,32768;
+and.b32 %r9,%r7,2147483647;
+shr.u32 %r10,%r9,13; and.b32 %r10,%r10,1;
+add.u32 %r11,%r9,3355447295; add.u32 %r11,%r11,%r10; shr.u32 %r11,%r11,13;
+mov.b32 %f0,%r9; add.rn.f32 %f1,%f0,0f3f000000; mov.b32 %r12,%f1;
+sub.u32 %r12,%r12,1056964608;
+setp.lt.u32 %p1,%r9,947912704; selp.u32 %r13,%r12,%r11,%p1;
+setp.ge.u32 %p1,%r9,1199566848; selp.u32 %r13,31744,%r13,%p1;
+setp.gt.u32 %p1,%r9,2139095040; selp.u32 %r13,32256,%r13,%p1;
+or.b32 %r21,%r13,%r8;
+shl.b32 %r21,%r21,16; or.b32 %r22,%r20,%r21;
+mad.lo.u32 %r23,%r2,128,%r3;
+mul.wide.u32 %d4,%r23,4; add.u64 %d5,%d1,%d4;
+st.global.b32 [%d5],%r22;
+done:
+ret;
+}
