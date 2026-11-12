@@ -36,11 +36,18 @@ The tables and application architecture below describe the November 11 snapshot
 and historical Inductor experiments. Current native model behavior is documented
 in the linked dossier; those historical gains are not reassigned to OA codegen.
 
+The [independent review response](../exp/review_response/RESULTS.md) adds
+validated optional CUDA graph training replay, exact-order coalesced MSE for five
+measured element counts, optional binary-only model builds, and activity-based
+profiler ownership. Replay improves resident-input host steps versus ordinary OA
+dispatch; serial loss and native GEMM remain distinct bottlenecks. These changes
+do not reassign the review's eager/Inductor or ptxas/cuBLAS comparisons to OA.
+
 ## Headline validation
 
 | Area | Latest completed evidence | Interpretation |
 |---|---|---|
-| Repository regression | November 12 full suite: 926 passed, two optional Torch modules skipped; separate Torch-enabled CPU graph/numerics cohort: 49 passed | Separate interpreter scopes; later targeted storage-planner checks are also retained under the native model experiment |
+| Repository regression | November 12 review-response full suite: 948 passed, two optional Torch modules skipped; separate Torch-enabled graph/numerics and import cohort: 94 passed | Separate interpreter scopes; new replay/loss/audit evidence is retained under exp/review_response |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
 | Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay; a 58-shape 1/2/4/8-warp A100 sweep and separate seven-case heldout recheck promote five exact rowwise policies | Explicit FP32 operators; selected CTA geometry improves five heldout OpenAssembler cases by at least 3% in all rounds; same-source ptxas remains faster on main shapes |
 | Native direct-pointer GEMM | Historical 486 full method/input checks across three runs; six MLP products improve about 1.03–1.12×; current exact selections are audited in the November 11 replay | Direct pointers are selected for measured contracts or explicitly requested; unknown contracts keep legacy pointers. Historical tall regressions remain valid for those tested plans |

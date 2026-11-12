@@ -45,6 +45,16 @@ def test_bundle_validates_real_oa_text_without_diagnostics(compiled_bundle,tmp_p
 
 
 @pytest.mark.oracle
+def test_omitting_optional_listings_preserves_native_cubin_bytes(compiled_bundle,tmp_path):
+    build_bundle(plan(), {}, tmp_path, sass_listings=False)
+    _, ledger, raw = validate_bundle(tmp_path)
+    _, original, before = validate_bundle(compiled_bundle)
+    assert raw == before
+    assert ledger['kernels'] == original['kernels']
+    assert not list(tmp_path.rglob('*.sass'))
+
+
+@pytest.mark.oracle
 @pytest.mark.parametrize("mutation",["plan","binary","reference","owner","text","extra","launch"])
 def test_rejects_tampered_or_non_native_artifacts(compiled_bundle,tmp_path,mutation):
     shutil.copytree(compiled_bundle,tmp_path,dirs_exist_ok=True)
@@ -196,9 +206,10 @@ def test_profiler_audit_requires_exact_names_and_counts():
     from openassembler.modelfront.runtime import audit_profiler_events
     event=lambda name:SimpleNamespace(name=name,device_type="DeviceType.CUDA")
     ledger=[{"entry":"oa_model_a"},{"entry":"oa_model_a"},{"entry":"oa_pack_b"}]
-    events=[event("oa_model_a"),event("oa_model_a"),event("oa_pack_b"),event("Memcpy HtoD")]
+    events=[event("oa_model_a"),event("oa_model_a"),event("oa_pack_b")]
     assert audit_profiler_events(events,ledger)["observed_compute_launches"]==3
-    for bad in [[],events[:-2],events+[event("vendor_gemm")]]:
+    for bad in [[],events[:-2],events+[event("vendor_gemm")],events+[event("unexpected_memcpy_compute")],
+                events+[event("unexpected_memset_compute")],events+[event("Memcpy HtoD")]]:
         with pytest.raises(ValueError,match="audit failed"):audit_profiler_events(bad,ledger)
 
 

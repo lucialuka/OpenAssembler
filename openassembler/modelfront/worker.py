@@ -100,13 +100,24 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
             from openassembler.modelfront.graph import extract_weights
             numeric_reference = CPUReference(plan, extract_weights(reference, plan))
     runtime = Runtime.load(output)
-    checks, times, launches, guards, audits = [], [], [], [], []
+    from .profiling import audit_profile
+    checks, times, launches, guards, audits, device_times = [], [], [], [], [], []
+    replay = None
+    stable_inputs, stable_target = None, None
+    replay_prepare_ms = 0.0
     try:
         for iteration in range(config['steps']):
             if iteration and verify:
                 runtime.poison_workspace()
             cpu = [x.requires_grad_(config['mode'] == 'training' and verify) for x in _examples(config, iteration)]
             tensors = {spec['name']: value.to('cuda') for spec, value in zip(plan['inputs'], cpu)}
+            if config.get('execution', 'direct') == 'cuda_graph':
+                if stable_inputs is None:
+                    stable_inputs = tensors
+                else:
+                    for name, value in tensors.items():
+                        stable_inputs[name].copy_(value)
+                tensors = stable_inputs
             if reference is not None:
                 reference.zero_grad(set_to_none=True)
                 if numeric_reference is not None:
@@ -124,18 +135,36 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
                 target = torch.randn(shape, generator=torch.Generator().manual_seed(
                     config['seed'] + 997 + iteration), dtype=torch.float32) * 0.25
                 gpu_target = target.to('cuda')
+                if config.get('execution', 'direct') == 'cuda_graph':
+                    if stable_target is None:
+                        stable_target = gpu_target
+                        from .replay import TrainingReplay
+                        before = time.perf_counter()
+                        replay = TrainingReplay(plan, runtime.weights, output, tensors, stable_target,
+                                                learning_rate=config['learning_rate'])
+                        runtime.close()
+                        runtime = replay.runtime
+                        replay_prepare_ms = (time.perf_counter()-before)*1000
+                    else:
+                        stable_target.copy_(gpu_target)
+                    gpu_target = stable_target
                 torch.cuda.synchronize()
                 start = time.perf_counter()
+                gpu_start, gpu_end = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+                gpu_start.record()
                 if verify and iteration == config['steps'] - 1:
-                    from openassembler.modelfront.runtime import audit_profiler_events
                     with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
                                                            torch.profiler.ProfilerActivity.CUDA]) as profile:
-                        result = runtime.train_step(tensors, gpu_target, config['learning_rate'])
+                        result = replay.run() if replay else runtime.train_step(tensors, gpu_target, config['learning_rate'])
+                        gpu_end.record()
                         torch.cuda.synchronize()
-                    audits.append(audit_profiler_events(profile.events(), runtime.launch_ledger))
+                    audits.append(audit_profile(profile, replay.launch_ledger if replay else runtime.launch_ledger))
                 else:
-                    result = runtime.train_step(tensors, gpu_target, config['learning_rate'])
+                    result = replay.run() if replay else runtime.train_step(tensors, gpu_target, config['learning_rate'])
+                    gpu_end.record()
                     torch.cuda.synchronize()
+                gpu_end.synchronize()
+                device_times.append(gpu_start.elapsed_time(gpu_end))
                 times.append((time.perf_counter() - start) * 1000)
                 if reference is not None:
                     if numeric_reference is not None:
@@ -181,12 +210,11 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
                 torch.cuda.synchronize()
                 start = time.perf_counter()
                 if verify and iteration == config['steps'] - 1:
-                    from openassembler.modelfront.runtime import audit_profiler_events
                     with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
                                                            torch.profiler.ProfilerActivity.CUDA]) as profile:
                         outputs = runtime.forward(tensors)
                         torch.cuda.synchronize()
-                    audits.append(audit_profiler_events(profile.events(), runtime.launch_ledger))
+                    audits.append(audit_profile(profile, runtime.launch_ledger))
                 else:
                     outputs = runtime.forward(tensors)
                     torch.cuda.synchronize()
@@ -204,6 +232,9 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
         return {'schema': 1, 'backend': 'openassembler', 'mode': config['mode'],
                 'passed': all(c['passed'] for c in checks), 'verified': verify,
                 'checks': checks, 'iterations': config['steps'], 'host_step_ms': times,
+                'execution': config.get('execution', 'direct'), 'replay_prepare_ms': replay_prepare_ms,
+                'cuda_stream_elapsed_ms': device_times,
+                'profiled_iterations': [config['steps']-1] if verify else [],
                 'timing_scope': 'resident input native model dispatch, synchronization included; last verified iteration profiled; no performance comparator',
                 'device': {'name': device.name, 'cc': f'{device.major}.{device.minor}'},
                 'launch_count': len(ledger), 'launch_ledger': ledger,
@@ -211,7 +242,10 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
                 'profiler_native_audits': audits,
                 'gpu_codegen_during_replay': 0, 'vendor_compute_launches': 0}
     finally:
-        runtime.close()
+        if replay:
+            replay.close()
+        else:
+            runtime.close()
 
 
 def process(request: dict) -> dict:
@@ -226,14 +260,23 @@ def process(request: dict) -> dict:
                 unpack(blob, source)
                 from openassembler.modelfront.graph import capture_model, extract_weights
                 from openassembler.modelfront.runtime import build_bundle
+                started = time.perf_counter()
                 model = _model(source, config)
+                factory_ms = (time.perf_counter()-started)*1000
                 examples = _examples(config)
+                started = time.perf_counter()
                 with _cpu_capture():
                     plan = capture_model(model, examples, math_mode=config['math'])
+                capture_ms = (time.perf_counter()-started)*1000
                 from .optimization import optimize_plan
+                started = time.perf_counter()
                 plan = optimize_plan(plan, storage_views=config.get('storage_views', True),
                                      reuse_storage=config.get('reuse_storage', False))
-                build_bundle(plan, extract_weights(model, plan), output)
+                planning_ms = (time.perf_counter()-started)*1000
+                started = time.perf_counter()
+                build_bundle(plan, extract_weights(model, plan), output,
+                             sass_listings=config.get('sass_listings', True))
+                bundle_ms = (time.perf_counter()-started)*1000
                 (output / 'model-source.zip').write_bytes(blob)
                 (output / 'model.json').write_text(json.dumps({'schema': 1, 'backend': 'openassembler',
                     'config': config, 'source_root': request.get('source_root'),
@@ -251,6 +294,9 @@ def process(request: dict) -> dict:
                 report = _run(output, config, True, source) if request.get('verify') else {
                     'passed': True, 'verified': False, 'backend': 'openassembler',
                     'native_kernels': len(plan['steps']), 'source_native_files': len(native)}
+                report['compile_stage_ms'] = {'cpu_factory': factory_ms, 'cpu_capture_autodiff': capture_ms,
+                    'storage_planning': planning_ms, 'native_bundle_and_weights': bundle_ms}
+                report['compile_stage_scope'] = 'worker-local non-overlapping phases; excludes transport, independent repository source builds and validation'
                 (output / 'model-build-report.json').write_text(json.dumps(report, indent=2, allow_nan=False))
                 files = {p.relative_to(output).as_posix(): p.read_bytes() for p in output.rglob('*')
                          if p.is_file() and p.name != 'writer.lock'}

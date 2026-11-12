@@ -229,7 +229,12 @@ def emit_kernel(op, inputs, output, attrs=None):
                 lines += ["ld.global.f32 %f1,[%d2]; mul.rn.f32 %f0,%f0,%f1;"]
         store("%r2")
     lines += ["done:", "ret;", "}"]
-    return KernelSpec(name, op, shapes, out, attrs, grid, threads, "\n".join(lines)+"\n")
+    kernel = KernelSpec(name, op, shapes, out, attrs, grid, threads, "\n".join(lines)+"\n")
+    if op == 'mse':
+        from .kernels_loss import ORDERED_MSE_ELEMENTS, ordered_mse
+        if math.prod(shapes[0]) in ORDERED_MSE_ELEMENTS:
+            return ordered_mse(kernel)
+    return kernel
 
 
 def tensor_specs(plan):
@@ -326,7 +331,7 @@ def prepare(plan):
     return specs, steps, kernels
 
 
-def build_bundle(plan, weights=None, output_dir=None, *, opt_level="opt"):
+def build_bundle(plan, weights=None, output_dir=None, *, opt_level="opt", sass_listings=True):
     """Compile all graph kernels with OA; ptxas is only the donor/reference tool.
 
     Accept ``build_bundle(plan, directory)`` or the frontend's three-argument
@@ -343,7 +348,10 @@ def build_bundle(plan, weights=None, output_dir=None, *, opt_level="opt"):
     source = root / "sources" / "native.ptx"
     source.parent.mkdir(parents=True, exist_ok=True)
     source.write_text(".version 8.7\n.target sm_80\n.address_size 64\n" + "\n".join(kernels[name].ptx for name in sorted(kernels)))
-    result = build.compile_paths(source, root / "native", build.Options(arch="sm_80", opt_level=opt_level, fallback=None))
+    if type(sass_listings) is not bool:
+        raise ValueError('sass_listings must be a boolean')
+    result = build.compile_paths(source, root / "native", build.Options(
+        arch="sm_80", opt_level=opt_level, fallback=None, no_sass=not sass_listings))
     if result.rc:
         raise RuntimeError("OA native model kernel compilation failed; no fallback is allowed")
     manifest = json.loads((root / "native" / "manifest.json").read_text())
@@ -376,7 +384,7 @@ def build_bundle(plan, weights=None, output_dir=None, *, opt_level="opt"):
     recipes = tensor_recipes(plan,specs)
     if recipes:
         from .kernels_tensor import build_tensor_kernels
-        ledger["tensor_kernels"] = build_tensor_kernels(root,recipes.values())
+        ledger["tensor_kernels"] = build_tensor_kernels(root,recipes.values(),sass_listings=sass_listings)
         ledger["tensor_recipes"] = {name:recipe_record(recipe) for name,recipe in recipes.items()}
         ledger["numerical_contract"] = "FP16 RNE operands and FP32 tensor accumulation/output; straight-through cast derivative; other arithmetic FP32"
     (root / "plan.json").write_bytes(canonical(plan))

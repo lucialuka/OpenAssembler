@@ -177,20 +177,22 @@ def test_record_reuse_verifies_source_and_binary_artifacts_before_selecting(tmp_
         gemm_tune.tune_or_load(plan, backend=None, record=str(record))
 
 
-def test_gemm_tuner_imports_without_touching_torch_or_modal(monkeypatch):
-    original_import = builtins.__import__
-
-    def guarded_import(name, *args, **kwargs):
-        if name == "torch" or name.startswith("torch."):
-            raise AssertionError("normal tuner import must not touch Torch")
-        if name == "modal" or name.startswith("modal."):
-            raise AssertionError("normal tuner import must not touch Modal")
-        return original_import(name, *args, **kwargs)
-
-    monkeypatch.setattr(builtins, "__import__", guarded_import)
-    importlib.reload(gemm_tune)
-    assert "torch" not in sys.modules
-    assert "modal" not in sys.modules
+def test_gemm_tuner_imports_without_touching_torch_or_modal():
+    import subprocess
+    # Collection may already have imported optional Torch graph tests. Guard
+    # imports in a fresh interpreter without mutating the test process's cache.
+    code = """
+import builtins, sys
+original = builtins.__import__
+def guarded(name, *args, **kwargs):
+    if name.split('.')[0] in ('torch', 'modal'):
+        raise AssertionError('normal tuner import touched an optional runtime')
+    return original(name, *args, **kwargs)
+builtins.__import__ = guarded
+import openassembler.gemm_tune
+assert 'torch' not in sys.modules and 'modal' not in sys.modules
+"""
+    subprocess.run([sys.executable, '-c', code], check=True, capture_output=True, text=True)
 
 
 def test_local_tuning_is_explicit_and_does_not_silently_fallback(monkeypatch):

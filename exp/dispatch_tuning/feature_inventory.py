@@ -23,6 +23,15 @@ def rule(kind, code, contract, dispatch, knobs, action):
 
 
 RULES = {
+    "runtime-integer-indexing": rule("mandatory-correctness", "openassembler/backend/compile.py exp/native_indexing/cases.cu",
+        "Runtime signed/unsigned integer quotient/remainder and F2I source collection on SM80; exact output and address semantics.",
+        "F2I asynchronous source reads receive the existing read-scoreboard protection at every optimization level.", [],
+        "Retain permanent A100 reproducers and encoded-stream continuity; never remove a proven source-WAR edge to improve timing."),
+    "native-model-bridge": rule("graph-and-state-contract", "openassembler/modelfront/graph.py openassembler/modelfront/optimization.py openassembler/modelfront/kernels.py openassembler/modelfront/runtime.py openassembler/modelfront/replay.py openassembler/modelfront/profiling.py openassembler/modelfront/kernels_loss.py openassembler/native_ownership.py",
+        "Exact-shape finite FP32 CPU factories, supported FX graph and first derivatives; optional declared FP16 RNE product contract; MSE/plain SGD.",
+        "Explicit [model] or model/torch alias lowers to OA-owned cubins, fixed launch plans, guarded storage views and optional liveness slots on A100.",
+        ["complete graph boundaries", "resident dispatch versus graph replay", "packing", "layout", "live allocations", "launch count"],
+        "Measure complete forward/loss/backward/update with full-state and independent profiler ownership gates; no Inductor/Triton or vendor fallback."),
     "arithmetic-instruction-selection": rule("instruction-semantics", "openassembler/backend/fragments.py openassembler/backend/ra.py",
         "Exact PTX opcode/modifiers, operand types/forms and supported SM80 encodings; independent of tensor M/N/K.",
         "Legal instruction fragments are selected from the actual PTX operation, not a shape lookup.",
@@ -231,7 +240,7 @@ def inventory(root: Path = ROOT) -> dict:
                         **RULES[idea["id"]], "code_sha256": checked,
                         "retained_references": sorted(set(local_links)),
                         "catalogue_summary": idea["summary"]})
-    return {"schema": 1, "audit_date": "2026-11-11", "scope": "all implemented research catalogue entries at generation",
+    return {"schema": 1, "audit_date": "2026-11-12", "scope": "all implemented research catalogue entries at generation",
             "implemented_count": len(records),
             "principle": "Specialize measured performance choices by complete workload contract; keep semantic legality, dependencies and validation unconditional.",
             "not_an_all_shapes_performance_proof": True,

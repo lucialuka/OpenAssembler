@@ -1,0 +1,46 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___ test_every_implemented_catalogue_feature_has_an_explicit_contract_audit ____
+
+    def test_every_implemented_catalogue_feature_has_an_explicit_contract_audit():
+>       result = inventory()
+                 ^^^^^^^^^^^
+
+exp/dispatch_tuning/test_feature_inventory.py:9: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/Users/lucasfang/Desktop/OpenAssembler')
+
+    def inventory(root: Path = ROOT) -> dict:
+        catalogue = json.loads((root / "docs/research/catalogue.json").read_text())
+        implemented = [idea for idea in catalogue["ideas"] if idea["status"] == "implemented"]
+        ids = {idea["id"] for idea in implemented}
+        if ids != set(RULES):
+>           raise ValueError(f"audit rules need review: missing={sorted(ids-set(RULES))}; stale={sorted(set(RULES)-ids)}")
+E           ValueError: audit rules need review: missing=['native-model-bridge', 'runtime-integer-indexing']; stale=[]
+
+exp/dispatch_tuning/feature_inventory.py:215: ValueError
+_ test_correctness_and_numeric_semantics_are_not_optional_shape_performance_rules _
+
+    def test_correctness_and_numeric_semantics_are_not_optional_shape_performance_rules():
+>       rows = {row["id"]: row for row in inventory()["features"]}
+                                          ^^^^^^^^^^^
+
+exp/dispatch_tuning/test_feature_inventory.py:23: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/Users/lucasfang/Desktop/OpenAssembler')
+
+    def inventory(root: Path = ROOT) -> dict:
+        catalogue = json.loads((root / "docs/research/catalogue.json").read_text())
+        implemented = [idea for idea in catalogue["ideas"] if idea["status"] == "implemented"]
+        ids = {idea["id"] for idea in implemented}
+        if ids != set(RULES):
+>           raise ValueError(f"audit rules need review: missing={sorted(ids-set(RULES))}; stale={sorted(set(RULES)-ids)}")
+E           ValueError: audit rules need review: missing=['native-model-bridge', 'runtime-integer-indexing']; stale=[]
+
+exp/dispatch_tuning/feature_inventory.py:215: ValueError
+=========================== short test summary info ============================
+FAILED exp/dispatch_tuning/test_feature_inventory.py::test_every_implemented_catalogue_feature_has_an_explicit_contract_audit
+FAILED exp/dispatch_tuning/test_feature_inventory.py::test_correctness_and_numeric_semantics_are_not_optional_shape_performance_rules
+2 failed in 0.02s

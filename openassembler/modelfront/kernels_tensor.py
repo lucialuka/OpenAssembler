@@ -164,7 +164,7 @@ done: ret;
     return TensorRecipe(name, op, signature, workspaces, stages)
 
 
-def build_tensor_kernels(root, recipes):
+def build_tensor_kernels(root, recipes, *, sass_listings=True):
     """Build only OA native text and return per-entry module ownership records."""
     from openassembler import oracle
     from openassembler.backend.tensor import TensorConfig
@@ -192,8 +192,9 @@ def build_tensor_kernels(root, recipes):
             code, labels, words, exits, registers = native_generate(kernel, "sm_80", "opt", tensor_config=config)
             binary = splice_text(reference.read_bytes(), stage.name, words, registers, exits, replace_helpers=True)
             path = directory / "native.cubin"; path.write_bytes(binary)
-            sass = disasm(binary)
-            (directory / "native.sass").write_text(sass)
+            if sass_listings:
+                sass = disasm(binary)
+                (directory / "native.sass").write_text(sass)
             sections = {s.name[6:] for s in Elf.parse(binary).sections if s.name.startswith(".text.") and s.data}
             if sections != {stage.name} or text_words(binary, stage.name) != words:
                 raise ValueError("tensor module contains unowned or changed executable text")

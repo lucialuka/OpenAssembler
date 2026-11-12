@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "audit_date": "2026-11-11",
+  "audit_date": "2026-11-12",
   "scope": "all implemented research catalogue entries at generation",
-  "implemented_count": 39,
+  "implemented_count": 41,
   "principle": "Specialize measured performance choices by complete workload contract; keep semantic legality, dependencies and validation unconditional.",
   "not_an_all_shapes_performance_proof": true,
   "pending_nonimplemented_priority": [
@@ -175,7 +175,7 @@
       "code_sha256": {
         "openassembler/container/cubin.py": "4118f7124090e942a535ab7e0cae71cc12bb21deef8e9d83c16e4932be93bfdb",
         "openassembler/container/nvinfo.py": "0e0e4e4a419f095ef96aeea165330809adb9957d0e82e471fced15c171c10210",
-        "openassembler/build.py": "ac01c19d3bc82703b6f6391eb07d0686f9b823026bee9bfe5afa7fcf381ef094"
+        "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639"
       },
       "retained_references": [
         "corpus/sm_80/gpu_a100_40gb_bisect5.json",
@@ -452,7 +452,7 @@
       ],
       "next_action": "Every tuned shape must retain its correct launch. Execution safety and validation stay mandatory regardless of speed.",
       "code_sha256": {
-        "openassembler/runner.py": "5ae69f7cead9323f080378e684a4041963573f5f0843f7161c7264edc40a6e30",
+        "openassembler/runner.py": "ccc7cd8c91bf96ffb93045eaa71de6b2bf87e6bf20ed96289d74391ad54e388b",
         "openassembler/gpu/cuda_driver.py": "55c9726c97c01e14de52ceed9b56685ed5536a67b19e9d00aed3a70deb67aef6",
         "openassembler/gpu/batch.py": "a68f270e9ccbc6268438d7b156f27a7e486a7e191b353eedf14dc9998eac77a4"
       },
@@ -523,7 +523,7 @@
       "next_action": "Create scalar safe/sched/opt/factor search using exact workload/launch specs. A GEMM M/N/K lookup cannot tune arbitrary scalar loops.",
       "code_sha256": {
         "openassembler/backend/unroll.py": "47bc6999b3b6ac41e2e8d0b2176bd33f1dfd5d010b8e4aafb713adcd3d17c453",
-        "openassembler/build.py": "ac01c19d3bc82703b6f6391eb07d0686f9b823026bee9bfe5afa7fcf381ef094"
+        "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639"
       },
       "retained_references": [
         "corpus/sm_80/gpu_a100_40gb_bench_times.json",
@@ -633,6 +633,53 @@
         "exp/whole_stack/runs/native-ops-20261106T110300.124164Z.json"
       ],
       "catalogue_summary": "Tanh-GELU passes a predeclared FP64 tolerance, while the old exact gate failure remains and gains depend on size."
+    },
+    {
+      "id": "native-model-bridge",
+      "title": "Native Python model graphs, autodiff and launch plans",
+      "status": "implemented",
+      "dossier": "docs/research/ideas/native-model-bridge.md",
+      "dossier_sha256": "980bd33a02301ef3358e7b33ff69f127e6ec01b73112e443cd80a7c8d382eb1a",
+      "classification": "graph-and-state-contract",
+      "code_paths": [
+        "openassembler/modelfront/graph.py",
+        "openassembler/modelfront/optimization.py",
+        "openassembler/modelfront/kernels.py",
+        "openassembler/modelfront/runtime.py",
+        "openassembler/modelfront/replay.py",
+        "openassembler/modelfront/profiling.py",
+        "openassembler/modelfront/kernels_loss.py",
+        "openassembler/native_ownership.py"
+      ],
+      "applicability": "Exact-shape finite FP32 CPU factories, supported FX graph and first derivatives; optional declared FP16 RNE product contract; MSE/plain SGD.",
+      "current_selection": "Explicit [model] or model/torch alias lowers to OA-owned cubins, fixed launch plans, guarded storage views and optional liveness slots on A100.",
+      "tuning_axes": [
+        "complete graph boundaries",
+        "resident dispatch versus graph replay",
+        "packing",
+        "layout",
+        "live allocations",
+        "launch count"
+      ],
+      "next_action": "Measure complete forward/loss/backward/update with full-state and independent profiler ownership gates; no Inductor/Triton or vendor fallback.",
+      "code_sha256": {
+        "openassembler/modelfront/graph.py": "8be8c7be85bba04a47db4e5a12b61b737b26a1572433d5385360a6cd142b1a67",
+        "openassembler/modelfront/optimization.py": "2d82fa8788c92470a96e6182a6621c7cf859e0d16f30024628cb7631088e9b8e",
+        "openassembler/modelfront/kernels.py": "04cd087abddf5629e3915e1f17135d668698754acb1743c13821c319c68c90c1",
+        "openassembler/modelfront/runtime.py": "7dd16c676f8325c3b17c0f47b01521eadba6b945cfc912d96890da807bfb5eeb",
+        "openassembler/modelfront/replay.py": "e66716b259099306063b231f45210b0fd56f4d769ec801e8e3876ce048101cf6",
+        "openassembler/modelfront/profiling.py": "59731e47fcd627129c3edae8325e1c2901ddc533c4620fcdb27953ed1c57ab5a",
+        "openassembler/modelfront/kernels_loss.py": "f27d81b71dbdb9221d71cd41c1e2cdcf16992df5aa4da23426cbd3cd824e2c1b",
+        "openassembler/native_ownership.py": "b3b30a5e55e498e1ee256b426b49c0e9803e03b355b095c464360ec330400b32"
+      },
+      "retained_references": [
+        "docs/research/ideas/runtime-integer-indexing.md",
+        "examples/native_model/openassembler.toml",
+        "exp/native_model_tensor/README.md",
+        "exp/native_models/README.md",
+        "exp/review_response/RESULTS.md"
+      ],
+      "catalogue_summary": "Constrained CPU Python model capture lowers forward, backward, MSE and SGD to OA-owned kernels with guarded local/SSH/Modal artifact replay; no universal performance claim."
     },
     {
       "id": "native-relu",
@@ -864,8 +911,8 @@
       ],
       "next_action": "Native kernel tuning does not automatically affect ordinary PyTorch. Add a controlled native graph hook and first-divergence/full-state gate before application speed claims.",
       "code_sha256": {
-        "openassembler/torchfront/worker.py": "7fb6e79dd3db093304c7fd63461421ee9a52412b795809dc065780c1598388e1",
-        "openassembler/torchfront/frontend.py": "794f39fe795adce209bb7724dc028756f00cd2bd054ce7afb160ae75128f5efe"
+        "openassembler/torchfront/worker.py": "8ff6e6414947cacea0762f207496743f328b19f43ca01bfbdf7d2b2561d958cc",
+        "openassembler/torchfront/frontend.py": "68ee59e30c5c5060cb0e72cbfc931d07c435834ad071e37e14868b61a6e05ac4"
       },
       "retained_references": [
         "docs/COMMANDS.md",
@@ -903,9 +950,9 @@
       ],
       "next_action": "Measure compile/startup separately; host build concurrency does not select the fastest GPU kernel by shape.",
       "code_sha256": {
-        "openassembler/repository.py": "4978ef50eca43fba9a63f9d8d6ad481edfe3cff4b1b90b6e1e9f865f41bcd09f",
+        "openassembler/repository.py": "a7a27da691f222eaa20d71a91a882bd0ec9e4803a71c48b47572846c805850d9",
         "openassembler/project.py": "8bc1ebdda315d92915bc5f4c68a38d61e3c91193568544e7627a5dd689416701",
-        "openassembler/build.py": "ac01c19d3bc82703b6f6391eb07d0686f9b823026bee9bfe5afa7fcf381ef094"
+        "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639"
       },
       "retained_references": [
         "docs/COMMANDS.md",
@@ -922,6 +969,32 @@
         "tests/test_integration.py"
       ],
       "catalogue_summary": "Safe discovery, path mirroring, manifests, locking and publication are implemented and tested."
+    },
+    {
+      "id": "runtime-integer-indexing",
+      "title": "Exact runtime integer indexing and F2I source collection",
+      "status": "implemented",
+      "dossier": "docs/research/ideas/runtime-integer-indexing.md",
+      "dossier_sha256": "f5580f545f6854328db00c3d437aa8a9ddf238f215be34488816dc53dfb04a32",
+      "classification": "mandatory-correctness",
+      "code_paths": [
+        "openassembler/backend/compile.py",
+        "exp/native_indexing/cases.cu"
+      ],
+      "applicability": "Runtime signed/unsigned integer quotient/remainder and F2I source collection on SM80; exact output and address semantics.",
+      "current_selection": "F2I asynchronous source reads receive the existing read-scoreboard protection at every optimization level.",
+      "tuning_axes": [],
+      "next_action": "Retain permanent A100 reproducers and encoded-stream continuity; never remove a proven source-WAR edge to improve timing.",
+      "code_sha256": {
+        "openassembler/backend/compile.py": "e6c32400dad0153344f78baa18d224a711f30bf62f06f7c1c93ca2a42e46dbe9",
+        "exp/native_indexing/cases.cu": "4c3d8a790b74325563f5086a3642c1b2c6f3de15675360aaa4fa89ed1d552a20"
+      },
+      "retained_references": [
+        "exp/native_indexing/README.md",
+        "openassembler/backend/compile.py",
+        "tests/test_runtime_indexing.py"
+      ],
+      "catalogue_summary": "F2I source-register WAR protection repairs the large-grid runtime remainder failure; independent A100 replays and exact binary continuity are retained."
     },
     {
       "id": "sass-emulator-and-tensor-numerics",
@@ -1000,7 +1073,7 @@
       "next_action": "Never disable proven edges by shape or timing. Search schedules only within the legal dependency graph.",
       "code_sha256": {
         "openassembler/backend/ra.py": "401914e05059134e177224378ce86e0d55e94350f92dfde00c72162089e3e4cc",
-        "openassembler/backend/compile.py": "8e5e6d528ba786dba161d84195ebedec50fac0810c22ae26d76b21bb451bc2cb",
+        "openassembler/backend/compile.py": "e6c32400dad0153344f78baa18d224a711f30bf62f06f7c1c93ca2a42e46dbe9",
         "openassembler/backend/sched.py": "5711333491c4a9dc19fb36c94334fb38df3126aadd8d1c3eed41df15e5ca2fd8"
       },
       "retained_references": [
@@ -1072,8 +1145,8 @@
       "next_action": "Tune legal whole kernels under a launch/workload key. Never use universal S1 or global drain shortening from shape alone.",
       "code_sha256": {
         "openassembler/backend/sched.py": "5711333491c4a9dc19fb36c94334fb38df3126aadd8d1c3eed41df15e5ca2fd8",
-        "openassembler/backend/compile.py": "8e5e6d528ba786dba161d84195ebedec50fac0810c22ae26d76b21bb451bc2cb",
-        "openassembler/build.py": "ac01c19d3bc82703b6f6391eb07d0686f9b823026bee9bfe5afa7fcf381ef094"
+        "openassembler/backend/compile.py": "e6c32400dad0153344f78baa18d224a711f30bf62f06f7c1c93ca2a42e46dbe9",
+        "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639"
       },
       "retained_references": [
         "docs/evidence/a100-latency/gpu_a100_40gb_latsweep_corrected.json",
@@ -1107,7 +1180,7 @@
       ],
       "next_action": "Completed 42-contract replay installs 34 tuned policies and eight measured baseline retentions; all source/binary evidence retained, no unmeasured-shape extrapolation.",
       "code_sha256": {
-        "openassembler/gemm_dispatch.py": "9f1b59e8c50ce46c8b7c9b410b16d26f2ccd6f99ac420ea1674525a42d916b3a",
+        "openassembler/gemm_dispatch.py": "aca37670abeb40f80af8ec45d8a6ae7579ad08a2edcddff4f95c2a6996a37ae0",
         "openassembler/gemm_tune.py": "fbb5b9c047990e09d8808dadad885c6c219383e6ad0512f35a95222367150f08",
         "openassembler/gemm_tune_modal.py": "f5ae5826ef2f0bceccd997a73b75fb9a31cb24cf7252c8fb27e0d0b2ba761f7a"
       },
@@ -1149,7 +1222,7 @@
       ],
       "next_action": "Extend the measured table only after full-output five-pattern, canary, poisoned-graph, bitwise and held-out gates; preserve failed near-threshold candidates.",
       "code_sha256": {
-        "openassembler/rowwise_dispatch.py": "8986caafc19b886800f5c2dcb8001ce05d1d0a9e34fbbd4609d0c329a27254b9",
+        "openassembler/rowwise_dispatch.py": "f54d2e5068de37e61b7e3fac2f7439a09dc06a2828345497dc15426c51a1bd74",
         "openassembler/rowwise.py": "475b61a9f59e4629586e95ca305ee5798dbbf358f65e8260e31894487c0d2314",
         "openassembler/kernels/reductions.py": "acef807ca573a2805acba477926b6fca5608682a54d40f650666767c28f95852"
       },
@@ -1227,7 +1300,7 @@
       "code_sha256": {
         "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d",
         "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
-        "openassembler/gemm_dispatch.py": "9f1b59e8c50ce46c8b7c9b410b16d26f2ccd6f99ac420ea1674525a42d916b3a"
+        "openassembler/gemm_dispatch.py": "aca37670abeb40f80af8ec45d8a6ae7579ad08a2edcddff4f95c2a6996a37ae0"
       },
       "retained_references": [
         "exp/dispatch_tuning/RESULTS.md",
@@ -1285,7 +1358,7 @@
       "tuning_axes": [],
       "next_action": "Keep all state checks at integration boundaries; never dispatch a faster invalid candidate or change epsilon/tolerance for speed.",
       "code_sha256": {
-        "openassembler/torchfront/worker.py": "7fb6e79dd3db093304c7fd63461421ee9a52412b795809dc065780c1598388e1"
+        "openassembler/torchfront/worker.py": "8ff6e6414947cacea0762f207496743f328b19f43ca01bfbdf7d2b2561d958cc"
       },
       "retained_references": [
         "docs/research/ideas/adam-epsilon-sensitivity.md",

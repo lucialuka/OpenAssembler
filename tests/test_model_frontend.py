@@ -98,6 +98,22 @@ def test_storage_reuse_is_an_explicit_boolean_model_contract(tmp_path, value):
             load_config(root)
 
 
+@pytest.mark.parametrize('settings,valid', [
+    ('mode="training"\nexecution="cuda_graph"\nsass_listings=false\n', True),
+    ('execution="inductor"\n', False), ('execution="cuda_graph"\n', False),
+    ('sass_listings=1\n', False)])
+def test_model_replay_and_listing_policies_are_explicit(tmp_path, settings, valid):
+    root = repository(tmp_path)
+    path = root/'openassembler.toml'
+    path.write_text(path.read_text()+settings)
+    if valid:
+        config = load_config(root)
+        assert config['execution'] == 'cuda_graph' and config['sass_listings'] is False
+    else:
+        with pytest.raises(ModelError):
+            load_config(root)
+
+
 @pytest.mark.parametrize('action', ['compile', 'run'])
 def test_ssh_transports_frozen_recipe_contracts_for_both_actions(tmp_path, monkeypatch, action):
     import io

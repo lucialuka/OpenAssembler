@@ -86,6 +86,7 @@ class CompiledModel(torch.nn.Module):
         self._state_names = tuple(spec["name"] for spec in plan["parameters"])
         self._state_attributes = []
         self._native_runtime = None
+        self._training_replay = None
         self._autograd_runtimes = weakref.WeakSet()
         for index, spec in enumerate(plan["parameters"]):
             name = f"_oa_state_{index}"
@@ -110,6 +111,29 @@ class CompiledModel(torch.nn.Module):
         if self._native_runtime is not None:
             self._native_runtime.close()
             self._native_runtime = None
+        if self._training_replay is not None:
+            self._training_replay.close()
+            self._training_replay = None
+
+    def prepare_native_training(self, inputs, target, *, learning_rate=.01):
+        """Capture one OA MSE/backward/SGD step with fixed external storage.
+
+        Change input/target values in place on the preparation stream, then call
+        the returned object's run(). Learning rate, pointer/layout and parameter
+        bindings are fixed; parameter edits require closing and preparing again.
+        Capture leaves parameter bytes unchanged. Returned step tensors borrow
+        the replay's workspace until the next run.
+        """
+        from .replay import TrainingReplay
+        if self._autograd_runtimes:
+            raise RuntimeError('finish outstanding autograd tapes before preparing native training')
+        inputs = self._persistent_binding(inputs)
+        self.close()
+        replay = TrainingReplay(self.plan, self.native_parameters(), self.build_dir,
+                                inputs, target, learning_rate=learning_rate)
+        replay._owner_ref = weakref.ref(self)
+        self._training_replay = replay
+        return replay
 
     def _persistent_binding(self, inputs):
         """Normalize exact inputs and refresh live state before persistent calls."""
@@ -118,6 +142,8 @@ class CompiledModel(torch.nn.Module):
         if self._autograd_runtimes:
             raise RuntimeError("native inference/training cannot mix with an outstanding autograd tape; "
                                "finish backward or release the autograd outputs first")
+        if self._training_replay is not None and not self._training_replay._closed:
+            raise RuntimeError('close the prepared training replay before ordinary native calls')
         if isinstance(inputs, torch.Tensor):
             inputs = (inputs,)
         if isinstance(inputs, (tuple, list)):
@@ -168,6 +194,8 @@ class CompiledModel(torch.nn.Module):
         return result
 
     def forward(self, *inputs):
+        if self._training_replay is not None and not self._training_replay._closed:
+            raise RuntimeError('close the prepared training replay before conventional autograd')
         if len(inputs) != len(self._input_names):
             raise ModelGraphError(f"native model expects {len(self._input_names)} tensor inputs")
         states = tuple(getattr(self, name) for name in self._state_attributes)
@@ -178,7 +206,7 @@ class CompiledModel(torch.nn.Module):
 
 
 def compile_model(model, example_inputs, output_dir, *, opt_level="opt", math_mode="fp32",
-                  storage_views=True, reuse_storage=False):
+                  storage_views=True, reuse_storage=False, sass_listings=True):
     """Build an exact-shape CPU model and return its native CUDA Module.
 
     CUDA toolkit tools are required for the build. CPU capture never executes
@@ -193,7 +221,7 @@ def compile_model(model, example_inputs, output_dir, *, opt_level="opt", math_mo
     plan = optimize_plan(capture_model(model, example_inputs, math_mode=math_mode),
                          storage_views=storage_views, reuse_storage=reuse_storage)
     weights = extract_weights(model, plan)
-    build_bundle(plan, weights, output_dir, opt_level=opt_level)
+    build_bundle(plan, weights, output_dir, opt_level=opt_level, sass_listings=sass_listings)
     return CompiledModel(plan, weights, output_dir)
 
 

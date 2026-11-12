@@ -72,6 +72,13 @@ def load_config(root: Path) -> dict:
     if type(model.get('reuse_storage', False)) is not bool:
         raise ModelError('model.reuse_storage must be true or false')
     values['reuse_storage'] = model.get('reuse_storage', False)
+    execution = model.get('execution', 'direct')
+    if execution not in ('direct', 'cuda_graph') or (execution == 'cuda_graph' and mode != 'training'):
+        raise ModelError('model.execution must be direct or cuda_graph; cuda_graph requires training mode')
+    values['execution'] = execution
+    if type(model.get('sass_listings', True)) is not bool:
+        raise ModelError('model.sass_listings must be true or false')
+    values['sass_listings'] = model.get('sass_listings', True)
     if type(values['seed']) is not int or type(values['steps']) is not int or not 1 <= values['steps'] <= 1000:
         raise ModelError('model.seed must be an integer and steps must be in [1, 1000]')
     for key in ('learning_rate', 'rtol', 'atol'):

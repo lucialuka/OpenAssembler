@@ -58,6 +58,13 @@ steps = 3
 build_backend = "modal"
 ```
 
+Optional training configuration adds execution = "cuda_graph" for fixed-storage
+OA training replay and sass_listings = false for binary-only output. Input
+values change in place; the graph captures no optimizer update. Replaced or
+externally modified parameters require a new preparation. The defaults retain
+direct dispatch and disassembly listings; see the native model guide for
+measured contracts and preparation/steady-state timing boundaries.
+
 The initial operator set includes linear, residual/elementwise paths, batched
 products, permutations, concatenation, softmax, GELU and affine LayerNorm.
 Training differentiates the captured supported graph and emits OA MSE/backward/SGD

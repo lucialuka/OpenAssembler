@@ -144,16 +144,16 @@ def load_weights(root, plan, torch, *, device="cuda"):
 def audit_profiler_events(events, launch_ledger):
     """Compare independently observed compute events with actual launch entries.
 
-    CUDA memcpy/memset activities are storage infrastructure. Unknown compute
-    names fail admission; an empty profiler trace is not accepted as proof.
+    This conservative event-list interface treats every CUDA activity as
+    compute. For traces containing DMA or GPU annotations, use
+    profiling.audit_profile, which classifies activity categories explicitly.
     """
     from collections import Counter
     observed=[]
     for event in events:
         if str(getattr(event,"device_type","")).endswith("CUDA"):
             name=event.name
-            if not any(token in name.lower() for token in ("memcpy","memset")):
-                observed.append(name)
+            observed.append(name)
     expected=Counter(record["entry"] for record in launch_ledger)
     counts=Counter(observed)
     unknown=sorted(set(counts)-set(expected))

@@ -88,6 +88,27 @@ def test_linear_forward_dx_dw_and_bias_gradient():
     assert run(emit_kernel("bias_grad",[spec(m,n)],spec(n)),[gy])==db
 
 
+@pytest.mark.parametrize('size', [112, 136, 513])
+def test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution(size):
+    a = [(i % 19 - 9)*.125 for i in range(size)]
+    b = [(i % 7 - 3)*.0625 for i in range(size)]
+    rounded = lambda value: struct.unpack('<f', struct.pack('<f', value))[0]
+    expected = 0.0
+    for x,y in zip(a,b):
+        delta = rounded(x-y)
+        expected = rounded(expected + rounded(delta*delta))
+    expected = rounded(expected * rounded(1/size))
+    kernel = emit_kernel('mse', [spec(size)]*2, spec())
+    assert kernel.threads == 32
+    assert run(kernel,[a,b]) == [expected]
+
+
+@pytest.mark.parametrize('size', [1, 33, 111, 137, 514, 16385])
+def test_mse_unmeasured_or_rejected_sizes_keep_the_serial_policy(size):
+    kernel = emit_kernel('mse', [spec(size)]*2, spec())
+    assert kernel.threads == 1 and 'shfl' not in kernel.ptx
+
+
 def test_transpose_and_reshape_no_runtime_division():
     values=list(range(15))
     kernel=emit_kernel("transpose2d",[spec(3,5)],spec(5,3))

@@ -164,3 +164,49 @@ general transformer training, distributed execution or production cached serving
 The FP32 baseline matrix kernels prioritize semantic coverage. Performance work
 must retain complete precision-matched region costs, including packing,
 reductions, updates and launch overhead, with independent paired measurements.
+
+## Response to the independent whole-repository review
+
+The [review response and frozen experiments](../../../exp/review_response/RESULTS.md)
+reproduce the reported ownership-audit loophole and distinguish Python dispatch,
+serial loss, matrix code generation and build diagnostics. Candidate experiments
+were frozen under exp/ before production promotion.
+
+Optional CUDA graph training replay preserves the OA kernel sequence and binds
+input/target/parameter storage, learning rate and stream. Capture performs no
+training update. The public Python method is:
+
+    prepared = compiled.prepare_native_training(cuda_inputs, cuda_target, learning_rate=0.01)
+    # Update input/target values in place on the same stream between iterations.
+    step = prepared.run()
+    prepared.close()
+
+Alternatively load an exported native bundle with TrainingReplay.load from
+openassembler.modelfront.replay. Returned result tensors borrow replay storage.
+Pointer/layout changes, parameter replacement or external parameter mutation,
+wrong streams and use after close reject. A configured training repository
+selects this path with execution = "cuda_graph"; direct execution remains the
+default. Both transports use the same implementation.
+
+Two independent A100 campaigns each pass four complete changing-input updates,
+bitwise against ordinary OA dispatch, with exact profiler activity counts.
+Host-step gains are 6.89–8.98× for the small MLP, 11.19–15.66× for attention,
+and 1.18–1.25× for the Tensor Core MLP, before changing loss kernels. These are
+resident-input OA-versus-OA measurements including host submission and
+synchronization; replay preparation is separate.
+
+Ordered MSE now coalesces the squared-product loads across one warp while
+retaining increasing-index FP32 additions. Exact element counts 112, 136, 513,
+16384 and 65539 have repeated bitwise/canary/immutable-input and paired timing
+evidence; other counts keep serial MSE. Measured kernel gains are 1.41–1.76×.
+One-element and 33-element candidates do not pass speed admission and remain
+serial. Optional sass_listings = false omits textual disassembly; paired
+fresh-output builds retain identical native cubin bytes and mandatory ownership
+validation. Listing-enabled builds remain the default.
+
+Profiler audits classify raw Kineto activities by category; names containing
+memcpy or memset receive no compute exemption. The conservative event-list API
+rejects all unaccounted CUDA events. Model reports now retain worker-local
+capture/planning/bundle phases, graph preparation, CUDA stream event intervals,
+profiled iteration indexes and observed per-kernel duration samples. Samples
+from a profiled invocation are not steady-state performance distributions.
