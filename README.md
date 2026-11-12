@@ -2,15 +2,6 @@
 <p align="center"><img src="figs/openassembler_logo.png" width="680" alt="OpenAssembler"></p>
 
 # OpenAssembler
-<p align="center">
- <a href="https://www.star-history.com/lucialuka/openassembler">
-  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank" />
-   <img alt="Star History Rank" src="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank" />
-  </picture>
- </a>
-</p>
 
 **A native NVIDIA SASS/cubin compiler for SM80/A100, built through black-box reverse engineering and validated kernel optimizations.**
 
@@ -22,6 +13,17 @@ OpenAssembler generates native SASS and executable cubins for supported A100/SM8
 [Research catalogue](docs/research/README.md) · [Development setup](docs/DEVELOPMENT.md)
 · [Repository workflow and SSH/Modal setup](docs/REPOSITORY_WORKFLOW.md)
 · [Reverse-engineering results](docs/reverse_eng_results/README.md)
+
+<p align="center">
+ <a href="https://www.star-history.com/lucialuka/openassembler">
+  <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank" />
+   <img alt="Star History Rank" src="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank" />
+  </picture>
+ </a>
+</p>
+
 
 > ⚠️ **IMPORTANT NOTICE**
 > This project is currently under **active heavy development** for kernel optimization and assembly language edge case handling. If you encounter any bugs/compiler inefficiency during deployment, please feel free to open an Issue. Your feedback will help us build a better version!
