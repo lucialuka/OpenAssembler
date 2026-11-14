@@ -24,8 +24,8 @@ OpenAssembler generates native SASS and executable cubins for supported A100/SM8
 </p>
 
 
-> ⚠️ **IMPORTANT NOTICE**
-> This project is currently under **active heavy development** for kernel optimization and assembly language edge case handling. If you encounter any bugs/compiler inefficiency during deployment, please feel free to open an Issue. Your feedback will help us build a better version!
+> **NOTICE**
+> This project is currently under **development** for more kernel optimization and assembly language edge case handling. If you encounter any bugs/compiler inefficiency/your own optimized kernel during deployment/research, please feel free to open an Issue. Your feedback will help us build a better version!
 
 ## Compile a repository
 
