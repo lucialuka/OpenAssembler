@@ -48,10 +48,11 @@ and [rowwise dispatch](../research/ideas/shape-aware-rowwise-dispatch.md).
 
 ## Frontend selection
 
-Repository inspection is static. The native frontend is the default even when
-`openassembler.toml` exists. TorchInductor/Triton capture is selected only with
-`--frontend torch`, `--frontend triton` or `--frontend inductor`. A configured
-application is therefore not silently executed during native compilation.
+Repository inspection is static. A configured `[model]` selects the OA-native
+CPU graph frontend; otherwise automatic selection discovers standalone kernels.
+`--frontend native` forces kernel discovery. `model` and `torch` select native
+model capture; Triton/Inductor GPU frontends and old application replay reject.
+The [repository audit](../CODEBASE_AUDIT.md) records current boundaries.
 
 This boundary matters for reverse engineering: a Triton or Inductor cubin is
 evidence about that frontend/runtime, not evidence that OpenAssembler generated
@@ -59,10 +60,10 @@ the kernel.
 
 ## Fallback policy
 
-Unsupported PTX forms fail with a source-level explanation unless the caller
-explicitly requests `--fallback ptxas`. Fallback kernels are labeled in the
-manifest. A successful ptxas fallback is not counted as an OpenAssembler
-optimization result.
+Unsupported PTX forms fail with a source-level explanation and a build failure
+report. The retired `--fallback ptxas` flag rejects. Ptxas remains an ELF donor
+and explicit research reference; production launches only OA-owned executable
+text. Historical vendor comparisons do not count as OA optimization results.
 
 ## Reference implementation
 

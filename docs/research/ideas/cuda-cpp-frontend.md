@@ -29,8 +29,9 @@ This downstream split is the same as the [native PTX route](ptx-native-frontend.
 Tests cover invocation, include/flag handling, entry selection, diagnostics
 and artifact routing. The supported language surface is bounded downstream:
 nvcc accepting source does not mean the native backend supports every PTX
-operation or device-linking requirement. An explicitly labelled ptxas fallback
-can be requested for unsupported backend operations; it is not an OA speedup.
+operation or device-linking requirement. Unsupported backend operations fail
+with diagnostics. The retired ptxas fallback flag rejects; production executes
+only OA-owned instructions.
 
 On macOS, the Linux toolkit runs through the repository's Colima wrapper.
 Files outside the mounted home tree may be staged, and their includes must

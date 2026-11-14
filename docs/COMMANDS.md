@@ -50,11 +50,11 @@ openassembler run examples/native_model --backend user@a100 --verify-application
 | `openassembler` | Open the interactive command shell. |
 | `openassembler --help` | List the top-level commands. |
 | `openassembler --version` | Print the installed OpenAssembler version. |
-| `openassembler compile SRC` | Compile discovered OA kernels or a configured native Python model graph. |
+| `openassembler [SRC]` / `openassembler compile [SRC]` | Compile discovered OA kernels or a configured native Python model graph. |
 | `openassembler gemm ...` | Generate and compile a checked native A100 FP16/BF16 GEMM. |
 | `openassembler rowwise ...` | Generate and compile cooperative native FP32 softmax or LayerNorm. |
 | `openassembler run [PATH]` | Execute existing kernel cubins or replay a bundled OA-native model. |
-| `openassembler cnr SRC` | Compile, then run the outputs built by this invocation. |
+| `openassembler cnr [SRC]` | Compile, then run the outputs built by this invocation. |
 | `openassembler verify CUBIN PTX --kernel NAME` | Compare a probe-ABI cubin's emulated SASS with the PTX interpreter. |
 | `openassembler corpus` | Build the instruction-probe corpus with NVIDIA's tools. |
 | `openassembler check` | Compile/check the existing probe corpus with an OpenAssembler backend. |
@@ -70,6 +70,29 @@ Every parser level accepts `-h` / `--help`, including
 `openassembler gpu run --help`. `fastmm` requires `build` or `run`; `gpu`
 requires `run`. Flags belong after their command, for example
 `openassembler compile kernel.ptx --verify`, not `openassembler --verify compile ...`.
+
+## `inspect`: static repository coverage
+
+`openassembler inspect [SRC] [--json]` defaults to the current directory and
+never imports user code, compiles, or contacts a GPU. It reports the selected
+frontend, native kernel candidates, other files with skip reasons, and build
+system hints. `--json` emits the complete inventory. Exit 0 means a configured
+model or candidate was found; exit 1 means none was found or inspection failed.
+This is discovery, not proof that every source construct is compilable.
+
+A literal existing source path is also accepted directly:
+`openassembler my_repo --backend modal --verify`. This is exactly `compile
+my_repo` and works in the interactive shell. Explicit command names keep their
+meaning. `compile` and `cnr` without SRC use the current directory; `run` still
+loads saved artifacts.
+
+Failed builds and internal compiler exceptions save `OUT/compile-error.json`
+with platform/version, the error, source coverage, and available kernel failure
+records. Remote native builds additionally save `build-errors.json`. Reports
+are local files: review them and supply a minimal reproducer when filing a bug.
+No issue is submitted automatically. Dry runs remain read-only. Inspection does
+not collect source contents or environment credentials; compiler error text may
+contain source excerpts or paths.
 
 ## Interactive shell
 
@@ -108,7 +131,7 @@ openassembler compile my_kernel_repo/ --out-dir output_repo
 openassembler compile examples/native_model --frontend model --verify --backend modal
 ```
 
-`SRC` is required. A standalone `.ptx` file goes to the native backend; a
+`SRC` defaults to the current directory. A standalone `.ptx` file goes to the native backend; a
 supported Python kernel uses OpenAssembler's typed `@kernel` subset; CUDA
 C/C++ goes through `nvcc --ptx`, then the native backend. Host-only Python/C++
 code is not translated into a GPU program. Directory discovery respects Git's
@@ -161,8 +184,9 @@ tensor kernels use their separate validated tensor policy at every level.
 
 Native models require SM80, a CPU FP32 factory and explicit exact input shapes.
 Model compilation rejects standalone frontend/selection flags, output renaming,
-`--no-sass`, nondefault optimization/trial flags and `--job-timeout`; use `--budget`
-for its stage watchdog. The model configuration controls precision, seed, steps,
+nondefault optimization/trial flags and `--job-timeout`; use `--budget`
+for its stage watchdog. `--no-sass` also applies to models and overrides listing
+emission without changing the cubin. The model configuration controls precision, seed, steps,
 verification tolerances and default transport. See the native model dossier.
 
 Native remote builds ship this compiler/data and publish artifacts locally.
@@ -457,7 +481,7 @@ openassembler cnr examples/div_by_const.ptx --verify --dry-run --out-dir output_
 openassembler cnr examples/native_model --frontend model --verify --backend modal
 ```
 
-`SRC` is required. `cnr` accepts the compilation-option table and the shared
+`SRC` defaults to the current directory. `cnr` accepts the compilation-option table and the shared
 execution-option table. Its `--kernel` restricts compilation; it runs only the
 source/entry pairs successfully built by this invocation, not unrelated stale
 manifest entries. It does **not** expose `run`-only `--source`, `--from-results`,

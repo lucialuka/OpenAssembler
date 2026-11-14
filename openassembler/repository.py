@@ -4,8 +4,8 @@ Repository inspection deliberately stays ahead of execution: it reads source
 text and configuration, discovers native kernel candidates, records build-system
 hints, and never imports or runs user code. An explicit [model] config selects native
 model capture; other repositories use static kernel discovery.
-PyTorch/Triton capture is an explicit frontend choice because it executes a
-bounded workload and specializes only observed shapes.
+Native model capture executes a bounded CPU workload and specializes exact shapes.
+Triton and Inductor GPU compilation are disabled.
 """
 from __future__ import annotations
 
@@ -132,10 +132,10 @@ def native_candidates(path: Path, out_dir: Path | None = None) -> tuple[project.
 def select_frontend(path: Path, out_dir: Path, requested: str = "auto") -> tuple[str, Path | None, RepositoryPlan | None]:
     """Return ``(native|model, model_root, plan)``.
 
-    ``auto`` is intentionally native-first and does not fall through to
-    application capture. This keeps a repository with both host training code
-    and explicit native kernels on the native compiler path. An application
-    capture is selected only by ``--frontend torch|triton|inductor``.
+    ``auto`` selects a configured [model] factory, otherwise static native
+    kernel discovery. ``native`` explicitly selects standalone kernels even
+    in model repositories. ``torch`` is a compatibility alias for ``model``;
+    Triton and Inductor frontends reject.
     """
     requested = (requested or "auto").lower()
     if requested in {'triton', 'inductor'}:

@@ -271,7 +271,7 @@ def tensor_recipes(plan, specs=None):
     specs = specs or tensor_specs(plan)
     recipes = {}
     for step in plan.get("steps", []) + plan.get("backward", {}).get("steps", []):
-        if step["kernel"] in ("linear", "linear_dx", "linear_dw"):
+        if step["kernel"] in ("linear", "linear_dx", "linear_dw", "bmm", "bmm_dx", "bmm_dw"):
             recipe = emit_tensor_recipe(step["kernel"], [specs[x] for x in step["inputs"]],
                                         specs[step["output"]], {"math_mode":mode,"packing":packing})
             recipes[recipe.name] = recipe
@@ -306,7 +306,7 @@ def prepare(plan):
                 available.add(output)
                 continue
             kernel = emit_kernel(step["kernel"], [specs[x] for x in names], specs[output], step.get("attrs"))
-            if recipes and step["kernel"] in ("linear", "linear_dx", "linear_dw"):
+            if recipes and step["kernel"] in ("linear", "linear_dx", "linear_dw", "bmm", "bmm_dx", "bmm_dw"):
                 from .kernels_tensor import emit_tensor_recipe
                 recipe = emit_tensor_recipe(step["kernel"], [specs[x] for x in names], specs[output],
                                             {"math_mode":plan["math"],"packing":plan.get('tensor_packing','separate')})

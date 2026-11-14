@@ -32,7 +32,7 @@ exact native GEMM dispatch entries: 34 tuned policies and eight reference
 retentions. Unknown or stale contracts keep the reference; the five rowwise
 entries have their own independent evidence.
 
-Catalogue reviewed **November 12, 2026**. There are **82 dossiers**: **41 implemented**, **9 validated but not integrated**, **21 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
+Catalogue reviewed **November 14, 2026**. There are **82 dossiers**: **40 implemented**, **9 validated but not integrated**, **22 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
 
 ## 1. Validated and implemented
 
@@ -41,7 +41,7 @@ These are available in the current code under their stated contracts. Explicit t
 | Feature / idea | What is established or limited |
 |---|---|
 | [Exact runtime indexing and F2I source collection](ideas/runtime-integer-indexing.md) | Repairs a real large-grid conversion-source hazard with permanent A100 regression and binary continuity evidence. |
-| [Native Python model graphs and launch plans](ideas/native-model-bridge.md) | CPU capture and symbolic backward lower supported graphs to OA-only artifacts and guarded MSE/SGD execution; precision and shape contracts remain explicit. |
+| [Native Python model graphs and launch plans](ideas/native-model-bridge.md) | CPU capture and symbolic backward lower supported graphs to OA-only artifacts and guarded MSE/SGD execution, including bounded FP16 BMM/attention; precision and shape contracts remain explicit. |
 | [Recovered arithmetic instruction sequences and rounding policy](ideas/arithmetic-instruction-selection.md) | The standard backend imports retained CUDA 12.8 arithmetic fragments and generates its own words. |
 | [Constant integer division and remainder lowering](ideas/constant-division.md) | The implemented 32-bit lowering removes a reciprocal-based path from direct PTX division/remainder sites. |
 | [Cooperative population LayerNorm](ideas/cooperative-layernorm.md) | Shifted warp-per-row population LayerNorm has measured exact CTA geometry; affine parameters, saved statistics and backward remain outside the production operator. |
@@ -67,8 +67,7 @@ These are available in the current code under their stated contracts. Explicit t
 | [Paired B-fragment LDSM loads and register-group use](ideas/paired-fragment-loads.md) | The selected native kernel uses paired `LDSM.x4` B loads. |
 | [Native PTX input and compilation boundary](ideas/ptx-native-frontend.md) | Supported SM80 PTX routes to the native scalar/tensor backends with explicit verification limits. |
 | [Typed Python kernel frontend](ideas/python-kernel-frontend.md) | Typed numeric Python source compiles without executing imports; fixed GPU numeric semantics are explicit. |
-| [PyTorch application capture and saved replay](ideas/pytorch-application-capture.md) | Actual verified capture/replay passes77 tensors and cache-only replay; lowering is Inductor/Triton, not native OA. |
-| [Repository discovery, manifests and safe artifact publication](ideas/repository-builds.md) | Safe discovery, path mirroring, manifests, locking and publication are implemented and tested. |
+| [Repository discovery, manifests and safe artifact publication](ideas/repository-builds.md) | Static inspect/JSON coverage, path shorthand, local failure reports, safe discovery, path mirroring, locking and publication are implemented and tested. |
 | [SASS execution emulator and fitted tensor arithmetic](ideas/sass-emulator-and-tensor-numerics.md) | Functional execution and fitted tensor arithmetic pass the recorded cases; they do not prove real timing or all special values. |
 | [SM80 SASS instruction encoding](ideas/sass-encoding.md) | The production encoder emits the supported SM80 instructions from generated templates and field maps. |
 | [Scalar register dependencies, scoreboards and synchronized shuffles](ideas/scalar-dependency-correctness.md) | Fresh binding, reader sets, scoreboard-generation retirement, source WAR and actual WARPSYNC repair hardware failures. |
@@ -113,6 +112,7 @@ This list distinguishes failed numerical gates, correct-but-slower candidates, a
 | [Copy prefetch hints and bounded fragment windows](ideas/prefetch-and-fragment-windows.md) | The production follow-up tested cp.async L2-prefetch modifiers, B-fragment windows of two/four and bounded prefetch. |
 | [Software producer/consumer warp specialization](ideas/producer-consumer-warps.md) | The tested role-split variants passed four large-case A100 correctness checks but measured about 1.019–1.943 ms and lost to the unified-warp schedule. |
 | [Runtime-factor Triton low-rank lowering](ideas/runtime-factor-low-rank-triton.md) | The early A10040GB prototype was far slower: at 4096³ FP16, cuBLAS was about 0.511 ms, direct Triton 1.325 ms, Strassen 11.611 ms and AlphaTensor 13.041 ms. |
+| [PyTorch application capture and saved replay](ideas/pytorch-application-capture.md) | Historical Inductor/Triton capture/replay; disabled and superseded by the OA-native bridge, with original results retained. |
 | [Naive scalar attention-score baseline](ideas/scalar-attention-score-baseline.md) | The illustrative score kernel fails its retained exact gate; it is not a fused attention implementation. |
 | [Serial scalar cross-entropy baseline](ideas/scalar-cross-entropy-baseline.md) | The example exists, but its retained exact hardware gate fails; no speedup is admitted. |
 | [Naive scalar matrix-multiplication baseline](ideas/scalar-matmul-baseline.md) | The scalar example fails its retained exact gate and is not the validated tensor-core GEMM. |

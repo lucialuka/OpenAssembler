@@ -5,7 +5,9 @@ Status: validated-not-integrated
 The evaluation harness and its admitted
 measurements are valid research evidence. They do not implement a complete
 native OpenAssembler transformer compiler. The measured application frontend
-itself is implemented separately in [this dossier](pytorch-application-capture.md).
+is preserved separately in [this historical dossier](pytorch-application-capture.md)
+and is disabled in the current CLI. Current model compilation uses the
+[OA-native bridge](native-model-bridge.md).
 
 ## Question and comparison
 

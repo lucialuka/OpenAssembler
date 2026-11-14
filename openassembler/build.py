@@ -719,6 +719,7 @@ class CompileResult:
     out_dir: Path | None = None
     built: list[SourceOut] = field(default_factory=list)   # sources whose cubin was written this run
     failed_sources: list[Path] = field(default_factory=list)
+    errors: list[dict] = field(default_factory=list)
 
 
 def _brief(msg: str) -> str:
@@ -969,7 +970,10 @@ def _compile_paths(src: Path, out_dir: Path, opt: Options, o_name: str | None = 
             rc = 1
         _print_summary(results, skipped, out_dir_abs)
     return CompileResult(rc, out_dir_abs, built,
-                         [so.src for so in results if not so.files and (so.error or so.failed)])
+                         [so.src for so in results if not so.files and (so.error or so.failed)],
+                         [{'source': str(so.src), 'error': so.error,
+                           'kernels': [{'name': k.name, 'error': k.error} for k in so.failed]}
+                          for so in results if so.error or so.failed])
 
 
 def _print_summary(results: list[SourceOut], skipped: dict[str, int], out_dir: Path) -> None:

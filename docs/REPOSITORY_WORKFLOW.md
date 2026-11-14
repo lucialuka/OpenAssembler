@@ -26,6 +26,13 @@ selects it. `--frontend native` forces static discovery of PTX, CUDA/C++ and
 typed Python `@kernel` files. Triton/Inductor execution and vendor fallbacks
 are disabled.
 
+`openassembler REPO` is shorthand for `compile REPO`; `compile` and `cnr`
+without a path use the current directory. Start with `openassembler inspect
+REPO --json` for a static coverage report. Build failures save
+`REPO/output/compile-error.json` (or the custom output root), including available
+native kernel errors. Dry runs write nothing and do not submit jobs. The report
+supports a bug report; unsupported Python host code is not silently translated.
+
 ## Choose the repository's frontend
 
 **Native GPU kernels:** a directory without an application configuration is
@@ -60,7 +67,8 @@ build_backend = "modal"
 
 Optional training configuration adds execution = "cuda_graph" for fixed-storage
 OA training replay and sass_listings = false for binary-only output. Input
-values change in place; the graph captures no optimizer update. Replaced or
+values change in place. Preparation executes no optimizer update; each replay
+executes forward, loss, backward and SGD. Replaced or
 externally modified parameters require a new preparation. The defaults retain
 direct dispatch and disassembly listings; see the native model guide for
 measured contracts and preparation/steady-state timing boundaries.
@@ -276,9 +284,15 @@ The Python API accepts the same policy through
 This option pads each linear forward/dX/dW dimension to a multiple of 128, uses
 OA Tensor Core GEMMs, and crops the FP32 output with optional bias in one stage.
 Each logical matrix dimension is bounded at 512. Rank-three linear inputs use
-the captured contiguous flatten/view path. Batched attention products still
-require the existing explicit FP32 policy; this option does not enable general
-FP16 BMM, broadcasting, or native attention fusion.
+the captured contiguous flatten/view path. FP16 BMM forward/dX/dW now supports equal batches through 32 and logical
+M/N/K through 512. Rank-four products flatten their equal batch axes; no batch
+broadcasting is admitted. Larger BMMs pad and pack dual layouts, while small
+products use explicitly rounded FP32 workspaces and OA scalar BMM to avoid the
+padding cost. FP32 softmax and layout kernels compose unmasked attention.
+Fused attention and masks remain unsupported. See the
+[A100 experiment and production checks](../exp/attention_half/RESULTS.md).
+The native attention example selects this explicit half policy, graph replay,
+and its documented trajectory tolerance; default model math remains FP32.
 
 The default remains `tensor_packing = "separate"`: dual packing allocates both
 operand layouts, so fewer launches do not guarantee a faster complete task.

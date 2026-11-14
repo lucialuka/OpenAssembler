@@ -239,3 +239,20 @@ Source cleanup does not require deleting local environments or user run output.
 | RCR GEMM | Here, contiguous `A[M,K]`, `B[N,K]`, FP32 `C=A@B.T` |
 | Fused epilogue | Work performed while storing GEMM output instead of separate kernels |
 | Admission gate | The correctness/resource/provenance requirements that must pass before a result counts |
+
+## Current repository compiler checks
+
+Start with `openassembler inspect REPO --json`, then compile the supported
+sources or configured model with `openassembler REPO --verify`. Omitted paths
+for `compile` and `cnr` mean the current directory. Failed builds save
+`compile-error.json` in the selected output root; include it and a minimal
+reproducer in bug reports. Dry runs and disabled vendor frontend rejection do
+not create output. Full model reports stay on disk while normal CLI output is
+concise; `--no-sass` applies to both kernel and model builds.
+
+The [codebase audit](CODEBASE_AUDIT.md) records retired vendor-only modules and
+remaining language/graph limitations. All `*.sass` listings are now ignored;
+they are regenerable disassembly, not required source. The bounded
+[FP16 BMM/attention campaign](../exp/attention_half/README.md) must pass independent
+operand rounding, all derivative orientations, batch/tails, changing inputs,
+workspace guards and OA-only launch checks before changing its dispatch.

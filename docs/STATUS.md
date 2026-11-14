@@ -1,12 +1,30 @@
 # OpenAssembler architecture and status
 
-Updated **November 12, 2026**. This page describes the current source tree and
+Updated **November 14, 2026**. This page describes the current source tree and
 latest completed validation. The November 11 native GEMM replay supplies the
 current exact policy table; the separate November 7 native NN composition
 campaign remains experimental. Full command syntax is in [COMMANDS.md](COMMANDS.md);
 every researched feature has a dossier in the [catalogue](research/README.md).
 The cross-cutting reverse-engineering record is centralized in the
 [reverse-engineering results hub](reverse_eng_results/README.md).
+
+## November 14 FP16 batched products and repository workflow
+
+[FP16 BMM/attention validation](../exp/attention_half/RESULTS.md) adds independent
+forward/dX/dW rounding, equal batches through 32, and dimensions through 512.
+Larger products use batched OA Tensor Core cubins with padded dual layouts;
+small products avoid padding with explicit FP16-rounded FP32 workspaces and OA
+scalar BMM. Complete composed attention training, changing-input graph replay,
+guards, and profiler ownership are checked on A100. The full LayerNorm/GELU
+block uses a documented `rtol=0.002, atol=0.0002` trajectory gate; the original
+stricter-gate failure remains evidence. This is bounded composed attention,
+not fused/masked attention or an arbitrary-repository compiler.
+
+The CLI accepts a source path directly, defaults `compile`/`cnr` to the current
+directory, provides static `inspect [SRC] --json`, and saves build failure
+reports. `--no-sass` works for native models. Generated `*.sass` listings are
+ignored and untracked. The [codebase audit](CODEBASE_AUDIT.md) records cleanup
+and source-to-artifact boundaries.
 
 ## November 12 native model implementation
 
@@ -55,13 +73,14 @@ adds explicit `tensor_packing="dual"` with iteration-local reuse and padded
 linear dimensions through 512. Complete three-projection training improves
 8.5–9.5% in independent A100 production runs, while other MLPs are near-neutral
 or slower. Separate packing remains the default; the rejected 1024-wide replay
-and unchanged FP32-only BMM boundary are documented in the report.
+and the then-FP32-only BMM boundary are documented in that historical report.
+The November 14 BMM extension above supersedes that support boundary.
 
 ## Headline validation
 
 | Area | Latest completed evidence | Interpretation |
 |---|---|---|
-| Repository regression | November 14 production snapshot: 961 passed, two optional Torch modules skipped; separate A100 compiler/runtime campaigns are archived under `exp/ml_suite` | Separate interpreter scopes; new replay/loss/audit evidence is retained under exp/review_response |
+| Repository regression | November 14 production snapshot: 975 passed, three optional Torch scopes skipped locally; pinned Torch worker: 75 passed; A100 FP16 BMM/attention evidence is archived under `exp/attention_half` | Separate interpreter scopes; 142 active Markdown files pass link/catalogue/CLI checks; replay/loss evidence remains under exp/review_response |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
 | Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay; a 58-shape 1/2/4/8-warp A100 sweep and separate seven-case heldout recheck promote five exact rowwise policies | Explicit FP32 operators; selected CTA geometry improves five heldout OpenAssembler cases by at least 3% in all rounds; same-source ptxas remains faster on main shapes |
 | Native direct-pointer GEMM | Historical 486 full method/input checks across three runs; six MLP products improve about 1.03–1.12×; current exact selections are audited in the November 11 replay | Direct pointers are selected for measured contracts or explicitly requested; unknown contracts keep legacy pointers. Historical tall regressions remain valid for those tested plans |

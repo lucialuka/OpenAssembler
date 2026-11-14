@@ -139,6 +139,9 @@ def _compile_locked(source, output, options, name, backend, host, budget,
         raise TransportError(result['error'])
     if type(result.get('rc')) is not int or result['rc'] not in (0, 1, 2):
         raise TransportError('native compiler worker returned an invalid status')
+    errors = result.get('errors', [])
+    if not isinstance(errors, list) or any(not isinstance(e, dict) for e in errors):
+        raise TransportError('native compiler worker returned invalid error records')
     failed_sources = result.get('failed_sources', [])
     if not isinstance(failed_sources, list) or not all(rel in candidates for rel in failed_sources):
         raise TransportError('native compiler worker returned invalid failed-source records')
@@ -200,6 +203,7 @@ def _compile_locked(source, output, options, name, backend, host, budget,
             project.write_group(output, published)
             project.save_manifest(output, root, options.arch, options.opt_level, list(merged.values()), apps)
             project.remove_outputs(output, sorted(stale - published.keys()))
+    project.write_atomic(output / 'build-errors.json', json.dumps(errors, indent=2) + '\n')
     print(f'build artifacts: {output}/cubin/ and {output}/sass/ (manifest.json)')
     return result['rc'], only
 
@@ -220,6 +224,7 @@ def process(request: dict) -> dict:
                      if p.is_file() and p.name != 'writer.lock'}
             source_root = source if source.is_dir() else source.parent
             return {'rc': result.rc, 'artifacts': base64.b64encode(pack(files)).decode(),
+                    'errors': result.errors,
                     'failed_sources': [p.relative_to(source_root).as_posix() for p in result.failed_sources]}
     except Exception as exc:
         return {'error': f'native build failed: {exc}'}

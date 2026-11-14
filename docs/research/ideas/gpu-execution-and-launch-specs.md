@@ -11,14 +11,14 @@ transport support must not be mistaken for a newly measured backend result.
 
 A cubin is a GPU module, not a standalone executable. It needs buffers,
 arguments, a grid of thread blocks and a driver context. The runner reads the
-build manifest and launches both OpenAssembler and same-PTX ptxas binaries on
-the same data. A small JSON specification makes the real memory/launch contract
+build manifest and launches OA-owned binaries. Explicit research comparison
+plans can additionally launch same-PTX ptxas controls on identical data. A small JSON specification makes the real memory/launch contract
 explicit instead of guessing matrix dimensions from pointer names.
 
 `run` never recompiles. `cnr` compiles, then runs only products from that
 invocation. `gpu run` is a separate probe-corpus harness, not the command for
-arbitrary output manifests. Application bundles also have a separate replay
-route and state gate; see [application capture](pytorch-application-capture.md).
+arbitrary output manifests. Native model bundles have a separate saved replay
+route and CPU state gate; see [native model capture](native-model-bridge.md).
 
 ## Implemented contract
 
@@ -41,12 +41,13 @@ dynamic shared memory in bytes. Steps share buffers and execute sequentially.
 `compare` defaults to all buffers or a nonempty explicit list. The runner opts
 into required large dynamic shared memory for validated launches.
 
-Both binaries' requested output spans are compared byte for byte. A reported
-success is not an independent mathematical proof: two binaries can share a
-source bug. Generated rowwise smoke adds an analytic finite-value gate and
-NaN output poison; floating accuracy, output guards and whole-state checks live
-in their separate research validators. Fallback kernels are labelled as
-ptxas-vs-ptxas, not native compiler wins.
+Production execution reports launch success plus analytic smoke checks where
+specified; it does not claim a vendor comparison. Explicit research comparisons
+check requested output spans byte for byte, which is not an independent
+mathematical proof: both binaries can share a source bug. Generated rowwise
+smoke adds a finite-value gate and NaN output poison; broader floating accuracy,
+output guards and whole-state checks live in their research validators. Vendor
+GPU fallback and replay of old Inductor bundles are disabled.
 
 ## Transport, watchdog and artifact behavior
 
@@ -57,11 +58,11 @@ run in worker subprocesses. A fault/hang is recorded, the worker can be killed
 by its per-job watchdog, and a fresh worker resumes remaining jobs. A global
 time budget reports unfinished jobs rather than claiming they passed.
 
-The manifest, compiled modules and retained reference cubins must accompany a run;
+The manifest and admitted native modules must accompany a production run;
 SASS text alone is insufficient. Failed build entries are refused. Standalone
 source changes generate stale-source warnings rather than recompiling behind
-the user's back; use a new compile to test new source. Application replay
-instead validates its bundled source/cache/cubin checksums before execution.
+the user's back; use a new compile to test new source. Native model replay
+validates its admitted graph, source and executable inventory before execution.
 
 ## Actual validation and findings
 
@@ -69,8 +70,11 @@ The November 4 integration record passes a four-case native batch covering
 vector addition, a 64-thread cross-warp barrier, FP16 GEMM and BF16 GEMM. An
 explicit BF16 spec verifies two-byte input buffers, two-dimensional launch and
 64-KiB dynamic shared-memory opt-in. Installed-wheel tests confirm no experiment
-imports are required. Latest ordinary CLI rowwise execution on A100-SXM4-40GB
+imports are required. The retained historical CLI rowwise execution on A100-SXM4-40GB
 passes 2/2 strict same-PTX and independent zero-input analytic smoke checks.
+Current ordinary CLI execution uses OA-only launches and analytic smoke; the
+[November 14 native attention replay](../../../exp/attention_half/RESULTS.md)
+adds complete CPU state checks and profiler ownership.
 
 These small timings are correctness smoke, not new performance estimates.
 The detailed GEMM/reduction studies separately validate complete outputs,

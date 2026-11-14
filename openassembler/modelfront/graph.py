@@ -96,7 +96,7 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
     rank-two through rank-four permutation and concatenation. Linear accepts
     any positive leading dimensions; flattening is explicit in the plan.
     Storage, scalar arithmetic and gradients are FP32. The explicit optional
-    f16_rne_f32_accum mode rounds each linear product's operands independently
+    f16_rne_f32_accum mode rounds each matrix product's operands independently
     to half; batched products remain a separate FP32-only contract.
     Branches and parameter aliases receive explicit gradient accumulation.
     """
@@ -392,8 +392,6 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
                 bt = emit("transpose2d", [b], fresh("matmul_weight", bshape[::-1]))
                 emit("linear", [a, bt], name, {"m": ashape[0], "n": bshape[1], "k": ashape[1]})
             else:
-                if math_mode != "fp32":
-                    fail(node, "batched matmul currently requires explicit FP32 math")
                 if ashape[:-2] != bshape[:-2] or op == "bmm" and len(ashape) != 3:
                     fail(node, "native batched matmul requires identical batch shapes without broadcasting")
                 batch = math.prod(ashape[:-2])

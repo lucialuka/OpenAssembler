@@ -50,11 +50,11 @@ class CPUReference:
             elif op == "linear_dw":
                 result = self._matrix(xs[0].t(), xs[1])
             elif op == "bmm":
-                result = xs[0] @ xs[1]
+                result = self._matrix(xs[0], xs[1])
             elif op == "bmm_dx":
-                result = xs[0] @ xs[1].transpose(-2, -1)
+                result = self._matrix(xs[0], xs[1].transpose(-2, -1))
             elif op == "bmm_dw":
-                result = xs[1].transpose(-2, -1) @ xs[0]
+                result = self._matrix(xs[1].transpose(-2, -1), xs[0])
             elif op == "bias_grad":
                 result = xs[0].sum(dim=0)
             elif op == "relu":

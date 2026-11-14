@@ -14,8 +14,8 @@ compute libraries are not code generation or execution fallbacks.
 The graph subset covers FP32 Linear, ReLU, same-shape add/multiply, finite
 scalar arithmetic, immutable reshapes, rank-two through rank-four permutations,
 matmul/batched products, last-dimension softmax, tanh GELU, affine LayerNorm,
-concatenation and slice derivatives. Batched products currently require FP32
-math and exact equal batch shapes; broadcasting is not inferred. The
+concatenation and slice derivatives. Batched products support FP32 and explicit FP16-RNE operands with FP32 accumulation;
+exact equal batch shapes are required; broadcasting is not inferred. The
 symbolic backward graph includes input/weight/bias gradients, branch accumulation
 and aliased parameters. Complete native training uses MSE and plain SGD.
 Unsupported nodes report the offending FX node and fail before native execution.
@@ -24,13 +24,13 @@ This is bounded application compilation, not arbitrary Python or all ML framewor
 The default numerical contract uses FP32 operands, accumulation, output and
 master state. It preserves explicit multiply/add ordering in its baseline
 matrix kernels. The optional `f16_rne_f32_accum` contract rounds each matrix
-operand to FP16 RNE, uses OA Tensor Core GEMMs with FP32 accumulation/output,
+operand to FP16 RNE, uses OA matrix kernels with FP32 accumulation/output,
 and prescribes straight-through cast derivatives. Its default separate packing
-requires the existing full-tile GEMM shapes for forward, dX and dW. Explicit
+requires existing full-tile linear GEMM shapes for forward, dX and dW. Explicit
 `tensor_packing = "dual"` additionally supports padded linear dimensions up to
 512, including contiguous flattened rank-three inputs, and reuses both operand
-layouts within each training iteration. It never silently falls back to scalar
-FP32. CPU reference formulas independently apply the declared
+layouts within each training iteration. Small BMMs use explicit FP16-rounded
+operands stored as FP32; they preserve the half numerical contract. CPU reference formulas independently apply the declared
 rounding to every product. It differs from unmodified autocast.
 
 Every model bundle records exact shapes, strides/layout assumptions, dtype,
@@ -143,6 +143,10 @@ bytes. Changed or missing required files reject before transport.
 
 ## Evidence and limitations
 
+Earlier attention numbers in this section use their recorded FP32 configurations.
+The shipped example switched to explicit half math on November 14; its new
+validation and paired FP16 comparisons are recorded in the final section.
+
 The initial production CLI compile and separate replay both pass a three-update
 residual MLP full-output/loss/parameter-gradient/parameter gate on actual A100
 workers. Subsequent replays additionally cover input gradients and poisoned
@@ -246,7 +250,27 @@ near-neutral or slightly slower; private packed storage also increases, so
 separate packing remains the default. Optional zero padding plus a crop/bias
 stage admits odd dimensions and flattened rank-three linear inputs up to 512
 per logical matrix dimension. The 1024-wide captured-training stress fails its
-gradient gate and is excluded. FP16 BMM/attention and broadcasting remain
-outside this option. Exact-bit pack tests, four-step training, poisoned
+gradient gate and is excluded. The later bounded FP16 BMM extension below
+supersedes the earlier attention restriction; broadcasting remains excluded. Exact-bit pack tests, four-step training, poisoned
 changed-input graph replay, profiler ownership and repository direct/replay
 bridge checks are retained with the report.
+
+## FP16 BMM and composed attention
+
+The [November 14 campaign](../../../exp/attention_half/RESULTS.md) extends the
+explicit half contract to BMM forward, dX and dW. Rank-three products require
+matching batches; rank-four matmul flattens equal batch axes without broadcasting.
+The flattened batch bound is 32 and every logical M/N/K is at most 512.
+Larger products pack padded normal/transposed half layouts, use OA GEMM with
+CTA-z byte strides and crop FP32 outputs. When M, N and reduction length are all
+at most 64, exact software RNE rounding into FP32 workspaces avoids padded MMA
+cost; this remains FP16 operand math. No vendor backend executes these products.
+
+Attention composes those products with OA softmax, projections and layout
+operators. Both derivative orientations have independent operand-rounding CPU
+controls. Complete SGD checks cover changing inputs and poisoned CUDA Graph
+replay; profiler kernel counts match OA launch ledgers. The LayerNorm/GELU block
+has a declared `rtol=0.002, atol=0.0002` trajectory gate. Its earlier failure under
+`atol=0.00002` is preserved; isolated products retain the tighter gate. This is
+not an exact match to arbitrary autocast trajectories, fused/masked attention,
+KV-cache half support, or a performance claim over NVIDIA/Triton.

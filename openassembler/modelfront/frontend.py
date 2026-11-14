@@ -25,6 +25,17 @@ class ModelError(ValueError):
     pass
 
 
+def _print_report(report, path):
+    """Keep normal CLI output small; retain complete verification/profiling JSON."""
+    device = report.get('device', {})
+    device = device.get('name', 'GPU') if isinstance(device, dict) else device
+    status = 'passed' if report.get('passed') else 'failed'
+    checks = report.get('checks', [])
+    print(f"native model {status}: {device}, {report.get('iterations', 0)} iteration(s), "
+          f"{len(checks)} check(s), execution={report.get('execution', 'direct')}")
+    print(f"OA compute only; report: {path}")
+
+
 def load_config(root: Path) -> dict:
     path = Path(root) / 'openassembler.toml'
     try:
@@ -144,9 +155,13 @@ def _request(request: dict, config: dict) -> dict:
 def compile_model_repository(root: Path, out_dir: Path, *, backend: str | None = None,
                              host: str | None = None, gpu: str | None = None,
                              budget: float | None = None, verify: bool = False,
-                             dry_run: bool = False, **unused) -> int:
+                             dry_run: bool = False, no_sass: bool = False, **unused) -> int:
     root, out_dir = Path(root).resolve(), Path(out_dir).resolve()
     config = load_config(root)
+    if unused:
+        raise ModelError(f'unsupported model compilation options: {sorted(unused)}')
+    if no_sass:
+        config['sass_listings'] = False
     if root.is_relative_to(out_dir):
         raise ModelError('model source must be outside the output directory')
     if backend and backend != 'auto':
@@ -199,7 +214,7 @@ def compile_model_repository(root: Path, out_dir: Path, *, backend: str | None =
                 if path.is_file():
                     project.write_atomic(project.artifact_path(out_dir, path.relative_to(staging).as_posix()),
                                          path.read_bytes())
-    print(json.dumps(result.get('report', {}), indent=2))
+    _print_report(result.get('report', {}), out_dir / 'model-build-report.json')
     return 0 if result.get('report', {}).get('passed', True) else 1
 
 
@@ -290,5 +305,5 @@ def run_model_repository(out_dir: Path, *, backend: str = 'auto', host: str | No
                        'artifacts': base64.b64encode(pack(files)).decode()}, config)
     report = result['report']
     project.write_atomic(out_dir / 'model-run.json', json.dumps(report, indent=2, allow_nan=False) + '\n')
-    print(json.dumps(report, indent=2))
+    _print_report(report, out_dir / 'model-run.json')
     return 0 if report.get('passed') else 1

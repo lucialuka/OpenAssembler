@@ -9,7 +9,7 @@ from __future__ import annotations
 import shlex
 import sys
 
-from openassembler.cli import build_parser, dispatch
+from openassembler.cli import build_parser, dispatch, source_arguments
 from openassembler.ui.banner import render
 
 PROMPT = "\033[1;34m❯\033[0m " if sys.stdout.isatty() else "> "
@@ -26,7 +26,7 @@ Type any openassembler subcommand without the leading "openassembler", e.g.:
   run --backend modal --dry-run                        # ours vs ptxas on a GPU (nothing is sent)
   cnr my_repo/ --backend me@gpubox                     # compile and run on the same SSH host
   gemm --m 128 --n 128 --k 128                         # native A100 tensor GEMM
-  run --application training --backend modal           # compiled PyTorch application
+  run examples/native_model --backend modal           # saved OA model cubins
   status
 """
 
@@ -89,7 +89,7 @@ def run() -> int:
             continue
 
         try:
-            args = parser.parse_args(shlex.split(line))
+            args = parser.parse_args(source_arguments(shlex.split(line), parser))
         except SystemExit:
             # argparse already printed its own usage/error message.
             continue

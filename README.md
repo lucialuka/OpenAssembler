@@ -27,13 +27,34 @@ OpenAssembler generates native SASS and executable cubins for supported A100/SM8
 > ⚠️ **IMPORTANT NOTICE**
 > This project is currently under **active heavy development** for kernel optimization and assembly language edge case handling. If you encounter any bugs/compiler inefficiency during deployment, please feel free to open an Issue. Your feedback will help us build a better version!
 
+## Compile a repository
+
+```sh
+openassembler inspect /path/to/repo       # static coverage; no user code executes
+openassembler /path/to/repo --backend modal --verify
+openassembler cnr /path/to/repo --backend user@a100 --verify
+openassembler run /path/to/repo --backend user@a100
+```
+
+A source path is shorthand for `compile PATH`. `compile` and `cnr` default to the
+current directory. `[model]` selects the Python model bridge; `--frontend native`
+selects discovered Python `@kernel`, CUDA C/C++/C `__global__`, and PTX `.entry`
+kernels. Unsupported code fails with a local `output/compile-error.json` report;
+`inspect --json` shows candidates and skipped files. SASS listings are optional
+(`--no-sass`) and ignored by Git. See the [codebase audit](docs/CODEBASE_AUDIT.md)
+for ownership, cleanup, and remaining compiler boundaries.
+
 ## Native Python models
 
 A repository with a `[model]` factory and exact input shapes now compiles supported
 Python tensor graphs, their backward pass, MSE loss and SGD updates through OA.
 The default FP32 contract and explicit FP16-operand Tensor Core contract have
 separate numerical gates. Local, Modal and SSH execution use saved OA cubins.
-Unsupported operations fail; vendor GPU fallback is disabled.
+Unsupported operations fail; vendor GPU fallback is disabled. Explicit FP16 BMM
+now covers forward/dX/dW for equal batches through 32 and matrix dimensions
+through 512, including tails. Attention remains composed from OA products,
+FP32 softmax, layouts and projections; masks/broadcasting and fused attention
+are outside this bounded contract. See the [A100 validation](exp/attention_half/RESULTS.md).
 
 ```sh
 openassembler cnr examples/native_model --backend modal --verify

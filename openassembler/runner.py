@@ -590,17 +590,23 @@ def report(outs: list[Outcome], device: str = "") -> int:
     if device:
         print(f"device: {device}")
     w = max([len(o.case.name) for o in outs] + [6])
-    print(f"{'kernel':<{w}}  {'result':<8}  {'ours ms':>9}  {'ptxas ms':>9}  {'speedup':>7}  source")
+    comparison = any(o.case.ref is not None for o in outs)
+    if comparison:
+        print(f"{'kernel':<{w}}  {'result':<8}  {'ours ms':>9}  {'ptxas ms':>9}  {'speedup':>7}  source")
+    else:
+        print(f"{'kernel':<{w}}  {'result':<8}  {'ms':>9}  source")
     fmt = lambda t: f"{t:9.4f}" if t is not None else f"{'-':>9}"  # noqa: E731
     for o in outs:
         sp = f"{o.speedup:6.2f}x" if o.speedup else f"{'-':>7}"
-        print(f"{o.case.name:<{w}}  {o.status:<8}  {fmt(o.t_ours)}  {fmt(o.t_ref)}  {sp}  {o.case.source}")
+        if comparison:
+            print(f"{o.case.name:<{w}}  {o.status:<8}  {fmt(o.t_ours)}  {fmt(o.t_ref)}  {sp}  {o.case.source}")
+        else:
+            print(f"{o.case.name:<{w}}  {o.status:<8}  {fmt(o.t_ours)}  {o.case.source}")
         if o.detail:
             print(f"{'':<{w}}    {o.detail}")
         if o.case.note:
             print(f"{'':<{w}}    note: {o.case.note}")
     ok = sum(o.status == "OK" for o in outs)
-    comparison = any(o.case.ref is not None for o in outs)
     print(f"{ok}/{len(outs)} OK (" + ("bit-exact against ptxas's build on identical inputs" if comparison
                                     else "native execution; analytic smoke only where specified") + ")"
           + ("; speedup = ptxas median / ours median" if any(o.speedup for o in outs) else ""))

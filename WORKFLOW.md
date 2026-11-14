@@ -25,7 +25,7 @@ Shared setup, evidence states and maintenance rules are in
    tolerances merely to admit a faster result.
 6. Promote a validated feature through normal compiler/CLI paths with regression
    coverage. Production modules must not depend on `exp/` monkeypatches.
-   Unsupported cases fail or use an explicitly requested, labeled fallback.
+   Unsupported cases fail with diagnostics; vendor GPU fallback is disabled.
 7. Keep native OA, same-PTX ptxas, vendor-library and Inductor/Triton application
    comparisons distinct. Reproduce each claim at its actual kernel or whole-step
    boundary, using the worker's actual device metadata.

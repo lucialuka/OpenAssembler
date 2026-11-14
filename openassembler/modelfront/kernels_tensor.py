@@ -99,6 +99,9 @@ def emit_tensor_recipe(op, inputs, output, attrs=None):
         raise ValueError('tensor packing must be separate or dual')
     if attrs:
         raise ValueError(f"unsupported tensor recipe attributes: {sorted(attrs)}")
+    if op in ('bmm', 'bmm_dx', 'bmm_dw'):
+        from .kernels_tensor_batched import emit_batched_recipe
+        return emit_batched_recipe(op, inputs, output)
     if packing == 'dual':
         from .kernels_tensor_dual import emit_dual_recipe
         return emit_dual_recipe(op,inputs,output)

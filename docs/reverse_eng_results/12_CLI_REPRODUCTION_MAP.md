@@ -107,3 +107,19 @@ used SXM4-40GB. Compare paired ratios within a worker/session and keep device
 cohorts separate. Re-run on another device only with a new record; do not
 overwrite a historical result with a different GPU or toolkit.
 
+
+## Repository coverage and FP16 attention
+
+```sh
+python3 -m openassembler inspect examples/native_attention_model --json
+python3 -m openassembler examples/native_attention_model --backend modal --verify --no-sass
+python3 -m openassembler run examples/native_attention_model --backend modal --verify-application
+modal run exp/attention_half/modal_run.py --phase production-bmm
+modal run exp/attention_half/modal_run.py --phase paired
+```
+
+The [compiler audit](../CODEBASE_AUDIT.md) documents direct source-path builds,
+local failure reports and ignored/untracked generated listings. The attention
+example selects explicit FP16 operands and FP32 state; masks, broadcasting and
+unbounded shapes remain outside the supported contract. See the
+[complete evidence](../../exp/attention_half/RESULTS.md).

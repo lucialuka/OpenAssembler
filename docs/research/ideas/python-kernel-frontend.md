@@ -84,6 +84,8 @@ See [COMMANDS.md](../../COMMANDS.md) for complete options.
   [three-way checker](../../../tests/pyfront_threeway.py).
 - [Recorded CLI integration](../../evidence/integration-20261104.json).
 
-The [PyTorch application route](pytorch-application-capture.md) is separate.
+The [native Python model graph route](native-model-bridge.md) is separate.
+The older [Inductor application experiment](pytorch-application-capture.md) is
+retired and unavailable through production commands.
 More Python syntax, automatic parallelization and automatic substitution into
 model graphs remain future work, not implied frontend features.

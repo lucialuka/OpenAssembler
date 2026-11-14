@@ -162,3 +162,12 @@ def test_deployment_archive_excludes_reference_and_untracked_modules(tmp_path, m
     destination = export_model(tmp_path, tmp_path / 'deployment.zip')
     unpack(destination.read_bytes(), tmp_path / 'unpacked')
     assert json.loads((tmp_path / 'unpacked/model-artifacts.json').read_text())['schema'] == 1
+
+
+def test_model_cli_no_sass_preserves_native_dispatch(tmp_path, monkeypatch):
+    import openassembler.modelfront.frontend as frontend
+    root = repository(tmp_path)
+    calls = []
+    monkeypatch.setattr(frontend, 'compile_model_repository', lambda *args, **opts: calls.append(opts) or 0)
+    assert main(['compile', str(root), '--no-sass', '--backend', 'modal']) == 0
+    assert calls[0]['no_sass'] is True

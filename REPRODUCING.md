@@ -15,3 +15,8 @@ There is no separate overall benchmark reproduction guide to keep in sync.
   independent replay and audited production GEMM dispatch.
 - [Rowwise dispatch](docs/research/ideas/shape-aware-rowwise-dispatch.md): the
   separate FP32 CTA-geometry sweep, held-out cases and exact production entries.
+- [FP16 BMM and composed attention](exp/attention_half/README.md): bounded
+  forward/dX/dW, batch/tail shapes, complete training, paired small-path timing,
+  independent CPU controls and production replay.
+- [Repository/compiler audit](docs/CODEBASE_AUDIT.md): source coverage,
+  simplified commands, failure reports, ownership and artifact cleanup.

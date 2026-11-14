@@ -1,9 +1,11 @@
 """OpenAssembler 0.2.0: a Python / CUDA C / C++ (and PTX) to NVIDIA SASS compiler with its own backend.
 
-    openassembler compile kernel.py|kernel.cu|kernel.ptx [-o NAME] [--verify]   # -> output/cubin + output/sass
+    openassembler SRC [--backend modal|user@host] [--verify]  # compile a source or repo
+    openassembler inspect [SRC] [--json]                # static coverage
+    openassembler compile [SRC] [-o NAME] [--verify]     # -> output/cubin + optional SASS
     openassembler compile my_repo/                    # -> my_repo/output/{cubin,sass}
     openassembler run my_repo/ [--backend local|modal|user@host] [--dry-run]
-    openassembler cnr SRC [compile + run options]     # compile, then run what compiled
+    openassembler cnr [SRC] [compile + run options]     # compile, then run what compiled
     openassembler gemm --m M --n N --k K --dtype f16  # specialized A100 tensor GEMM
     openassembler status                              # headline results (docs/STATUS.md)
     openassembler corpus | check | bench | fastmm | gpu run   # research tooling (tools/*.py)
@@ -56,12 +58,12 @@ def _model_compile_opts(a: argparse.Namespace) -> dict:
     from openassembler.modelfront.frontend import ModelError
     if a.arch != 'sm_80' or a.fallback:
         raise ModelError('native models require sm_80 and OA code generation without vendor fallback')
-    if a.kernel or a.include or a.nvcc_flag or a.dump_ptx or a.out or a.no_sass or a.opt_level != 'opt' or a.trials != 6:
-        raise ModelError('kernel selection, naming, frontend flags, --no-sass and nondefault '
+    if a.kernel or a.include or a.nvcc_flag or a.dump_ptx or a.out or a.opt_level != 'opt' or a.trials != 6:
+        raise ModelError('kernel selection, naming, frontend flags and nondefault '
                          '--opt-level/--trials apply to standalone native kernels')
     if a.job_timeout is not None:
         raise ModelError('native model workers use --budget as their hard stage watchdog; omit --job-timeout')
-    return {'verify': a.verify, 'dry_run': a.dry_run,
+    return {'verify': a.verify, 'dry_run': a.dry_run, 'no_sass': a.no_sass,
             'backend': a.build_backend or a.backend, 'host': a.build_host or a.host,
             'gpu': a.build_gpu or a.gpu,
             'budget': a.build_budget if a.build_budget is not None else a.budget}
@@ -87,9 +89,31 @@ def _native_build(a: argparse.Namespace):
         rc, only = compile_native(Path(a.src), out, options, a.out, backend=kind, host=host,
                                   budget=a.build_budget if a.build_budget is not None else (
                                       a.budget if a.budget is not None else 900), dry_run=a.dry_run)
+        if rc and not a.dry_run and (out / 'build-errors.json').is_file():
+            import json
+            a._build_errors = json.loads((out / 'build-errors.json').read_text())
         return rc, out, only
     result = compile_paths(Path(a.src), out, options, a.out)
+    a._failed_sources = [str(p) for p in result.failed_sources]
+    a._build_errors = result.errors
     return result.rc, result.out_dir, {(str(so.src.resolve()), k.name) for so in result.built for k in so.kept}
+
+
+def cmd_inspect(a: argparse.Namespace) -> int:
+    """Inspect compilation coverage without importing user code or contacting a GPU."""
+    import json
+    from openassembler.diagnostics import inspect_source
+    report = inspect_source(Path(a.src))
+    if a.json:
+        print(json.dumps(report, indent=2))
+    else:
+        print(f"{report['source']}: {report['frontend']} frontend")
+        for candidate in report['kernel_candidates']:
+            print(f"  {candidate['language']}: {candidate['path']}")
+        print(f"{len(report['kernel_candidates'])} kernel source(s), {len(report['other_files'])} other file(s)")
+        print(report['contract'])
+        print('next: ' + report['next_step'])
+    return 0 if report['ready_for_capture_or_compilation'] else 1
 
 
 def cmd_compile(a: argparse.Namespace) -> int:
@@ -109,11 +133,13 @@ def cmd_compile(a: argparse.Namespace) -> int:
         return compile_model_repository(root, output_dir(root, a.out_dir), **_model_compile_opts(a))
     if plan is not None and not plan.has_native:
         from openassembler.repository import native_error
-        print(f"error: {native_error(plan)}", file=sys.stderr)
+        a._failure = str(native_error(plan))
+        print(f"error: {a._failure}", file=sys.stderr)
         return 1
     try:
         return _native_build(a)[0]
     except (project.ProjectError, TransportError, OSError, ValueError) as exc:
+        a._failure = str(exc)
         print(f'error: {exc}', file=sys.stderr)
         return 1
 
@@ -259,7 +285,8 @@ def cmd_cnr(a: argparse.Namespace) -> int:
                                     budget=a.budget, verify=a.verify, dry_run=False)
     if plan is not None and not plan.has_native:
         from openassembler.repository import native_error
-        print(f"error: {native_error(plan)}", file=sys.stderr)
+        a._failure = str(native_error(plan))
+        print(f"error: {a._failure}", file=sys.stderr)
         return 1
     try:
         # Validate execution flags before incurring remote build work.
@@ -277,6 +304,7 @@ def cmd_cnr(a: argparse.Namespace) -> int:
         rc = run_command(_run_opts(a, str(out), only))
         return 1 if 1 in (rc, compile_rc) else max(rc, compile_rc)
     except (project.ProjectError, RunError, TransportError, OSError, ValueError) as exc:
+        a._failure = str(exc)
         print(f'error: {exc}', file=sys.stderr)
         return 1
 
@@ -578,9 +606,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     pc = sub.add_parser("compile", help="compile a file or a whole repo to SASS + cubin (into output/)",
                         description=COMPILE_HELP, formatter_class=argparse.RawDescriptionHelpFormatter)
-    pc.add_argument("src", metavar="SRC", help="a .ptx/.py/.cu/.cuh/.cpp/.cc/.cxx file, or a directory (repo)")
+    pc.add_argument("src", metavar="SRC", nargs="?", default=".", help="source file or repository (default: current directory)")
     _add_compile_args(pc)
     pc.set_defaults(func=cmd_compile)
+
+    pi = sub.add_parser("inspect", help="show source coverage without running code or using a GPU")
+    pi.add_argument("src", metavar="SRC", nargs="?", default=".")
+    pi.add_argument("--json", action="store_true", help="print the complete machine-readable inventory")
+    pi.set_defaults(func=cmd_inspect)
 
     pm = sub.add_parser("gemm", help="compile a specialized A100 FP16/BF16 tensor GEMM",
                         description="Compile C=A@B.T with FP16/BF16 inputs and FP32 accumulation/output. "
@@ -659,7 +692,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     pn = sub.add_parser("cnr", help="compile and run: compile SRC, then run what compiled",
                         description=CNR_HELP, formatter_class=argparse.RawDescriptionHelpFormatter)
-    pn.add_argument("src", metavar="SRC", help="a source file or a directory (repo)")
+    pn.add_argument("src", metavar="SRC", nargs="?", default=".", help="source file or repository (default: current directory)")
     _add_compile_args(pn)
     _add_run_args(pn, include_dry_run=False, include_backend=False)
     pn.set_defaults(func=cmd_cnr)
@@ -742,16 +775,44 @@ def dispatch(args: argparse.Namespace) -> int:
     from openassembler.project import cleanup_pending, ProjectError
 
     try:
-        return args.func(args)
+        rc = args.func(args)
+        if rc:
+            _save_failure(args, getattr(args, '_failure', 'Compilation or execution failed; see worker output and build manifest.'), rc)
+        return rc
     except KeyboardInterrupt:
         cleanup_pending()
         print("\ninterrupted: no half-written files were left behind", file=sys.stderr)
         return 130
-    except (ValueError, OSError, ProjectError) as exc:
-        print(f"error: {exc}", file=sys.stderr)
-        return 1
     except BrokenPipeError:          # `openassembler ... | head`
         return 0
+    except (ValueError, OSError, ProjectError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        _save_failure(args, str(exc))
+        return 1
+    except Exception as exc:
+        import traceback
+        print(f'internal compiler error ({type(exc).__name__}): {exc}', file=sys.stderr)
+        _save_failure(args, traceback.format_exc())
+        return 1
+
+
+def _save_failure(args, error, rc=1):
+    from openassembler.diagnostics import save_failure
+    try:
+        path = save_failure(args, error, rc)
+        if path is not None:
+            print(f'build diagnostic: {path}', file=sys.stderr)
+    except Exception as exc:
+        # Reporting must preserve the original build failure and exit status.
+        print(f'could not save build diagnostic: {exc}', file=sys.stderr)
+
+
+def source_arguments(raw, parser):
+    """Use source-path shorthand consistently in the CLI and interactive shell."""
+    commands = next(action.choices for action in parser._actions if isinstance(action, argparse._SubParsersAction))
+    if raw and raw[0] not in commands and not raw[0].startswith('-') and Path(raw[0]).exists():
+        return ['compile', *raw]
+    return raw
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -775,7 +836,9 @@ def main(argv: list[str] | None = None) -> int:
             print()
 
     parser = build_parser()
-    args = parser.parse_args(raw)
+    # A literal source path is the common one-shot build operation. Explicit
+    # commands retain their meaning even if a same-named file exists.
+    args = parser.parse_args(source_arguments(raw, parser))
     if args.cmd == "gpu" and args.gpu_cmd != "run":
         parser.error("gpu: only 'run' is implemented")
     return dispatch(args)

@@ -200,7 +200,8 @@ class Runtime:
         self._tensor_bindings = {}
         self._packed_ready = set()
         self._tensor_schedule = None
-        if self.plan.get('tensor_packing') == 'dual':
+        if any(stage.op in ('pack_dual_f16_rne', 'round_f16_f32')
+               for recipe in self.recipes.values() for stage in recipe.stages):
             from .tensor_schedule import workspace_plan
             self._tensor_schedule = workspace_plan(self.plan,self.steps,self.recipes)
 

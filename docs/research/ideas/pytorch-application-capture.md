@@ -1,9 +1,13 @@
 # PyTorch application capture and saved replay
 
-Status: implemented
+Status: tested-not-selected
 
-The CLI captures configured PyTorch workloads and
-replays validated bundles. Its GPU graph lowering uses AOTAutograd,
+This dossier preserves the historical PyTorch capture/replay experiment.
+The current CLI uses the [OA-native model bridge](native-model-bridge.md);
+Inductor/Triton execution is disabled. Unused vendor instrumentation and the
+Modal adapter were removed on November 14; historical hashes stay in evidence.
+The historical implementation captured configured PyTorch workloads and
+replayed validated bundles. Its GPU graph lowering uses AOTAutograd,
 TorchInductor and Triton; it is not the native OpenAssembler PTX-to-SASS path.
 
 ## Idea in plain language
@@ -89,7 +93,6 @@ options and mutually exclusive application/kernel selectors are listed in
 
 - [Frontend/bundle handling](../../../openassembler/torchfront/frontend.py),
   [runtime worker](../../../openassembler/torchfront/worker.py),
-  [instrumentation](../../../openassembler/torchfront/instrument.py),
   [archive validation](../../../openassembler/torchfront/archive.py).
 - [Actual CLI proof driver](../../../exp/whole_stack/cli_proof/prove.py),
   [proof result](../../../exp/whole_stack/cli_proof/summary.json),
