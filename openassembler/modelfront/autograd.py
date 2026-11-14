@@ -206,7 +206,7 @@ class CompiledModel(torch.nn.Module):
 
 
 def compile_model(model, example_inputs, output_dir, *, opt_level="opt", math_mode="fp32",
-                  storage_views=True, reuse_storage=False, sass_listings=True):
+                  storage_views=True, reuse_storage=False, sass_listings=True,tensor_packing='separate'):
     """Build an exact-shape CPU model and return its native CUDA Module.
 
     CUDA toolkit tools are required for the build. CPU capture never executes
@@ -220,6 +220,9 @@ def compile_model(model, example_inputs, output_dir, *, opt_level="opt", math_mo
 
     plan = optimize_plan(capture_model(model, example_inputs, math_mode=math_mode),
                          storage_views=storage_views, reuse_storage=reuse_storage)
+    if tensor_packing not in ('separate','dual') or tensor_packing=='dual' and math_mode!='f16_rne_f32_accum':
+        raise ValueError('dual tensor packing requires explicit f16_rne_f32_accum math')
+    if tensor_packing != 'separate':plan['tensor_packing']=tensor_packing
     weights = extract_weights(model, plan)
     build_bundle(plan, weights, output_dir, opt_level=opt_level, sass_listings=sass_listings)
     return CompiledModel(plan, weights, output_dir)

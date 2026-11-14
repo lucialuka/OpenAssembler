@@ -260,6 +260,9 @@ def tensor_specs(plan):
 
 def tensor_recipes(plan, specs=None):
     mode = plan.get("math", "fp32")
+    packing = plan.get('tensor_packing','separate')
+    if packing not in ('separate','dual') or packing=='dual' and mode!='f16_rne_f32_accum':
+        raise ValueError('dual tensor packing requires explicit f16_rne_f32_accum math')
     if mode not in ("fp32", "f16_rne_f32_accum"):
         raise ValueError(f"unsupported native model numerical policy: {mode}")
     if mode == "fp32":
@@ -270,7 +273,7 @@ def tensor_recipes(plan, specs=None):
     for step in plan.get("steps", []) + plan.get("backward", {}).get("steps", []):
         if step["kernel"] in ("linear", "linear_dx", "linear_dw"):
             recipe = emit_tensor_recipe(step["kernel"], [specs[x] for x in step["inputs"]],
-                                        specs[step["output"]], {"math_mode":mode})
+                                        specs[step["output"]], {"math_mode":mode,"packing":packing})
             recipes[recipe.name] = recipe
     return recipes
 
@@ -306,7 +309,7 @@ def prepare(plan):
             if recipes and step["kernel"] in ("linear", "linear_dx", "linear_dw"):
                 from .kernels_tensor import emit_tensor_recipe
                 recipe = emit_tensor_recipe(step["kernel"], [specs[x] for x in names], specs[output],
-                                            {"math_mode":plan["math"]})
+                                            {"math_mode":plan["math"],"packing":plan.get('tensor_packing','separate')})
                 steps.append({**step, "phase": phase, "entry":recipe.name, "tensor":True})
             else:
                 kernels[kernel.name] = kernel

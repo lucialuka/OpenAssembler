@@ -197,6 +197,12 @@ class Runtime:
         self._initialization_failed = False
         self._saved_versions = {}
         self._storage_slots = []
+        self._tensor_bindings = {}
+        self._packed_ready = set()
+        self._tensor_schedule = None
+        if self.plan.get('tensor_packing') == 'dual':
+            from .tensor_schedule import workspace_plan
+            self._tensor_schedule = workspace_plan(self.plan,self.steps,self.recipes)
 
     @classmethod
     def load(cls, output_root, weights=None, *, torch=None):
@@ -279,9 +285,18 @@ class Runtime:
             for output in self.plan.get("outputs", []):
                 spec = self.specs[output]
                 self._training[output] = {"loss": self._allocate([]), "seed": self._allocate(spec["shape"])}
-            for recipe in self.recipes.values():
-                for name,spec in recipe.workspaces.items():
-                    self._tensor_workspaces[name] = self._allocate(spec["shape"],dtype="f16")
+            if self._tensor_schedule is not None:
+                for name,spec in self._tensor_schedule['allocations'].items():
+                    self._tensor_workspaces[name] = self._allocate(spec['shape'],dtype=spec['dtype'])
+                for output,bindings in self._tensor_schedule['bindings'].items():
+                    self._tensor_bindings[output] = {
+                        name:self._tensor_workspaces[spec['allocation']].view(-1).narrow(
+                            0,spec['offset'],math.prod(spec['shape'])).view(spec['shape'])
+                        for name,spec in bindings.items()}
+            else:
+                for recipe in self.recipes.values():
+                    for name,spec in recipe.workspaces.items():
+                        self._tensor_workspaces[name] = self._allocate(spec["shape"],dtype="f16")
         self._initialization_failed = False
 
     def _allocate(self, shape, *, dtype="f32"):
@@ -307,7 +322,7 @@ class Runtime:
             for tensor in [*self.buffers.values(), *(v for x in self._training.values() for v in x.values())]:
                 self._driver.memset(tensor.data_ptr(), 0xFF, math.prod(tensor.shape)*4)
             for tensor in self._tensor_workspaces.values():
-                self._driver.memset(tensor.data_ptr(),0xFF,math.prod(tensor.shape)*2)
+                self._driver.memset(tensor.data_ptr(),0xFF,tensor.numel()*tensor.element_size())
 
     def check_canaries(self):
         """Synchronize and verify both ends of every private workspace allocation."""
@@ -371,9 +386,14 @@ class Runtime:
                 elif step.get("tensor"):
                     recipe = self.recipes[step["entry"]]
                     bindings = {f"a{i}":values[name] for i,name in enumerate(step["inputs"])}
-                    bindings.update(self._tensor_workspaces)
+                    bindings.update(self._tensor_bindings[step['output']] if self._tensor_schedule is not None else self._tensor_workspaces)
                     bindings["output"] = values[step["output"]]
                     for stage in recipe.stages:
+                        if stage.op == 'pack_dual_f16_rne':
+                            key=self._tensor_schedule['pack_slots'][step['output']][stage.output]
+                            if key in self._packed_ready:
+                                continue
+                            self._packed_ready.add(key)
                         self._launch(stage,[bindings[x] for x in stage.inputs],bindings[stage.output])
                 else:
                     self._launch(self.kernels[step["entry"]], [values[x] for x in step["inputs"]], values[step["output"]])
@@ -401,6 +421,9 @@ class Runtime:
         if len(devices) != 1:
             raise ValueError("native graph needs tensors on exactly one CUDA device")
         self._initialize(next(iter(devices)))
+        # The fixed captured graph includes all first uses every iteration.
+        # No validity decision survives an SGD update or a changed external input.
+        self._packed_ready.clear()
         values.update(self.buffers)
         self.launches = []
         with self.torch.cuda.device(self._device):

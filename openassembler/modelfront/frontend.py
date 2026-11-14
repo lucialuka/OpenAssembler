@@ -72,6 +72,10 @@ def load_config(root: Path) -> dict:
     if type(model.get('reuse_storage', False)) is not bool:
         raise ModelError('model.reuse_storage must be true or false')
     values['reuse_storage'] = model.get('reuse_storage', False)
+    packing = model.get('tensor_packing','separate')
+    if packing not in ('separate','dual') or packing=='dual' and math_mode!='f16_rne_f32_accum':
+        raise ModelError('model.tensor_packing must be separate or dual; dual requires f16_rne_f32_accum')
+    values['tensor_packing'] = packing
     execution = model.get('execution', 'direct')
     if execution not in ('direct', 'cuda_graph') or (execution == 'cuda_graph' and mode != 'training'):
         raise ModelError('model.execution must be direct or cuda_graph; cuda_graph requires training mode')

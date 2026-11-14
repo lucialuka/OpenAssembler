@@ -272,6 +272,8 @@ def process(request: dict) -> dict:
                 started = time.perf_counter()
                 plan = optimize_plan(plan, storage_views=config.get('storage_views', True),
                                      reuse_storage=config.get('reuse_storage', False))
+                if config.get('tensor_packing','separate') != 'separate':
+                    plan['tensor_packing'] = config['tensor_packing']
                 planning_ms = (time.perf_counter()-started)*1000
                 started = time.perf_counter()
                 cache_dir=__import__('os').environ.get('OPENASSEMBLER_MODEL_CACHE')

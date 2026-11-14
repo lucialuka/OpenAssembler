@@ -25,9 +25,12 @@ The default numerical contract uses FP32 operands, accumulation, output and
 master state. It preserves explicit multiply/add ordering in its baseline
 matrix kernels. The optional `f16_rne_f32_accum` contract rounds each matrix
 operand to FP16 RNE, uses OA Tensor Core GEMMs with FP32 accumulation/output,
-and prescribes straight-through cast derivatives. It requires the existing
-full-tile GEMM shape contract for forward, dX and dW; it never silently falls
-back to scalar FP32. CPU reference formulas independently apply the declared
+and prescribes straight-through cast derivatives. Its default separate packing
+requires the existing full-tile GEMM shapes for forward, dX and dW. Explicit
+`tensor_packing = "dual"` additionally supports padded linear dimensions up to
+512, including contiguous flattened rank-three inputs, and reuses both operand
+layouts within each training iteration. It never silently falls back to scalar
+FP32. CPU reference formulas independently apply the declared
 rounding to every product. It differs from unmodified autocast.
 
 Every model bundle records exact shapes, strides/layout assumptions, dtype,
@@ -226,3 +229,24 @@ rejects all unaccounted CUDA events. Model reports now retain worker-local
 capture/planning/bundle phases, graph preparation, CUDA stream event intervals,
 profiled iteration indexes and observed per-kernel duration samples. Samples
 from a profiled invocation are not steady-state performance distributions.
+
+## Dual-layout training packs and padded linear dimensions
+
+The explicit `tensor_packing="dual"` policy shares normal/transposed FP16
+operand packs within one complete forward/backward iteration and refreshes them
+on the next forward. A 32×32 shared-memory transpose with padded stride 33
+coalesces the output stores. Allocation/binding plans distinguish logical
+operands even when their FP32 storage slots are reused. The captured graph
+contains fresh first-use packs every iteration, including after SGD updates.
+
+[The November 14 experiment and production replays](../../../exp/pack_training/RESULTS.md)
+measure an 8.5–9.5% complete-training gain for three independent 128×128
+projections, with 45→32 launches and 18→5 pack launches. Other MLPs are
+near-neutral or slightly slower; private packed storage also increases, so
+separate packing remains the default. Optional zero padding plus a crop/bias
+stage admits odd dimensions and flattened rank-three linear inputs up to 512
+per logical matrix dimension. The 1024-wide captured-training stress fails its
+gradient gate and is excluded. FP16 BMM/attention and broadcasting remain
+outside this option. Exact-bit pack tests, four-step training, poisoned
+changed-input graph replay, profiler ownership and repository direct/replay
+bridge checks are retained with the report.

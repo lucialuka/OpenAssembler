@@ -94,8 +94,14 @@ def emit_tensor_recipe(op, inputs, output, attrs=None):
     attrs = dict(attrs or {})
     if attrs.pop("math_mode", None) != MATH_MODE:
         raise ValueError(f"tensor recipes require explicit math_mode={MATH_MODE!r}")
+    packing = attrs.pop('packing', 'separate')
+    if packing not in ('separate','dual'):
+        raise ValueError('tensor packing must be separate or dual')
     if attrs:
         raise ValueError(f"unsupported tensor recipe attributes: {sorted(attrs)}")
+    if packing == 'dual':
+        from .kernels_tensor_dual import emit_dual_recipe
+        return emit_dual_recipe(op,inputs,output)
     if op not in ("linear", "linear_dx", "linear_dw") or len(inputs) not in ((2,3) if op=="linear" else (2,)):
         raise ValueError("tensor recipe requires linear/linear_dx/linear_dw with optional forward bias")
     left, right = (shape_of(x) for x in inputs[:2])

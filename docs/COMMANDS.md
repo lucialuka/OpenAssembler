@@ -116,6 +116,9 @@ tracked/non-ignored files and recognizes kernel sources; output paths mirror
 the source tree. A directory build does not accept a single output name.
 
 A `[model]` configuration selects native Python graph capture automatically.
+For explicit FP16-RNE linear training, `tensor_packing = "dual"` opts into
+per-iteration pack reuse and bounded matrix tails; see
+[configuration and limits](REPOSITORY_WORKFLOW.md#fp16-operand-reuse-and-bounded-matrix-tails).
 `--frontend model` or `--frontend torch` explicitly chooses it. Supported model
 factories run on CPU; OA emits executable GPU computation. `--frontend native`
 selects static source discovery. Triton/Inductor compilation is disabled.

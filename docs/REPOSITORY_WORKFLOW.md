@@ -69,7 +69,8 @@ The initial operator set includes linear, residual/elementwise paths, batched
 products, permutations, concatenation, softmax, GELU and affine LayerNorm.
 Training differentiates the captured supported graph and emits OA MSE/backward/SGD
 kernels. The optional `f16_rne_f32_accum` mode has a separate explicit rounding
-contract and rejects unsupported full-tile GEMM shapes. Unsupported FX nodes,
+contract; default separate packing rejects unsupported full-tile GEMM shapes.
+The explicit dual-packing option below supports bounded padded linear shapes. Unsupported FX nodes,
 dynamic or unobserved shapes, layouts, dtypes, custom ops and optimizers reject;
 there is no vendor GPU fallback. See the [native model guide](research/ideas/native-model-bridge.md).
 
@@ -250,3 +251,36 @@ Native code generation, optimization levels, tensor schedules, pointer policies
 and launch contracts are unaffected by transport selection. See
 [COMMANDS.md](COMMANDS.md) for every option and [STATUS.md](STATUS.md) for
 measured performance and supported compiler coverage.
+
+## FP16 operand reuse and bounded matrix tails
+
+For explicit FP16-RNE linear training, the optional configuration
+`tensor_packing = "dual"` packs both normal and transposed operand layouts once
+per forward/backward iteration. It refreshes all packs before the next
+iteration, including weights updated by SGD. Both Modal and SSH execute the
+same saved OA cubins and schedule; neither uses a vendor compute fallback.
+
+```toml
+[model]
+entrypoint = "model.py"
+input_shapes = [[17, 65]]
+math = "f16_rne_f32_accum"
+tensor_packing = "dual"
+mode = "training"
+execution = "cuda_graph"
+reuse_storage = true
+```
+
+The Python API accepts the same policy through
+`compile_model(..., math_mode="f16_rne_f32_accum", tensor_packing="dual")`.
+This option pads each linear forward/dX/dW dimension to a multiple of 128, uses
+OA Tensor Core GEMMs, and crops the FP32 output with optional bias in one stage.
+Each logical matrix dimension is bounded at 512. Rank-three linear inputs use
+the captured contiguous flatten/view path. Batched attention products still
+require the existing explicit FP32 policy; this option does not enable general
+FP16 BMM, broadcasting, or native attention fusion.
+
+The default remains `tensor_packing = "separate"`: dual packing allocates both
+operand layouts, so fewer launches do not guarantee a faster complete task.
+The experiment record under `exp/pack_training` includes neutral/slower cases,
+full training checks, changed-input CUDA Graph replay, and exact pack-bit tests.

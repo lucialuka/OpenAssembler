@@ -50,11 +50,18 @@ the review's eager/Inductor or ptxas/cuBLAS comparisons to OA.
 The [five-task A100 comparison and per-region breakdown](../exp/ml_suite/RESULTS.md)
 records the current remaining gap against direct Triton and same-PTX ptxas.
 
+The [dual-layout FP16 training-pack campaign](../exp/pack_training/RESULTS.md)
+adds explicit `tensor_packing="dual"` with iteration-local reuse and padded
+linear dimensions through 512. Complete three-projection training improves
+8.5–9.5% in independent A100 production runs, while other MLPs are near-neutral
+or slower. Separate packing remains the default; the rejected 1024-wide replay
+and unchanged FP32-only BMM boundary are documented in the report.
+
 ## Headline validation
 
 | Area | Latest completed evidence | Interpretation |
 |---|---|---|
-| Repository regression | November 13 production snapshot: 952 passed, two optional Torch modules skipped; separate A100 compiler/runtime campaigns are archived under `exp/ml_suite` | Separate interpreter scopes; new replay/loss/audit evidence is retained under exp/review_response |
+| Repository regression | November 14 production snapshot: 961 passed, two optional Torch modules skipped; separate A100 compiler/runtime campaigns are archived under `exp/ml_suite` | Separate interpreter scopes; new replay/loss/audit evidence is retained under exp/review_response |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
 | Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay; a 58-shape 1/2/4/8-warp A100 sweep and separate seven-case heldout recheck promote five exact rowwise policies | Explicit FP32 operators; selected CTA geometry improves five heldout OpenAssembler cases by at least 3% in all rounds; same-source ptxas remains faster on main shapes |
 | Native direct-pointer GEMM | Historical 486 full method/input checks across three runs; six MLP products improve about 1.03–1.12×; current exact selections are audited in the November 11 replay | Direct pointers are selected for measured contracts or explicitly requested; unknown contracts keep legacy pointers. Historical tall regressions remain valid for those tested plans |
