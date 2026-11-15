@@ -1,15 +1,12 @@
 <p align="center">
-  <img src="figs/openassembler_logo.png" width="680" alt="OpenAssembler">
+  <img src="figs/openassembler_logo.png" width="820" alt="OpenAssembler">
 </p>
 
 # OpenAssembler
 
 **Compile Python models and GPU kernels to native NVIDIA SASS and cubins.**
 
-OpenAssembler targets **A100 / SM80**, with its own instruction selection,
-register allocation, scheduling, and machine-code encoder. Compile supported
-Python, CUDA C/C++/C, or PTX sources, inspect the generated code, and run the saved
-artifacts locally, over SSH, or on Modal.
+OpenAssembler targets **A100 / SM80**, with its own instruction selection, register allocation, scheduling, and machine-code encoder. Compile supported Python, CUDA C/C++/C, or PTX sources, inspect the generated code, and run the saved artifacts locally, over SSH, or on Modal.
 
 <p align="center">
   <strong>v0.3.1 · Python 3.12+ · Linux and macOS · Apache 2.0</strong><br>
@@ -221,4 +218,3 @@ does not import experiment drivers.
 
 Licensed under [Apache 2.0](LICENSE). See [NOTICE](NOTICE) for attribution.
 
-[🇭🇰 Free Hong Kong](https://en.wikipedia.org/wiki/Liberate_Hong_Kong,_revolution_of_our_times)
