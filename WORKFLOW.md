@@ -11,7 +11,10 @@ Shared setup, evidence states and maintenance rules are in
 1. Inspect the relevant source, tests, dossier and actual raw evidence before
    changing a compiler path. The validated native target is SM80/A100; other
    architectures need their own encoding and execution evidence.
-2. Stage experimental candidates under `exp/`. Record the precision/layout,
+2. Stage existing optimization research under `exp/` and repository compiler
+   research under `compiler_exp/`. Maintain compiler discoveries/contracts in
+   `docs/compiler/`, linked from the research catalogue and user guides.
+   Record the precision/layout,
    numerical contract, dependencies, resources and baseline before timing.
 3. Treat NVIDIA's tools as black-box oracles. Recover encodings through real
    corpus variation, bit flips and disassembly. Generated specs are the durable

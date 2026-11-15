@@ -2,6 +2,11 @@
 
 Status: implemented
 
+The [compiler program](../../compiler/README.md) distinguishes current source
+compilation from proposed dependency/build graph and host-launch integration.
+Its [source completeness repair](../../compiler/source-completeness.md) adds
+bounded macro-header candidate discovery and PTX entry/ABI accounting.
+
 The CLI builds discovered standalone GPU kernels or an explicitly selected
 native Python model while preserving an explicit record of what was compiled
 and by whom. It does not turn arbitrary host code into a binary.

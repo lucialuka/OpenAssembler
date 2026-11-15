@@ -8,6 +8,26 @@ every researched feature has a dossier in the [catalogue](research/README.md).
 The cross-cutting reverse-engineering record is centralized in the
 [reverse-engineering results hub](reverse_eng_results/README.md).
 
+## Repository compiler completeness and ongoing research
+
+The [compiler program](compiler/README.md) records the CPU-host/OA-only-GPU
+application target, implemented contracts, open work and memory/latency research.
+PTX bare/weak definitions and launch-bound headers now survive parsing. Explicit
+scalar parameter validation, entry inventory reconciliation, bound launch metadata
+and runtime block checks prevent those cases from silently losing code or ABI.
+Bounded static local-header discovery also finds macro-qualified CUDA sources.
+The [source completeness contract](compiler/source-completeness.md) gives exact
+limits, tests and A100 evidence. This does not add general build-system linking,
+custom-op integration or arbitrary model/operator support.
+
+The separate [memory/latency campaign](compiler/memory-latency.md) appends two
+FP16 exact policies after independent selection/heldout admission: 128×512×1024
+and 256×768×1024 improve the OA baseline by 2.369–2.396× across their respective
+paired rounds on an actual A100-SXM4-80GB. The installed GEMM table now has 44
+contracts, including 36 nonbaseline routes and eight baseline retentions. The
+original 42-contract study is unchanged, and these kernel results do not
+establish a ptxas comparison or a whole-application gain.
+
 ## November 15 automatic model setup and installation welcome
 
 Repositories no longer require a fixed Python filename or a hand-written TOML
@@ -123,7 +143,7 @@ The November 14 BMM extension above supersedes that support boundary.
 | Grouped-N CTA traversal | Current production-path full gates pass; repeated 16384×4096×4096 is about 6.9–7.3% faster than m-fast and held-out tall FP16/BF16 cases improve | Explicit `--cta-order grouped_n8` only; wide/square auto-dispatch remains disabled |
 | Transformer role/shape coverage | Static audit covers 180 role/dtype rows: 44 direct kernel routes, 84 dimension-fit but blocked by layout or batching, and 52 dimension-contract rejections; QKV/output/FFN role runs pass 462 method/input checks, with corrected pointer and fragment replays retained separately | Initial direct-pointer labels were invalidated and rerun with checked compile contracts. Same-source ptxas remains faster on those medium roles; automatic model routing is separate |
 | Current role-matched counters | All 20 counters collected for six FP16 FFN-up methods; OA direct+early executes 4.371M versus ptxas 3.231M total instructions with identical 2.097M tensor work | Extra instructions and overlap both matter; cuBLAS is faster despite more instructions. Counter replay is separate from graph timing |
-| Shape-tuned GEMM and copy-address reuse | Completed current production-source selection and independent frozen held-out replay: 42 exact contracts, 500 eligible candidates and 1,500 complete candidate/input checks per session; all binary, numerical, graph and resource gates pass | Automatic dispatch now installs 34 nonbaseline policies and eight measured baseline retentions. Selected policies improve OA baseline by 1.033–2.460× across the paired rounds; copy-address reuse serves 20 contracts and Morton8 the two large tall contracts. Unknown/stale contracts fall back. Same-source ptxas remains faster in all 42 nominal-selected comparisons; this is not a whole-model gain. See [current results](../exp/dispatch_tuning/RESULTS.md) and the [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md) |
+| Shape-tuned GEMM and copy-address reuse | November 11 production-source selection and independent frozen held-out replay: 42 exact contracts, 500 eligible candidates and 1,500 complete candidate/input checks per session; all binary, numerical, graph and resource gates pass | That campaign installs 34 nonbaseline policies and eight measured baseline retentions; the November 15 extension adds two separately admitted routes. Selected policies improve OA baseline by 1.033–2.460× across the paired rounds; copy-address reuse serves 20 contracts and Morton8 the two large tall contracts. Unknown/stale contracts fall back. Same-source ptxas remains faster in all 42 nominal-selected comparisons; this is not a whole-model gain. See [current results](../exp/dispatch_tuning/RESULTS.md) and the [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md) |
 | Per-boundary BF16 trajectory | 151/151 checkpoints captured across 30 updates: first observed output failure before update 3; first parameter failure after update 22 | Eager versus Inductor only; unchanged gates and optimizer policy. It does not localize the causal operation or repair native OA composition |
 
 The GEMM campaign keeps A100 variants separate and uses within-worker paired
@@ -311,8 +331,9 @@ training invocations, so these runs do not show amortized startup gains.
 
 The following six-product/hybrid measurements predate the November 11 dispatch
 campaign. Their policy labels and device cohorts describe those original runs;
-the current 42-entry policy table and both-session ratios are in the
-[current dispatch results](../exp/dispatch_tuning/RESULTS.md).
+the original 42-entry policy study and both-session ratios are in the
+[November 11 dispatch results](../exp/dispatch_tuning/RESULTS.md), extended by
+the [two-contract November 15 admission](compiler/memory-latency.md).
 
 Same-PTX ptxas beat the original native OA compiler on all six isolated MLP
 products: OA was about 41–45% slower. OA beat the selected default GemmEx on two

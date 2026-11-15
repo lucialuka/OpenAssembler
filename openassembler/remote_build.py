@@ -89,7 +89,7 @@ def compile_native(source: Path, output: Path, options: Options, name: str | Non
     root, files, includes = _sources(source, output, options)
     candidates = [rel.removeprefix('source/') for rel in files if rel.startswith('source/')
                   and (source.is_file() and root / rel.removeprefix('source/') == source
-                       or source.is_dir() and project.classify(root / rel.removeprefix('source/'), rel).language)]
+                       or source.is_dir() and project.classify(root / rel.removeprefix('source/'), rel.removeprefix('source/')).language)]
     if not candidates:
         raise project.ProjectError('nothing to compile: add supported GPU kernels, or configure '
                                    '[application] frontend="torch" in openassembler.toml for a PyTorch repository')

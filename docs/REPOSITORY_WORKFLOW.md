@@ -1,5 +1,11 @@
 # Build and execute a repository
 
+The [compiler research and implementation hub](compiler/README.md) tracks
+whole-application coverage and measured memory/latency tradeoffs. Current source
+discovery includes bounded quoted local headers for CUDA qualifier macros.
+PTX entry launch bounds are retained and checked when planning execution; read
+[the exact source/ABI contract](compiler/source-completeness.md).
+
 Current native Python models use an explicit `[model]` CPU factory and shape
 contract. Read [the native model guide](research/ideas/native-model-bridge.md).
 Configured native models are selected automatically and execute only OA artifacts

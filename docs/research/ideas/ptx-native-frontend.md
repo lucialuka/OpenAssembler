@@ -4,7 +4,10 @@ Status: implemented
 
 Supported SM80 PTX reaches OpenAssembler's own
 instruction selection, register allocation, scheduling and SASS encoder.
-Unsupported forms fail or use an explicitly requested, labelled fallback.
+Unsupported forms reject; the production CLI disables vendor GPU fallback.
+The [entry completeness/ABI contract](../../compiler/source-completeness.md)
+records bare/weak entries, launch-bound headers, supported scalar parameters,
+inventory checks and runtime block constraints, including its A100 evidence.
 
 ## Idea in plain language
 

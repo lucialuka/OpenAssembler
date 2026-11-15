@@ -2,6 +2,11 @@
 
 Status: implemented
 
+The November 15 [compiler memory/latency campaign](../../compiler/memory-latency.md)
+adds two independently admitted FP16 contracts, bringing the installed table to
+44 entries (36 nonbaseline, eight baseline retentions). The 42-contract study
+below retains its original cohort and results.
+
 This status covers the checked native policy selector, explicit GPU tuning and
 their bounded GEMM contracts. It does not mean OpenAssembler beats ptxas or
 cuBLAS, or that every neural-network operation has an autotuner.
@@ -36,7 +41,7 @@ load-next fragments and a 64×64 CTA family. Tile64 now has independently
 selectable copy-address reuse, direct pointer homes and early advancement. The
 November 11 [42-contract production-source replay](../../../exp/dispatch_tuning/RESULTS.md)
 completed selection and independent frozen held-out validation. The installed
-table now contains 34 nonbaseline choices and eight measured baseline
+original table contains 34 nonbaseline choices and eight measured baseline
 retentions. Across six paired rounds, the improved policies give 1.033–2.460×
 OA baseline/selected speed ratios. Copy-address reuse is selected in 20 exact
 contracts and Morton8 in both 16384×4096×4096 dtype contracts. No combined,

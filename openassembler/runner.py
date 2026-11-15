@@ -171,6 +171,15 @@ def _native_bytes(target,out_dir):
     return target.entry['_native_binary'] if '_native_binary' in target.entry else (Path(out_dir)/target.entry['cubin']).read_bytes()
 
 
+def validate_launch(kernel, block):
+    """Enforce PTX launch contracts before submission. maxntid bounds the product."""
+    directives = kernel.get('ptx_directives', {})
+    if 'reqntid' in directives and tuple(block) != tuple(directives['reqntid']):
+        raise RunError(f"{kernel['name']}: block {tuple(block)} differs from .reqntid {directives['reqntid']}")
+    if 'maxntid' in directives and math.prod(block) > math.prod(directives['maxntid']):
+        raise RunError(f"{kernel['name']}: block {tuple(block)} exceeds .maxntid thread count {math.prod(directives['maxntid'])}")
+
+
 # ---- jobs --------------------------------------------------------------------------
 
 def _seed(*parts) -> int:
@@ -235,9 +244,20 @@ def auto_case(t: Target, out_dir: Path, n: int, reps: int, plan: Plan) -> None:
                                    skip=f"parameter {pname!r} has type .{ty}, which the auto-harness can't "
                                         f"fill; describe the launch with --spec SPEC.json"))
             return
-    grid = max(1, math.ceil(n / BLOCK))
-    steps_ours = [("ours", k["name"], (grid, 1, 1), (BLOCK, 1, 1), 0, args)]
-    steps_ref = [("ref", k["name"], (grid, 1, 1), (BLOCK, 1, 1), 0, args)]
+    block = (BLOCK, 1, 1)
+    directives = k.get('ptx_directives', {})
+    if 'reqntid' in directives:
+        block = tuple(directives['reqntid'])
+    elif 'maxntid' in directives:
+        block = (min(BLOCK, math.prod(directives['maxntid'])), 1, 1)
+    if block[1:] != (1, 1):
+        plan.cases.append(Case(k['name'], t.entry['source'], -1, -1, [],
+                               skip='multidimensional .reqntid requires an explicit --spec'))
+        return
+    validate_launch(k, block)
+    grid = max(1, math.ceil(n / block[0]))
+    steps_ours = [("ours", k["name"], (grid, 1, 1), block, 0, args)]
+    steps_ref = [("ref", k["name"], (grid, 1, 1), block, 0, args)]
     outputs = {b: [(0, sz)] for b, sz in buffers.items()}
     ours_bytes = _native_bytes(t,out_dir)
     ref_bytes = (out_dir / t.entry["reference"]).read_bytes() if plan.reference_comparison else None
@@ -249,7 +269,7 @@ def auto_case(t: Target, out_dir: Path, n: int, reps: int, plan: Plan) -> None:
     note = "ptxas-fallback: our cubin holds ptxas's code for this kernel" \
         if k.get("compiled_by") == "ptxas-fallback" else ""
     plan.cases.append(Case(k["name"], t.entry["source"], i, i + 1 if plan.reference_comparison else None, list(buffers), note=note,
-                           describe=f"grid {grid} x block {BLOCK}; " + ", ".join(desc)))
+                           describe=f"grid {grid} x block {block[0]}; " + ", ".join(desc)))
 
 
 def gemm_case(t: Target, out_dir: Path, reps: int, plan: Plan) -> None:
@@ -418,6 +438,7 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
         if (math.prod(block) > 1024 or any(v > lim for v, lim in zip(block, (1024, 1024, 64)))
                 or any(v > lim for v, lim in zip(grid, (2147483647, 65535, 65535)))):
             raise RunError(f"spec: step {si} launch dimensions exceed CUDA limits")
+        validate_launch(t.kernel, block)
         smem = st.get("smem", 0)
         if type(smem) is not int or not 0 <= smem <= 163 * 1024:
             raise RunError(f"spec: step {si} smem must be a non-negative int")

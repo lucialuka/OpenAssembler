@@ -103,7 +103,41 @@ def has_cuda_kernel(text: str) -> bool:
     """Detect a __global__ function outside comments and string/char literals."""
     text = re.sub(r"//[^\n]*|/\*.*?\*/", " ", text, flags=re.S)
     text = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', " ", text)
+    text = re.sub(r'(?m)^[ \t]*#[^\n]*(?:\n|$)', ' ', text)
     return bool(re.search(r"\b__global__\b", text))
+
+
+def _included_cuda_qualifier(path: Path, root: Path) -> bool:
+    """Bounded static local-header closure for macro-qualified device sources.
+
+    Inspection stays tool-free. nvcc remains responsible for conditional
+    preprocessing and deciding whether the candidate actually defines kernels.
+    System includes, symlinks and paths outside the inspected tree are excluded.
+    """
+    seen, pending, total = set(), [path], 0
+    while pending and len(seen) < 128:
+        current = pending.pop()
+        if current in seen or current.is_symlink() or not _inside(current.resolve(), root):
+            continue
+        seen.add(current)
+        try:
+            size = current.stat().st_size
+            if total + size > 8 * 1024 * 1024:
+                continue
+            total += size
+            text = current.read_text(errors='replace')
+        except OSError:
+            continue
+        text = re.sub(r'//[^\n]*|/\*.*?\*/', ' ', text, flags=re.S)
+        if current != path and re.search(r'\b__global__\b', re.sub(r'"(?:\\.|[^"\\])*"', ' ', text)):
+            return True
+        for include in re.findall(r'(?m)^\s*#\s*include\s*"([^"\n]+)"', text):
+            candidate = current.parent / include
+            if not candidate.is_file():
+                candidate = root / include
+            if candidate.is_file() and not candidate.is_symlink():
+                pending.append(candidate)
+    return False
 
 
 def has_ptx_entry(text: str) -> bool:
@@ -170,7 +204,14 @@ def classify(path: Path, rel: str) -> Classified:
         return Classified(path, rel, lang) if has_ptx_entry(text) else \
             Classified(path, rel, None, ".ptx without .entry")
     if lang == "cuda":
-        return Classified(path, rel, lang) if has_cuda_kernel(text) else \
+        # A .cuh qualifier definition is not independently a translation unit.
+        root = path.absolute()
+        for _ in Path(rel).parts:
+            root = root.parent
+        direct = has_cuda_kernel(text)
+        inferred = (not direct and re.search(r'(?m)^\s*#\s*include\s*"', text)
+                    and path.suffix.lower() != '.cuh' and _included_cuda_qualifier(path, root.resolve()))
+        return Classified(path, rel, lang) if direct or inferred else \
             Classified(path, rel, None, f"{path.suffix.lower()} host code (no __global__)")
     ks = python_kernel_names(text)
     if ks is None:

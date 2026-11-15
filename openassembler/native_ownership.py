@@ -27,6 +27,8 @@ def record(binary,kernels,*,ptx_sha256):
         raise ValueError("native ownership requires complete OA executable text coverage")
     for kernel in kernels:
         texts[kernel['name']]['params']=kernel['params']
+        if kernel.get('ptx_directives'):
+            texts[kernel['name']]['ptx_directives']=kernel['ptx_directives']
     return {'schema':1,'arch':'sm_80','cubin_sha256':hashlib.sha256(binary).hexdigest(),
             'ptx_sha256':ptx_sha256,'kernels':texts}
 
@@ -45,6 +47,8 @@ def validate(entry,binary):
         if kernel['name'] not in texts:
             raise ValueError("native module executable inventory differs from manifest")
         texts[kernel['name']]['params']=kernel['params']
+        if kernel.get('ptx_directives'):
+            texts[kernel['name']]['ptx_directives']=kernel['ptx_directives']
     if set(texts)!={k['name'] for k in kernels} or texts!=proof.get('kernels'):
         raise ValueError("native module text/register/ABI inventory differs from its OA build")
     return binary

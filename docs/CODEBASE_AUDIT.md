@@ -1,11 +1,17 @@
 # Repository compiler and codebase audit
 
-Reviewed November 14, 2026. OpenAssembler's core is an SM80/A100 compiler from
+Reviewed November 15, 2026. OpenAssembler's core is an SM80/A100 compiler from
 supported Python model/kernel, CUDA C/C++/C, and PTX sources to OA-owned native
 instructions in executable cubins. Transport changes where work runs; it does
 not authorize Triton, Inductor, cuBLAS, or donor cubins as production compute.
 
 ## Source to executable map
+
+The [compiler hub](compiler/README.md) now maintains application coverage work.
+Its [entry/ABI repair](compiler/source-completeness.md) adds complete supported
+PTX entry parsing, bound launch directives, runtime block validation and bounded
+local-header CUDA discovery. Build/dependency resolution and host launch
+integration remain explicitly open.
 
 | Boundary | Owner and behavior |
 |---|---|

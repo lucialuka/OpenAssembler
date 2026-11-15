@@ -17,13 +17,11 @@ which this module does not attempt to demangle for you.
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 from openassembler import oracle
 
 ROOT = oracle.ROOT
-_ENTRY = re.compile(r"(?:\.(?:visible|weak)\s+)?\.entry\s+([\w$]+)\s*\(")
 
 
 class CppFrontendError(Exception):
@@ -31,7 +29,8 @@ class CppFrontendError(Exception):
 
 
 def _kernel_names(ptx: str) -> list[str]:
-    return _ENTRY.findall(ptx)
+    from openassembler.ptx.parse import entry_names
+    return entry_names(ptx)
 
 
 def compile_to_ptx_module(path: Path, *, arch: str = "sm_80", include_dirs: list[Path] | None = None,

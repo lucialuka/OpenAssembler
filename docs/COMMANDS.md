@@ -1,5 +1,10 @@
 # OpenAssembler command reference
 
+PTX definitions may use bare, visible or weak entries and supported launch
+directives. Required block dimensions and maximum thread counts are enforced by
+the runner; aggregate parameter ABIs and unsupported headers reject explicitly.
+See [source completeness and launch contracts](compiler/source-completeness.md).
+
 This is the single reference for the public `openassembler` CLI in the current
 checkout. It is checked against `openassembler/cli.py`, the interactive shell,
 and the commands' runtime dispatch. Feature dossiers in the
@@ -302,13 +307,14 @@ shape-specific wins and regressions. Automatic dispatch uses exact recorded
 contracts; it does not extrapolate a winner to neighboring shapes or silently
 switch to ptxas/cuBLAS. There is no `morton6` CLI option.
 
-The current table has 42 exact FP16/BF16 contracts: 34 tuned policies and eight
-measured baseline retentions. Twenty-two select tile64 variants, including 20
+The current table has 44 exact FP16/BF16 contracts: 36 tuned policies and eight
+measured baseline retentions. Twenty-four select tile64 variants, including 22
 with copy-address reuse; two select Morton8. The remaining tuned entries use
 128-tile pointer policies. These counts describe the current evidence, not a
 promise that neighboring shapes or a future toolkit have the same fastest
 policy. See the [dispatch dossier](research/ideas/shape-aware-native-gemm-dispatch.md)
-and [complete measured matrix](../exp/dispatch_tuning/RESULTS.md).
+and the [original measured matrix](../exp/dispatch_tuning/RESULTS.md) plus
+[two-contract extension](compiler/memory-latency.md).
 
 To compare the current admitted native policies on a particular A100 and keep
 the result for a later compile:

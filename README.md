@@ -191,7 +191,7 @@ The retained records include passing and failed gates, not just faster runs.
 
 | Area | Established scope | Evidence |
 |---|---|---|
-| Native GEMM dispatch | 42 exact contracts: 34 tuned policies and eight baseline retentions. Selected gains are over OA's earlier reference. | [A100 replay](exp/dispatch_tuning/RESULTS.md) |
+| Native GEMM dispatch | 44 exact contracts: 36 tuned policies and eight baseline retentions. Selected gains are over OA's earlier reference. | [Original 42-contract replay](exp/dispatch_tuning/RESULTS.md), [two-contract extension](docs/compiler/memory-latency.md) |
 | Native model runtime | Verified complete updates, CUDA Graph replay, storage optimizations, and warm-build caching under stated contracts. | [Model guide](docs/research/ideas/native-model-bridge.md) |
 | FP16 batched products and attention | Bounded tails, both gradient orientations, changing-input training, workspace guards, and profiler ownership. | [A100 validation](exp/attention_half/RESULTS.md) |
 
@@ -202,6 +202,9 @@ training speedup. The [status page](docs/STATUS.md) and
 experimental results, rejected candidates, and open work.
 
 ## Documentation
+
+[Repository compiler research](docs/compiler/README.md) records source coverage,
+OA-only application contracts, new discoveries and memory/latency experiments.
 
 | Guide | Read it for |
 |---|---|

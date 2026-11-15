@@ -2,6 +2,10 @@
 
 Status: implemented
 
+Static repository discovery now follows a bounded quoted local-header closure
+to find macro-qualified CUDA candidates. It does not run preprocessing or resolve
+an arbitrary build graph. See the [discovery contract](../../compiler/source-completeness.md).
+
 CUDA source is parsed and optimized by NVIDIA's nvcc;
 its emitted PTX is compiled to SASS by OpenAssembler. OpenAssembler does not
 claim to have reverse-engineered or replaced nvcc's C++ parser/NVVM optimizer.

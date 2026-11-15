@@ -76,6 +76,7 @@ class Kernel:
     labels: dict[str, int]                 # label -> index into body
     decls: list[VarDecl] = field(default_factory=list)
     branchtargets: dict[str, list[str]] = field(default_factory=dict)
+    directives: dict[str, tuple[int, ...]] = field(default_factory=dict)
 
 
 @dataclass
@@ -87,13 +88,87 @@ class Module:
 _TYPE_SIZE = {"b8": 1, "u8": 1, "s8": 1, "b16": 2, "u16": 2, "s16": 2, "f16": 2,
               "b32": 4, "u32": 4, "s32": 4, "f32": 4, "b64": 8, "u64": 8, "s64": 8, "f64": 8}
 _VAR_DECL = re.compile(r"\.(shared|local|const|global)\s+(?:\.align\s+(\d+)\s+)?\.(\w+)\s+(\w+)(?:\[(\d+)\])?")
-_PARAM = re.compile(r"\.param\s+\.(\w+)\s+(\w+)")
-_ENTRY = re.compile(r"\.(?:visible\s+)?\.entry\s+(\w+)\s*\((.*?)\)\s*\{", re.S)
+_ENTRY = re.compile(r"(?<![\w$.])\.entry\s+([\w$]+)\s*\(")
 
 
 def _strip_comments(src: str) -> str:
-    src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)
-    return re.sub(r"//[^\n]*", "", src)
+    # Strings can contain comment markers (e.g. .file paths). Preserve offsets
+    # and newlines for diagnostics and for the entry scanner's source slices.
+    return re.sub(r'"(?:\\.|[^"\\])*"|/\*.*?\*/|//[^\n]*',
+                  lambda m: m[0] if m[0].startswith('"') else re.sub(r'[^\n]', ' ', m[0]),
+                  src, flags=re.S)
+
+
+def _mask_strings(src: str) -> str:
+    return re.sub(r'"(?:\\.|[^"\\])*"', lambda m: ' ' * len(m[0]), src)
+
+
+def entry_definitions(src: str):
+    """Yield complete entry definitions, skipping quoted text and prototypes.
+
+    Return (name, params, directives, body, start, end). Header delimiters are
+    balanced independently of instruction parsing; an unrecognized header never
+    makes a kernel silently disappear. Offsets refer to comment-stripped text.
+    """
+    src = _strip_comments(src)
+    masked = _mask_strings(src)
+    pos = 0
+    while match := _ENTRY.search(masked, pos):
+        depth, end = 1, match.end()
+        while end < len(masked) and depth:
+            depth += (masked[end] == '(') - (masked[end] == ')')
+            end += 1
+        if depth:
+            raise SyntaxError(f"entry {match[1]}: unbalanced parameter list")
+        params = src[match.end():end - 1]
+        delimiter = re.search(r'[;{]', masked[end:])
+        if delimiter is None:
+            raise SyntaxError(f"entry {match[1]}: missing body or declaration terminator")
+        begin = end + delimiter.start()
+        if masked[begin] == ';':
+            pos = begin + 1
+            continue
+        finish = _match_brace(masked, begin)
+        yield match[1], params, src[end:begin], src[begin + 1:finish], match.start(), finish + 1
+        pos = finish + 1
+
+
+def entry_names(src: str) -> list[str]:
+    return [definition[0] for definition in entry_definitions(src)]
+
+
+def _parameters(text: str, name: str) -> list[tuple[str, str]]:
+    params = []
+    for part in _split_top(text):
+        match = re.fullmatch(r'\s*\.param\s+\.(b32|u32|s32|f32|b64|u64|s64|f64)\s+([\w$]+)\s*', part)
+        if match is None:
+            raise SyntaxError(f"entry {name}: unsupported parameter ABI {part!r}; scalar 32/64-bit parameters required")
+        if match[2] in {p[1] for p in params}:
+            raise SyntaxError(f"entry {name}: duplicate parameter {match[2]}")
+        params.append((match[1], match[2]))
+    return params
+
+
+def _directives(text: str, name: str) -> dict[str, tuple[int, ...]]:
+    directives = {}
+    while text.strip():
+        match = re.match(r'\s*\.(maxntid|reqntid|maxnreg|minnctapersm|maxnctapersm)\s+([0-9]+(?:\s*,\s*[0-9]+)*)', text)
+        if match is None:
+            raise SyntaxError(f"entry {name}: unsupported entry directive {text.strip()!r}")
+        key, values = match[1], tuple(int(x) for x in match[2].split(','))
+        if key in directives or any(x <= 0 for x in values):
+            raise SyntaxError(f"entry {name}: duplicate or invalid .{key}")
+        if key in ('maxntid', 'reqntid'):
+            if len(values) > 3:
+                raise SyntaxError(f"entry {name}: .{key} requires one through three dimensions")
+            values += (1,) * (3 - len(values))
+        elif len(values) != 1:
+            raise SyntaxError(f"entry {name}: .{key} requires one integer")
+        directives[key] = values
+        text = text[match.end():]
+    if 'maxntid' in directives and 'reqntid' in directives:
+        raise SyntaxError(f"entry {name}: .maxntid and .reqntid cannot be combined")
+    return directives
 
 
 def _match_brace(src: str, start: int) -> int:
@@ -174,13 +249,15 @@ def parse_module(src: str) -> Module:
     kernels: dict[str, Kernel] = {}
     module_decls: list[VarDecl] = []
     pos = 0
-    for m in _ENTRY.finditer(src):
-        for dm in _VAR_DECL.finditer(src[pos:m.start()]):
+    for name, raw_params, header, body, start, end in entry_definitions(src):
+        for dm in _VAR_DECL.finditer(src[pos:start]):
             module_decls.append(_decl(dm))
-        params = [(pm[1], pm[2]) for pm in _PARAM.finditer(m[2])]
-        end = _match_brace(src, m.end() - 1)
-        kernels[m[1]] = _parse_body(m[1], params, src[m.end():end])
-        pos = end + 1
+        if name in kernels:
+            raise SyntaxError(f"duplicate entry definition {name}")
+        kernel = _parse_body(name, _parameters(raw_params, name), body)
+        kernel.directives = _directives(header, name)
+        kernels[name] = kernel
+        pos = end
     return Module(kernels, module_decls)
 
 

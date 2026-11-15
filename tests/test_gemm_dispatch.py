@@ -48,8 +48,8 @@ def test_dispatch_uses_exact_measured_contract_and_recomputes_source_hash():
 def test_installed_dispatch_routes_only_current_independently_verified_contracts():
     table = json.loads(dispatch.TABLE.read_text())
     assert table["compiler_identity"] == dispatch.compiler_identity()
-    assert len(table["entries"]) == 42
-    assert sum(entry["policy"] != "baseline" for entry in table["entries"]) == 34
+    assert len(table["entries"]) == 44
+    assert sum(entry["policy"] != "baseline" for entry in table["entries"]) == 36
     for entry in table["entries"]:
         contract = entry["contract"]
         plan = GemmPlan(contract["m"], contract["n"], contract["k"],

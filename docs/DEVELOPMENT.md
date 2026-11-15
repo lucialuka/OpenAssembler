@@ -8,6 +8,11 @@ The cross-cutting black-box compiler and GPU reverse-engineering record is in
 This page contains shared setup and maintenance rules, not a second benchmark
 reproduction guide.
 
+Repository compiler work follows the [compiler research contract](compiler/README.md).
+Its candidates and retained outcomes live in `compiler_exp/`; existing kernel
+studies stay in `exp/`. The application policy is CPU host execution plus
+OA-owned GPU code, with no implicit vendor GPU fallback.
+
 ## Toolkit and host requirements
 
 The production package requires **Python 3.12+**. Native compilation uses CUDA

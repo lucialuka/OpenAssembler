@@ -155,6 +155,7 @@ class Checker:
         paths = {self.root / "README.md", self.root / "REPRODUCING.md"}
         paths.update((self.root / "docs").rglob("*.md"))
         paths.update((self.root / "exp").rglob("README.md"))
+        paths.update((self.root / "compiler_exp").rglob("README.md"))
         def active(path):
             parts = path.relative_to(self.root).parts
             generated = any(part.lower() in IGNORED_PARTS

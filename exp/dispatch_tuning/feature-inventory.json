@@ -2,7 +2,7 @@
   "schema": 1,
   "audit_date": "2026-11-12",
   "scope": "all implemented research catalogue entries at generation",
-  "implemented_count": 41,
+  "implemented_count": 40,
   "principle": "Specialize measured performance choices by complete workload contract; keep semantic legality, dependencies and validation unconditional.",
   "not_an_all_shapes_performance_proof": true,
   "pending_nonimplemented_priority": [
@@ -175,7 +175,7 @@
       "code_sha256": {
         "openassembler/container/cubin.py": "4118f7124090e942a535ab7e0cae71cc12bb21deef8e9d83c16e4932be93bfdb",
         "openassembler/container/nvinfo.py": "0e0e4e4a419f095ef96aeea165330809adb9957d0e82e471fced15c171c10210",
-        "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639"
+        "openassembler/build.py": "3b64eca890586b2a8a2ce1fd4969ebd315d7dd918d322e2835dca0b4beae6a4a"
       },
       "retained_references": [
         "corpus/sm_80/gpu_a100_40gb_bisect5.json",
@@ -191,7 +191,7 @@
       "title": "CUDA C/C++ frontend through nvcc PTX",
       "status": "implemented",
       "dossier": "docs/research/ideas/cuda-cpp-frontend.md",
-      "dossier_sha256": "6c3ffb72881bf8408957014f69ea92ea5eb326df2f30b37e9c7ee764d8702737",
+      "dossier_sha256": "7db55a9e4ffbbdb68973da84d3b705e224c54b790ee205aa5b8d24d5ea3c1269",
       "classification": "frontend-contract",
       "code_paths": [
         "openassembler/cppfront.py",
@@ -205,11 +205,12 @@
       ],
       "next_action": "Retain separate native and explicit ptxas fallback labels. No shape-only promise about arbitrary C++ applications.",
       "code_sha256": {
-        "openassembler/cppfront.py": "dbb79ae6283406c70148f64a6c601fa8a6d8b338e3ffd19998536a8c69cf1892",
+        "openassembler/cppfront.py": "6f9bb37a0a888526c73254ce93b5a0dbd1104d2d9afcdaa71126485ffd425078",
         "openassembler/frontend.py": "f077b947a316d644a5533d50f8c5a5255840833985359af0a9668e7787f6cbbc"
       },
       "retained_references": [
         "docs/COMMANDS.md",
+        "docs/compiler/source-completeness.md",
         "docs/evidence/integration-20261104.json",
         "docs/research/ideas/ptx-native-frontend.md",
         "docs/research/ideas/repository-builds.md",
@@ -436,7 +437,7 @@
       "title": "GPU execution, explicit launch specifications and fault isolation",
       "status": "implemented",
       "dossier": "docs/research/ideas/gpu-execution-and-launch-specs.md",
-      "dossier_sha256": "85daaee01e92e186f12c3740764a4b961c7b3cef2c094401482c2e6cb274f55c",
+      "dossier_sha256": "58e973fed955f7bdb67e40139fb4a2049ffaa7a3551a72788b0a3c03323dcbb0",
       "classification": "correctness-infrastructure",
       "code_paths": [
         "openassembler/runner.py",
@@ -452,15 +453,16 @@
       ],
       "next_action": "Every tuned shape must retain its correct launch. Execution safety and validation stay mandatory regardless of speed.",
       "code_sha256": {
-        "openassembler/runner.py": "ccc7cd8c91bf96ffb93045eaa71de6b2bf87e6bf20ed96289d74391ad54e388b",
+        "openassembler/runner.py": "85b54886863255c050a97f024f9475e72e9508924a4f4312e4f00ccca0ae70bb",
         "openassembler/gpu/cuda_driver.py": "55c9726c97c01e14de52ceed9b56685ed5536a67b19e9d00aed3a70deb67aef6",
         "openassembler/gpu/batch.py": "a68f270e9ccbc6268438d7b156f27a7e486a7e191b353eedf14dc9998eac77a4"
       },
       "retained_references": [
         "docs/COMMANDS.md",
         "docs/evidence/integration-20261104.json",
-        "docs/research/ideas/pytorch-application-capture.md",
+        "docs/research/ideas/native-model-bridge.md",
         "examples/run_spec.json",
+        "exp/attention_half/RESULTS.md",
         "exp/weaknesses/cli_rowwise_smoke.json",
         "openassembler/gpu/batch.py",
         "openassembler/gpu/cuda_driver.py",
@@ -523,7 +525,7 @@
       "next_action": "Create scalar safe/sched/opt/factor search using exact workload/launch specs. A GEMM M/N/K lookup cannot tune arbitrary scalar loops.",
       "code_sha256": {
         "openassembler/backend/unroll.py": "47bc6999b3b6ac41e2e8d0b2176bd33f1dfd5d010b8e4aafb713adcd3d17c453",
-        "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639"
+        "openassembler/build.py": "3b64eca890586b2a8a2ce1fd4969ebd315d7dd918d322e2835dca0b4beae6a4a"
       },
       "retained_references": [
         "corpus/sm_80/gpu_a100_40gb_bench_times.json",
@@ -639,7 +641,7 @@
       "title": "Native Python model graphs, autodiff and launch plans",
       "status": "implemented",
       "dossier": "docs/research/ideas/native-model-bridge.md",
-      "dossier_sha256": "980bd33a02301ef3358e7b33ff69f127e6ec01b73112e443cd80a7c8d382eb1a",
+      "dossier_sha256": "a5069b6dd518c3b00b9f7fe036f0333e13177fdeabf05be257f3e495eef451a0",
       "classification": "graph-and-state-contract",
       "code_paths": [
         "openassembler/modelfront/graph.py",
@@ -663,23 +665,25 @@
       ],
       "next_action": "Measure complete forward/loss/backward/update with full-state and independent profiler ownership gates; no Inductor/Triton or vendor fallback.",
       "code_sha256": {
-        "openassembler/modelfront/graph.py": "8be8c7be85bba04a47db4e5a12b61b737b26a1572433d5385360a6cd142b1a67",
+        "openassembler/modelfront/graph.py": "3df4a7e7fe11d2d57a8ad231e1c4098d22fd5aee96552bdef7f356530b87bf0f",
         "openassembler/modelfront/optimization.py": "2d82fa8788c92470a96e6182a6621c7cf859e0d16f30024628cb7631088e9b8e",
-        "openassembler/modelfront/kernels.py": "04cd087abddf5629e3915e1f17135d668698754acb1743c13821c319c68c90c1",
-        "openassembler/modelfront/runtime.py": "7dd16c676f8325c3b17c0f47b01521eadba6b945cfc912d96890da807bfb5eeb",
+        "openassembler/modelfront/kernels.py": "64fb75762562a9e0206574c2ff83d7395712f949a053aee947a5a3a9d3d09646",
+        "openassembler/modelfront/runtime.py": "18210db1d79d309bf3ffb4c4aed325604141c879d312b34810b2dbcec2248f64",
         "openassembler/modelfront/replay.py": "e66716b259099306063b231f45210b0fd56f4d769ec801e8e3876ce048101cf6",
         "openassembler/modelfront/profiling.py": "59731e47fcd627129c3edae8325e1c2901ddc533c4620fcdb27953ed1c57ab5a",
-        "openassembler/modelfront/kernels_loss.py": "f27d81b71dbdb9221d71cd41c1e2cdcf16992df5aa4da23426cbd3cd824e2c1b",
-        "openassembler/native_ownership.py": "b3b30a5e55e498e1ee256b426b49c0e9803e03b355b095c464360ec330400b32"
+        "openassembler/modelfront/kernels_loss.py": "25c24bcc0b8ed6b28b9e2651cc0a1bf2a751239db2aa94c05e64331dd8a3a1b3",
+        "openassembler/native_ownership.py": "f4c95da6f8005d134a4c7117197510e661a06464fb54f0d18f07e3c1c016fe00"
       },
       "retained_references": [
         "docs/research/ideas/runtime-integer-indexing.md",
         "examples/native_model/openassembler.toml",
+        "exp/attention_half/RESULTS.md",
         "exp/native_model_tensor/README.md",
         "exp/native_models/README.md",
+        "exp/pack_training/RESULTS.md",
         "exp/review_response/RESULTS.md"
       ],
-      "catalogue_summary": "Constrained CPU Python model capture lowers forward, backward, MSE and SGD to OA-owned kernels with guarded local/SSH/Modal artifact replay; no universal performance claim."
+      "catalogue_summary": "CPU graphs and symbolic backward lower to OA-only forward/dX/dW/MSE/SGD, including bounded FP16 BMM and composed attention; precision and shape contracts remain explicit."
     },
     {
       "id": "native-relu",
@@ -824,7 +828,7 @@
       "title": "Native PTX input and compilation boundary",
       "status": "implemented",
       "dossier": "docs/research/ideas/ptx-native-frontend.md",
-      "dossier_sha256": "10c0751ae3caf5f49c38bc24ebd91db5bc85b06caac39f0bf7a0da841117e4f5",
+      "dossier_sha256": "0718d9e72e0ba3ae41448a3f4d08f4620fccbee61dc8e06e865008cd17066ee3",
       "classification": "frontend-contract",
       "code_paths": [
         "openassembler/ptx/parse.py",
@@ -835,10 +839,11 @@
       "tuning_axes": [],
       "next_action": "Keep semantics and explicit unsupported boundaries; performance dispatch occurs after contract recognition.",
       "code_sha256": {
-        "openassembler/ptx/parse.py": "dfddfb0e3c3507a2d1d38968c84d2524f031b1f086f6dd09e56828ad984c7d39",
+        "openassembler/ptx/parse.py": "ebd2f1b45f6a76606589c5026ca3422a87ddd903cec2b93fff90101016f3f1c4",
         "openassembler/frontend.py": "f077b947a316d644a5533d50f8c5a5255840833985359af0a9668e7787f6cbbc"
       },
       "retained_references": [
+        "docs/compiler/source-completeness.md",
         "docs/evidence/integration-20261104.json",
         "docs/research/ideas/cooperative-softmax.md",
         "docs/research/ideas/direct-pointer-homes.md",
@@ -857,7 +862,7 @@
       "title": "Typed Python kernel frontend",
       "status": "implemented",
       "dossier": "docs/research/ideas/python-kernel-frontend.md",
-      "dossier_sha256": "0eec40e6718bd8f0f8f85241959438bb00377e64798c86bd410c429ea8bb6084",
+      "dossier_sha256": "25c88797c283f86cc39e1421bacef4717030d6e8de1c528a3c90a875a88e055f",
       "classification": "frontend-contract",
       "code_paths": [
         "openassembler/pyfront/compile.py",
@@ -878,6 +883,7 @@
         "docs/COMMANDS.md",
         "docs/evidence/integration-20261104.json",
         "docs/research/ideas/cooperative-softmax.md",
+        "docs/research/ideas/native-model-bridge.md",
         "docs/research/ideas/pytorch-application-capture.md",
         "openassembler/pyfront/__init__.py",
         "openassembler/pyfront/compile.py",
@@ -890,51 +896,11 @@
       "catalogue_summary": "Typed numeric Python source compiles without executing imports; fixed GPU numeric semantics are explicit."
     },
     {
-      "id": "pytorch-application-capture",
-      "title": "PyTorch application capture and saved replay",
-      "status": "implemented",
-      "dossier": "docs/research/ideas/pytorch-application-capture.md",
-      "dossier_sha256": "d47d1bb0d9811b5d6ce1b970e4794bf45fe5cde5fec25a553137df8cb4821efe",
-      "classification": "graph-and-state-contract",
-      "code_paths": [
-        "openassembler/torchfront/worker.py",
-        "openassembler/torchfront/frontend.py"
-      ],
-      "applicability": "Configured arguments/observed shapes/branches and exact state/runtime; Inductor/Triton own GPU code in this route.",
-      "current_selection": "Explicit configured application frontend; cache replay forbids uncaptured specializations.",
-      "tuning_axes": [
-        "model/input shapes",
-        "training/inference",
-        "backend graph choices",
-        "packing/launches",
-        "full state"
-      ],
-      "next_action": "Native kernel tuning does not automatically affect ordinary PyTorch. Add a controlled native graph hook and first-divergence/full-state gate before application speed claims.",
-      "code_sha256": {
-        "openassembler/torchfront/worker.py": "8ff6e6414947cacea0762f207496743f328b19f43ca01bfbdf7d2b2561d958cc",
-        "openassembler/torchfront/frontend.py": "68ee59e30c5c5060cb0e72cbfc931d07c435834ad071e37e14868b61a6e05ac4"
-      },
-      "retained_references": [
-        "docs/COMMANDS.md",
-        "docs/REPOSITORY_WORKFLOW.md",
-        "docs/research/ideas/state-verification-diagnostics.md",
-        "docs/research/ideas/whole-transformer-evaluation.md",
-        "exp/whole_stack/cli_proof/application/openassembler.toml",
-        "exp/whole_stack/cli_proof/prove.py",
-        "exp/whole_stack/cli_proof/summary.json",
-        "openassembler/torchfront/archive.py",
-        "openassembler/torchfront/frontend.py",
-        "openassembler/torchfront/instrument.py",
-        "openassembler/torchfront/worker.py"
-      ],
-      "catalogue_summary": "Actual verified capture/replay passes77 tensors and cache-only replay; lowering is Inductor/Triton, not native OA."
-    },
-    {
       "id": "repository-builds",
       "title": "Repository discovery, manifests and safe artifact publication",
       "status": "implemented",
       "dossier": "docs/research/ideas/repository-builds.md",
-      "dossier_sha256": "80860c927f9911311ae7c2aba99c89b0c9f12ee8cf6481b3a3222828b7b3b10b",
+      "dossier_sha256": "2878423037624bd0b07219fc72b25e30180d9ed5951262755a5aedce54448f88",
       "classification": "build-infrastructure",
       "code_paths": [
         "openassembler/repository.py",
@@ -950,15 +916,17 @@
       ],
       "next_action": "Measure compile/startup separately; host build concurrency does not select the fastest GPU kernel by shape.",
       "code_sha256": {
-        "openassembler/repository.py": "a7a27da691f222eaa20d71a91a882bd0ec9e4803a71c48b47572846c805850d9",
-        "openassembler/project.py": "8bc1ebdda315d92915bc5f4c68a38d61e3c91193568544e7627a5dd689416701",
-        "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639"
+        "openassembler/repository.py": "1680e84e2b3a1a9b308779d955de397ecf5283c5526dd6f7b2e03454119fda0e",
+        "openassembler/project.py": "1cf2f286bf73f11cea9ecfa5a675303309d4e526019d29855457c5482e7ab87b",
+        "openassembler/build.py": "3b64eca890586b2a8a2ce1fd4969ebd315d7dd918d322e2835dca0b4beae6a4a"
       },
       "retained_references": [
         "docs/COMMANDS.md",
         "docs/REPOSITORY_WORKFLOW.md",
+        "docs/compiler/README.md",
+        "docs/compiler/source-completeness.md",
         "docs/evidence/integration-20261104.json",
-        "docs/research/ideas/pytorch-application-capture.md",
+        "docs/research/ideas/native-model-bridge.md",
         "openassembler/build.py",
         "openassembler/frontend.py",
         "openassembler/project.py",
@@ -968,7 +936,7 @@
         "tests/test_cli_compile.py",
         "tests/test_integration.py"
       ],
-      "catalogue_summary": "Safe discovery, path mirroring, manifests, locking and publication are implemented and tested."
+      "catalogue_summary": "Static inspect/JSON coverage, source-path shorthand, local build failure reports, safe discovery, manifests, locking and publication."
     },
     {
       "id": "runtime-integer-indexing",
@@ -1146,7 +1114,7 @@
       "code_sha256": {
         "openassembler/backend/sched.py": "5711333491c4a9dc19fb36c94334fb38df3126aadd8d1c3eed41df15e5ca2fd8",
         "openassembler/backend/compile.py": "e6c32400dad0153344f78baa18d224a711f30bf62f06f7c1c93ca2a42e46dbe9",
-        "openassembler/build.py": "aee44ce28c87fcc5836694c94a513ef86ebbcbc248956c355d5f4a2f07ca9639"
+        "openassembler/build.py": "3b64eca890586b2a8a2ce1fd4969ebd315d7dd918d322e2835dca0b4beae6a4a"
       },
       "retained_references": [
         "docs/evidence/a100-latency/gpu_a100_40gb_latsweep_corrected.json",
@@ -1162,7 +1130,7 @@
       "title": "Shape-aware native GEMM dispatch and on-device tuning",
       "status": "implemented",
       "dossier": "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
-      "dossier_sha256": "88664e44f1ce3e06a24d036124696245433dfea846094e901b90a9c993d60b95",
+      "dossier_sha256": "2205943a5f7666f00e4616870896115aeb80aec9c7694c0e04e51e400800e0ce",
       "classification": "shape-and-environment-performance-policy",
       "code_paths": [
         "openassembler/gemm_dispatch.py",
@@ -1186,6 +1154,7 @@
       },
       "retained_references": [
         "docs/COMMANDS.md",
+        "docs/compiler/memory-latency.md",
         "docs/research/ideas/small-grid-tensor-cta-tiles.md",
         "exp/dispatch_tuning/RESULTS.md",
         "exp/instruction_overhead/a100-production-autotune_20261110.artifacts.zip",
@@ -1196,7 +1165,7 @@
         "openassembler/gemm_tune.py",
         "openassembler/kernels/gemm.py"
       ],
-      "catalogue_summary": "Current 42-contract independent replay installs 34 tuned native policies and eight measured baseline retentions; exact identity gates and optional GPU tuning preserve conditional choices."
+      "catalogue_summary": "The original 42-contract replay plus two independently admitted FP16 contracts install 36 tuned native policies and eight baseline retentions; exact identity gates preserve conditional choices."
     },
     {
       "id": "shape-aware-rowwise-dispatch",
@@ -1358,7 +1327,7 @@
       "tuning_axes": [],
       "next_action": "Keep all state checks at integration boundaries; never dispatch a faster invalid candidate or change epsilon/tolerance for speed.",
       "code_sha256": {
-        "openassembler/torchfront/worker.py": "8ff6e6414947cacea0762f207496743f328b19f43ca01bfbdf7d2b2561d958cc"
+        "openassembler/torchfront/worker.py": "2c0867a4a14697c6e327a8b7a13838e440694274905a82ce086e087f7b5260dd"
       },
       "retained_references": [
         "docs/research/ideas/adam-epsilon-sensitivity.md",

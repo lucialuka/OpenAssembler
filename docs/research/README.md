@@ -27,7 +27,7 @@ individual features.
 The role/shape coverage audit is under
 [`exp/shape_coverage`](../../exp/shape_coverage/README.md). That study remains a
 contract and measurement matrix. The separate completed
-[current production replay](../../exp/dispatch_tuning/RESULTS.md) supplies 42
+[November 11 production replay](../../exp/dispatch_tuning/RESULTS.md) supplies 42
 exact native GEMM dispatch entries: 34 tuned policies and eight reference
 retentions. Unknown or stale contracts keep the reference; the five rowwise
 entries have their own independent evidence.
@@ -60,7 +60,7 @@ These are available in the current code under their stated contracts. Explicit t
 | [Morton8 logical CTA traversal](ideas/morton-cta-order.md) | Corrected 8×8 CTA traversal is selected for the two independently validated 16384×4096×4096 contracts; it is not an MMA storage layout. |
 | [Native tanh-approximation GELU example](ideas/native-gelu.md) | Tanh-GELU passes a predeclared FP64 tolerance, while the old exact gate failure remains and gains depend on size. |
 | [Native scalar ReLU example](ideas/native-relu.md) | Finite-input exact example passes; measured large-size PyTorch is faster, with no universal speedup. |
-| [Native SM80 tensor GEMM compiler and mainloop](ideas/native-tensor-gemm.md) | Contiguous FP16/BF16-to-FP32 GEMM has checked 128×128 and 64×64 CTA families, protected tensor dependencies and 42 exact measured dispatch entries; this is not a complete native transformer compiler. |
+| [Native SM80 tensor GEMM compiler and mainloop](ideas/native-tensor-gemm.md) | Contiguous FP16/BF16-to-FP32 GEMM has checked 128×128 and 64×64 CTA families, protected tensor dependencies and 44 exact measured dispatch entries; this is not a complete native transformer compiler. |
 | [CUTLASS-style load-next / compute-current fragment schedule](ideas/cutlass-load-next-compute-current.md) | Explicit load-next is admitted for two exact FP16/BF16 shapes; no load-next policy wins the current 42-contract frozen replay, while earlier gains remain valid against their recorded controls. |
 | [CUTLASS-style grouped-N CTA traversal](ideas/grouped-n-cta-swizzle.md) | Explicit grouped_n8 traversal and checked launch mapping are integrated; no grouped-N policy wins the current 42-contract frozen replay, while older tall gains remain scoped evidence. |
 | [Operand reuse hints and ordering](ideas/operand-reuse-hints.md) | The tensor scheduler emits reuse hints for supported neighboring HMMA operands. |
@@ -74,12 +74,12 @@ These are available in the current code under their stated contracts. Explicit t
 | [Register allocation, aligned groups and guarded definitions](ideas/scalar-register-allocation.md) | The scalar compiler uses virtual values, liveness, stable homes for repeated/guarded definitions and aligned register-group allocation. |
 | [Measured scalar instruction scheduling](ideas/scalar-scheduling.md) | Corrected fixed-pipe probes found four cycles for tested same-pipe ALU/FMA pairs, five across tested classes, and 13 from a predicate definition to tested guarded instructions/branches. |
 | [Shared-memory swizzling and bank conflicts](ideas/shared-layout-swizzling.md) | The selected GEMM uses the tested symmetric 7/7 XOR swizzle. |
-| [Two-tile stage-pair specialization and peeled drain](ideas/stage-pair-specialization.md) | All 42 installed GEMM plans retain the explicit two-stage stagepair protocol; combined remains an admissible comparison but wins no frozen row. |
+| [Two-tile stage-pair specialization and peeled drain](ideas/stage-pair-specialization.md) | All 44 installed GEMM plans retain the explicit two-stage stagepair protocol; combined remains an admissible comparison but wins no frozen row. |
 | [Complete application-state verification diagnostics](ideas/state-verification-diagnostics.md) | Checks all state groups under unchanged gates and bounded failure reports; exposes both BF16 parameter failures. |
 | [Carry-linked pointer updates and folded shared addresses](ideas/tensor-address-generation.md) | The earlier address work reduced one selected kernel from 1,898 to 1,812 static non-NOP instructions; six same-worker cases improved about 0.9–5.4%. |
 | [Vectorized FP32 result stores](ideas/vectorized-fp32-epilogue.md) | The native GEMM epilogue groups FP32 stores into pairs and passes an existing aligned register pair directly when possible. |
-| [Shape-aware native GEMM dispatch and on-device tuning](ideas/shape-aware-native-gemm-dispatch.md) | Current 42-contract independent replay installs 34 tuned policies and eight measured baseline retentions; exact source/contract checks and optional local/Modal tuning preserve shape-specific alternatives. Missing/stale data falls back to the reference. |
-| [Smaller CTA tiles for short transformer GEMMs](ideas/small-grid-tensor-cta-tiles.md) | Twenty-two exact current contracts select checked tile64 variants after the 42-contract independent replay; shape regressions and same-source ptxas gaps remain. |
+| [Shape-aware native GEMM dispatch and on-device tuning](ideas/shape-aware-native-gemm-dispatch.md) | The original 42-contract replay plus two independently admitted FP16 contracts install 36 tuned policies and eight baseline retentions; exact source/contract checks and optional local/Modal tuning preserve shape-specific alternatives. Missing/stale data falls back to the reference. |
+| [Smaller CTA tiles for short transformer GEMMs](ideas/small-grid-tensor-cta-tiles.md) | Twenty-four current contracts select checked tile64 variants after the original 42-contract replay and two-contract extension; shape regressions and same-source ptxas gaps remain. |
 
 ## 2. Validated, not integrated as a production optimization
 

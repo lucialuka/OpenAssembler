@@ -31,6 +31,7 @@ import subprocess
 import sys
 import concurrent.futures
 import hashlib
+import math
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -144,7 +145,7 @@ def verify_kernel(module, kname: str, code, labels, ptx_text: str, trials: int) 
     else, which covers pyfront/cppfront kernels and hand-written PTX with any
     signature."""
     kernel = module.kernels[kname]
-    if tuple(kernel.params) == _PROBE_PARAMS:
+    if tuple(kernel.params) == _PROBE_PARAMS and not kernel.directives:
         import random
 
         from openassembler.emu.probe import run_probe
@@ -173,7 +174,13 @@ def verify_kernel(module, kname: str, code, labels, ptx_text: str, trials: int) 
 
     for trial in range(trials):
         try:
-            mismatches = run_and_diff(module, kname, code, labels, n_elems=64, seed=trial)
+            block = kernel.directives.get('reqntid')
+            if block is None and 'maxntid' in kernel.directives:
+                block = (min(64, math.prod(kernel.directives['maxntid'])), 1, 1)
+            count = max(64, math.prod(block)) if block else 64
+            grid = (math.ceil(count / math.prod(block)), 1, 1) if block else 1
+            mismatches = run_and_diff(module, kname, code, labels, n_elems=count, seed=trial,
+                                      grid=grid, block=block)
         except NotModeled as e:
             return "not-verified", (f"the PTX reference interpreter can't model this kernel ({e}). "
                                     "The cubin was kept, but --verify cannot check it; write your own "
@@ -434,6 +441,7 @@ class KernelOut:
     tensor: dict | None = None
     gemm: dict | None = None
     rowwise: dict | None = None
+    directives: dict = field(default_factory=dict)
 
     def record(self) -> dict:
         r = {"name": self.name, "params": [list(p) for p in self.params], "compiled_by": self.compiled_by,
@@ -449,6 +457,8 @@ class KernelOut:
             r["gemm"] = self.gemm
         if self.rowwise is not None:
             r["rowwise"] = self.rowwise
+        if self.directives:
+            r["ptx_directives"] = self.directives
         return r
 
 
@@ -536,6 +546,9 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
         so.error, so.rc = f"can't parse the PTX: {type(e).__name__}: {e}", 1
         return so
     so.all_kernels = list(module.kernels) or names
+    if len(names) != len(set(names)) or set(names) != set(module.kernels):
+        so.error, so.rc = (f"PTX entry inventory mismatch: frontend={names}, parsed={list(module.kernels)}", 1)
+        return so
     cnames = c_param_names(src.read_text(errors="replace")) if language == "cuda" else {}
     if not module.kernels:
         so.error, so.rc = f"{src} has no kernels (.entry)", 1
@@ -555,6 +568,7 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
     rowwise_contract = rowwise_contract_from_source(ptx)
     for kname in sel:
         k = KernelOut(kname, list(module.kernels[kname].params))
+        k.directives = {key: list(value) for key, value in module.kernels[kname].directives.items()}
         tensor_config = None
         if gemm_contract is not None and kname == "gemm":
             from openassembler.backend.tensor import TensorConfig
@@ -567,6 +581,8 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
         try:
             code, labels, words, exits, nregs = generate(module.kernels[kname], opt.arch, opt.opt_level,
                                                       tensor_config=tensor_config)
+            if k.directives.get('maxnreg') and nregs > k.directives['maxnreg'][0]:
+                raise ra.NotSupported(f"OA register count {nregs} exceeds .maxnreg {k.directives['maxnreg'][0]}; spilling is not implemented")
         except KeyboardInterrupt:
             raise
         except ra.NotSupported as e:
