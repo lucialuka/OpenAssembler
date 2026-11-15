@@ -9,6 +9,7 @@ import argparse
 import base64
 import hashlib
 import importlib.util
+import importlib
 import json
 from pathlib import Path
 import sys
@@ -35,15 +36,35 @@ def _model(root: Path, config: dict):
     import torch
     torch.manual_seed(config['seed'])
     path = root / config['entrypoint']
-    sys.path.insert(0, str(root))
-    spec = importlib.util.spec_from_file_location('_oa_model_' + hashlib.sha256(str(path).encode()).hexdigest()[:12], path)
-    module = importlib.util.module_from_spec(spec)
+    # Preserve package context for relative imports and src-layout repositories.
+    search_roots = [root, path.parent, root / 'src']
+    for directory in reversed(search_roots):
+        if directory.is_dir() and str(directory) not in sys.path:
+            sys.path.insert(0, str(directory))
+    import_root = root / 'src' if path.is_relative_to(root / 'src') else root
+    parents = list(path.parent.relative_to(import_root).parts)
+    # Namespace packages are supported too; non-identifier directories retain
+    # the standalone-file loader and their local absolute imports.
+    if not all(part.isidentifier() for part in parents):
+        parents = []
     with _cpu_capture():
-        spec.loader.exec_module(module)
+        if parents:
+            if str(import_root) not in sys.path:
+                sys.path.insert(0, str(import_root))
+            name = '.'.join(parents if path.name == '__init__.py' else [*parents, path.stem])
+            module = importlib.import_module(name)
+            if Path(module.__file__).resolve() != path.resolve():
+                raise ValueError(f'model package {name} resolved outside the requested source')
+        else:
+            name = '_oa_model_' + hashlib.sha256(str(path).encode()).hexdigest()[:12]
+            spec = importlib.util.spec_from_file_location(name, path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[name] = module
+            spec.loader.exec_module(module)
         factory = getattr(module, config['factory'], None)
         if not callable(factory):
             raise ValueError(f'model factory {config["factory"]!r} is missing or not callable')
-        model = factory()
+        model = factory(*config.get('factory_args', []), **config.get('factory_kwargs', {}))
     if not isinstance(model, torch.nn.Module):
         raise ValueError('model factory must return torch.nn.Module')
     if any(p.device.type != 'cpu' or p.dtype != torch.float32 for p in model.parameters()):

@@ -1,0 +1,543 @@
+{
+  "schema": 1,
+  "date": "2026-11-15",
+  "scope": "Configuration-free native FP32 forward inference: compile/verify and saved-artifact replay in separate Modal A100 workers. Correctness validation, not a benchmark or arbitrary-repository training support.",
+  "source": "examples/autodiscovered_model/network.py",
+  "source_sha256": "06295ba4dcaa62359cc53cef74410de90d3e4f296b36bfdd4443f83ab891caac",
+  "commands": [
+    "openassembler compile examples/autodiscovered_model --backend modal --verify --budget 600 --out-dir /tmp/oa-auto-model-validation",
+    "openassembler run examples/autodiscovered_model --backend modal --verify-application --budget 300 --out-dir /tmp/oa-auto-model-validation"
+  ],
+  "discovery": {
+    "schema": 1,
+    "ready": true,
+    "model": {
+      "entrypoint": "network.py",
+      "factory": "FeatureMLP",
+      "input_shapes": [
+        [
+          17,
+          8
+        ]
+      ],
+      "mode": "inference",
+      "math": "fp32"
+    },
+    "candidates": [
+      {
+        "entrypoint": "network.py",
+        "factory": "FeatureMLP",
+        "callable_without_args": true
+      }
+    ],
+    "observations": [
+      {
+        "entrypoint": "network.py",
+        "factory": "FeatureMLP",
+        "input_shapes": [
+          [
+            17,
+            8
+          ]
+        ],
+        "evidence": "network.py:23"
+      }
+    ],
+    "error": null,
+    "scope": "Forward inference with synthetic FP32 inputs at the discovered shapes; host training loops, losses, optimizers and extension launch logic are not compiled."
+  },
+  "generated_config": "# Inferred by OpenAssembler; source files were not modified.\n[model]\nentrypoint = \"network.py\"\nfactory = \"FeatureMLP\"\ninput_shapes = [[17, 8]]\nmath = \"fp32\"\nmode = \"inference\"\nseed = 7\nsteps = 3\nlearning_rate = 0.01\nrtol = 0.0001\natol = 1e-05\nstorage_views = true\nreuse_storage = false\ntensor_packing = \"separate\"\nexecution = \"direct\"\nsass_listings = true\ngpu = \"A100-40GB\"\nbudget = 600.0\nbuild_backend = \"modal\"\n",
+  "compile": {
+    "schema": 1,
+    "backend": "openassembler",
+    "mode": "inference",
+    "passed": true,
+    "verified": true,
+    "checks": [
+      {
+        "name": "0/output/down",
+        "passed": true,
+        "elements": 68,
+        "mismatches": 0,
+        "max_abs": 2.9802322387695312e-08
+      },
+      {
+        "name": "1/output/down",
+        "passed": true,
+        "elements": 68,
+        "mismatches": 0,
+        "max_abs": 2.9802322387695312e-08
+      },
+      {
+        "name": "2/output/down",
+        "passed": true,
+        "elements": 68,
+        "mismatches": 0,
+        "max_abs": 2.9802322387695312e-08
+      }
+    ],
+    "iterations": 3,
+    "host_step_ms": [
+      15.015359000000394,
+      0.2851439999993488,
+      51.69946399999947
+    ],
+    "execution": "direct",
+    "replay_prepare_ms": 0.0,
+    "cuda_stream_elapsed_ms": [],
+    "profiled_iterations": [
+      2
+    ],
+    "timing_scope": "resident input native model dispatch, synchronization included; last verified iteration profiled; no performance comparator",
+    "device": {
+      "name": "NVIDIA A100-SXM4-40GB",
+      "cc": "8.0"
+    },
+    "launch_count": 9,
+    "launch_ledger": [
+      {
+        "entry": "oa_ptr_26778a421f564d86f1b5",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "cfd4a43acef7995dd7b821710bbac7c20c875e4bdb58902677385e8da92cdaa5",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 0
+      },
+      {
+        "entry": "oa_model_c5247a6f5215e493b5de",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "4933c0b66f60924085a9d8162ae19d434009238a6ed0192139ea8acd3a3ffa1b",
+        "launch": {
+          "grid": [
+            3,
+            1,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 0
+      },
+      {
+        "entry": "oa_model_6f6cb8d6d93f16eb6fc4",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "42023a70da8f7da61042e559254751ff9083684c6f7ca2c628c95f8e597890ca",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 0
+      },
+      {
+        "entry": "oa_ptr_26778a421f564d86f1b5",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "cfd4a43acef7995dd7b821710bbac7c20c875e4bdb58902677385e8da92cdaa5",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 1
+      },
+      {
+        "entry": "oa_model_c5247a6f5215e493b5de",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "4933c0b66f60924085a9d8162ae19d434009238a6ed0192139ea8acd3a3ffa1b",
+        "launch": {
+          "grid": [
+            3,
+            1,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 1
+      },
+      {
+        "entry": "oa_model_6f6cb8d6d93f16eb6fc4",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "42023a70da8f7da61042e559254751ff9083684c6f7ca2c628c95f8e597890ca",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 1
+      },
+      {
+        "entry": "oa_ptr_26778a421f564d86f1b5",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "cfd4a43acef7995dd7b821710bbac7c20c875e4bdb58902677385e8da92cdaa5",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 2
+      },
+      {
+        "entry": "oa_model_c5247a6f5215e493b5de",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "4933c0b66f60924085a9d8162ae19d434009238a6ed0192139ea8acd3a3ffa1b",
+        "launch": {
+          "grid": [
+            3,
+            1,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 2
+      },
+      {
+        "entry": "oa_model_6f6cb8d6d93f16eb6fc4",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "42023a70da8f7da61042e559254751ff9083684c6f7ca2c628c95f8e597890ca",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 2
+      }
+    ],
+    "canaries": [
+      {
+        "passed": true,
+        "allocations": 13
+      },
+      {
+        "passed": true,
+        "allocations": 13
+      },
+      {
+        "passed": true,
+        "allocations": 13
+      }
+    ],
+    "changed_inputs": true,
+    "profiler_native_audits": [
+      {
+        "passed": true,
+        "observed_compute_launches": 3,
+        "kernel_counts": {
+          "oa_ptr_26778a421f564d86f1b5": 1,
+          "oa_model_c5247a6f5215e493b5de": 1,
+          "oa_model_6f6cb8d6d93f16eb6fc4": 1
+        },
+        "storage_activities": {},
+        "kernel_duration_us": {
+          "oa_ptr_26778a421f564d86f1b5": [
+            3.733
+          ],
+          "oa_model_c5247a6f5215e493b5de": [
+            2.832
+          ],
+          "oa_model_6f6cb8d6d93f16eb6fc4": [
+            5.053
+          ]
+        },
+        "duration_scope": "raw kernel activities from this profiled invocation; not a steady-state timing distribution",
+        "unknown_compute_kernels": [],
+        "scope": "independent Kineto kernel activities, exact names/counts; copies classified by activity category"
+      }
+    ],
+    "gpu_codegen_during_replay": 0,
+    "vendor_compute_launches": 0,
+    "compile_stage_ms": {
+      "cpu_factory": 2746.656216,
+      "cpu_capture_autodiff": 528.3975610000002,
+      "storage_planning": 0.1753409999993849,
+      "native_bundle_and_weights": 1558.2641520000004
+    },
+    "compile_stage_scope": "worker-local non-overlapping phases; excludes transport, independent repository source builds and validation",
+    "model_bundle_cache": {
+      "cached_files": 5,
+      "hit": false,
+      "key": "39f30633cb8407caa05468439ef099217e84139e4889f8bd5a778ce58d5e3d44",
+      "rebuild_reason": "cache entry is not a regular directory"
+    }
+  },
+  "replay": {
+    "schema": 1,
+    "backend": "openassembler",
+    "mode": "inference",
+    "passed": true,
+    "verified": true,
+    "checks": [
+      {
+        "name": "0/output/down",
+        "passed": true,
+        "elements": 68,
+        "mismatches": 0,
+        "max_abs": 2.9802322387695312e-08
+      },
+      {
+        "name": "1/output/down",
+        "passed": true,
+        "elements": 68,
+        "mismatches": 0,
+        "max_abs": 2.9802322387695312e-08
+      },
+      {
+        "name": "2/output/down",
+        "passed": true,
+        "elements": 68,
+        "mismatches": 0,
+        "max_abs": 2.9802322387695312e-08
+      }
+    ],
+    "iterations": 3,
+    "host_step_ms": [
+      14.200952000000377,
+      0.20950399999986047,
+      34.728207000000566
+    ],
+    "execution": "direct",
+    "replay_prepare_ms": 0.0,
+    "cuda_stream_elapsed_ms": [],
+    "profiled_iterations": [
+      2
+    ],
+    "timing_scope": "resident input native model dispatch, synchronization included; last verified iteration profiled; no performance comparator",
+    "device": {
+      "name": "NVIDIA A100-SXM4-40GB",
+      "cc": "8.0"
+    },
+    "launch_count": 9,
+    "launch_ledger": [
+      {
+        "entry": "oa_ptr_26778a421f564d86f1b5",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "cfd4a43acef7995dd7b821710bbac7c20c875e4bdb58902677385e8da92cdaa5",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 0
+      },
+      {
+        "entry": "oa_model_c5247a6f5215e493b5de",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "4933c0b66f60924085a9d8162ae19d434009238a6ed0192139ea8acd3a3ffa1b",
+        "launch": {
+          "grid": [
+            3,
+            1,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 0
+      },
+      {
+        "entry": "oa_model_6f6cb8d6d93f16eb6fc4",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "42023a70da8f7da61042e559254751ff9083684c6f7ca2c628c95f8e597890ca",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 0
+      },
+      {
+        "entry": "oa_ptr_26778a421f564d86f1b5",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "cfd4a43acef7995dd7b821710bbac7c20c875e4bdb58902677385e8da92cdaa5",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 1
+      },
+      {
+        "entry": "oa_model_c5247a6f5215e493b5de",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "4933c0b66f60924085a9d8162ae19d434009238a6ed0192139ea8acd3a3ffa1b",
+        "launch": {
+          "grid": [
+            3,
+            1,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 1
+      },
+      {
+        "entry": "oa_model_6f6cb8d6d93f16eb6fc4",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "42023a70da8f7da61042e559254751ff9083684c6f7ca2c628c95f8e597890ca",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 1
+      },
+      {
+        "entry": "oa_ptr_26778a421f564d86f1b5",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "cfd4a43acef7995dd7b821710bbac7c20c875e4bdb58902677385e8da92cdaa5",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 2
+      },
+      {
+        "entry": "oa_model_c5247a6f5215e493b5de",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "4933c0b66f60924085a9d8162ae19d434009238a6ed0192139ea8acd3a3ffa1b",
+        "launch": {
+          "grid": [
+            3,
+            1,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 2
+      },
+      {
+        "entry": "oa_model_6f6cb8d6d93f16eb6fc4",
+        "compiled_by": "openassembler",
+        "cubin_sha256": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+        "text_sha256": "42023a70da8f7da61042e559254751ff9083684c6f7ca2c628c95f8e597890ca",
+        "launch": {
+          "grid": [
+            1,
+            17,
+            1
+          ],
+          "threads": 128,
+          "smem": 0
+        },
+        "iteration": 2
+      }
+    ],
+    "canaries": [
+      {
+        "passed": true,
+        "allocations": 13
+      },
+      {
+        "passed": true,
+        "allocations": 13
+      },
+      {
+        "passed": true,
+        "allocations": 13
+      }
+    ],
+    "changed_inputs": true,
+    "profiler_native_audits": [
+      {
+        "passed": true,
+        "observed_compute_launches": 3,
+        "kernel_counts": {
+          "oa_ptr_26778a421f564d86f1b5": 1,
+          "oa_model_c5247a6f5215e493b5de": 1,
+          "oa_model_6f6cb8d6d93f16eb6fc4": 1
+        },
+        "storage_activities": {},
+        "kernel_duration_us": {
+          "oa_ptr_26778a421f564d86f1b5": [
+            3.552
+          ],
+          "oa_model_c5247a6f5215e493b5de": [
+            2.784
+          ],
+          "oa_model_6f6cb8d6d93f16eb6fc4": [
+            5.184
+          ]
+        },
+        "duration_scope": "raw kernel activities from this profiled invocation; not a steady-state timing distribution",
+        "unknown_compute_kernels": [],
+        "scope": "independent Kineto kernel activities, exact names/counts; copies classified by activity category"
+      }
+    ],
+    "gpu_codegen_during_replay": 0,
+    "vendor_compute_launches": 0
+  },
+  "artifacts": {
+    "native/cubin/native.cubin": "fc1b5d3ea499e12158b61a9debaab9da8c2402ca66146c62dfceb33df7acd6fb",
+    "native/sass/native.sass": "789a3f6feb1cca7eae99b13ae45ccf240102f3bae6219b124db58c9e0de393d5",
+    "plan.json": "a72c75ef7f7fc9a66943c2b511394c1fc965bf5b258036d2d4fe1dea6426534f",
+    "native-ledger.json": "04a311a3f9445b819dcd436490847b1ee83d5333eb8c9c96bdefe573b60b6c3b"
+  }
+}

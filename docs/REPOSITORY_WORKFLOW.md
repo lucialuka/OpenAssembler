@@ -26,6 +26,11 @@ selects it. `--frontend native` forces static discovery of PTX, CUDA/C++ and
 typed Python `@kernel` files. Triton/Inductor execution and vendor fallbacks
 are disabled.
 
+Repositories without that configuration can select a model through static
+discovery. Filenames are unrestricted; a `model.py`/TOML directory layout is
+not required. The inferred route compiles forward inference, while explicit
+configuration retains supported training and numerical-policy choices.
+
 `openassembler REPO` is shorthand for `compile REPO`; `compile` and `cnr`
 without a path use the current directory. Start with `openassembler inspect
 REPO --json` for a static coverage report. Build failures save
@@ -35,7 +40,7 @@ supports a bug report; unsupported Python host code is not silently translated.
 
 ## Choose the repository's frontend
 
-**Native GPU kernels:** a directory without an application configuration is
+**Native GPU kernels:** a directory without a model configuration or discovered model is
 scanned for `.ptx` entries, CUDA C/C++ `__global__` kernels and typed Python
 `@kernel` functions. Paths are mirrored into the output tree. NVIDIA's frontend
 handles CUDA C/C++ parsing; OpenAssembler handles supported PTX instruction
@@ -50,7 +55,72 @@ how an entire host application should allocate data or call those kernels.
 The [command reference](COMMANDS.md#run-saved-native-kernel-binaries-or-model-replay)
 documents the spec format and reference-comparison behavior.
 
-**Native Python model:** configure a CPU factory and exact shapes in the repository:
+## Automatic model discovery
+
+This is a complete configuration-free example:
+
+```python
+import torch
+
+class Net(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc = torch.nn.Linear(8, 4)
+
+    def forward(self, x):
+        return self.fc(x)
+
+example_inputs = (torch.randn(17, 8),)
+```
+
+Save it under any Python filename in a repository, then use:
+
+```sh
+openassembler compile /path/to/repo --backend modal --verify
+openassembler run /path/to/repo --backend modal
+openassembler cnr /path/to/repo --backend user@a100 --verify
+```
+
+Discovery reads source ASTs without importing Torch or user modules. It recognizes
+`torch.nn.Module` classes (including imported aliases/local inheritance), simple
+factories returning a module, package re-exports, and `src/` layouts. Exact FP32
+shapes come from `example_input`/`example_inputs` or direct model calls with
+statically known `torch.randn`/`rand`/`zeros`/`ones`/`empty` inputs. Literal
+JSON-compatible constructor arguments at those calls are preserved; unsupported
+constructor expressions or tuple arguments need an explicit factory that creates
+the model with its original argument types. A simple tabular model can
+also use a direct input Linear layer and one literal `--batch-size` default.
+Helper-module tests do not override the enclosing application's contract.
+
+Multiple models, constructors, or shapes require explicit selection. If no batch
+or sequence length is present in the source, discovery does not invent one:
+
+```sh
+openassembler compile /path/to/repo --entrypoint models/network.py:Net --input-shapes '[[128,64]]' --backend modal --verify
+openassembler cnr /path/to/repo --entrypoint models/network.py:Net --input-shapes '[[128,64]]' --backend local --verify
+```
+
+These flags also override an existing `[model]` entrypoint/shapes for that build;
+they do not edit the original file. To supply constructor arguments for an
+unobserved factory, use `factory_args` and `factory_kwargs` in `[model]`.
+Successful inferred builds save `output/inferred-openassembler.toml` and
+`output/model-discovery.json`, alongside their ordinary model bundle. The generated
+contract can be reviewed and copied to the repository for future customization.
+Optional/null constructor arguments use JSON strings in `factory_args_json` and
+`factory_kwargs_json`, since TOML has no null literal. `--out-dir` relocates these
+files with the rest of the build. `inspect` and `--dry-run` never create them.
+
+The inferred contract is **forward inference with synthetic FP32 inputs**, not
+the original tensors, training loop, dataset pipeline, loss, optimizer or custom
+extension launch logic. No automatic conversion to FP16 or replacement of Adam
+with SGD occurs. CPU graph capture and numerical verification still determine
+whether every operation is supported. Missing third-party imports are reported
+by the worker; arbitrary dependency/install scripts are not automatically run.
+Use explicit configuration for supported training or precision policies.
+
+## Explicit native model configuration
+
+Configure a CPU factory (or callable model class) and exact shapes in the repository:
 
 ```toml
 [model]

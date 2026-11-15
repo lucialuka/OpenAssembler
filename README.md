@@ -22,16 +22,23 @@ OpenAssembler targets **A100 / SM80**, with its own instruction selection, regis
 
 ## Quick start
 
-Install from a checkout using **Python 3.12 or newer**. 
+Install from a checkout using **Python 3.12 or newer**:
 
 ```sh
 git clone https://github.com/lucialuka/OpenAssembler.git
 cd OpenAssembler
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[modal]'
+openassembler welcome
 ```
-If you have access to Nvidia A100, just access them through ssh or anything you have, if you do not have, you can use them in [Modal](https://modal.com/docs/guide) (which gives you $30 of free credits) after you install it:
+The welcome logo appears once per user, shared across installation and later
+terminal sessions. Plain `git clone` only downloads files and cannot run the
+welcome; the setup command above displays it after installation.
+
+Use an A100 over SSH, or authenticate Modal for cloud compilation and execution:
 
 ```sh
-pip install modal
 modal setup
 ```
 
@@ -46,8 +53,8 @@ modal setup
 ```
 
 The formula installs Python 3.12, the compiler/data tree, and the Modal CLI.
-It currently packages the `CLI` branch; use the source installation above for
-the current checkout. See the [Homebrew guide](docs/HOMEBREW.md) for formula
+It packages the `main` branch and displays the same welcome once after installation.
+See the [Homebrew guide](docs/HOMEBREW.md) for formula
 versions and CUDA setup.
 
 </details>
@@ -58,8 +65,8 @@ The same repository path works throughout the workflow:
 
 ```sh
 openassembler inspect /path/to/repo --json
-openassembler compile /path/to/repo --backend modal/user@a100 --verify
-openassembler run /path/to/repo --backend modal/user@a100
+openassembler compile /path/to/repo --backend modal --verify
+openassembler run /path/to/repo --backend modal
 ```
 
 `run` uses saved artifacts; `cnr` compiles and runs in one step. A source path
@@ -69,12 +76,29 @@ job; use `inspect` for static coverage without executing user code.
 
 | Input | Compilation route |
 |---|---|
-| Python model repository | A `[model]` factory in `openassembler.toml` selects CPU graph capture and native forward/backward kernels. |
+| Python model repository | Discover a model class/factory and exact input shapes from source, or use `[model]` in `openassembler.toml` for an explicit contract. CPU capture feeds the native model backend. |
 | Python GPU kernels | Typed `@kernel` functions compile through OpenAssembler's Python subset. |
 | CUDA C/C++/C device sources | `__global__` kernels go through `nvcc --ptx`, then OpenAssembler's native backend. |
 | PTX | `.entry` kernels go directly to the native backend. |
 
-`[model]` selects model compilation automatically. Use `--frontend native` to
+No fixed filename or directory layout is required. Without a config file,
+OpenAssembler infers an unambiguous model and its source example shapes for
+**FP32 forward inference**, then saves `inferred-openassembler.toml` under
+`output/`. It can also infer a simple tabular model's input from a direct Linear
+layer and a declared batch-size default. It leaves your sources untouched.
+
+```sh
+openassembler compile examples/autodiscovered_model --backend modal --verify
+# Resolve missing or ambiguous information without creating a TOML file:
+openassembler compile /path/to/repo --entrypoint models/net.py:Net --input-shapes '[[128,64]]' --backend modal --verify
+```
+
+Automatic setup does not translate arbitrary training scripts, custom extensions,
+losses or optimizers. Bug-free Python can still use unsupported GPU operations;
+these fail explicitly. Use a `[model]` contract for supported training.
+See [automatic model discovery](docs/REPOSITORY_WORKFLOW.md#automatic-model-discovery).
+
+`[model]` also selects model compilation automatically. Use `--frontend native` to
 request static kernel discovery explicitly. Discovery respects Git's tracked
 and non-ignored files; it does not infer arbitrary host launches, CMake linking,
 or custom model operators. Build failures save `OUT/compile-error.json` in the
@@ -108,9 +132,9 @@ Try the [Tensor Core MLP](examples/native_tensor_model/model.py) or
 model without recompiling:
 
 ```sh
-openassembler cnr examples/native_tensor_model --backend modal/user@a100 --verify
-openassembler cnr examples/native_attention_model --backend modal/user@a100 --verify
-openassembler run examples/native_attention_model --backend modal/user@a100 --verify-application
+openassembler cnr examples/native_tensor_model --backend modal --verify
+openassembler cnr examples/native_attention_model --backend modal --verify
+openassembler run examples/native_attention_model --backend modal --verify-application
 ```
 
 Models use saved OA-owned GPU modules, with optional CUDA Graph training replay,

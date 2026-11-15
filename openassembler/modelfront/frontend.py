@@ -36,17 +36,40 @@ def _print_report(report, path):
     print(f"OA compute only; report: {path}")
 
 
-def load_config(root: Path) -> dict:
+def load_config(root: Path, *, entrypoint: str | None = None, input_shapes: list | None = None,
+                out_dir: Path | None = None) -> dict:
     path = Path(root) / 'openassembler.toml'
-    try:
-        config = tomllib.loads(path.read_text())
-    except (OSError, ValueError) as exc:
-        raise ModelError(f'{path}: {exc}') from None
+    if path.exists():
+        try:
+            config = tomllib.loads(path.read_text())
+        except (OSError, ValueError) as exc:
+            raise ModelError(f'{path}: {exc}') from None
+    else:
+        from .discovery import discover_model
+        files, _ = project.walk(Path(root).resolve(), (out_dir or Path(root) / 'output').resolve())
+        report = discover_model(root, files, entrypoint=entrypoint, input_shapes=input_shapes)
+        if not report['ready']:
+            choices = ', '.join(f'{x["entrypoint"]}:{x["factory"]}' for x in report['candidates'][:12])
+            raise ModelError((report['error'] or 'no Python model entrypoint found')
+                             + (f'. Candidates: {choices}' if choices else ''))
+        config = {'model': report['model']}
     model = config.get('model')
     if not isinstance(model, dict):
         raise ModelError('native model compilation requires [model] with entrypoint, factory and '
                          'input_shapes in openassembler.toml. The legacy Inductor application '
                          'frontend is disabled; no vendor GPU fallback is permitted.')
+    model = dict(model)
+    if entrypoint:
+        entry, sep, factory = entrypoint.rpartition(':')
+        if not sep:
+            raise ModelError('--entrypoint must be FILE:FACTORY')
+        if (entry, factory) != (model.get('entrypoint'), model.get('factory', 'create_model')):
+            model['factory_args'], model['factory_kwargs'] = [], {}
+            model.pop('factory_args_json', None)
+            model.pop('factory_kwargs_json', None)
+        model.update(entrypoint=entry, factory=factory)
+    if input_shapes is not None:
+        model['input_shapes'] = input_shapes
     entry = model.get('entrypoint')
     if (not isinstance(entry, str) or not entry.endswith('.py') or Path(entry).is_absolute()
             or '..' in Path(entry).parts or not (Path(root) / entry).is_file()
@@ -54,7 +77,16 @@ def load_config(root: Path) -> dict:
         raise ModelError('model.entrypoint must name a Python file inside the repository')
     factory = model.get('factory', 'create_model')
     if not isinstance(factory, str) or not factory.isidentifier():
-        raise ModelError('model.factory must be a Python function name')
+        raise ModelError('model.factory must be a Python function or class name')
+    from .discovery import _json_value
+    try:
+        args = json.loads(model['factory_args_json']) if 'factory_args_json' in model else model.get('factory_args', [])
+        kwargs = json.loads(model['factory_kwargs_json']) if 'factory_kwargs_json' in model else model.get('factory_kwargs', {})
+    except (ValueError, TypeError):
+        raise ModelError('model constructor arguments must contain valid JSON') from None
+    if (not isinstance(args, list) or not isinstance(kwargs, dict) or not _json_value(args)
+            or not _json_value(kwargs) or any(not k.isidentifier() for k in kwargs)):
+        raise ModelError('model.factory_args/factory_kwargs must be finite JSON constructor arguments')
     shapes = model.get('input_shapes')
     if (not isinstance(shapes, list) or not shapes or any(not isinstance(shape, list) or not shape
             or any(type(d) is not int or d <= 0 for d in shape) for shape in shapes)):
@@ -73,6 +105,7 @@ def load_config(root: Path) -> dict:
         raise ModelError('native model training currently supports MSE and plain SGD')
     kind, host = resolve_backend(model.get('build_backend', 'auto'), model.get('host'))
     values = dict(entrypoint=entry, factory=factory, input_shapes=shapes, input_dtypes=['f32'] * len(shapes),
+                  factory_args=args, factory_kwargs=kwargs,
                   math=math_mode, mode=mode, seed=model.get('seed', 7), steps=model.get('steps', 3),
                   learning_rate=model.get('learning_rate', 0.01), rtol=model.get('rtol', 1e-4),
                   atol=model.get('atol', 1e-5), build_backend=kind, build_host=host,
@@ -155,9 +188,11 @@ def _request(request: dict, config: dict) -> dict:
 def compile_model_repository(root: Path, out_dir: Path, *, backend: str | None = None,
                              host: str | None = None, gpu: str | None = None,
                              budget: float | None = None, verify: bool = False,
-                             dry_run: bool = False, no_sass: bool = False, **unused) -> int:
+                             dry_run: bool = False, no_sass: bool = False,
+                             entrypoint: str | None = None, input_shapes: list | None = None, **unused) -> int:
     root, out_dir = Path(root).resolve(), Path(out_dir).resolve()
-    config = load_config(root)
+    config = load_config(root, entrypoint=entrypoint, input_shapes=input_shapes, out_dir=out_dir)
+    inferred = not (root / 'openassembler.toml').is_file()
     if unused:
         raise ModelError(f'unsupported model compilation options: {sorted(unused)}')
     if no_sass:
@@ -176,11 +211,19 @@ def compile_model_repository(root: Path, out_dir: Path, *, backend: str | None =
         config['budget'] = budget
     print(f'native model: {root / config["entrypoint"]}:{config["factory"]}, '
           f'{config["mode"]}, {config["math"]}, transport={config["build_backend"]}; OA GPU code only')
+    if inferred:
+        print(f'auto-discovered forward model; exact input shapes={config["input_shapes"]}. '
+              'Host training loops, objectives, optimizers and extension launches are not compiled.')
     if dry_run:
         print(f'dry run: would capture on CPU, emit OA cubins and publish {out_dir}; nothing was run')
         return 0
     from openassembler.torchfront.frontend import project_files, source_digest
     files = project_files(root, out_dir)
+    inferred_report = None
+    if inferred:
+        from .discovery import discover_model
+        inferred_report = discover_model(root, [root / name for name in files],
+                                         entrypoint=entrypoint, input_shapes=input_shapes)
     result = _request({'action': 'compile', 'config': config, 'verify': verify,
                        'source_root': str(root),
                        'source_digest': source_digest(files),
@@ -205,6 +248,10 @@ def compile_model_repository(root: Path, out_dir: Path, *, backend: str | None =
                 or metadata.get('source_root') != str(root) or metadata.get('config') != config
                 or metadata.get('source_digest') != source_digest(files)):
             raise ModelError('worker model metadata differs from its source/configuration request')
+        if inferred:
+            from .discovery import config_text
+            (staging / 'inferred-openassembler.toml').write_text(config_text(config))
+            (staging / 'model-discovery.json').write_text(json.dumps(inferred_report, indent=2) + '\n')
         # Bind storage bytes and configuration in addition to executable text.
         manifest = {p.relative_to(staging).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                     for p in staging.rglob('*') if p.is_file() and not p.is_symlink()}

@@ -9,6 +9,7 @@ from __future__ import annotations
 import copy
 import math
 import operator
+from pathlib import Path
 
 
 class ModelGraphError(ValueError):
@@ -135,7 +136,12 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         # Never execute shape propagation against the caller's mutable state.
         traced = torch.fx.symbolic_trace(captured)
     except Exception as exc:
-        raise ModelGraphError(f"FX capture failed: {exc}") from exc
+        import traceback
+        frames = [frame for frame in traceback.extract_tb(exc.__traceback__)
+                  if '/torch/' not in frame.filename.replace('\\', '/')
+                  and Path(frame.filename).resolve() != Path(__file__).resolve()]
+        where = f' at {frames[-1].filename}:{frames[-1].lineno} in {frames[-1].name}' if frames else ''
+        raise ModelGraphError(f"FX capture failed{where}: {exc}") from exc
     functional = torch.nn.functional
     function_ops = {
         operator.add: "add", torch.add: "add", operator.mul: "mul", torch.mul: "mul",

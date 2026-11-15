@@ -22,6 +22,10 @@ Python environment: the CLI invokes its `modal` executable.
 
 A repository with `[model]` in `openassembler.toml` automatically uses the native
 model frontend; `--frontend model` or `--frontend torch` explicitly selects it.
+Without that file, static model discovery can infer a model and exact shapes for
+FP32 forward inference. It saves a reproducible contract inside the output bundle
+without editing the source repository. This does not compile arbitrary Python
+training programs. See [automatic model discovery](REPOSITORY_WORKFLOW.md#automatic-model-discovery).
 See [the native model contract](research/ideas/native-model-bridge.md) for config,
 operator/numerical/shape scope and Python API. All workload GPU kernels are OA
 artifacts on local, Modal and SSH workers. `--frontend triton`, `--frontend inductor`
@@ -50,7 +54,8 @@ openassembler run examples/native_model --backend user@a100 --verify-application
 | `openassembler` | Open the interactive command shell. |
 | `openassembler --help` | List the top-level commands. |
 | `openassembler --version` | Print the installed OpenAssembler version. |
-| `openassembler [SRC]` / `openassembler compile [SRC]` | Compile discovered OA kernels or a configured native Python model graph. |
+| `openassembler welcome` | Display the installation welcome once for this user; later calls are silent. |
+| `openassembler [SRC]` / `openassembler compile [SRC]` | Compile discovered OA kernels or a configured/inferred native Python model graph. |
 | `openassembler gemm ...` | Generate and compile a checked native A100 FP16/BF16 GEMM. |
 | `openassembler rowwise ...` | Generate and compile cooperative native FP32 softmax or LayerNorm. |
 | `openassembler run [PATH]` | Execute existing kernel cubins or replay a bundled OA-native model. |
@@ -77,7 +82,9 @@ requires `run`. Flags belong after their command, for example
 never imports user code, compiles, or contacts a GPU. It reports the selected
 frontend, native kernel candidates, other files with skip reasons, and build
 system hints. `--json` emits the complete inventory. Exit 0 means a configured
-model or candidate was found; exit 1 means none was found or inspection failed.
+model, an inferred model contract, or native candidate was found; exit 1 means
+none was ready or inspection failed. `model_discovery` in JSON includes model
+candidates, exact shape/constructor evidence, scope, and unresolved ambiguity.
 This is discovery, not proof that every source construct is compilable.
 
 A literal existing source path is also accepted directly:
@@ -95,6 +102,11 @@ not collect source contents or environment credentials; compiler error text may
 contain source excerpts or paths.
 
 ## Interactive shell
+
+The logo is displayed once per user, shared with `openassembler welcome` and
+Homebrew post-installation. Subsequent shells retain the tips box without repeating
+the logo. Help/version/JSON commands and ordinary piped output do not consume it.
+The marker is `${XDG_STATE_HOME:-$HOME/.local/state}/openassembler/welcome-shown`.
 
 Run `openassembler` with no arguments. Enter the same commands without the
 leading executable name:
@@ -139,6 +151,24 @@ tracked/non-ignored files and recognizes kernel sources; output paths mirror
 the source tree. A directory build does not accept a single output name.
 
 A `[model]` configuration selects native Python graph capture automatically.
+Without one, unambiguous model classes/factories and source example shapes select
+FP32 forward inference. Successful builds include `inferred-openassembler.toml`
+and `model-discovery.json` under the selected output root. Missing or ambiguous
+models/shapes can be resolved without creating a configuration file:
+
+```sh
+openassembler compile my_repo --entrypoint models/net.py:Net --input-shapes '[[128,64]]' --backend modal --verify
+openassembler cnr my_repo --entrypoint models/net.py:Net --input-shapes '[[128,64]]' --backend user@a100 --verify
+```
+
+`--entrypoint FILE:FACTORY` names a repository-relative Python file and callable
+function/class. `--input-shapes JSON` supplies one positive integer shape per
+FP32 input. Both options also override an explicit model configuration without
+editing it, and reject `--frontend native`. `cnr` accepts the same model options
+as `compile`; `run` uses the saved contract and does not rediscover or compile.
+Discovery never guesses batch sizes, changes precision, or compiles host training
+loops/objectives/optimizers. See the [discovery contract](REPOSITORY_WORKFLOW.md#automatic-model-discovery).
+
 For explicit FP16-RNE linear training, `tensor_packing = "dual"` opts into
 per-iteration pack reuse and bounded matrix tails; see
 [configuration and limits](REPOSITORY_WORKFLOW.md#fp16-operand-reuse-and-bounded-matrix-tails).

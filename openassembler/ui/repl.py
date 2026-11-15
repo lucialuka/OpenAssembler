@@ -61,7 +61,9 @@ def _try_readline() -> None:
 
 
 def run() -> int:
-    print(render())
+    from openassembler.ui.session import consume_show_once
+    include_logo = sys.stdout.isatty() and consume_show_once()
+    print(render(include_logo=include_logo))
     print()
     _try_readline()
     parser = build_parser()

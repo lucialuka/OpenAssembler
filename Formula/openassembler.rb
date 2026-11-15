@@ -1,7 +1,7 @@
 class Openassembler < Formula
   desc "Python/CUDA C/C++/PTX to NVIDIA SASS and CUDA binary compiler"
   homepage "https://github.com/lucialuka/OpenAssembler"
-  url "https://github.com/lucialuka/OpenAssembler/archive/refs/heads/CLI.tar.gz"
+  url "https://github.com/lucialuka/OpenAssembler/archive/refs/heads/main.tar.gz"
   version "0.2.0"
   license "Apache-2.0"
 
@@ -15,7 +15,7 @@ class Openassembler < Formula
     # Install the source tree rather than rebuilding a Python wheel. This keeps
     # the formula relocatable and preserves the repository-relative data roots
     # used by the encoder, oracle, research tools and remote-build transport.
-    libexec.install "openassembler", "tools", "specs", "corpus", "examples", "docs", "env",
+    libexec.install "openassembler", "tools", "specs", "corpus", "examples", "docs", "env", "third_party",
                     "README.md", "NOTICE", "LICENSE", "pyproject.toml"
 
     (bin / "openassembler").write <<~EOS
@@ -36,6 +36,11 @@ class Openassembler < Formula
       set -euo pipefail
       exec "#{libexec}/env/fetch_cuda.sh" "$@"
     EOS
+  end
+
+  def post_install
+    # The same per-user stamp suppresses subsequent CLI and REPL logos.
+    system bin/"openassembler", "welcome"
   end
 
   def caveats

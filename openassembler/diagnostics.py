@@ -19,10 +19,12 @@ def inspect_source(source: Path, out_dir: Path | None = None) -> dict:
             project.classify(p, p.relative_to(source).as_posix()) for p in plan.files
         ]
         configured = plan.application_frontend == "openassembler"
+        discovery = plan.model_discovery
         systems = list(plan.build_systems)
     elif source.is_file():
         classes = [project.classify(source, source.name)]
         configured, systems = False, []
+        discovery = {}
     else:
         raise project.ProjectError(f"source does not exist: {source}")
     candidates = [
@@ -37,19 +39,20 @@ def inspect_source(source: Path, out_dir: Path | None = None) -> dict:
         "schema": 1,
         "openassembler": __version__,
         "source": str(source),
-        "frontend": "model" if configured else "native",
+        "frontend": "model" if configured or discovery.get('candidates') else "native",
+        "model_discovery": discovery,
         "build_systems": systems,
         "kernel_candidates": candidates,
         "other_files": skipped,
         "counts": dict(Counter(c.language or "other" for c in classes)),
-        "ready_for_capture_or_compilation": configured or bool(candidates),
+        "ready_for_capture_or_compilation": configured or bool(discovery.get('ready')) or (bool(candidates) and not discovery.get('candidates')),
         "contract": "Static discovery only; compilation and numerical verification determine support. "
         "Host programs and arbitrary build systems are not automatically lowered. "
         "GPU execution uses OA-generated cubins; vendor fallback is disabled.",
         "next_step": (
             "compile --verify"
-            if configured or candidates
-            else "Add an openassembler.toml [model] factory, Python @kernel, CUDA __global__, or PTX .entry."
+            if configured or discovery.get('ready') or (candidates and not discovery.get('candidates'))
+            else discovery.get('error') or "Add a model with example inputs, Python @kernel, CUDA __global__, or PTX .entry."
         ),
     }
 

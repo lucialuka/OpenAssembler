@@ -1,12 +1,40 @@
 # OpenAssembler architecture and status
 
-Updated **November 14, 2026**. This page describes the current source tree and
+Updated **November 15, 2026**. This page describes the current source tree and
 latest completed validation. The November 11 native GEMM replay supplies the
 current exact policy table; the separate November 7 native NN composition
 campaign remains experimental. Full command syntax is in [COMMANDS.md](COMMANDS.md);
 every researched feature has a dossier in the [catalogue](research/README.md).
 The cross-cutting reverse-engineering record is centralized in the
 [reverse-engineering results hub](reverse_eng_results/README.md).
+
+## November 15 automatic model setup and installation welcome
+
+Repositories no longer require a fixed Python filename or a hand-written TOML
+file for discoverable forward models. Static AST discovery records module/factory,
+literal constructor arguments and exact FP32 source example shapes; a bounded
+tabular path also reads a direct input Linear and a declared batch-size default.
+Ambiguity can be resolved with `--entrypoint FILE:FACTORY` and `--input-shapes JSON`.
+Successful inferred builds save their generated configuration and discovery report
+inside the selected output root. Inspection and dry runs remain read-only.
+Package-relative imports, namespace packages and `src/` layouts are supported by
+the worker loader. See the [discovery contract](REPOSITORY_WORKFLOW.md#automatic-model-discovery).
+
+The configuration-free [MLP example](../examples/autodiscovered_model/network.py)
+passes compilation verification and saved-artifact replay in separate Modal A100
+workers: three changing-input iterations and three output checks per worker,
+passing canaries and profiler ownership, with zero vendor compute launches and
+zero replay code generation. The [raw reports](evidence/model-discovery-20261115.json)
+retain both checks and their timing scope; this is a correctness test, not a
+performance comparison. Automatic setup compiles forward inference only; it does
+not add custom extension lowering, arbitrary host training, Adam, cross-entropy,
+dynamic shapes or unsupported operators.
+
+The welcome logo is persistent once per user across Homebrew post-installation,
+ordinary terminal commands and interactive shells. Help/version/JSON output stays
+clean. Plain `git clone` cannot execute repository code; source setup uses
+`openassembler welcome`. The formula now follows `main` and includes the retained
+third-party fast-matmul data. No Homebrew release was published by this change.
 
 ## November 14 FP16 batched products and repository workflow
 

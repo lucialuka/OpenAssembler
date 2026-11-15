@@ -34,18 +34,18 @@ def _wrap(text: str, width: int) -> list[str]:
 
 
 TIPS = [
-    "Compiles Python (@kernel), CUDA C / C++ (__global__) and PTX to NVIDIA SASS"
-    " (sm_80) with our own backend, not ptxas's code generator.",
+    "Compiles supported Python models, Python @kernel functions, CUDA C / C++"
+    " (__global__) and PTX to native NVIDIA SASS and cubins (A100 / SM80).",
     "`compile kernel.cu` writes output/cubin/kernel.cubin + output/sass/kernel.sass"
     " (+ manifest.json). `-o NAME` renames it, `--out-dir DIR` moves output/,"
     " `--verify` checks it against the PTX reference interpreter.",
     "`compile REPO`, `run REPO`, `cnr REPO`: build, reuse, or build and run."
     " Directory outputs live in REPO/output/{cubin,sass}; --out-dir overrides it.",
-    "Repositories discover native GPU kernels by default."
-    " Use --frontend torch/triton/inductor to explicitly capture a configured"
-    " PyTorch workload through TorchInductor/Triton.",
+    "Model repositories use a configured or automatically discovered CPU model"
+    " and exact input shapes. `inspect REPO --json` explains discovery without"
+    " running user code. Triton/Inductor and vendor GPU fallback are disabled.",
     "`gemm --m 128 --n 128 --k 128` builds a specialized A100 FP16/BF16 tensor GEMM.",
-    "`run` executes output/ on a GPU: our cubin vs ptxas's, bit-exact + timing."
+    "`run` executes saved OA cubins on a GPU; models retain their launch plan."
     " `--backend local|modal|user@host`, `--spec`, `--dry-run`.",
     "All three repository commands accept --backend local|modal|user@host."
     " In an SSH terminal on the GPU host, use local. --dry-run only plans work.",

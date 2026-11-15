@@ -1,9 +1,9 @@
 """Static repository inspection and frontend selection.
 
 Repository inspection deliberately stays ahead of execution: it reads source
-text and configuration, discovers native kernel candidates, records build-system
-hints, and never imports or runs user code. An explicit [model] config selects native
-model capture; other repositories use static kernel discovery.
+text and configuration, discovers native kernel/model candidates, records build-system
+hints, and never imports or runs user code. A [model] config or an inferred model
+contract selects model capture; other repositories use static kernel discovery.
 Native model capture executes a bounded CPU workload and specializes exact shapes.
 Triton and Inductor GPU compilation are disabled.
 """
@@ -40,6 +40,7 @@ class RepositoryPlan:
     application_config: Path | None
     used_git: bool
     dependencies: dict[str, tuple[str, ...]]
+    model_discovery: dict
 
     @property
     def has_native(self) -> bool:
@@ -118,7 +119,9 @@ def inspect(root: Path, out_dir: Path | None = None) -> RepositoryPlan:
         deps = _dependencies(path)
         if deps:
             dependencies[path.relative_to(root).as_posix()] = deps
-    return RepositoryPlan(root, tuple(files), native, systems, frontend, config, used_git, dependencies)
+    from openassembler.modelfront.discovery import discover_model
+    discovery = discover_model(root, files) if config is None else {}
+    return RepositoryPlan(root, tuple(files), native, systems, frontend, config, used_git, dependencies, discovery)
 
 
 def native_candidates(path: Path, out_dir: Path | None = None) -> tuple[project.Classified, ...]:
@@ -129,10 +132,11 @@ def native_candidates(path: Path, out_dir: Path | None = None) -> tuple[project.
     return inspect(path, out_dir).native
 
 
-def select_frontend(path: Path, out_dir: Path, requested: str = "auto") -> tuple[str, Path | None, RepositoryPlan | None]:
+def select_frontend(path: Path, out_dir: Path, requested: str = "auto", *,
+                    entrypoint: str | None = None, input_shapes: list | None = None) -> tuple[str, Path | None, RepositoryPlan | None]:
     """Return ``(native|model, model_root, plan)``.
 
-    ``auto`` selects a configured [model] factory, otherwise static native
+    ``auto`` selects a configured or discovered model, otherwise static native
     kernel discovery. ``native`` explicitly selects standalone kernels even
     in model repositories. ``torch`` is a compatibility alias for ``model``;
     Triton and Inductor frontends reject.
@@ -144,19 +148,21 @@ def select_frontend(path: Path, out_dir: Path, requested: str = "auto") -> tuple
     if requested not in {"auto", "native", *APPLICATION_FRONTENDS}:
         raise project.ProjectError(f"unknown frontend {requested!r}; use auto, native, model, or torch")
     path = Path(path).resolve()
+    overrides = entrypoint is not None or input_shapes is not None
+    if overrides and requested == 'native':
+        raise project.ProjectError('--entrypoint/--input-shapes select a model; omit --frontend native')
     if not path.is_dir():
-        if requested in APPLICATION_FRONTENDS:
-            raise project.ProjectError("application frontend requires a repository directory with openassembler.toml")
+        if requested in APPLICATION_FRONTENDS or overrides:
+            raise project.ProjectError("model frontend requires a repository directory")
         return "native", None, None
     plan = inspect(path, out_dir)
     if requested in APPLICATION_FRONTENDS:
-        if plan.application_config is None:
-            raise project.ProjectError(f"{path} has no openassembler.toml application configuration; "
-                                       f"use --frontend native for discovered kernels")
         return "model", path, plan
     if requested == 'auto' and plan.application_frontend == 'openassembler':
         return 'model', path, plan
-    # Native is the default even when an application config is present.
+    if requested == 'auto' and (overrides or plan.model_discovery.get('candidates')):
+        return 'model', path, plan
+    # Retired [application] configs retain the static-kernel compatibility path.
     return "native", None, plan
 
 

@@ -17,17 +17,19 @@ def test_formula_declares_runtime_and_complete_source_layout():
     assert 'class Openassembler < Formula' in formula
     assert 'depends_on "python@3.12"' in formula
     assert 'depends_on "modal"' in formula
-    for path in ("openassembler", "tools", "specs", "corpus", "examples", "docs", "env"):
+    for path in ("openassembler", "tools", "specs", "corpus", "examples", "docs", "env", "third_party"):
         assert f'"{path}"' in formula
     for command in ("openassembler", "openassembler-cuda", "openassembler-fetch-cuda"):
         assert f'bin / "{command}"' in formula
+    assert 'refs/heads/main.tar.gz' in formula
+    assert 'def post_install' in formula and '"welcome"' in formula
     assert subprocess.run(["ruby", "-c", str(FORMULA)], capture_output=True,
                           text=True, check=True).stdout.strip() == "Syntax OK"
 
 
 def test_relocated_source_tree_runs_without_editable_install(tmp_path):
     # Mirror the formula's layout without copying generated corpus output.
-    for directory in ("openassembler", "tools", "specs", "examples", "docs", "env"):
+    for directory in ("openassembler", "tools", "specs", "examples", "docs", "env", "third_party"):
         shutil.copytree(ROOT / directory, tmp_path / directory)
     (tmp_path / "corpus/sm_80").mkdir(parents=True)
     for name in ("pairs.jsonl", "machine_model.json"):

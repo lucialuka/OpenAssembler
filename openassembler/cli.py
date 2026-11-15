@@ -49,9 +49,10 @@ def _compile_opts(a: argparse.Namespace):
                    nvcc_flags=list(a.nvcc_flag), dump_ptx=a.dump_ptx)
 
 
-def _frontend_choice(src: Path, out_dir: Path | None, requested: str):
+def _frontend_choice(src: Path, out_dir: Path | None, requested: str, *, entrypoint=None, input_shapes=None):
     from openassembler.repository import select_frontend
-    return select_frontend(src, out_dir or (Path(src).resolve() / "output"), requested)
+    return select_frontend(src, out_dir or (Path(src).resolve() / "output"), requested,
+                           entrypoint=entrypoint, input_shapes=input_shapes)
 
 
 def _model_compile_opts(a: argparse.Namespace) -> dict:
@@ -64,6 +65,7 @@ def _model_compile_opts(a: argparse.Namespace) -> dict:
     if a.job_timeout is not None:
         raise ModelError('native model workers use --budget as their hard stage watchdog; omit --job-timeout')
     return {'verify': a.verify, 'dry_run': a.dry_run, 'no_sass': a.no_sass,
+            'entrypoint': a.entrypoint, 'input_shapes': a.input_shapes,
             'backend': a.build_backend or a.backend, 'host': a.build_host or a.host,
             'gpu': a.build_gpu or a.gpu,
             'budget': a.build_budget if a.build_budget is not None else a.budget}
@@ -112,6 +114,12 @@ def cmd_inspect(a: argparse.Namespace) -> int:
             print(f"  {candidate['language']}: {candidate['path']}")
         print(f"{len(report['kernel_candidates'])} kernel source(s), {len(report['other_files'])} other file(s)")
         print(report['contract'])
+        if discovery := report.get('model_discovery'):
+            for candidate in discovery.get('candidates', []):
+                print(f"  model: {candidate['entrypoint']}:{candidate['factory']}")
+            if discovery.get('model'):
+                print(f"  inferred input shapes: {discovery['model']['input_shapes']}")
+            print(discovery['scope'])
         print('next: ' + report['next_step'])
     return 0 if report['ready_for_capture_or_compilation'] else 1
 
@@ -127,7 +135,7 @@ def cmd_compile(a: argparse.Namespace) -> int:
     from openassembler.transport import TransportError
     from openassembler.workflow import output_dir
     frontend, root, plan = _frontend_choice(Path(a.src), Path(a.out_dir).resolve() if a.out_dir else None,
-                                             a.frontend)
+                                             a.frontend, entrypoint=a.entrypoint, input_shapes=a.input_shapes)
     if frontend == "model":
         from openassembler.modelfront.frontend import compile_model_repository
         return compile_model_repository(root, output_dir(root, a.out_dir), **_model_compile_opts(a))
@@ -269,7 +277,7 @@ def cmd_cnr(a: argparse.Namespace) -> int:
     from openassembler.workflow import output_dir
 
     frontend, root, plan = _frontend_choice(Path(a.src), Path(a.out_dir).resolve() if a.out_dir else None,
-                                             a.frontend)
+                                             a.frontend, entrypoint=a.entrypoint, input_shapes=a.input_shapes)
     if frontend == "model":
         from openassembler.modelfront.frontend import compile_model_repository, run_model_repository
         if a.spec or a.save_jobs or a.n != 1 << 20 or a.reps != 20:
@@ -480,6 +488,15 @@ def cmd_status(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_welcome(a: argparse.Namespace) -> int:
+    """Installer/source-checkout welcome; share the normal persistent stamp."""
+    from openassembler.ui.banner import render
+    from openassembler.ui.session import consume_show_once
+    if consume_show_once():
+        print(render())
+    return 0
+
+
 COMPILE_HELP = """Compile a source file or a whole source tree to SASS and CUDA binaries.
 
   openassembler compile examples/div_by_const.ptx -o out --verify
@@ -496,7 +513,12 @@ repo, .gitignore is respected. All kernels of one source file go into one cubin.
 
 A directory with [model] in openassembler.toml captures its CPU model factory
 and emits OA forward/backward/loss/update artifacts for its exact shape contract.
---frontend model (or torch) selects this explicitly; --frontend native selects
+Without configuration, unambiguous model classes/factories and source example
+shapes are inferred for FP32 forward inference. --entrypoint FILE:FACTORY and
+--input-shapes '[[17,8]]' resolve missing/ambiguous information in one command.
+Successful inferred builds save inferred-openassembler.toml in the output root;
+the user's source tree is not rewritten. Host training scripts are not compiled.
+--frontend model (or torch) selects models explicitly; --frontend native selects
 static kernels. Triton/Inductor and --fallback ptxas are disabled.
 CUDA C/C++ uses nvcc only to emit PTX. All workload executable GPU instructions
 are emitted by OA. --backend local|modal|user@host selects the transport.
@@ -538,6 +560,19 @@ only the build location. --dry-run plans both stages without builds or GPU jobs.
 
 
 def _add_compile_args(pc: argparse.ArgumentParser) -> None:
+    import json
+    def shapes_option(text):
+        try:
+            shapes = json.loads(text)
+        except ValueError:
+            raise argparse.ArgumentTypeError("expected JSON shapes such as '[[17, 8]]'") from None
+        if shapes is None:
+            raise argparse.ArgumentTypeError("expected JSON shapes such as '[[17, 8]]', not null")
+        return shapes
+    pc.add_argument('--entrypoint', metavar='FILE:FACTORY', default=None,
+                    help='select a Python model factory or class without writing a configuration file')
+    pc.add_argument('--input-shapes', type=shapes_option, metavar='JSON', default=None,
+                    help='exact FP32 model shapes, e.g. \'[[17,8]]\'; overrides configuration/discovery')
     pc.add_argument("-o", "--out", default=None, metavar="NAME",
                     help="output name for a single file: output/cubin/NAME.cubin + output/sass/NAME.sass "
                          "(default: the source file's stem)")
@@ -751,6 +786,9 @@ def build_parser() -> argparse.ArgumentParser:
     ps = sub.add_parser("status", help="print the headline results from docs/STATUS.md")
     ps.set_defaults(func=cmd_status)
 
+    welcome = sub.add_parser("welcome", help="show the installation welcome once for this user")
+    welcome.set_defaults(func=cmd_welcome)
+
     pbench = sub.add_parser("benchmark", help="run or describe the full CLI integration matrix")
     pbench.add_argument("--backend", default="modal", help="GPU backend: modal, local, or user@host")
     pbench.add_argument("--build-backend", choices=("modal", "local", "ssh"), default="modal")
@@ -821,19 +859,16 @@ def main(argv: list[str] | None = None) -> int:
         from openassembler.ui.repl import run as run_repl
         return run_repl()
 
-    # First `openassembler <command>` typed directly into a given shell session
-    # shows the logo once; later commands in that same session stay quiet
-    # (openassembler/ui/session.py). The REPL shows it once at startup instead,
-    # on its own, so this only applies to one-shot invocations. Skipped when
-    # stdout isn't a terminal (scripts, CI, pipes) so output stays clean, and
-    # for -h/--help/--version so the banner doesn't eat into `| head` / pager output.
-    if sys.stdout.isatty() and not {"-h", "--help", "--version"} & set(raw):
+    # Installers and every terminal share a persistent per-user welcome. Keep
+    # machine-readable output and help/version probes free of banner text.
+    if (sys.stdout.isatty() and sys.stderr.isatty() and raw[0] != 'welcome'
+            and not {"-h", "--help", "--version", "--json"} & set(raw)):
         from openassembler.ui.banner import render
         from openassembler.ui.session import consume_show_once
 
         if consume_show_once():
-            print(render())
-            print()
+            print(render(), file=sys.stderr)
+            print(file=sys.stderr)
 
     parser = build_parser()
     # A literal source path is the common one-shot build operation. Explicit

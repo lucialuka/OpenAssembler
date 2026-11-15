@@ -18,11 +18,20 @@ brew tap lucialuka/openassembler \
 brew install openassembler
 ```
 
-The current checked-in formula downloads the repository's `CLI` branch and
+The current checked-in formula downloads the repository's `main` branch and
 labels it version 0.2.0; it does not pin a released source archive or the current
 local checkout. Check `Formula/openassembler.rb` before relying on a particular
 compiler/table revision. A documentation update does not publish a new formula
 or benchmark the installation.
+
+The post-install step displays the OpenAssembler welcome logo once per user.
+The same stamp suppresses it in later CLI invocations and interactive shells,
+including new terminal sessions and reinstalls. State lives in
+`${XDG_STATE_HOME:-$HOME/.local/state}/openassembler/welcome-shown`.
+Help, version, JSON inspection and piped CLI output do not display or consume it.
+An unwritable state location suppresses the optional logo without failing a build.
+For a source checkout, install the package, then run `openassembler welcome`.
+Plain `git clone` downloads files; it cannot execute a repository-provided welcome.
 
 Check the installation and see every command:
 
@@ -69,9 +78,10 @@ The remote host still needs its compatible Linux Python/CUDA/PyTorch runtime as
 described in [REPOSITORY_WORKFLOW.md](REPOSITORY_WORKFLOW.md). SSH keys, ports
 and jump hosts belong in `~/.ssh/config`.
 
-For a configured PyTorch application, add `--frontend torch` to `compile` or
-`cnr`; application replay selects its saved build. Native discovery remains
-the default even when the repository has an application configuration.
+Native models are selected by `[model]` configuration or automatic source
+discovery. See [automatic model discovery](REPOSITORY_WORKFLOW.md#automatic-model-discovery)
+for configuration-free builds and one-command overrides. `--frontend native`
+selects standalone kernels explicitly. Legacy Inductor applications remain disabled.
 
 ## Native CUDA tools on macOS
 
