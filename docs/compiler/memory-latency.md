@@ -4,11 +4,11 @@ This page connects compiler coverage decisions with existing performance
 evidence and the current bounded overlap-policy experiment. It is not a claim
 that any one technique accelerates every ML workload.
 
-## Evidence to preserve when expanding coverage
+## Evidence for Expanding Coverage
 
 | Mechanism | Existing evidence and tradeoff |
 |---|---|
-| Two-stage `cp.async` shared-memory pipeline | Validated production copy/compute path; added stages consume shared memory and can reduce resident CTAs. [Deeper-pipeline study](../research/ideas/deeper-pipelines-and-tile-shapes.md) rejects its measured three/four-stage variants. |
+| Two-stage `cp.async` shared-memory pipeline | Validated production copy/compute path; added stages consume shared memory and can reduce resident CTAs. [Deeper-pipeline study](../research/ideas/deeper-pipelines-and-tile-shapes.md) rejects its measured three/four-stage variants. | 
 | Earlier independent pointer work | Some exact shapes benefit from direct pointer homes and early advancement. [Pointer study](../research/ideas/early-gemm-pointer-advance.md) retains regressions on other shapes. |
 | Fragment load/compute overlap | Earlier loads can extend live ranges and increase register pressure. [Load-next study](../research/ideas/cutlass-load-next-compute-current.md) and [fragment windows](../research/ideas/prefetch-and-fragment-windows.md) do not establish a universal improvement. |
 | Producer/consumer warp split | Dedicated loaders consume threads/registers and require correct phase/arrival accounting. [Warp study](../research/ideas/producer-consumer-warps.md) lost dense GEMM timing; [two-slot mbarrier](../research/ideas/mbarrier-overlap.md) wins only its small controlled workload. |
