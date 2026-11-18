@@ -76,6 +76,7 @@ state verification have different scopes. See [Native PTX verification](research
 
 ## Shared prerequisites
 
-Use [DEVELOPMENT.md](DEVELOPMENT.md) for installation/toolkit requirements and
+Use [Homebrew](HOMEBREW.md) to install the CLI,
+[DEVELOPMENT.md](DEVELOPMENT.md) for contributor/toolkit requirements and
 [STATUS.md](STATUS.md) for the current architecture, capability matrix and latest
 admitted results. This page does not duplicate per-feature reproduction.

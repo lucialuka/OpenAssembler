@@ -31,7 +31,12 @@ execute kernels, not to compile or disassemble them.
 | Numerical/application research | PyTorch and compatible GPU packages; capture supports the pinned 2.7.1 runtime |
 | Optional proof/research tools | The dependencies documented by that dossier, such as Z3 |
 
-Install the core and test runner:
+User installations use [Homebrew](HOMEBREW.md), which installs the CLI, compiler
+data, Python and Modal together. The following isolated environment is only for
+contributors running or editing this source checkout; it is not an alternative
+user installation guide.
+
+Prepare the contributor test environment:
 
 ```sh
 python3 -m venv .venv
@@ -39,11 +44,6 @@ source .venv/bin/activate
 pip install -e .
 pip install pytest
 ```
-
-For an end-user installation, use the Homebrew formula documented in
-[HOMEBREW.md](HOMEBREW.md). It installs the CLI, compiler data, Modal client
-and repository-relative resources together. The editable Python setup above
-remains the development path for running tests against a checkout.
 
 On macOS, install Colima if needed and start it. The wrapper runs NVIDIA's
 Linux tools inside the VM:
@@ -69,6 +69,27 @@ supported host path in the current wrapper.
 The [repository workflow guide](REPOSITORY_WORKFLOW.md) gives workstation SSH,
 interactive SSH-terminal and Modal commands, including remote-only compilation
 without a local CUDA toolkit.
+
+## Homebrew distribution
+
+The user installation command is maintained in [HOMEBREW.md](HOMEBREW.md).
+Keep the source checkout/test environment above out of user quick starts.
+The formula installs a relocatable compiler/data tree and uses Homebrew's Python
+and Modal dependencies; changing distribution must preserve those resource paths.
+
+The tap currently lives in `lucialuka/OpenAssembler`. Homebrew's automatic tap
+lookup for `lucialuka/openassembler/openassembler` would instead require a public
+`lucialuka/homebrew-openassembler` repository. Until such a tap is published,
+the explicit tap URL is required for a fresh installation. Using the full formula
+name also avoids ambiguity when both legacy and current taps are registered and
+selects the intended formula under Homebrew's tap trust rules.
+
+Universal `brew install openassembler` requires acceptance into `homebrew/core`.
+It cannot be enabled by a local formula or README edit. Before submitting a
+formula, replace the moving-branch archive with an immutable stable release and
+SHA-256, and meet Homebrew's [core formula requirements](https://docs.brew.sh/Acceptable-Formulae).
+Publishing a tap, release or core submission is a separate action from editing
+the current repository; do not describe it as already available.
 
 ## Common validation commands
 

@@ -215,14 +215,13 @@ in the build root are preserved.
 
 ## Modal from a workstation
 
-Install OpenAssembler with Python 3.12+ and set up the optional Modal client:
+Install OpenAssembler with [Homebrew](HOMEBREW.md), which includes the Modal
+client. Authenticate it once, then compile your repository:
 
 ```sh
-python3 -m pip install -e .
-python3 -m pip install modal
 modal setup
-openassembler cnr examples/native_model --frontend model --backend modal --verify --dry-run
-openassembler cnr examples/native_model --frontend model --backend modal --verify
+openassembler cnr /path/to/repo --backend modal --verify --dry-run
+openassembler cnr /path/to/repo --backend modal --verify
 ```
 
 The `modal` executable can belong to a separate environment, but must be on

@@ -1,28 +1,42 @@
 # Homebrew installation
 
-The Homebrew formula installs the complete OpenAssembler source/data tree and
-the `openassembler` CLI. It also installs Homebrew's Modal client, so the
-documented remote workflow does not require a second Python environment.
-
-From a checkout, install the maintained local formula with:
+Homebrew is the user installation path on macOS and Linux. With Homebrew already
+installed, copy this single command:
 
 ```sh
-brew install --build-from-source ./Formula/openassembler.rb
+brew tap lucialuka/openassembler https://github.com/lucialuka/OpenAssembler && brew install lucialuka/openassembler/openassembler
 ```
 
-Alternatively, add the repository as a tap and use its formula:
+It registers the project's formula repository and installs OpenAssembler with
+Python 3.12, compiler data, examples, documentation and the Modal client. A source
+checkout, Python virtual environment and manual `pip install` are unnecessary.
+The explicit formula name also avoids ambiguity if older OpenAssembler taps are
+already registered.
+
+## Why the tap is needed
+
+`brew install openassembler` works only when Homebrew can already resolve that
+name. OpenAssembler is not currently listed in `homebrew/core`, and Homebrew
+does not search arbitrary GitHub repositories for unknown formula names. The
+command above performs the one-time registration as part of installation.
+
+The explicit URL uses the existing OpenAssembler repository. Homebrew's usual
+automatic tap lookup would require a separate `homebrew-openassembler` repository.
+See [Homebrew's tap discovery rules](https://docs.brew.sh/Taps) and the
+[maintainer publication notes](DEVELOPMENT.md#homebrew-distribution).
+
+## Check the installation
 
 ```sh
-brew tap lucialuka/openassembler \
-  https://github.com/lucialuka/OpenAssembler
-brew install openassembler
+openassembler --version
+openassembler --help
 ```
 
 The current checked-in formula downloads the repository's `main` branch and
 labels it version 0.2.0; it does not pin a released source archive or the current
 local checkout. Check `Formula/openassembler.rb` before relying on a particular
-compiler/table revision. A documentation update does not publish a new formula
-or benchmark the installation.
+compiler/table revision. Local changes take effect for new installations after
+they are published to that repository.
 
 The post-install step displays the OpenAssembler welcome logo once per user.
 The same stamp suppresses it in later CLI invocations and interactive shells,
@@ -30,24 +44,6 @@ including new terminal sessions and reinstalls. State lives in
 `${XDG_STATE_HOME:-$HOME/.local/state}/openassembler/welcome-shown`.
 Help, version, JSON inspection and piped CLI output do not display or consume it.
 An unwritable state location suppresses the optional logo without failing a build.
-For a source checkout, install the package, then run `openassembler welcome`.
-Plain `git clone` downloads files; it cannot execute a repository-provided welcome.
-
-Check the installation and see every command:
-
-```sh
-openassembler --version
-openassembler --help
-openassembler compile --help
-openassembler run --help
-openassembler cnr --help
-```
-
-The formula uses Homebrew's Python 3.12 and installs the package as a
-relocatable source tree. That preserves the paths used by the native encoder,
-PTX parser, SASS emulator, compiler data, Modal/SSH workers, research tools and
-documentation. It does not silently replace the existing optimization backend
-or generated code.
 
 The formula does not install the repository's full `exp/` evidence archive or
 `testcases/` tree. Documentation links to those paths describe research in a
@@ -104,12 +100,8 @@ an existing toolkit on `PATH` or `OPENASSEMBLER_CUDA_HOME` is also supported.
 
 Application capture through Modal uses the pinned PyTorch image and does not
 require local Torch. SSH capture requires PyTorch 2.7.1 and CUDA 12.8 on the
-remote host. A local development environment can install the explicit Python
-extra separately:
+remote host. Contributors running local CPU model tests should use the isolated
+[development environment](DEVELOPMENT.md); this is not another user installation
+path or a prerequisite for Modal.
 
-```sh
-python3.12 -m pip install 'openassembler[torch]'
-```
-
-The formula's `openassembler` command itself remains dependency-light; Modal,
-SSH and local native paths are selected explicitly by `--backend`.
+Modal, SSH and local native paths are selected explicitly by `--backend`.

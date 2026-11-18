@@ -12,16 +12,19 @@ and the commands' runtime dispatch. Feature dossiers in the
 reproduction procedures; [STATUS.md](STATUS.md) describes the current architecture
 and measured support.
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for environment/toolkit setup and local
-test prerequisites. This reference documents commands, not benchmark claims.
+Install through [Homebrew](HOMEBREW.md). Contributors can use
+[DEVELOPMENT.md](DEVELOPMENT.md) for toolkit setup and local test prerequisites.
+This reference documents commands, not benchmark claims.
 
-Examples run from the repository root. After installation, `openassembler ...`
-and `python -m openassembler ...` select the same CLI. The production compiler
-requires Python 3.12+. Compiling native kernels needs NVIDIA's CUDA tools
+Examples using `examples/` paths assume a source checkout; substitute your own
+repository path when using the installed CLI. Homebrew supplies the required
+Python runtime and the `openassembler` command; no Python environment activation
+is needed. Contributors' `python -m openassembler ...` uses the same CLI in their
+development environment. Compiling native kernels needs NVIDIA's CUDA tools
 (`ptxas`, `nvdisasm`, and `nvcc` for CUDA C/C++); it does not require a GPU.
 Running compiled kernels needs a Linux NVIDIA driver locally or on a remote
-machine. Modal is optional and can be installed in a separate authenticated
-Python environment: the CLI invokes its `modal` executable.
+machine. Homebrew includes the Modal client; authenticate it with `modal setup`
+when using `--backend modal`.
 
 ## Native model route and current ownership policy
 
