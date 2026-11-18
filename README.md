@@ -32,6 +32,16 @@ source .venv/bin/activate
 python -m pip install -e '.[modal]'
 openassembler welcome
 ```
+
+You can also install OpenAssembler through Homebrew:
+<details>
+<summary><strong>Install with Homebrew</strong></summary>
+
+```sh
+brew tap lucialuka/openassembler https://github.com/lucialuka/OpenAssembler
+brew install openassembler
+```
+
 The welcome logo appears once per user, shared across installation and later
 terminal sessions. Plain `git clone` only downloads files and cannot run the
 welcome; the setup command above displays it after installation.
@@ -42,15 +52,8 @@ Use an A100 over SSH, or authenticate Modal for cloud compilation and execution:
 modal setup
 ```
 
-You can also install OpenAssembler through Homebrew:
-<details>
-<summary><strong>Install with Homebrew</strong></summary>
 
-```sh
-brew tap lucialuka/openassembler https://github.com/lucialuka/OpenAssembler
-brew install openassembler
-modal setup
-```
+
 
 The formula installs Python 3.12, the compiler/data tree, and the Modal CLI.
 It packages the `main` branch and displays the same welcome once after installation.
