@@ -2,7 +2,9 @@
   <img src="figs/openassembler_logo.png" width="820" alt="OpenAssembler">
 </p>
 
-# OpenAssembler
+<h1 align="center">
+OpenAssembler
+</h1>
 
 **Compile Python models and GPU kernels to native NVIDIA SASS and cubins.**
 
@@ -22,6 +24,13 @@ OpenAssembler targets **A100 / SM80**, with its own instruction selection, regis
 
 ## Quick start
 
+You can install OpenAssembler through Homebrew:
+```sh
+brew tap lucialuka/openassembler https://github.com/lucialuka/OpenAssembler
+brew install openassembler
+```
+---
+
 Install from a checkout using **Python 3.12 or newer**:
 
 ```sh
@@ -33,14 +42,8 @@ python -m pip install -e '.[modal]'
 openassembler welcome
 ```
 
-You can also install OpenAssembler through Homebrew:
-<details>
-<summary><strong>Install with Homebrew</strong></summary>
+---
 
-```sh
-brew tap lucialuka/openassembler https://github.com/lucialuka/OpenAssembler
-brew install openassembler
-```
 
 The welcome logo appears once per user, shared across installation and later
 terminal sessions. Plain `git clone` only downloads files and cannot run the
@@ -60,7 +63,7 @@ It packages the `main` branch and displays the same welcome once after installat
 See the [Homebrew guide](docs/HOMEBREW.md) for formula
 versions and CUDA setup.
 
-</details>
+
 
 ## Compile a repository
 
