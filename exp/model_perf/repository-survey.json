@@ -1,0 +1,2931 @@
+{
+  "revision": "91e3f94f4f723a95bf9582bd2f6c9c3fd3cab0e3",
+  "tracked_files": 2707,
+  "modules": [
+    {
+      "path": "openassembler/__init__.py",
+      "lines": 4,
+      "purpose": "OpenAssembler: a Python / CUDA C / C++ (and PTX) to NVIDIA SASS compiler with its own",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/__main__.py",
+      "lines": 4,
+      "purpose": "",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/backend/__init__.py",
+      "lines": 1,
+      "purpose": "Backend: instruction selection, register assignment, scheduling, encoding.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/backend/compile.py",
+      "lines": 537,
+      "purpose": "Shared naive PTX selection and production SASS scheduling (sm_80).",
+      "definitions": [
+        "NotSupported",
+        "Out",
+        "Compiler",
+        "_opname",
+        "_pdefs",
+        "_puses",
+        "schedule",
+        "_branch_pred_latency",
+        "_pipe",
+        "hw_latency",
+        "_dc_replace",
+        "_load_model",
+        "_mined_stalls"
+      ]
+    },
+    {
+      "path": "openassembler/backend/fragments.py",
+      "lines": 175,
+      "purpose": "ptxas's own SASS sequences for PTX ops we don't hand-select (IEEE div/rcp/sqrt, the",
+      "definitions": [
+        "FragmentError",
+        "library",
+        "split",
+        "_split_top",
+        "roles",
+        "lower_line",
+        "reads_writes"
+      ]
+    },
+    {
+      "path": "openassembler/backend/naive.py",
+      "lines": 42,
+      "purpose": "Naive PTX -> SASS baseline with fixed conservative scheduling (sm_80).",
+      "definitions": [
+        "schedule"
+      ]
+    },
+    {
+      "path": "openassembler/backend/ra.py",
+      "lines": 1074,
+      "purpose": "M3 v1: PTX -> SASS with a virtual-register IR, copy elimination, and linear-scan",
+      "definitions": [
+        "NotSupported",
+        "V",
+        "C",
+        "I",
+        "Op",
+        "PV",
+        "Selector",
+        "_is_puse",
+        "_flat",
+        "dce",
+        "_all_uses",
+        "_defs",
+        "cfg_liveness",
+        "coalesce",
+        "Group",
+        "_groups",
+        "_intervals",
+        "_alloc",
+        "allocate",
+        "allocate_preds",
+        "lower",
+        "compile_kernel",
+        "encode_code"
+      ]
+    },
+    {
+      "path": "openassembler/backend/sched.py",
+      "lines": 130,
+      "purpose": "Basic-block list scheduler: reorders lowered instructions before control bits are set.",
+      "definitions": [
+        "_lat",
+        "_blocks",
+        "_schedule_block",
+        "list_schedule"
+      ]
+    },
+    {
+      "path": "openassembler/backend/tensor.py",
+      "lines": 494,
+      "purpose": "SM80 tensor PTX selection and source-order dependency scheduling.",
+      "definitions": [
+        "TensorConfig",
+        "needs_tensor",
+        "loop_carried_registers",
+        "TensorSelector",
+        "_fixed_stalls",
+        "tensor_schedule",
+        "policy",
+        "generate"
+      ]
+    },
+    {
+      "path": "openassembler/backend/tensor_encoding.py",
+      "lines": 117,
+      "purpose": "Bundled SM80 tensor-path encoding seeds and learned operand fields.",
+      "definitions": [
+        "TensorEncoder"
+      ]
+    },
+    {
+      "path": "openassembler/backend/unroll.py",
+      "lines": 122,
+      "purpose": "PTX-level unrolling of counted do-while loops (the shape ptxas also unrolls 4x).",
+      "definitions": [
+        "_writes",
+        "_reads",
+        "_match",
+        "unroll_loops"
+      ]
+    },
+    {
+      "path": "openassembler/build.py",
+      "lines": 1010,
+      "purpose": "`openassembler compile` (and the compile half of `cnr`): source file or source",
+      "definitions": [
+        "Options",
+        "_err",
+        "_show",
+        "encoder",
+        "generate",
+        "count_insns",
+        "verify_kernel",
+        "_skip_comment_or_string",
+        "restrict_ptx",
+        "splice_kernels",
+        "regcounts",
+        "_scratch_tool",
+        "ptxas_build",
+        "disasm",
+        "split_listing",
+        "sanity_check_listing",
+        "listing_insn_count",
+        "c_param_names",
+        "ToolkitMissing",
+        "_need",
+        "KernelOut",
+        "SourceOut",
+        "_first_line",
+        "build_source",
+        "CompileResult",
+        "_brief",
+        "_print_source",
+        "compile_paths",
+        "_compile_paths",
+        "_print_summary"
+      ]
+    },
+    {
+      "path": "openassembler/build_modal.py",
+      "lines": 41,
+      "purpose": "CPU-only native compiler on Modal; execution uses the existing A100 runner.",
+      "definitions": [
+        "build",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/cli.py",
+      "lines": 883,
+      "purpose": "OpenAssembler 0.2.0: a Python / CUDA C / C++ (and PTX) to NVIDIA SASS compiler with its own backend.",
+      "definitions": [
+        "_run_tool",
+        "_compile_opts",
+        "_frontend_choice",
+        "_model_compile_opts",
+        "_native_build",
+        "cmd_inspect",
+        "cmd_compile",
+        "cmd_gemm",
+        "cmd_rowwise",
+        "_run_opts",
+        "cmd_run",
+        "cmd_cnr",
+        "cmd_verify",
+        "cmd_check",
+        "cmd_corpus",
+        "_need_toolkit",
+        "cmd_bench",
+        "cmd_fastmm",
+        "cmd_gpu",
+        "cmd_status",
+        "cmd_welcome",
+        "_add_compile_args",
+        "_add_backend_args",
+        "_add_run_args",
+        "build_parser",
+        "dispatch",
+        "_save_failure",
+        "source_arguments",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/container/__init__.py",
+      "lines": 1,
+      "purpose": "Stage 0: cubin (ELF) and .nv.info containers.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/container/cubin.py",
+      "lines": 99,
+      "purpose": "Write a kernel's code into a cubin built by ptxas for the same PTX signature.",
+      "definitions": [
+        "required_regcount",
+        "words_to_bytes",
+        "splice_text",
+        "text_words",
+        "regcount"
+      ]
+    },
+    {
+      "path": "openassembler/container/elf.py",
+      "lines": 199,
+      "purpose": "Minimal ELF64 reader/writer for CUDA cubins (EM_CUDA = 190).",
+      "definitions": [
+        "Section",
+        "Symbol",
+        "Elf",
+        "_align",
+        "_orig_size",
+        "_orig_in"
+      ]
+    },
+    {
+      "path": "openassembler/container/nvinfo.py",
+      "lines": 66,
+      "purpose": "`.nv.info` / `.nv.info.<kernel>` attribute records.",
+      "definitions": [
+        "Rec",
+        "parse",
+        "serialize",
+        "value",
+        "u32s"
+      ]
+    },
+    {
+      "path": "openassembler/cppfront.py",
+      "lines": 106,
+      "purpose": "CUDA C/C++ -> PTX, via nvcc's own frontend and NVVM optimizer (--ptx).",
+      "definitions": [
+        "CppFrontendError",
+        "_kernel_names",
+        "compile_to_ptx_module",
+        "compile_to_ptx"
+      ]
+    },
+    {
+      "path": "openassembler/diagnostics.py",
+      "lines": 94,
+      "purpose": "Static source coverage and local build failure reports.",
+      "definitions": [
+        "inspect_source",
+        "save_failure"
+      ]
+    },
+    {
+      "path": "openassembler/emu/__init__.py",
+      "lines": 5,
+      "purpose": "SASS emulator: executes nvdisasm-text programs for one CTA, warp by warp.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/emu/fp.py",
+      "lines": 215,
+      "purpose": "Exact IEEE-754 binary32/binary64 arithmetic for the emulator.",
+      "definitions": [
+        "Fmt",
+        "Val",
+        "decode",
+        "_round_int",
+        "encode",
+        "signed_frac",
+        "from_frac",
+        "mode_of",
+        "first_nan",
+        "add",
+        "mul",
+        "fma",
+        "cmp",
+        "to_int"
+      ]
+    },
+    {
+      "path": "openassembler/emu/machine.py",
+      "lines": 252,
+      "purpose": "Machine state and execution loop for one CTA.",
+      "definitions": [
+        "EmuError",
+        "Unsupported",
+        "Memory",
+        "Thread",
+        "Warp",
+        "Launch",
+        "Machine",
+        "f32",
+        "f32_bits",
+        "special_reg"
+      ]
+    },
+    {
+      "path": "openassembler/emu/operands.py",
+      "lines": 178,
+      "purpose": "Parse nvdisasm operand text into typed operands.",
+      "definitions": [
+        "Reg",
+        "Pred",
+        "_f32_text_to_bits",
+        "Imm",
+        "CBank",
+        "Mem",
+        "Label",
+        "Raw",
+        "_strip_mods",
+        "parse_reg",
+        "parse",
+        "split_operands"
+      ]
+    },
+    {
+      "path": "openassembler/emu/ops.py",
+      "lines": 1184,
+      "purpose": "Instruction semantics.",
+      "definitions": [
+        "alu",
+        "warp",
+        "ctrl",
+        "execute",
+        "s32",
+        "u",
+        "lut3",
+        "bool_op",
+        "int_cmp",
+        "split_pred_dsts",
+        "no_pred_src",
+        "_mov",
+        "_s2r",
+        "_cs2r",
+        "_ldc",
+        "_iadd3",
+        "_imad",
+        "_lea",
+        "_iabs",
+        "_imnmx",
+        "_sel",
+        "_fsel",
+        "_isetp",
+        "_lop3",
+        "_plop3",
+        "_shf",
+        "_prmt",
+        "_flo",
+        "_popc",
+        "_brev",
+        "_sgxt",
+        "_bmsk",
+        "h2_operands",
+        "_himm",
+        "_hfmt",
+        "_h2_write",
+        "_hadd2",
+        "_hmul2",
+        "_hfma2",
+        "_hmnmx2",
+        "_f2fp",
+        "mem_size",
+        "_space",
+        "_ld",
+        "_st",
+        "_atom_apply",
+        "_atom",
+        "_branch_ok",
+        "_bra",
+        "_exit",
+        "_call",
+        "_ret",
+        "_brx",
+        "_bpt",
+        "_bar",
+        "_b2r",
+        "_lanemask",
+        "_vote",
+        "_shfl",
+        "_match",
+        "_redux",
+        "fsrc",
+        "fout",
+        "_fadd",
+        "_fmul",
+        "_ffma",
+        "_dadd",
+        "_dmul",
+        "_dfma",
+        "_fcmp",
+        "_fsetp",
+        "_fmnmx",
+        "_i2f",
+        "_f2i",
+        "_f2f",
+        "_frnd",
+        "_mufu",
+        "f32_from_float",
+        "_fchk",
+        "_idp",
+        "_vabsdiff",
+        "float_atomic",
+        "_inv_sqrt",
+        "_qspc"
+      ]
+    },
+    {
+      "path": "openassembler/emu/probe.py",
+      "lines": 57,
+      "purpose": "Run one probe kernel (tools/ptx_probes.py ABI) on the SASS emulator.",
+      "definitions": [
+        "probe_params",
+        "cubin_consts",
+        "run_probe",
+        "run_probe_file"
+      ]
+    },
+    {
+      "path": "openassembler/emu/program.py",
+      "lines": 85,
+      "purpose": "Load an `nvdisasm -hex -c` listing into executable instructions.",
+      "definitions": [
+        "Insn",
+        "Program",
+        "parse_insn",
+        "load_listing",
+        "load_sass_file"
+      ]
+    },
+    {
+      "path": "openassembler/emu/tensor.py",
+      "lines": 315,
+      "purpose": "Warp-level matrix ops: HMMA / IMMA / DMMA, LDSM, LDGSTS.",
+      "definitions": [
+        "_exp2",
+        "aligned_sum",
+        "dot_f32",
+        "a_rc_k16",
+        "b_rc_k16",
+        "a_rc_k8_tf32",
+        "b_rc_k8_tf32",
+        "a_rc_k32_i8",
+        "b_rc_k32_i8",
+        "c_rc",
+        "_regs",
+        "_rd",
+        "mma",
+        "_imma",
+        "_dmma",
+        "ldsm",
+        "ldgsts"
+      ]
+    },
+    {
+      "path": "openassembler/fastmm/__init__.py",
+      "lines": 1,
+      "purpose": "Fast (sub-cubic) matrix multiplication schemes: AlphaTensor factorizations -> SASS.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/fastmm/factors.py",
+      "lines": 127,
+      "purpose": "Load and verify bilinear matrix-multiplication schemes (rank-R tensor decompositions).",
+      "definitions": [
+        "Scheme",
+        "load_spec",
+        "strassen",
+        "naive",
+        "verify",
+        "all_schemes"
+      ]
+    },
+    {
+      "path": "openassembler/fastmm/kernels.py",
+      "lines": 331,
+      "purpose": "PTX generators for the kernels a block fast-matmul plan launches.",
+      "definitions": [
+        "sgemm",
+        "_gload",
+        "lincomb",
+        "sgemm128",
+        "_gload128",
+        "_sstore128",
+        "fgemm",
+        "_gload_comb"
+      ]
+    },
+    {
+      "path": "openassembler/fastmm/plan.py",
+      "lines": 172,
+      "purpose": "Turn a bilinear scheme into a GPU launch plan (one level of block recursion).",
+      "definitions": [
+        "f32bits",
+        "Plan",
+        "_lincomb",
+        "_gemm",
+        "cublas",
+        "direct",
+        "build",
+        "build_fused"
+      ]
+    },
+    {
+      "path": "openassembler/frontend.py",
+      "lines": 79,
+      "purpose": "Turns any supported source file into PTX for the backend, so",
+      "definitions": [
+        "FrontendError",
+        "_python_module",
+        "to_ptx_module",
+        "to_ptx"
+      ]
+    },
+    {
+      "path": "openassembler/gemm.py",
+      "lines": 63,
+      "purpose": "Compile shape-specialized tensor GEMMs through the normal CLI build path.",
+      "definitions": [
+        "source_for",
+        "contract_from_source",
+        "compile_gemm"
+      ]
+    },
+    {
+      "path": "openassembler/gemm_dispatch.py",
+      "lines": 153,
+      "purpose": "Exact-contract native GEMM selection and a bounded on-device search space.",
+      "definitions": [
+        "compiler_inputs",
+        "compiler_identity",
+        "contract_key",
+        "baseline",
+        "policy_plan",
+        "candidate_plans",
+        "select_plan"
+      ]
+    },
+    {
+      "path": "openassembler/gemm_promotion.py",
+      "lines": 354,
+      "purpose": "Audit retained A100 tuning sessions before promoting an exact GEMM policy.",
+      "definitions": [
+        "PromotionError",
+        "_require",
+        "_exact",
+        "_read",
+        "_timestamp",
+        "_plan",
+        "_session",
+        "_native_proof",
+        "audit_record",
+        "freeze_selection",
+        "promote",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/gemm_tune.py",
+      "lines": 425,
+      "purpose": "Optional, correctness-gated native A100 GEMM tuning.",
+      "definitions": [
+        "choose_policy",
+        "validate_record",
+        "tune_or_load",
+        "_verify_archive",
+        "benchmark"
+      ]
+    },
+    {
+      "path": "openassembler/gemm_tune_modal.py",
+      "lines": 42,
+      "purpose": "Explicit Modal transport for native GEMM tuning; never imported by default.",
+      "definitions": [
+        "tune",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/gpu/__init__.py",
+      "lines": 1,
+      "purpose": "Run cubins on real GPUs: ctypes driver-API loader + transport-independent batch runner.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/gpu/batch.py",
+      "lines": 137,
+      "purpose": "Transport-independent GPU batch runner (stdlib only).",
+      "definitions": [
+        "worker",
+        "_append",
+        "_read",
+        "run",
+        "device_info"
+      ]
+    },
+    {
+      "path": "openassembler/gpu/cuda_driver.py",
+      "lines": 437,
+      "purpose": "Load and run cubins with the CUDA *driver* API via ctypes on libcuda.so.",
+      "definitions": [
+        "CudaError",
+        "DeviceInfo",
+        "Driver",
+        "run_probe_job",
+        "now",
+        "time_probe_job",
+        "rand_f32",
+        "rand_tensor16",
+        "run_plan_job",
+        "Cublas"
+      ]
+    },
+    {
+      "path": "openassembler/gpu/modal_app.py",
+      "lines": 78,
+      "purpose": "Generic Modal app for `openassembler run --backend modal` (and `cnr`): runs a jobs",
+      "definitions": [
+        "run_batch",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/isa/__init__.py",
+      "lines": 0,
+      "purpose": "",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/isa/encode.py",
+      "lines": 499,
+      "purpose": "Template encoder: SASS text -> 128-bit word, by patching a known word.",
+      "definitions": [
+        "EncodeError",
+        "_require_unsigned",
+        "_load_json_tolerant",
+        "_disambiguate",
+        "kinds",
+        "key",
+        "Template",
+        "Encoder",
+        "_fieldmap_cache",
+        "field_probe",
+        "_field_probe_uncached",
+        "_split_ops",
+        "synthesize",
+        "minimize"
+      ]
+    },
+    {
+      "path": "openassembler/isa/word.py",
+      "lines": 98,
+      "purpose": "Generic fields of a Volta+ (sm_70..sm_120) 128-bit SASS instruction word.",
+      "definitions": [
+        "bits",
+        "set_bits",
+        "Control",
+        "control_valid",
+        "control",
+        "Fields",
+        "fields"
+      ]
+    },
+    {
+      "path": "openassembler/kernels/__init__.py",
+      "lines": 5,
+      "purpose": "Validated kernel source generators for the OpenAssembler compiler.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/kernels/_gemm64.py",
+      "lines": 150,
+      "purpose": "Native 64x64x64 SM80 GEMM source.",
+      "definitions": [
+        "_prologue",
+        "_copies",
+        "_advance",
+        "_compute",
+        "_body",
+        "_body_early",
+        "_epilogue",
+        "generate"
+      ]
+    },
+    {
+      "path": "openassembler/kernels/gemm.py",
+      "lines": 384,
+      "purpose": "Full-tile SM80 RCR GEMM with an explicitly synchronized tensor pipeline.",
+      "definitions": [
+        "GemmPlan",
+        "_prologue",
+        "_copies",
+        "_advance",
+        "_compute",
+        "_compute_load_next",
+        "_mainloop_compute",
+        "_body",
+        "_effective_pointer_advance",
+        "_epilogue",
+        "generate",
+        "_fused_epilogue"
+      ]
+    },
+    {
+      "path": "openassembler/kernels/reductions.py",
+      "lines": 146,
+      "purpose": "Native SM80 warp-per-row softmax and population LayerNorm source emission.",
+      "definitions": [
+        "_fp",
+        "ReductionPlan",
+        "generate"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/__init__.py",
+      "lines": 17,
+      "purpose": "Exact-shape Python model capture with OpenAssembler-owned GPU arithmetic.",
+      "definitions": [
+        "compile_model",
+        "load_model"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/autograd.py",
+      "lines": 237,
+      "purpose": "PyTorch host/autograd binding for the bounded OA-native graph runtime.",
+      "definitions": [
+        "_restore",
+        "_NativeCall",
+        "CompiledModel",
+        "compile_model",
+        "load_model"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/discovery.py",
+      "lines": 350,
+      "purpose": "Infer model entrypoints and observed shapes without importing user code.",
+      "definitions": [
+        "_Tensor",
+        "_Instance",
+        "_TupleLiteral",
+        "_dotted",
+        "_json_value",
+        "_shape",
+        "discover_model",
+        "config_text"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/frontend.py",
+      "lines": 356,
+      "purpose": "Repository entrypoints and transport for the OA native model compiler.",
+      "definitions": [
+        "ModelError",
+        "_print_report",
+        "load_config",
+        "_request",
+        "compile_model_repository",
+        "resolve_model_output",
+        "deployment_files",
+        "export_model",
+        "run_model_repository"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/graph.py",
+      "lines": 630,
+      "purpose": "A bounded CPU Torch FX capture bridge to OA-owned model kernels.",
+      "definitions": [
+        "ModelGraphError",
+        "_torch",
+        "_attribute",
+        "extract_weights",
+        "flatten_outputs",
+        "capture_model",
+        "_differentiate",
+        "append_training"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels.py",
+      "lines": 428,
+      "purpose": "Shape-specialized FP32 baseline kernels for the native tensor graph route.",
+      "definitions": [
+        "canonical",
+        "shape_of",
+        "_float",
+        "KernelSpec",
+        "emit_kernel",
+        "tensor_specs",
+        "tensor_recipes",
+        "prepare",
+        "_build_bundle_uncached",
+        "build_bundle",
+        "recipe_record"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels_batched.py",
+      "lines": 92,
+      "purpose": "Explicit FP32 batched products and contiguous permutation baselines.",
+      "definitions": [
+        "emit_batched_kernel"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels_concat.py",
+      "lines": 65,
+      "purpose": "Exact-shape contiguous concatenation and slice derivatives for cache buckets.",
+      "definitions": [
+        "emit_concat_kernel"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels_loss.py",
+      "lines": 64,
+      "purpose": "Shape-admitted deterministic FP32 MSE reductions.",
+      "definitions": [
+        "parallel_mse",
+        "ordered_mse"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels_matmul.py",
+      "lines": 117,
+      "purpose": "Measured exact-shape FP32 matrix kernels for native model graphs.",
+      "definitions": [
+        "_dimensions",
+        "_pointer",
+        "_tiled",
+        "_code_identity",
+        "select"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels_nn.py",
+      "lines": 201,
+      "purpose": "Bounded FP32 neural operators for the OA-native graph frontend.",
+      "definitions": [
+        "emit_nn_kernel",
+        "_emit_norm_kernel"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels_tensor.py",
+      "lines": 217,
+      "purpose": "Explicit FP16-boundary Tensor Core recipes for native model linear operators.",
+      "definitions": [
+        "TensorStage",
+        "TensorRecipe",
+        "_pack",
+        "emit_tensor_recipe",
+        "build_tensor_kernels"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels_tensor_batched.py",
+      "lines": 228,
+      "purpose": "Bounded FP16-RNE batched products, including both backward orientations.",
+      "definitions": [
+        "batched_stage",
+        "_tensor_recipe",
+        "rounded_operand",
+        "emit_batched_recipe"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/kernels_tensor_dual.py",
+      "lines": 120,
+      "purpose": "Explicit dual-layout FP16 packing and padded native Tensor Core recipes.",
+      "definitions": [
+        "convert",
+        "dual_pack",
+        "crop",
+        "emit_dual_recipe"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/modal_app.py",
+      "lines": 40,
+      "purpose": "Identical native model worker for Modal and the local/SSH entrypoint.",
+      "definitions": [
+        "process",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/model_cache.py",
+      "lines": 170,
+      "purpose": "Content-addressed cache for validated OpenAssembler model bundles.",
+      "definitions": [
+        "default_cache_dir",
+        "toolchain_identity",
+        "key_for",
+        "_key_lock",
+        "_cacheable",
+        "_remove_donor_artifacts",
+        "_file_hashes",
+        "_checked_entry",
+        "cached_build_bundle"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/optimization.py",
+      "lines": 158,
+      "purpose": "Immutable storage views and guarded lifetime planning above the machine backend.",
+      "definitions": [
+        "optimize_plan",
+        "validate_aliases",
+        "storage_layout",
+        "validate_storage"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/profiling.py",
+      "lines": 40,
+      "purpose": "Classify independently observed GPU trace activities by kind, never name.",
+      "definitions": [
+        "audit_trace",
+        "audit_profile"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/reference.py",
+      "lines": 169,
+      "purpose": "CPU-only mathematical controls for native graph numeric contracts.",
+      "definitions": [
+        "CPUReference"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/replay.py",
+      "lines": 130,
+      "purpose": "Bounded training replay of validated OA kernels with fixed device pointers.",
+      "definitions": [
+        "TrainingReplay"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/runtime.py",
+      "lines": 561,
+      "purpose": "Guarded reusable launch plans for OA-emitted SM80 model kernels.",
+      "definitions": [
+        "_file",
+        "validate_bundle",
+        "save_weights",
+        "load_weights",
+        "audit_profiler_events",
+        "Runtime"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/tensor_schedule.py",
+      "lines": 29,
+      "purpose": "Pure allocation/binding plan for per-iteration dual-layout operand reuse.",
+      "definitions": [
+        "workspace_plan"
+      ]
+    },
+    {
+      "path": "openassembler/modelfront/worker.py",
+      "lines": 351,
+      "purpose": "Native model capture/replay worker, shared by Linux, SSH and Modal.",
+      "definitions": [
+        "_cpu_capture",
+        "_model",
+        "_examples",
+        "_check",
+        "_run",
+        "process",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/native_ownership.py",
+      "lines": 54,
+      "purpose": "Byte and executable-function custody for standalone OA native modules.",
+      "definitions": [
+        "inventory",
+        "record",
+        "validate"
+      ]
+    },
+    {
+      "path": "openassembler/opt/__init__.py",
+      "lines": 1,
+      "purpose": "Middle-end rewrites (idioms, strength reduction), each proved with z3.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/opt/divconst.py",
+      "lines": 245,
+      "purpose": "Integer division / remainder by a constant -> multiply-high sequences.",
+      "definitions": [
+        "Seq",
+        "_log2",
+        "udiv",
+        "sdiv",
+        "with_rem",
+        "run",
+        "prove",
+        "lower",
+        "to_sass"
+      ]
+    },
+    {
+      "path": "openassembler/oracle.py",
+      "lines": 173,
+      "purpose": "Black-box oracle: NVIDIA's ptxas/nvdisasm run through env/cuda.sh.",
+      "definitions": [
+        "Insn",
+        "OracleError",
+        "run_tool",
+        "available",
+        "platform_is_macos",
+        "tool_path",
+        "disasm_text",
+        "words_to_bytes",
+        "parse_listing",
+        "_scratch_file",
+        "disasm_words",
+        "disasm_cubin",
+        "ptxas"
+      ]
+    },
+    {
+      "path": "openassembler/project.py",
+      "lines": 598,
+      "purpose": "Project layout for `openassembler compile` / `run` / `cnr`: which files in a",
+      "definitions": [
+        "ProjectError",
+        "language_of",
+        "has_cuda_kernel",
+        "_included_cuda_qualifier",
+        "has_ptx_entry",
+        "python_kernel_names",
+        "Classified",
+        "classify",
+        "_inside",
+        "_git_files",
+        "walk",
+        "output_names",
+        "single_output_name",
+        "sha256_file",
+        "prepare_out_dir",
+        "output_lock",
+        "write_atomic",
+        "cleanup_pending",
+        "defer_sigint",
+        "ManifestError",
+        "load_manifest",
+        "artifact_path",
+        "entry_source_abs",
+        "entry_outputs",
+        "application_outputs",
+        "rel_source",
+        "remove_outputs",
+        "save_manifest",
+        "write_group"
+      ]
+    },
+    {
+      "path": "openassembler/ptx/__init__.py",
+      "lines": 6,
+      "purpose": "PTX frontend: parser and reference interpreter.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/ptx/interp.py",
+      "lines": 344,
+      "purpose": "Reference PTX interpreter (one CTA, lock-step warps).",
+      "definitions": [
+        "Undefined",
+        "NotModeled",
+        "sext",
+        "types_of",
+        "Lane",
+        "_Arrival",
+        "_Barrier",
+        "Launch",
+        "Interp",
+        "_txt",
+        "run_kernel"
+      ]
+    },
+    {
+      "path": "openassembler/ptx/parse.py",
+      "lines": 287,
+      "purpose": "Minimal PTX parser: one module -> kernels of flat instruction lists.",
+      "definitions": [
+        "Var",
+        "ImmI",
+        "ImmF",
+        "Addr",
+        "Vec",
+        "PairDst",
+        "Instr",
+        "VarDecl",
+        "Kernel",
+        "Module",
+        "_strip_comments",
+        "_mask_strings",
+        "entry_definitions",
+        "entry_names",
+        "_parameters",
+        "_directives",
+        "_match_brace",
+        "_split_top",
+        "parse_operand",
+        "parse_instr",
+        "_decl",
+        "parse_module",
+        "_parse_body"
+      ]
+    },
+    {
+      "path": "openassembler/ptx/semantics.py",
+      "lines": 768,
+      "purpose": "PTX instruction semantics (from the PTX ISA spec).",
+      "definitions": [
+        "lane",
+        "warp",
+        "execute",
+        "ty",
+        "bits",
+        "is_float",
+        "signed",
+        "rd",
+        "_mov",
+        "_cvta",
+        "_ld",
+        "_st",
+        "_int_result",
+        "_add",
+        "_addc",
+        "_mul",
+        "_mad",
+        "_div",
+        "_minmax",
+        "_absneg",
+        "_logic",
+        "_not",
+        "_cnot",
+        "_shift",
+        "_shf",
+        "_popc",
+        "_clz",
+        "_brev",
+        "_bfe",
+        "_bfi",
+        "_prmt",
+        "_lop3",
+        "_sad",
+        "_dp4a",
+        "compare",
+        "_setp",
+        "_set",
+        "_selp",
+        "_slct",
+        "_cvt",
+        "fsrc",
+        "_fadd",
+        "_fmul",
+        "_ffma",
+        "_fdiv",
+        "_fminmax",
+        "_fabsneg",
+        "_unary_f",
+        "_copysign",
+        "_testp",
+        "_atom",
+        "_shfl",
+        "_vote",
+        "_activemask",
+        "_match",
+        "_redux",
+        "BarrierForm",
+        "cta_barrier",
+        "_uniform",
+        "barrier_form",
+        "_bar_warp"
+      ]
+    },
+    {
+      "path": "openassembler/ptx/semantics_fp.py",
+      "lines": 313,
+      "purpose": "PTX floating-point semantics (exact, via openassembler.emu.fp), plus cvt.",
+      "definitions": [
+        "fmt_of",
+        "packed",
+        "lanes2",
+        "put2",
+        "fsrc",
+        "fout",
+        "rnd",
+        "_ft",
+        "_binary2",
+        "fadd",
+        "fmul",
+        "ffma",
+        "_exact_div",
+        "fdiv",
+        "_minmax_val",
+        "fminmax",
+        "fabsneg",
+        "unary_approx",
+        "_exact_sqrt",
+        "cvt"
+      ]
+    },
+    {
+      "path": "openassembler/pyfront/__init__.py",
+      "lines": 41,
+      "purpose": "openassembler.pyfront: a from-scratch, minimal Python-subset compiler to PTX.",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/pyfront/compile.py",
+      "lines": 1361,
+      "purpose": "The actual Python-subset -> PTX compiler: ast.parse the kernel's source, walk the tree,",
+      "definitions": [
+        "_f32_bits",
+        "NotSupported",
+        "_Names",
+        "_resolve_type",
+        "_BarrierCheck",
+        "_Reg",
+        "_Arr",
+        "_Scope",
+        "_const_value",
+        "_is_pow2",
+        "_Emitter",
+        "_f32",
+        "_sm",
+        "_ident",
+        "_compile_entry",
+        "_render",
+        "_parse_file",
+        "_is_kernel_decorator",
+        "_file_kernels",
+        "compile_file",
+        "KernelRef",
+        "find_kernel",
+        "_live_source",
+        "compile_kernel",
+        "kernel"
+      ]
+    },
+    {
+      "path": "openassembler/pyfront/intrinsics.py",
+      "lines": 41,
+      "purpose": "GPU intrinsics importable from openassembler.pyfront. They exist so `from",
+      "definitions": [
+        "_stub"
+      ]
+    },
+    {
+      "path": "openassembler/pyfront/types.py",
+      "lines": 28,
+      "purpose": "Type annotations the pyfront subset understands. These are markers read",
+      "definitions": [
+        "Scalar",
+        "ArrayType",
+        "Array"
+      ]
+    },
+    {
+      "path": "openassembler/remote_build.py",
+      "lines": 246,
+      "purpose": "Native compiler transport. The worker calls the unchanged build pipeline.",
+      "definitions": [
+        "_sources",
+        "compile_native",
+        "_compile_locked",
+        "process",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/repository.py",
+      "lines": 180,
+      "purpose": "Static repository inspection and frontend selection.",
+      "definitions": [
+        "RepositoryPlan",
+        "_application_config",
+        "_dependencies",
+        "inspect",
+        "native_candidates",
+        "select_frontend",
+        "native_error"
+      ]
+    },
+    {
+      "path": "openassembler/rowwise.py",
+      "lines": 62,
+      "purpose": "Compile checked SM80 cooperative FP32 row reductions through the normal CLI.",
+      "definitions": [
+        "source_for",
+        "contract_from_source",
+        "compile_rowwise"
+      ]
+    },
+    {
+      "path": "openassembler/rowwise_dispatch.py",
+      "lines": 137,
+      "purpose": "Fail-closed exact-shape CTA geometry selection for rowwise FP32 kernels.",
+      "definitions": [
+        "identity_inputs",
+        "_runtime_source_sections",
+        "compiler_identity",
+        "contract_key",
+        "select_plan"
+      ]
+    },
+    {
+      "path": "openassembler/runner.py",
+      "lines": 950,
+      "purpose": "Execute saved OA native kernel artifacts on local Linux, SSH or Modal.",
+      "definitions": [
+        "RunError",
+        "Target",
+        "Case",
+        "Plan",
+        "load",
+        "_matches_source",
+        "select",
+        "validate_native_entry",
+        "_native_bytes",
+        "validate_launch",
+        "_seed",
+        "_f32bits",
+        "_job",
+        "auto_case",
+        "gemm_case",
+        "rowwise_case",
+        "_dim",
+        "load_spec",
+        "spec_case",
+        "Outcome",
+        "_first_diff",
+        "compare",
+        "report",
+        "_gpu_files",
+        "upload_bytes",
+        "price_table",
+        "estimate_seconds",
+        "describe",
+        "_run_local",
+        "_ssh_cmds",
+        "_run_ssh",
+        "modal_cmd",
+        "modal_ready",
+        "_run_modal",
+        "RunOptions",
+        "validate_options",
+        "build_plan",
+        "_native_execution_plan",
+        "execute",
+        "_check_backend",
+        "run_command"
+      ]
+    },
+    {
+      "path": "openassembler/torchfront/__init__.py",
+      "lines": 5,
+      "purpose": "PyTorch application capture, packaging and execution (optional GPU frontend).",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/torchfront/archive.py",
+      "lines": 47,
+      "purpose": "Bounded, path-checked archives shared by the frontend and its GPU worker.",
+      "definitions": [
+        "unpack",
+        "pack"
+      ]
+    },
+    {
+      "path": "openassembler/torchfront/frontend.py",
+      "lines": 429,
+      "purpose": "Repo-level PyTorch application bundling; configuration is explicit and validated.",
+      "definitions": [
+        "ApplicationError",
+        "config_path",
+        "load_config",
+        "project_files",
+        "source_blob",
+        "source_digest",
+        "safe_name",
+        "decode_result",
+        "artifact_files",
+        "_worker_request",
+        "compile_application",
+        "_publish_application",
+        "ApplicationBuildResult",
+        "run_application"
+      ]
+    },
+    {
+      "path": "openassembler/torchfront/worker.py",
+      "lines": 223,
+      "purpose": "CPU state-comparison utilities and disabled legacy worker compatibility guards.",
+      "definitions": [
+        "runtime_info",
+        "_save_state",
+        "StateVerificationError",
+        "_finite_scalar",
+        "_tensor_diagnostic",
+        "compare_states",
+        "execute_program",
+        "process",
+        "main"
+      ]
+    },
+    {
+      "path": "openassembler/transport.py",
+      "lines": 112,
+      "purpose": "Validated backend selection and bounded SSH request transport.",
+      "definitions": [
+        "TransportError",
+        "ssh_host",
+        "backend",
+        "ssh_destination",
+        "runtime_files",
+        "ssh_request"
+      ]
+    },
+    {
+      "path": "openassembler/ui/__init__.py",
+      "lines": 3,
+      "purpose": "openassembler.ui: the terminal banner and interactive shell. No AI, no network --",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/ui/banner.py",
+      "lines": 87,
+      "purpose": "The splash banner: the exact OPENASSEMBLER wordmark art (openassembler.ui.logo)",
+      "definitions": [
+        "_strip",
+        "_wrap",
+        "logo_lines",
+        "render"
+      ]
+    },
+    {
+      "path": "openassembler/ui/colors.py",
+      "lines": 22,
+      "purpose": "Detect whether terminal output should use ANSI color.",
+      "definitions": [
+        "supports_color"
+      ]
+    },
+    {
+      "path": "openassembler/ui/logo.py",
+      "lines": 22,
+      "purpose": "The exact OPENASSEMBLER wordmark art: 11 lines, 132 visible columns each,",
+      "definitions": []
+    },
+    {
+      "path": "openassembler/ui/repl.py",
+      "lines": 116,
+      "purpose": "The interactive openassembler shell: `openassembler` with no arguments drops into a",
+      "definitions": [
+        "_try_readline",
+        "run"
+      ]
+    },
+    {
+      "path": "openassembler/ui/session.py",
+      "lines": 26,
+      "purpose": "A persistent, atomic welcome stamp shared by installers and CLI processes.",
+      "definitions": [
+        "_stamp_path",
+        "consume_show_once"
+      ]
+    },
+    {
+      "path": "openassembler/verify.py",
+      "lines": 171,
+      "purpose": "A generic correctness check: compile a kernel with our backend, run it on",
+      "definitions": [
+        "Mismatch",
+        "_rand_scalar",
+        "_align",
+        "_dim3",
+        "launch_geometry",
+        "run_and_diff"
+      ]
+    },
+    {
+      "path": "openassembler/workflow.py",
+      "lines": 86,
+      "purpose": "Source/output resolution shared by the three repository commands.",
+      "definitions": [
+        "output_dir",
+        "RunTarget",
+        "_selection",
+        "resolve_run"
+      ]
+    },
+    {
+      "path": "tests/__init__.py",
+      "lines": 6,
+      "purpose": "Repository-local regression test package.",
+      "definitions": []
+    },
+    {
+      "path": "tests/backend_harness.py",
+      "lines": 131,
+      "purpose": "Shared harness for tests/test_backend_ops.py and tests/test_backend_loops.py.",
+      "definitions": [
+        "encoder",
+        "listing",
+        "compile_ptx",
+        "_param_bytes",
+        "compile_and_diff",
+        "f32b",
+        "pack_f32",
+        "pack_u32"
+      ]
+    },
+    {
+      "path": "tests/data/torchfront_nested/model/__init__.py",
+      "lines": 0,
+      "purpose": "",
+      "definitions": []
+    },
+    {
+      "path": "tests/data/torchfront_nested/model/layers.py",
+      "lines": 14,
+      "purpose": "",
+      "definitions": [
+        "Block",
+        "Model"
+      ]
+    },
+    {
+      "path": "tests/data/torchfront_nested/train.py",
+      "lines": 11,
+      "purpose": "",
+      "definitions": []
+    },
+    {
+      "path": "tests/native_fixture.py",
+      "lines": 35,
+      "purpose": "Small ELF/ownership fixtures for launch-planning tests without CUDA tools.",
+      "definitions": [
+        "attach_native_fixture",
+        "save_native_manifest"
+      ]
+    },
+    {
+      "path": "tests/pyfront_threeway.py",
+      "lines": 190,
+      "purpose": "Three-way runner for pyfront kernels (shared by tests/test_pyfront*.py): the SAME kernel",
+      "definitions": [
+        "Pending",
+        "f32",
+        "_gpu_sqrt",
+        "_gpu_log",
+        "_gpu_exp",
+        "_ty",
+        "_pack",
+        "_read",
+        "run_python",
+        "run_ptx_and_sass",
+        "_bits",
+        "same",
+        "close"
+      ]
+    },
+    {
+      "path": "tests/test_backend.py",
+      "lines": 167,
+      "purpose": "Encoder, ELF/.nv.info containers, and div-by-constant sequences (offline).",
+      "definitions": [
+        "test_legacy_selector_imports_preserve_output_types_semantics_and_errors",
+        "test_elf_roundtrip_all_cubins",
+        "test_nvinfo_roundtrip_and_values",
+        "test_encoder_never_emits_wrong_word_on_corpus",
+        "test_imad_wide_signed_cbank_template",
+        "test_encoder_rejects_out_of_range_register_and_control_fields",
+        "test_float_immediate_setp_learned_and_round_trips",
+        "test_divconst_sequences_random"
+      ]
+    },
+    {
+      "path": "tests/test_backend_loops.py",
+      "lines": 112,
+      "purpose": "Regression coverage for nvcc's pointer-increment forms and address loops.",
+      "definitions": [
+        "_ptx",
+        "test_nvcc_unrolled_dot_rows_pointer_increment_is_bit_exact",
+        "test_grid_stride_saxpy_pointer_increment_loop_is_bit_exact",
+        "test_nvcc_complex_loop_fixtures_compile_and_encode",
+        "test_simple_pointer_increment_dot_loop_is_bit_exact",
+        "test_cuda_source_reproduces_stored_nvcc_ptx",
+        "test_nested_loop_outputs_are_numerically_correct",
+        "test_matmul_outputs_are_numerically_correct"
+      ]
+    },
+    {
+      "path": "tests/test_backend_ops.py",
+      "lines": 28,
+      "purpose": "Reallocated arithmetic compared with recorded ptxas code on adversarial bits.",
+      "definitions": [
+        "test_arithmetic_matches_ptxas_listing"
+      ]
+    },
+    {
+      "path": "tests/test_backend_tensor.py",
+      "lines": 190,
+      "purpose": "SM80 tensor selector, scheduler and bundled encoder regression evidence.",
+      "definitions": [
+        "kernel",
+        "packed_warp",
+        "test_straight_line_mma_native_pair_stores_and_poison",
+        "test_production_words_match_all_six_gpu_validated_phase3_kernels",
+        "test_no_oracle_corpus_bootstrap_writes_or_import_path_mutation",
+        "test_frozen_per_call_policy_and_no_external_state_leaks",
+        "test_detection_and_strict_rejection",
+        "test_native_b_and_store_ir_preserve_all_implicit_source_reads",
+        "test_scheduler_keeps_every_ldsm_address_war_and_async_group_edge",
+        "test_encoder_refuses_unproven_forms",
+        "test_bundled_tensor_words_roundtrip_against_nvdisasm"
+      ]
+    },
+    {
+      "path": "tests/test_cli_compile.py",
+      "lines": 188,
+      "purpose": "The 0.2 CLI contract: source names are separate from output paths, and each",
+      "definitions": [
+        "test_version_and_startup_commands",
+        "test_output_name_is_a_name_not_a_path",
+        "test_repo_names_preserve_relative_tree_and_same_stem_extensions",
+        "test_repo_walk_ignores_hidden_dirs_and_output",
+        "test_cli_rejects_missing_source_and_non_source_extensions",
+        "test_compile_unknown_arch_is_a_clean_error",
+        "test_single_compile_writes_cubin_sass_and_manifest",
+        "test_python_and_cuda_c_compile_to_output_tree",
+        "test_no_sass_sets_manifest_null_and_writes_cubin",
+        "test_repo_compile_mirrors_paths_and_skips_non_kernel_files",
+        "test_recompile_removes_only_manifest_owned_stale_outputs",
+        "test_repo_compile_excludes_output_inside_source_tree",
+        "test_failed_single_rebuild_marks_prior_artifact_unrunnable"
+      ]
+    },
+    {
+      "path": "tests/test_cli_gemm.py",
+      "lines": 312,
+      "purpose": "Public tensor compilation, launch contract and exact-integer run harness.",
+      "definitions": [
+        "test_gemm_emit_and_contract_needs_exact_validated_body",
+        "test_gemm_rejects_unsupported_shape_before_emitting_files",
+        "test_tensor16_smoke_inputs_are_reproducible_exact_small_integers",
+        "test_gemm_run_plan_keeps_half_precision_sizes_and_launch",
+        "test_fused_gemm_run_plan_allocates_bias_and_residual_without_host_random_fill",
+        "test_direct_pointer_plan_round_trips_and_legacy_source_defaults",
+        "test_direct_pointer_mode_does_not_admit_unmeasured_combinations",
+        "test_pointer_advance_auto_is_shape_specific_and_round_trips",
+        "test_copy_address_reuse_plan_and_cli_contract_round_trip",
+        "test_load_next_fragment_schedule_cli_is_exact_shape_opt_in",
+        "test_grouped_n8_runner_uses_transformed_grid_from_checked_contract",
+        "test_grouped_n8_cli_round_trips_launch_contract",
+        "test_raw_tensor_spec_uses_half_precision_buffers",
+        "test_bf16_spec_values_use_round_to_nearest_even",
+        "test_uncontracted_tensor_kernel_never_uses_scalar_launch_guesses",
+        "test_plan_dynamic_shared_optin_preserves_largest_launch_for_repeated_function",
+        "test_gemm_cli_build_and_plain_recompile_use_native_tensor_backend",
+        "test_gemm_cli_compiles_and_recompiles_morton_fused_contract",
+        "test_direct_pointer_cli_recompile_preserves_native_policy"
+      ]
+    },
+    {
+      "path": "tests/test_cli_rowwise.py",
+      "lines": 157,
+      "purpose": "Checked cooperative reduction source, CLI, launch and analytic smoke contracts.",
+      "definitions": [
+        "test_emit_and_exact_body_contract",
+        "test_invalid_plan_fails_before_writing",
+        "_rowwise_plan",
+        "test_run_has_exact_shape_zero_input_and_poisoned_output",
+        "test_analytic_smoke_rejects_both_wrong_and_nonfinite",
+        "test_rowwise_manifest_cannot_change_launch_or_abi",
+        "test_saved_report_retains_analytic_smoke_scope",
+        "test_device_byte_initialization_is_nan_and_rejects_invalid_values",
+        "test_native_cli_compile_and_plain_recompile_preserve_contract"
+      ]
+    },
+    {
+      "path": "tests/test_cppfront.py",
+      "lines": 72,
+      "purpose": "openassembler.cppfront: CUDA C/C++ -> PTX via nvcc --ptx, then through our own",
+      "definitions": [
+        "_oracle_available",
+        "test_cuda_c_compiles_and_runs_bit_exact"
+      ]
+    },
+    {
+      "path": "tests/test_diagnostics.py",
+      "lines": 64,
+      "purpose": "Source discovery stays static, shorthand preserves dispatch, failures are reviewable.",
+      "definitions": [
+        "test_inspect_mixed_repository_never_imports_host_code",
+        "test_path_shorthand_and_default_directory_preserve_compile_flags",
+        "test_failed_compile_saves_reason_and_coverage_but_dry_run_writes_nothing",
+        "test_internal_compiler_failure_produces_a_report_instead_of_losing_context"
+      ]
+    },
+    {
+      "path": "tests/test_emu.py",
+      "lines": 88,
+      "purpose": "SASS emulator vs PTX interpreter on the sm_80 probe corpus (M1 gate).",
+      "definitions": [
+        "test_lut3_identities",
+        "test_fp_rounding_edges",
+        "test_emulator_matches_ptx"
+      ]
+    },
+    {
+      "path": "tests/test_fastmm.py",
+      "lines": 108,
+      "purpose": "Fast matmul schemes, plans, and the compiler features they rely on.",
+      "definitions": [
+        "test_strassen_and_naive_verify",
+        "test_alphatensor_schemes_verify",
+        "_apply",
+        "test_plan_structure_exact",
+        "test_measured_latencies",
+        "test_guard_needs_13_cycles",
+        "test_multiwarp_barrier"
+      ]
+    },
+    {
+      "path": "tests/test_gemm_codegen.py",
+      "lines": 327,
+      "purpose": "Contract and semantic checks for the standalone SM80 GEMM source emitter.",
+      "definitions": [
+        "test_source_is_byte_exact_to_gpu_validated_schedule",
+        "test_invalid_or_unimplemented_contract_is_rejected",
+        "test_new_plan_options_reject_unsupported_modes_and_incomplete_morton_groups",
+        "test_morton8_emitted_coordinate_program_is_a_full_grid_bijection",
+        "test_grouped_n8_emits_public_mapping_and_launch_contract",
+        "test_grouped_n8_rejects_incomplete_n_groups",
+        "test_plan_is_immutable_and_launch_metadata_is_independent",
+        "_trace_pipeline",
+        "test_emitted_pipeline_waits_and_consumes_every_in_bounds_tile",
+        "test_vector_output_covers_the_complete_last_cta_once",
+        "test_native_stagepair_backend_matches_complete_integer_oracle",
+        "test_native_fused_bias_residual_relu_matches_full_integer_oracle"
+      ]
+    },
+    {
+      "path": "tests/test_gemm_dispatch.py",
+      "lines": 224,
+      "purpose": "",
+      "definitions": [
+        "_table",
+        "test_dispatch_uses_exact_measured_contract_and_recomputes_source_hash",
+        "test_installed_dispatch_routes_only_current_independently_verified_contracts",
+        "test_dispatch_falls_back_for_unpromoted_or_invalid_entries",
+        "test_dispatch_requires_unique_exact_contract_and_current_compiler_identity",
+        "test_dispatch_contract_covers_shape_dtype_layout_epilogue_precision_and_workspace",
+        "test_dispatch_invalid_or_absent_table_falls_back",
+        "test_candidate_search_keeps_prior_shape_losers_and_validates_each_plan",
+        "test_64_multiple_shapes_use_baseline_tile_and_keep_invalid_policies_out",
+        "test_cli_auto_selection_is_default_but_any_explicit_knob_has_precedence",
+        "test_cli_auto_uses_64_tile_when_128_geometry_cannot_cover_shape",
+        "test_runner_preserves_tile64_contract_and_launch_from_manifest",
+        "test_compiler_identity_covers_dispatch_policy_code"
+      ]
+    },
+    {
+      "path": "tests/test_gemm_promotion.py",
+      "lines": 262,
+      "purpose": "Offline promotion gates over retained real cubins, never synthetic GPU wins.",
+      "definitions": [
+        "retained_sessions",
+        "_rewrite",
+        "test_complete_source_binary_and_two_session_audit_promotes_only_frozen_choice",
+        "test_protocol_cannot_be_refrozen_after_reading_heldout",
+        "test_selected_source_record_cannot_change_after_freeze",
+        "test_another_filename_does_not_establish_independent_hardware_session",
+        "test_heldout_winner_cannot_replace_predeclared_selection",
+        "test_frozen_winner_must_repeat_baseline_win_in_every_heldout_round",
+        "test_near_tie_retains_existing_incumbent_instead_of_chasing_noise",
+        "test_different_a100_variants_are_separate_measured_cohorts_not_pooled_times",
+        "test_passed_boolean_cannot_hide_numeric_or_canary_failure",
+        "test_changed_binary_archive_is_rejected_before_performance_admission",
+        "test_rehashed_tampered_disassembly_still_must_match_actual_cubin",
+        "test_coherently_rehashed_binary_and_listing_must_match_current_native_encoder",
+        "test_missing_provenance_is_a_block_not_a_new_hardware_claim",
+        "test_freeze_refuses_to_overwrite_an_existing_protocol"
+      ]
+    },
+    {
+      "path": "tests/test_gemm_tile64.py",
+      "lines": 353,
+      "purpose": "Native64 source parity, exact address coverage and poisoned output checks.",
+      "definitions": [
+        "test_tile64_source_matches_hardware_validated_experimental_bytes",
+        "test_tile64_contract_rejects_unvalidated_shapes_or_policy_composition",
+        "test_tile64_metadata_and_launch_are_explicit_independent_and_immutable",
+        "test_tile64_direct_pointer_contract_is_shape_validated",
+        "test_copy_address_reuse_matches_the_previous_hardware_experiment",
+        "test_copy_reuse_contract_rejects_unvalidated_combinations",
+        "test_tile64_early_policy_matches_the_validated_source",
+        "_trace",
+        "test_actual_pipeline_preserves_every_k_dependency_and_visibility",
+        "test_emitted_copy_and_output_addresses_cover_each_byte_once",
+        "test_native_tile64_poisoned_full_output_matches_integer_oracle"
+      ]
+    },
+    {
+      "path": "tests/test_gemm_tune.py",
+      "lines": 271,
+      "purpose": "",
+      "definitions": [
+        "_record",
+        "test_choose_policy_requires_complete_checks_and_repeatable_paired_speedup",
+        "test_choose_policy_rejects_invalid_threshold",
+        "test_choose_policy_rejects_incomplete_or_failed_evidence",
+        "test_validate_record_checks_identity_contract_device_and_every_source_plan",
+        "test_tuning_record_malformed_nested_data_fails_closed_with_value_error",
+        "test_tune_or_load_rejects_non_gpu_or_unbounded_requests",
+        "test_tune_or_load_record_path_requires_retained_archive_before_validation",
+        "test_record_reuse_verifies_source_and_binary_artifacts_before_selecting",
+        "test_gemm_tuner_imports_without_touching_torch_or_modal",
+        "test_local_tuning_is_explicit_and_does_not_silently_fallback",
+        "test_cli_tuning_requires_no_manual_knobs_and_uses_supplied_tuning_result",
+        "test_record_source_and_device_are_shape_specific_not_a_generic_fastest_claim",
+        "test_record_cannot_claim_pass_when_recorded_numeric_error_is_invalid",
+        "test_record_revalidates_resource_numbers_instead_of_trusting_pass_flag",
+        "test_three_copies_of_one_timing_round_do_not_establish_repeatability"
+      ]
+    },
+    {
+      "path": "tests/test_gpu_truth.py",
+      "lines": 75,
+      "purpose": "Hardware ground truth, replayed offline: emulator vs recorded A100 outputs.",
+      "definitions": [
+        "test_emulator_reproduces_a100",
+        "test_tensor_cores_bit_exact",
+        "test_regcount_rule"
+      ]
+    },
+    {
+      "path": "tests/test_homebrew_layout.py",
+      "lines": 46,
+      "purpose": "Homebrew source-tree installation keeps the CLI relocatable.",
+      "definitions": [
+        "test_formula_declares_runtime_and_complete_source_layout",
+        "test_relocated_source_tree_runs_without_editable_install"
+      ]
+    },
+    {
+      "path": "tests/test_integration.py",
+      "lines": 247,
+      "purpose": "Integration boundaries between scalar, tensor, application and CLI workflows.",
+      "definitions": [
+        "app_repo",
+        "capture",
+        "test_repeated_app_publication_keeps_native_entries_and_removes_stale_sass",
+        "test_file_inside_application_repo_still_uses_file_compilation",
+        "test_application_rejects_ignored_compile_flags",
+        "test_cnr_rejects_invalid_application_run_options_before_capture",
+        "test_standalone_compile_accepts_shared_transport_flags",
+        "test_application_dry_run_validates_output_names",
+        "test_application_auto_backend_uses_modal_on_macos",
+        "test_explicit_verification_cannot_be_silently_disabled",
+        "test_application_replay_saves_report_and_forwards_watchdog",
+        "test_missing_requirements_and_output_overlap_fail_before_capture",
+        "test_explicit_application_selection_never_falls_through_to_kernel_execution",
+        "test_output_writers_exclude_each_other_and_release_on_failure",
+        "test_gemm_emit_obeys_the_output_writer_lock",
+        "test_application_publication_does_not_clobber_an_active_writer",
+        "test_app_publication_refuses_existing_native_output_ownership",
+        "test_manifest_rejects_incomplete_runtime_before_run",
+        "test_application_names_cannot_collide_on_case_insensitive_filesystems",
+        "test_compile_does_not_replace_corrupt_manifest",
+        "test_repl_handles_bad_quoting_and_uses_the_shared_dispatcher"
+      ]
+    },
+    {
+      "path": "tests/test_interp_barrier.py",
+      "lines": 575,
+      "purpose": "Cooperative CTA barriers in the PTX reference interpreter (openassembler/ptx/interp.py).",
+      "definitions": [
+        "f32",
+        "write_f32",
+        "read_f32",
+        "read_u32",
+        "pack_params",
+        "ctaids",
+        "named",
+        "run_interp",
+        "run_sass",
+        "ptxas_sass",
+        "our_sass",
+        "cuda_ptx",
+        "three_way",
+        "hand_rev",
+        "_u32_init",
+        "test_hand_ptx_reversal",
+        "test_barrier_actually_orders_shared_memory",
+        "test_nvcc_reversal",
+        "test_nvcc_reversal_our_backend",
+        "_tree_sum",
+        "test_nvcc_block_tree_reduction",
+        "test_nvcc_tiled_matmul",
+        "test_nvcc_threads_exit_before_barrier",
+        "hand_red",
+        "_red_expect",
+        "_signed_init",
+        "test_bar_red_one_warp",
+        "test_bar_red_multi_warp",
+        "tiny",
+        "run_tiny",
+        "test_guard_false_threads_that_exit_count_as_arrived",
+        "test_same_barrier_from_divergent_paths",
+        "test_deadlock_is_reported_not_hung",
+        "test_step_limit_with_barrier_in_loop",
+        "test_barrier_in_loop_many_rounds",
+        "test_counted_arrive_and_sync",
+        "test_counted_barrier_second_phase_deadlocks",
+        "test_rejected_forms",
+        "test_bar_sync_then_bar_red_same_id_sequentially",
+        "test_warp_sync_converged_is_fine",
+        "test_launch_geometry_default_unchanged",
+        "test_run_and_diff_multi_cta_with_barrier"
+      ]
+    },
+    {
+      "path": "tests/test_model_batched_tensor.py",
+      "lines": 154,
+      "purpose": "FP16 batched orientation, stride bounds, and exact small-path operand rounding.",
+      "definitions": [
+        "spec",
+        "test_batched_tensor_geometry_and_every_workspace_view_is_in_bounds",
+        "test_batched_half_rejects_broadcasts_unbounded_shapes_and_wrong_outputs",
+        "test_small_path_rounds_half_boundaries_exactly_without_padded_gemm",
+        "test_half_bmm_capture_and_reference_round_all_three_products_independently",
+        "test_small_dispatch_does_not_mistake_tall_low_volume_products_for_small_matrices"
+      ]
+    },
+    {
+      "path": "tests/test_model_discovery.py",
+      "lines": 234,
+      "purpose": "Configuration-free discovery must preserve exact contracts and source files.",
+      "definitions": [
+        "write",
+        "test_model_class_and_named_examples_need_no_config_or_import",
+        "test_observed_call_preserves_constructor_arguments_and_shapes",
+        "test_nested_packages_reexports_and_relative_imports",
+        "test_required_constructor_and_multiple_inputs",
+        "test_tuple_constructor_arguments_are_not_changed_to_lists",
+        "test_no_synthetic_batch_or_training_objective_is_guessed",
+        "test_ambiguous_models_or_shapes_require_overrides",
+        "test_a_factory_does_not_hide_an_independent_model",
+        "test_tabular_defaults_do_not_override_conflicting_batch_sizes",
+        "test_tensor_dtype_is_not_silently_changed",
+        "test_submodule_unit_test_is_not_mistaken_for_whole_application",
+        "test_literal_batch_default_plus_direct_input_linear",
+        "test_invalid_shape_overrides_reject_without_output",
+        "test_explicit_config_wins_and_cli_overrides_do_not_edit_it",
+        "test_gitignored_examples_and_output_do_not_influence_discovery",
+        "test_generated_config_roundtrips_optional_constructor_arguments",
+        "test_all_transports_receive_the_same_inferred_contract",
+        "test_worker_loads_nested_package_model_with_constructor_kwargs",
+        "test_worker_loads_namespace_package_and_reports_capture_location"
+      ]
+    },
+    {
+      "path": "tests/test_model_frontend.py",
+      "lines": 173,
+      "purpose": "Native model repository routing and transport ownership.",
+      "definitions": [
+        "repository",
+        "test_configured_model_auto_routes_to_oa_without_torch_import",
+        "test_model_dry_run_is_read_only_and_native_on_each_transport",
+        "test_vendor_frontends_reject_before_any_work",
+        "test_legacy_torch_application_cannot_reach_inductor",
+        "test_vendor_kernel_fallback_rejects",
+        "test_model_config_rejects_precision_and_path_escape",
+        "test_model_output_does_not_select_another_repository",
+        "test_remote_compiler_bundle_contains_native_dispatch_tables",
+        "test_storage_reuse_is_an_explicit_boolean_model_contract",
+        "test_model_replay_and_listing_policies_are_explicit",
+        "test_ssh_transports_frozen_recipe_contracts_for_both_actions",
+        "test_deployment_archive_excludes_reference_and_untracked_modules",
+        "test_model_cli_no_sass_preserves_native_dispatch"
+      ]
+    },
+    {
+      "path": "tests/test_model_graph.py",
+      "lines": 658,
+      "purpose": "Independent CPU algebra checks for the native FX program and its derivatives.",
+      "definitions": [
+        "execute_steps",
+        "reference_run",
+        "assert_matches_autograd",
+        "test_linear_relu_forward_and_all_gradients",
+        "test_branches_shared_parameters_and_scalar_derivatives",
+        "test_batched_linear_and_specialized_reshape_are_correct",
+        "test_input_weight_and_multiple_inputs_receive_derivatives",
+        "test_frozen_parameter_is_not_updated_but_input_gradient_exists",
+        "test_output_structure_preserves_repeated_tensor_and_nested_containers",
+        "test_native_mse_backward_and_sgd_match_cpu_reference",
+        "test_unsupported_operator_fails_with_fx_node",
+        "test_broadcast_mutation_dtype_and_tensor_slices_fail_closed",
+        "test_autograd_bridge_partial_outputs_and_multiple_pending_forwards",
+        "test_captured_graph_passes_native_registry_contracts",
+        "test_native_train_step_owns_update_and_reuses_runtime",
+        "test_cpu_mathematical_control_agrees_with_original_fp32_autograd",
+        "test_explicit_half_contract_has_independent_forward_and_backward_rounding",
+        "test_state_mutation_overlapping_parameters_and_nonfinite_capture_fail",
+        "test_matrix_products_and_rank_four_attention_shapes",
+        "test_rank_two_matmul_and_tanh_gelu_derivatives",
+        "test_batched_product_registry_shapes_and_launches",
+        "test_complete_layernorm_forward_and_affine_derivatives",
+        "test_functional_layernorm_preserves_epsilon_and_rejects_multi_axis",
+        "test_concatenation_and_symbolic_slice_gradients",
+        "test_storage_views_preserve_branch_outputs_backward_and_clone_ownership",
+        "test_public_compile_model_applies_optional_storage_views",
+        "test_native_forward_reuses_storage_refreshes_parameters_and_restores_outputs",
+        "test_persistent_native_calls_reject_live_autograd_tape"
+      ]
+    },
+    {
+      "path": "tests/test_model_kernels.py",
+      "lines": 231,
+      "purpose": "Independent math checks on both PTX and OA scheduled SASS, including tails.",
+      "definitions": [
+        "spec",
+        "run",
+        "test_elementwise_crosses_cta_tail_and_matches_independent_math",
+        "test_linear_forward_dx_dw_and_bias_gradient",
+        "test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution",
+        "test_mse_unmeasured_or_rejected_sizes_keep_the_serial_policy",
+        "test_parallel_mse_is_limited_to_the_measured_16k_contract",
+        "test_matrix_candidates_require_exact_measured_contracts_and_oa_source_identity",
+        "test_model_cache_excludes_vendor_donor_binary_files",
+        "test_transpose_and_reshape_no_runtime_division",
+        "test_loss_and_gradient_include_tail_and_upstream",
+        "test_unsupported_contracts_reject",
+        "test_invalid_plan_use_def_rejects",
+        "test_cooperative_softmax_and_backward_row_column_tails",
+        "test_tanh_gelu_stable_backward_including_saturation_and_tail",
+        "test_layernorm_full_affine_derivatives_with_tails"
+      ]
+    },
+    {
+      "path": "tests/test_model_optimization.py",
+      "lines": 134,
+      "purpose": "Storage transformations preserve clone, gradient and parameter semantics.",
+      "definitions": [
+        "plan",
+        "test_view_selection_preserves_clone_and_updateable_parameters",
+        "test_disabled_view_optimization_retains_materializations",
+        "test_alias_mutations_are_rejected",
+        "branched_plan",
+        "test_complete_live_intervals_protect_branches_seeds_and_returned_results",
+        "test_alias_groups_extend_the_real_root_until_every_exposed_view_expires",
+        "test_persisted_storage_schedule_is_rederived_and_rejects_mutations",
+        "test_storage_reuse_can_be_enabled_independently_from_views",
+        "test_execution_preparation_rejects_an_injected_storage_schedule",
+        "test_adding_native_loss_replans_the_complete_region_and_pins_both_outputs"
+      ]
+    },
+    {
+      "path": "tests/test_model_profiling.py",
+      "lines": 23,
+      "purpose": "Compute names cannot masquerade as storage activity in a native audit.",
+      "definitions": [
+        "test_profiler_trace_rejects_extra_compute_regardless_of_its_name",
+        "test_profiler_trace_requires_exact_compute_counts_and_classifies_storage"
+      ]
+    },
+    {
+      "path": "tests/test_model_runtime.py",
+      "lines": 264,
+      "purpose": "Native artifact ownership/identity gates and reusable runtime state guards.",
+      "definitions": [
+        "plan",
+        "compiled_bundle",
+        "test_bundle_validates_real_oa_text_without_diagnostics",
+        "test_omitting_optional_listings_preserves_native_cubin_bytes",
+        "test_persistent_model_cache_revalidates_and_never_retains_ptxas_donors",
+        "test_rejects_tampered_or_non_native_artifacts",
+        "Tensor",
+        "Torch",
+        "make_runtime",
+        "test_runtime_reuses_buffers_modules_functions_and_refreshes_inputs",
+        "test_backward_explicit_seed_and_tape_mutation_guards",
+        "test_backward_rejects_user_mutation_of_saved_output",
+        "test_runtime_uses_guarded_liveness_slots_without_reallocating",
+        "test_shape_dtype_layout_guards_before_loading",
+        "test_stream_switch_rejects_workspace_races",
+        "test_weight_integrity_is_checked_before_torch_allocation",
+        "test_profiler_audit_requires_exact_names_and_counts",
+        "test_tensor_mode_requires_admitted_full_tile_contracts",
+        "test_tensor_mode_recipes_replace_every_linear_forward_and_backward"
+      ]
+    },
+    {
+      "path": "tests/test_model_tensor.py",
+      "lines": 58,
+      "purpose": "Explicit tensor recipe contracts and exact FP32-to-half packing semantics.",
+      "definitions": [
+        "spec",
+        "test_tensor_linear_requires_explicit_precision_and_supported_full_tiles",
+        "test_pack_half_exact_rounding_boundaries_and_signs_in_emulator"
+      ]
+    },
+    {
+      "path": "tests/test_model_tensor_schedule.py",
+      "lines": 66,
+      "purpose": "Bounded dual-layout recipe geometry, reuse identity and opt-in contracts.",
+      "definitions": [
+        "spec",
+        "dual",
+        "test_padded_recipe_has_bounded_owned_views_and_guarded_crop",
+        "test_schedule_reuses_same_logical_operand_across_phases_and_shape_aliases",
+        "test_dual_rejects_incompatible_or_unbounded_shapes",
+        "test_repository_dual_packing_requires_explicit_math"
+      ]
+    },
+    {
+      "path": "tests/test_native_ownership.py",
+      "lines": 148,
+      "purpose": "Public native compilation/replay must not load hidden vendor GPU programs.",
+      "definitions": [
+        "repository",
+        "test_legacy_worker_process_rejects_before_runtime_discovery",
+        "test_legacy_direct_execute_cannot_bypass_disabled_worker",
+        "test_explicit_model_output_cannot_select_another_repository",
+        "test_worker_artifacts_validate_before_any_publication",
+        "manifest",
+        "test_public_runner_never_reads_reference_files",
+        "test_public_runner_rejects_entire_module_with_vendor_kernel",
+        "test_public_runner_enforces_native_bytes_inventory_and_abi",
+        "test_real_builder_records_all_native_words_and_rejects_replaced_cubin",
+        "test_module_with_extra_executable_text_is_rejected_even_with_updated_file_hash"
+      ]
+    },
+    {
+      "path": "tests/test_ptx_entries.py",
+      "lines": 171,
+      "purpose": "Entry completeness, ABI and launch metadata through actual native builds.",
+      "definitions": [
+        "test_visibility_dollar_symbols_and_launch_headers",
+        "test_inventory_ignores_comments_strings_and_prototypes",
+        "test_unsupported_headers_fail_instead_of_losing_entry_or_abi",
+        "test_launch_bound_product_and_exact_required_dimensions",
+        "test_frontend_parser_inventory_mismatch_stops_before_codegen",
+        "test_register_limit_rejects_oa_output_before_donor_build",
+        "test_mixed_entries_native_build_preserves_metadata_and_integrity",
+        "test_cuda_macro_local_headers_and_cycles_are_candidates",
+        "test_cuda_header_closure_stays_inside_source_tree",
+        "test_macro_repository_compiles_through_ordinary_cli",
+        "test_automatic_runner_obeys_bound_before_submission",
+        "test_explicit_spec_cannot_bypass_required_dimensions"
+      ]
+    },
+    {
+      "path": "tests/test_pyfront.py",
+      "lines": 151,
+      "purpose": "openassembler.pyfront: the Python-subset -> PTX compiler. Every kernel here is",
+      "definitions": [
+        "vec_add",
+        "dot_row",
+        "relu",
+        "_sass_run",
+        "_interp_run",
+        "test_vec_add_interp_and_sass_agree",
+        "test_dot_row_loop_and_accumulator",
+        "test_relu_if_else_reassignment",
+        "test_rejects_unsupported_constructs",
+        "test_rejects_type_mismatch_reassignment"
+      ]
+    },
+    {
+      "path": "tests/test_pyfront_semantics.py",
+      "lines": 481,
+      "purpose": "Differential test for openassembler.pyfront: the SAME kernel body is run three ways and",
+      "definitions": [
+        "early_return",
+        "bound_snapshot",
+        "neg_step",
+        "pos_step",
+        "empty_loop",
+        "elif_chain",
+        "and_or",
+        "nested_loops",
+        "float_literals",
+        "float_lhs_literal",
+        "float_branch",
+        "truediv_int",
+        "truediv_f32",
+        "floordiv_mod_reg",
+        "floordiv_mod_const",
+        "floordiv_one",
+        "casts",
+        "not_cond",
+        "minmaxabs_i",
+        "minmaxabs_f",
+        "sqrt_k",
+        "approx_k",
+        "collatz",
+        "while_true_continue",
+        "for_break_continue",
+        "loop_var_assigned",
+        "smem_reverse",
+        "smem_reduce",
+        "test_python_interpreter_and_sass_agree",
+        "test_approximate_intrinsics_within_documented_error",
+        "ieee_div",
+        "cast_saturation",
+        "_run_gpu_only",
+        "test_true_division_by_zero_is_ieee_not_an_exception",
+        "test_int_of_nan_inf_and_huge_saturates",
+        "test_i32_multiplication_wraps"
+      ]
+    },
+    {
+      "path": "tests/test_pyfront_static.py",
+      "lines": 38,
+      "purpose": "Compilation discovers functions statically without executing a user's module.",
+      "definitions": [
+        "test_multiple_kernels_and_import_aliases_without_top_level_execution",
+        "test_divergent_barrier_has_actionable_error"
+      ]
+    },
+    {
+      "path": "tests/test_reduction_codegen.py",
+      "lines": 203,
+      "purpose": "Row-reduction contracts, poisoned native semantics and dependency regressions.",
+      "definitions": [
+        "test_plan_rejects_unimplemented_or_unrepresentable_contract",
+        "test_plan_immutable_and_launch_metadata_do_not_alias",
+        "test_native_shuffle_sync_keeps_warpsync_and_read_scoreboards",
+        "test_poisoned_native_outputs_and_both_tails_match_fp64",
+        "test_copy_from_existing_ptx_home_does_not_steal_its_producer",
+        "test_packed_env_alias_preserves_a_component_and_fresh_bind_still_retargets",
+        "_load",
+        "test_multiple_async_readers_are_all_waited_before_source_overwrite",
+        "test_waiting_a_reader_retires_all_of_its_source_aliases",
+        "test_recycled_write_and_read_slots_retire_old_generations_before_publish",
+        "test_operand_collection_sources_remain_live_until_the_read_barrier",
+        "test_warpsync_drains_all_outstanding_scoreboards",
+        "test_generated_warpsync_register_template_covers_the_recorded_sweep",
+        "test_unsupported_shuffle_forms_fail_closed"
+      ]
+    },
+    {
+      "path": "tests/test_repo_workflow.py",
+      "lines": 297,
+      "purpose": "Repository commands, destination parity and failure isolation without GPUs.",
+      "definitions": [
+        "native_manifest",
+        "repo",
+        "test_default_output_is_repo_relative_but_file_output_is_cwd_relative",
+        "test_run_repo_from_another_working_directory_and_symlink",
+        "test_source_selection_never_runs_a_different_repository",
+        "test_legacy_output_and_explicit_output_are_compatible",
+        "test_missing_build_is_clear_and_does_not_create_output",
+        "test_backend_normalization",
+        "test_backend_rejects_ambiguous_or_unsafe_targets",
+        "test_dry_run_never_starts_a_build_or_transport",
+        "test_cnr_validates_before_compiling",
+        "test_local_native_build_never_silently_ignores_a_build_watchdog",
+        "app",
+        "test_application_cnr_uses_one_destination_for_both_stages",
+        "test_application_run_infers_bundle_and_allows_new_ssh_destination",
+        "test_application_cnr_allows_separate_build_transport",
+        "test_ssh_cleanup_failure_does_not_hide_success",
+        "test_remote_publication_rebases_sources_and_preserves_other_artifacts",
+        "test_native_runtime_contains_compiler_data_and_no_research_results",
+        "test_remote_failed_rebuild_blocks_old_binary_but_kernel_filter_preserves_others",
+        "test_remote_build_refuses_busy_output_before_upload",
+        "test_sources_and_external_include_directories_are_staged"
+      ]
+    },
+    {
+      "path": "tests/test_repository_frontend_selection.py",
+      "lines": 84,
+      "purpose": "Native-first repository frontend policy.",
+      "definitions": [
+        "configured_repo",
+        "test_auto_is_native_first_when_application_and_native_sources_coexist",
+        "test_auto_does_not_implicitly_capture_a_pytorch_only_repo",
+        "test_application_frontend_requires_explicit_selection",
+        "test_native_source_file_inside_configured_repo_never_selects_application",
+        "test_repository_inspection_reports_build_system_and_static_kernel_context"
+      ]
+    },
+    {
+      "path": "tests/test_rowwise_dispatch.py",
+      "lines": 156,
+      "purpose": "Exact-shape rowwise CTA policy dispatch and runner launch contracts.",
+      "definitions": [
+        "test_auto_dispatch_is_exact_to_promoted_operation_shape",
+        "test_auto_dispatch_unknown_shape_keeps_four_warp_baseline",
+        "test_stale_or_corrupt_dispatch_table_fails_closed",
+        "test_promoted_table_binds_current_rowwise_identity_and_body_hashes",
+        "_capture_compile",
+        "test_cli_automatic_dispatch_and_manual_warp_override",
+        "test_cli_emit_roundtrip_preserves_default_w4_body_and_exact_dispatch_metadata",
+        "test_runner_uses_rowwise_warp_geometry_in_launch_contract"
+      ]
+    },
+    {
+      "path": "tests/test_runner.py",
+      "lines": 117,
+      "purpose": "Runner planning and result handling can be tested without contacting a GPU.",
+      "definitions": [
+        "test_first_diff_reports_word_index_and_handles_length_changes",
+        "test_compare_synthetic_results_and_faults",
+        "test_report_returns_failure_for_mismatch",
+        "test_load_spec_errors_are_user_facing",
+        "test_modal_dry_run_builds_plan_without_credentials",
+        "test_run_reports_missing_manifest",
+        "test_missing_outputs_cannot_pass_comparison",
+        "test_modal_command_preserves_watchdog",
+        "test_invalid_launch_dimensions_are_rejected",
+        "test_manifest_cannot_read_artifacts_outside_output",
+        "test_spec_rejects_fractional_integer_initializers"
+      ]
+    },
+    {
+      "path": "tests/test_runtime_indexing.py",
+      "lines": 69,
+      "purpose": "Runtime integer indexing: exact arithmetic and asynchronous conversion readers.",
+      "definitions": [
+        "test_f2i_source_overwrite_waits_for_collection_separately_from_result",
+        "test_runtime_integer_fragment_exact_edges_at_every_optimization_level"
+      ]
+    },
+    {
+      "path": "tests/test_tensor_pointer_homes.py",
+      "lines": 90,
+      "purpose": "Explicit direct-pointer mode, validated independently on A100.",
+      "definitions": [
+        "kernel",
+        "test_direct_mode_gpu_validated_stream_hashes",
+        "test_direct_mode_removes_copy_homes_but_preserves_aligned_native_operands",
+        "test_direct_pointer_update_waits_for_async_address_consumption",
+        "test_pointer_mode_is_explicit_and_legacy_is_the_default"
+      ]
+    },
+    {
+      "path": "tests/test_torchfront.py",
+      "lines": 105,
+      "purpose": "Repo-level PyTorch application frontend contracts that do not need a GPU.",
+      "definitions": [
+        "test_transformer_repo_dry_run_selects_its_configured_workload",
+        "test_application_source_bundle_ignores_generated_output_and_caches",
+        "test_application_config_rejects_parent_entrypoint",
+        "test_application_config_rejects_parent_requirements",
+        "test_source_digest_is_order_independent_and_content_sensitive",
+        "test_archive_unpack_rejects_path_traversal",
+        "test_archive_unpack_rejects_duplicate_paths",
+        "test_archive_unpack_rejects_normalized_path_aliases",
+        "test_manifest_rejects_application_paths_that_escape_output"
+      ]
+    },
+    {
+      "path": "tests/test_torchfront_numerics.py",
+      "lines": 146,
+      "purpose": "State-verification diagnostics retain the original elementwise admission gate.",
+      "definitions": [
+        "compare",
+        "test_bf16_like_bias_failure_does_not_hide_second_tensor_group",
+        "test_failure_diagnostic_matches_torch_elementwise_gate",
+        "test_parameter_and_output_tolerances_are_still_separate",
+        "test_metadata_and_type_mismatches_still_fail",
+        "test_matching_infinities_are_allowed_but_nans_are_not",
+        "test_noncontiguous_tensor_index_samples_use_logical_shape",
+        "test_diagnostic_details_are_bounded_but_all_failures_are_counted",
+        "test_missing_state_keys_and_empty_tensor_scope_still_fail",
+        "test_success_does_not_mutate_saved_tensors_or_require_nonempty_values",
+        "test_diagnostic_errors_cannot_turn_mismatches_into_success",
+        "test_thousands_of_arbitrary_names_have_a_bounded_error_response",
+        "test_worker_error_json_retains_diagnostics_and_publishes_no_artifacts"
+      ]
+    },
+    {
+      "path": "tests/test_verify.py",
+      "lines": 46,
+      "purpose": "openassembler.verify: the generic correctness checker (any kernel signature,",
+      "definitions": [
+        "vec_add",
+        "test_generic_verify_bit_exact_on_pyfront_kernel",
+        "test_generic_verify_catches_a_real_mismatch"
+      ]
+    },
+    {
+      "path": "tests/test_welcome.py",
+      "lines": 64,
+      "purpose": "A welcome is shared across processes, terminals, installation and the REPL.",
+      "definitions": [
+        "test_atomic_welcome_has_one_winner_and_persists",
+        "test_unwritable_state_does_not_fail_or_repeat_logo",
+        "test_installer_welcome_then_repl_does_not_repeat_logo",
+        "test_json_help_and_version_do_not_consume_welcome",
+        "test_terminal_json_stays_parseable_then_normal_command_shows_logo_once"
+      ]
+    },
+    {
+      "path": "tests/test_word.py",
+      "lines": 84,
+      "purpose": "Generic field decoding, checked against real sm_80 words (corpus/sm_80/smoke.cubin).",
+      "definitions": [
+        "test_bits_roundtrip",
+        "test_mov_cbank",
+        "test_imad_operands",
+        "test_isetp_param_offset",
+        "test_guard",
+        "test_scoreboard_dependency",
+        "test_yield_polarity",
+        "test_corpus_control_valid",
+        "test_corpus_guard_and_cbank"
+      ]
+    },
+    {
+      "path": "tools/bench_build.py",
+      "lines": 153,
+      "purpose": "Build benchmark cubins: ptxas vs our compiler (safe and mined schedulers).",
+      "definitions": [
+        "listing",
+        "check",
+        "main",
+        "_reschedule_k"
+      ]
+    },
+    {
+      "path": "tools/bench_kernels.py",
+      "lines": 57,
+      "purpose": "Benchmark kernels (probe ABI: out, in, k, kf) for timing ours vs ptxas on GPUs.",
+      "definitions": []
+    },
+    {
+      "path": "tools/bitflip.py",
+      "lines": 133,
+      "purpose": "Bit-flip field discovery: flip each bit of seed words, diff nvdisasm's text.",
+      "definitions": [
+        "normalize",
+        "split",
+        "classify",
+        "runs",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/build_corpus.py",
+      "lines": 79,
+      "purpose": "Build corpus/<arch>/: probe PTX -> cubin -> (word, text) pairs.",
+      "definitions": [
+        "build"
+      ]
+    },
+    {
+      "path": "tools/check_docs.py",
+      "lines": 325,
+      "purpose": "Read-only documentation checks: catalogue, links/anchors and public CLI coverage.",
+      "definitions": [
+        "mask_code",
+        "without_inline_code",
+        "destinations",
+        "anchors",
+        "Checker",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/cli_benchmark.py",
+      "lines": 119,
+      "purpose": "Run a reproducible CLI integration matrix and save timing/results as JSON.",
+      "definitions": [
+        "run_row",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/compile_check.py",
+      "lines": 143,
+      "purpose": "M3 gate (v0): compile probes with OUR compiler, validate with nvdisasm, check",
+      "definitions": [
+        "main"
+      ]
+    },
+    {
+      "path": "tools/diff_emu.py",
+      "lines": 182,
+      "purpose": "Differential harness: SASS emulator (on ptxas output) vs PTX interpreter.",
+      "definitions": [
+        "is_nan32",
+        "f32v",
+        "is_nan64",
+        "same",
+        "rand32",
+        "run_ptx",
+        "ulp_close",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/div_const_survey.py",
+      "lines": 123,
+      "purpose": "Survey: how does ptxas lower integer division/remainder by a compile-time constant?",
+      "definitions": [
+        "body",
+        "classify",
+        "insns",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/encoder_eval.py",
+      "lines": 30,
+      "purpose": "",
+      "definitions": []
+    },
+    {
+      "path": "tools/fastmm_build.py",
+      "lines": 206,
+      "purpose": "Build the fast-matmul kernels with ptxas and with our compiler (PTX -> SASS -> cubin).",
+      "definitions": [
+        "f2b",
+        "b2f",
+        "rf32",
+        "check_sgemm",
+        "check_fgemm",
+        "check_lincomb",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/fastmm_import.py",
+      "lines": 64,
+      "purpose": "One-time import of AlphaTensor's factorizations into a numpy-free spec file.",
+      "definitions": [
+        "sparse",
+        "wt",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/fastmm_run.py",
+      "lines": 202,
+      "purpose": "Run fast-matmul plans (AlphaTensor / Strassen / naive blocks / one big GEMM) on a GPU.",
+      "definitions": [
+        "run_batch",
+        "make_jobs",
+        "_cols",
+        "_check_data",
+        "check",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/fit_mma.py",
+      "lines": 121,
+      "purpose": "Fit the tensor-core accumulation model to recorded A100 outputs (offline, $0).",
+      "definitions": [
+        "matrices",
+        "model_dot",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/fit_mma_nominal.py",
+      "lines": 56,
+      "purpose": "Fit the tensor-core accumulation model with NOMINAL-exponent alignment (the model",
+      "definitions": [
+        "nom",
+        "dot"
+      ]
+    },
+    {
+      "path": "tools/gpu_bisect.py",
+      "lines": 91,
+      "purpose": "Build the cubin variants used to find why our cubins faulted on the A100.",
+      "definitions": [
+        "fresh",
+        "exits_of",
+        "build_elf",
+        "build_regs"
+      ]
+    },
+    {
+      "path": "tools/gpu_common.py",
+      "lines": 278,
+      "purpose": "Local half of GPU validation, shared by every transport (Modal, SSH, local).",
+      "definitions": [
+        "expected_reason",
+        "_finite",
+        "structured_inputs",
+        "build_jobs",
+        "_emu",
+        "_ptx_path",
+        "compare",
+        "print_summary",
+        "pack",
+        "report_times"
+      ]
+    },
+    {
+      "path": "tools/gpu_modal.py",
+      "lines": 114,
+      "purpose": "Run probe cubins on a Modal GPU and compare with our emulator + the PTX spec.",
+      "definitions": [
+        "run_batch",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/gpu_replay.py",
+      "lines": 89,
+      "purpose": "Replay recorded GPU outputs against the current emulator (offline, no GPU, $0).",
+      "definitions": [
+        "replay",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/gpu_run.py",
+      "lines": 89,
+      "purpose": "Run probe cubins on a GPU you reach over SSH (or on this machine), then compare.",
+      "definitions": [
+        "sh",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/lat_sweep.py",
+      "lines": 161,
+      "purpose": "Measure fixed-pipeline read-after-write latencies on real hardware.",
+      "definitions": [
+        "stalls",
+        "kname",
+        "build",
+        "report"
+      ]
+    },
+    {
+      "path": "tools/mine_latency.py",
+      "lines": 209,
+      "purpose": "M2: extract ptxas's machine model from its control codes.",
+      "definitions": [
+        "width_of",
+        "regs",
+        "defs_uses",
+        "_pred_dst_slot",
+        "op_class",
+        "blocks",
+        "mine",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/mlp_build.py",
+      "lines": 81,
+      "purpose": "Build the 2-layer MLP forward-pass kernels (examples/mlp/kernels.py --",
+      "definitions": [
+        "main"
+      ]
+    },
+    {
+      "path": "tools/mlp_run.py",
+      "lines": 183,
+      "purpose": "Run the 2-layer MLP forward pass (examples/mlp/kernels.py: linear1 -> relu",
+      "definitions": [
+        "run_batch",
+        "_split_cols",
+        "make_jobs",
+        "_reference",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/nn_study.py",
+      "lines": 109,
+      "purpose": "Compile and measure eight NN/transformer operations before optimization changes.",
+      "definitions": [
+        "cases",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/predict_stall.py",
+      "lines": 174,
+      "purpose": "M2 gate: predict ptxas's stall counts from a mined machine model.",
+      "definitions": [
+        "pipe",
+        "load_model",
+        "iter_blocks",
+        "mine_occupancy",
+        "mine_min_gap",
+        "predict_block",
+        "evaluate",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/prove_divconst.py",
+      "lines": 47,
+      "purpose": "Generate and z3-prove multiply-high replacements for div/rem by constants.",
+      "definitions": []
+    },
+    {
+      "path": "tools/ptx_probes.py",
+      "lines": 324,
+      "purpose": "Generate PTX probe kernels that cover the SASS instruction space.",
+      "definitions": [
+        "_int_ops",
+        "_cmp_ops",
+        "_float_ops",
+        "_cvt_ops",
+        "_mem_ops",
+        "_warp_ops",
+        "_ctrl_ops",
+        "_mma_ops",
+        "probes",
+        "kernel_name",
+        "module"
+      ]
+    },
+    {
+      "path": "tools/ptxas_fragments.py",
+      "lines": 419,
+      "purpose": "Freeze ptxas's SASS for single PTX ops into openassembler/backend/ptxas_fragments.json.",
+      "definitions": [
+        "probe_body",
+        "probe_ptx",
+        "listing",
+        "_normalize_calls",
+        "_slice_rows",
+        "build_fragment",
+        "main"
+      ]
+    },
+    {
+      "path": "tools/reencode_cubin.py",
+      "lines": 95,
+      "purpose": "End-to-end check of encoder + cubin writer: text -> words -> cubin -> nvdisasm.",
+      "definitions": [
+        "main"
+      ]
+    },
+    {
+      "path": "tools/sb_policy.py",
+      "lines": 86,
+      "purpose": "Scoreboard (dependency barrier) policy of ptxas, and how much it over-waits.",
+      "definitions": [
+        "main"
+      ]
+    },
+    {
+      "path": "tools/stall_holdout.py",
+      "lines": 33,
+      "purpose": "",
+      "definitions": [
+        "blks"
+      ]
+    },
+    {
+      "path": "tools/verify_divconst_exhaustive.py",
+      "lines": 137,
+      "purpose": "Exhaustive proof of div/rem-by-constant sequences over all 2^32 inputs.",
+      "definitions": [
+        "c_expr",
+        "check",
+        "_find_cc",
+        "main"
+      ]
+    }
+  ],
+  "docs": [
+    "docs/CODEBASE_AUDIT.md",
+    "docs/COMMANDS.md",
+    "docs/DEVELOPMENT.md",
+    "docs/FRONTENDS.md",
+    "docs/HOMEBREW.md",
+    "docs/REPOSITORY_WORKFLOW.md",
+    "docs/STATUS.md",
+    "docs/TENSOR_GEMM.md",
+    "docs/compiler/README.md",
+    "docs/compiler/memory-latency.md",
+    "docs/compiler/source-completeness.md",
+    "docs/compiler/validation.md",
+    "docs/evidence/a100-latency/README.md",
+    "docs/evidence/a100-mma/README.md",
+    "docs/evidence/documentation-history/README.md",
+    "docs/findings-div-const.md",
+    "docs/findings-sm80-encoding.md",
+    "docs/research/README.md",
+    "docs/research/REFERENCES.md",
+    "docs/research/WHOLE_STACK_RESULTS.md",
+    "docs/research/ideas/a100-hardware-limits.md",
+    "docs/research/ideas/a100-tensor-dependency-scheduler.md",
+    "docs/research/ideas/adam-epsilon-sensitivity.md",
+    "docs/research/ideas/adaptive-shared-memory-budgeting.md",
+    "docs/research/ideas/architecture-portability.md",
+    "docs/research/ideas/arithmetic-instruction-selection.md",
+    "docs/research/ideas/asymmetric-shared-banking.md",
+    "docs/research/ideas/automatic-sass-sequence-search.md",
+    "docs/research/ideas/bf16-cast-preservation.md",
+    "docs/research/ideas/compile-time-low-rank-mma.md",
+    "docs/research/ideas/compiler-language-and-host-latency.md",
+    "docs/research/ideas/constant-division.md",
+    "docs/research/ideas/control-flow-lifting.md",
+    "docs/research/ideas/cooperative-layernorm.md",
+    "docs/research/ideas/cooperative-softmax.md",
+    "docs/research/ideas/cubin-metadata-splicing.md",
+    "docs/research/ideas/cublas-observation-and-baselines.md",
+    "docs/research/ideas/cuda-cpp-frontend.md",
+    "docs/research/ideas/cuda-l2-source-audit.md",
+    "docs/research/ideas/cutlass-cublas-public-techniques.md",
+    "docs/research/ideas/cutlass-load-next-compute-current.md",
+    "docs/research/ideas/dead-code-and-copy-elimination.md",
+    "docs/research/ideas/deeper-pipelines-and-tile-shapes.md",
+    "docs/research/ideas/direct-pointer-homes.md",
+    "docs/research/ideas/early-gemm-pointer-advance.md",
+    "docs/research/ideas/fused-adam-like-update.md",
+    "docs/research/ideas/fused-backward-reductions.md",
+    "docs/research/ideas/fused-gemm-epilogues.md",
+    "docs/research/ideas/gpu-execution-and-launch-specs.md",
+    "docs/research/ideas/grouped-n-cta-swizzle.md",
+    "docs/research/ideas/hilbert-and-grouped-cta-order.md",
+    "docs/research/ideas/inference-weight-packing-cache.md",
+    "docs/research/ideas/joint-layout-register-search.md",
+    "docs/research/ideas/joint-tensor-options.md",
+    "docs/research/ideas/l2-persistence.md",
+    "docs/research/ideas/loop-unrolling.md",
+    "docs/research/ideas/low-rank-factorization-library.md",
+    "docs/research/ideas/low-rank-transform-fusion.md",
+    "docs/research/ideas/mbarrier-overlap.md",
+    "docs/research/ideas/morton-cta-order.md",
+    "docs/research/ideas/multi-precision-accumulation.md",
+    "docs/research/ideas/native-gelu.md",
+    "docs/research/ideas/native-hybrid-mlp.md",
+    "docs/research/ideas/native-model-bridge.md",
+    "docs/research/ideas/native-relu.md",
+    "docs/research/ideas/native-tensor-gemm.md",
+    "docs/research/ideas/nn-arithmetic-campaign.md",
+    "docs/research/ideas/non-tensor-address-overhead.md",
+    "docs/research/ideas/operand-reuse-hints.md",
+    "docs/research/ideas/padded-training-hook.md",
+    "docs/research/ideas/paired-fragment-loads.md",
+    "docs/research/ideas/post-allocation-pointer-forwarding.md",
+    "docs/research/ideas/prefetch-and-fragment-windows.md",
+    "docs/research/ideas/producer-consumer-warps.md",
+    "docs/research/ideas/ptx-native-frontend.md",
+    "docs/research/ideas/python-kernel-frontend.md",
+    "docs/research/ideas/pytorch-application-capture.md",
+    "docs/research/ideas/repository-builds.md",
+    "docs/research/ideas/runtime-factor-low-rank-triton.md",
+    "docs/research/ideas/runtime-integer-indexing.md",
+    "docs/research/ideas/sass-emulator-and-tensor-numerics.md",
+    "docs/research/ideas/sass-encoding.md",
+    "docs/research/ideas/scalar-attention-score-baseline.md",
+    "docs/research/ideas/scalar-cross-entropy-baseline.md",
+    "docs/research/ideas/scalar-dependency-correctness.md",
+    "docs/research/ideas/scalar-matmul-baseline.md",
+    "docs/research/ideas/scalar-register-allocation.md",
+    "docs/research/ideas/scalar-scheduling.md",
+    "docs/research/ideas/shape-aware-native-gemm-dispatch.md",
+    "docs/research/ideas/shape-aware-rowwise-dispatch.md",
+    "docs/research/ideas/shared-layout-swizzling.md",
+    "docs/research/ideas/small-grid-tensor-cta-tiles.md",
+    "docs/research/ideas/software-register-caching.md",
+    "docs/research/ideas/sparse-mma-capability.md",
+    "docs/research/ideas/stable-gelu-backward.md",
+    "docs/research/ideas/stage-pair-specialization.md",
+    "docs/research/ideas/state-verification-diagnostics.md",
+    "docs/research/ideas/tensor-address-generation.md",
+    "docs/research/ideas/tensor-counter-profiling.md",
+    "docs/research/ideas/tensor-timing-and-synchronization.md",
+    "docs/research/ideas/vectorized-fp32-epilogue.md",
+    "docs/research/ideas/whole-transformer-evaluation.md",
+    "docs/reverse_eng_results/00_EXECUTIVE_SUMMARY.md",
+    "docs/reverse_eng_results/01_SCOPE_METHODS_AND_PROVENANCE.md",
+    "docs/reverse_eng_results/02_PTXAS_AND_FRONTEND_PIPELINE.md",
+    "docs/reverse_eng_results/03_SASS_ENCODING_CONTROL_FIELDS.md",
+    "docs/reverse_eng_results/04_CUBIN_ELF_METADATA_AND_SPLICING.md",
+    "docs/reverse_eng_results/05_SCALAR_LATENCY_SCHEDULING_AND_REGISTERS.md",
+    "docs/reverse_eng_results/06_MMA_TENSOR_PIPELINE_SM80.md",
+    "docs/reverse_eng_results/07_ASYNC_COPY_LDSM_SHARED_MEMORY.md",
+    "docs/reverse_eng_results/08_ARITHMETIC_DIVISION_AND_FRAGMENTS.md",
+    "docs/reverse_eng_results/09_REDUCTIONS_AND_FUSED_NN_ARITHMETIC.md",
+    "docs/reverse_eng_results/10_LAYOUT_SWIZZLE_CUBLAS_CUTLASS.md",
+    "docs/reverse_eng_results/11_COUNTERS_PERFORMANCE_AND_VALIDATION.md",
+    "docs/reverse_eng_results/12_CLI_REPRODUCTION_MAP.md",
+    "docs/reverse_eng_results/13_OPEN_QUESTIONS_AND_NEXT_STEPS.md",
+    "docs/reverse_eng_results/README.md"
+  ],
+  "scope": "AST/documentation inventory, changed-source review and targeted source reading; historical binary evidence is not line-by-line code."
+}

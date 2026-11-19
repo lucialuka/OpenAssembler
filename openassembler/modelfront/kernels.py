@@ -234,10 +234,14 @@ def emit_kernel(op, inputs, output, attrs=None):
         from .kernels_matmul import select as select_matrix_kernel
         return select_matrix_kernel(kernel)
     if op == 'mse':
+        from .kernels_training import warp_mse
         from .kernels_loss import ORDERED_MSE_ELEMENTS, PARALLEL_MSE_SHAPES, ordered_mse, parallel_mse
         elements=math.prod(shapes[0])
-        if shapes[0] in PARALLEL_MSE_SHAPES:return parallel_mse(kernel)
+        if shapes[0] in PARALLEL_MSE_SHAPES:return warp_mse(kernel)
         if elements in ORDERED_MSE_ELEMENTS:return ordered_mse(kernel)
+    if op == 'bias_grad':
+        from .kernels_training import BIAS_REDUCTION_SHAPES, bias_reduce
+        if shapes[0] in BIAS_REDUCTION_SHAPES:return bias_reduce(kernel)
     return kernel
 
 

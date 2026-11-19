@@ -18,7 +18,7 @@ All measurements use a Modal NVIDIA A100-SXM4-40GB (SM80), CUDA 12.8, PyTorch 2.
 | attention_training | fp32, training, 2×7×8 | 219.37 | 172.64 | 151.85 | 324.46 | 0.79× / 0.69× / 1.48× |
 | projection_inference | f16_rne_f32_accum, inference, 128×128 | 67.62 | 19.32 | 60.66 | 104.38 | 0.29× / 0.90× / 1.54× |
 
-Across these five tasks, OpenAssembler is slower than Triton and same-PTX ptxas in every case. The PyTorch CUDA operator path is faster than OA for the two dense training workloads and projection inference, but slower for tiny regression and attention. These figures expose remaining matrix, launch and materialization overhead; they do not support a claim that OA surpasses the NVIDIA toolchain.
+Across these five tasks, OpenAssembler is slower than Triton and same-PTX ptxas in every case. OA is faster than the manual PyTorch CUDA operator path for tiny regression, dense FP16 training, attention and projection inference; dense FP32 training remains slower. These figures expose remaining matrix, launch and materialization overhead; they do not support a claim that OA surpasses the NVIDIA toolchain.
 
 ## Per-workload component medians
 
@@ -121,3 +121,11 @@ The two production changes remove severe OA bottlenecks in the measured workload
 - Frozen workload definitions and benchmark methodology: [README.md](README.md)
 
 Numerical thresholds, full samples, worker/library versions, raw profiler traces and admission ledgers are retained in the campaign archives.
+
+## November 19 performance follow-up
+
+The original numbers above remain dated evidence. The
+[later performance campaign](../model_perf/RESULTS.md) retains fresh paired
+incumbent/production and direct Triton/same-PTX/manual CUDA-operator comparisons
+after exact model tile and reduction changes. Component intervals remain
+independent; neither table is a general NVIDIA toolchain benchmark.

@@ -20,10 +20,11 @@ def default_cache_dir():
     return Path(override).expanduser() if override else Path.home()/'.cache'/'openassembler'/'native-models'
 
 
-@lru_cache(maxsize=1)
-def toolchain_identity():
+@lru_cache(maxsize=2)
+def toolchain_identity(sass_listings=True):
     from openassembler import oracle
-    return {name:oracle.run_tool(name,'--version').stdout for name in ('ptxas','nvdisasm')}
+    names = ('ptxas', 'nvdisasm') if sass_listings else ('ptxas',)
+    return {name:oracle.run_tool(name,'--version').stdout for name in names}
 
 
 def key_for(plan,*,opt_level='opt',sass_listings=True):
@@ -40,7 +41,7 @@ def key_for(plan,*,opt_level='opt',sass_listings=True):
     generated_source_sha256=hashlib.sha256(('\n'.join(generated)).encode()).hexdigest()
     identity={'schema':1,'compiler_identity':compiler_identity(),'sources':sources,
               'generated_source_sha256':generated_source_sha256,
-              'toolchain':toolchain_identity(),'plan':plan,'arch':'sm_80',
+              'toolchain':toolchain_identity(sass_listings),'plan':plan,'arch':'sm_80',
               'opt_level':opt_level,'sass_listings':sass_listings}
     return hashlib.sha256(canonical(identity)).hexdigest(),identity
 

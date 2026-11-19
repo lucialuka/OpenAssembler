@@ -130,3 +130,13 @@ local spills and shared-memory limits together when counter access is available.
 Separate insufficient parallel work from memory latency and from launch/host
 overhead. Choose the next mechanism from that evidence rather than assuming
 more prefetching is the answer.
+
+## Existing model performance, November 19
+
+The separate [model campaign](../../exp/model_perf/RESULTS.md) narrows the next
+bottleneck to small-grid tensor blocks and serial bias-gradient rows. It admits
+exact model-only tile choices and deterministic reduction kernels after full
+training/replay checks. The coalesced transpose-pack candidate is slower and
+rejected. This evidence does not enlarge the global GEMM dispatch table or
+attribute a general win to coalescing. Whole-task and independently paired
+regions remain distinct from standalone kernel distributions.

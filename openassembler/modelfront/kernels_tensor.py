@@ -133,6 +133,8 @@ def emit_tensor_recipe(op, inputs, output, attrs=None):
         gm, gn, gk = n, k, m
     tile = "64x64" if gm % 128 or gn % 128 else "128x128"
     plan, decision = select_plan(GemmPlan(gm, gn, gk, "f16", tile=tile))
+    from .kernels_training import select_tensor_plan
+    plan, decision = select_tensor_plan(plan, decision)
     signature = {"op": op, "inputs": [list(shape_of(x)) for x in inputs], "output": list(out),
                  "math_mode": MATH_MODE, "cast_derivative": "straight_through_identity",
                  "plan": asdict(plan), "policy": decision["policy"]}

@@ -1,12 +1,28 @@
 # OpenAssembler architecture and status
 
-Updated **November 15, 2026**. This page describes the current source tree and
+Updated **November 19, 2026**. This page describes the current source tree and
 latest completed validation. The November 11 native GEMM replay supplies the
 current exact policy table; the separate November 7 native NN composition
 campaign remains experimental. Full command syntax is in [COMMANDS.md](COMMANDS.md);
 every researched feature has a dossier in the [catalogue](research/README.md).
 The cross-cutting reverse-engineering record is centralized in the
 [reverse-engineering results hub](reverse_eng_results/README.md).
+
+## November 19 model performance
+
+The [model performance campaign](../exp/model_perf/RESULTS.md) targets existing
+contracts rather than expanding coverage. Four exact small FP16 model products
+use 64x64 CTA tiles; two exact bias-gradient shapes use parallel row partials;
+the 128x128 MSE uses warp reduction with 1,024 threads. Full outputs, gradients,
+SGD state, poisoned replay and profiler ownership pass unchanged numerical gates.
+The transpose-pack candidate passes correctness but is slower and remains
+experimental. Binary-only cache identities no longer query nvdisasm; listing
+builds retain that dependency and all cache integrity checks remain enabled.
+Paired frozen/current OA training improves 1.835× for dense FP16, 1.32–1.33×
+for dense FP32, and 1.53–1.55× for projection inference on A100-SXM4-40GB.
+Launch counts stay unchanged. Fresh direct Triton and same-PTX ptxas controls
+remain faster. The report preserves paired whole-task and independent component intervals,
+current compiler controls and remaining gaps against Triton and ptxas.
 
 ## Repository compiler completeness and ongoing research
 

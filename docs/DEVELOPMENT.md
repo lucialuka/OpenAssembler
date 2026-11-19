@@ -282,3 +282,8 @@ they are regenerable disassembly, not required source. The bounded
 [FP16 BMM/attention campaign](../exp/attention_half/README.md) must pass independent
 operand rounding, all derivative orientations, batch/tails, changing inputs,
 workspace guards and OA-only launch checks before changing its dispatch.
+
+Binary-only model bundle caching (`sass_listings=false` / `--no-sass`) needs
+ptxas but does not query nvdisasm for its cache key. Listing builds still need
+nvdisasm. The [model performance checks](../exp/model_perf/README.md) exercise
+real misses, hits, changed weights and corrupt entries with disassembly absent.
