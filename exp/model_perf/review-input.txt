@@ -1,0 +1,66 @@
+Whole-task compiler comparison
+
+This is a fresh rerun of the frozen current-revision five-task benchmark, with three rounds of 15 shuffled samples. Each graph contains four resident steps; compilation, graph setup, transfers and CPU delivery are outside these kernel-stream intervals and are separately retained. All four arms pass four changed-input full-state gates; OA profiler category/name/count audits and guards pass. Values are median of the three within-worker round medians, in microseconds. Every speed ratio is `named comparator / OA`; >1 means OA is faster.
+
+| Task | OA µs | Direct Triton µs | Same-PTX ptxas µs | Manual PyTorch CUDA ops µs | OA/Triton speed ratio | OA/ptxas speed ratio |
+| --- | --- | --- | --- | --- | --- | --- |
+| tiny_regression | 68.74 | 47.22 | 39.46 | 79.77 | 0.687x | 0.574x |
+| dense_regression_fp32 | 225.96 | 99.62 | 92.24 | 116.24 | 0.441x | 0.408x |
+| dense_regression_fp16 | 235.95 | 61.74 | 153.18 | 245.93 | 0.262x | 0.649x |
+| attention_training | 219.96 | 181.93 | 152.86 | 331.32 | 0.827x | 0.695x |
+| projection_inference | 67.98 | 19.43 | 60.73 | 104.87 | 0.286x | 0.893x |
+
+OA remains 1.21–3.82x slower than direct Triton and 1.12–2.45x slower than the exact-PTX ptxas arm on these tasks. The direct Triton arm is a distinct operation compiler/schedule. The same-PTX arm compiles OA’s own PTX. The PyTorch CUDA-ops arm is a manually specified forward/reverse operator schedule, not stock module/autograd or a direct cuBLAS/cuBLASLt search. OA is faster than that manual operator arm in four of five tasks; dense FP32 training remains slower. No single “NVIDIA baseline” is formed.
+
+All five tasks report A100-SXM4-40GB, Torch 2.7.1+cu128 and Triton 3.3.1. This shipped experiment does not record GPU UUID/driver/tool versions in its result; those fields remain unavailable for this cohort. The independently authored model controls record the full environment. Cohorts and absolute times remain separate.
+
+## Equal CUDA-graph controls
+
+Fresh independent controls compare stock eager/autograd and torch.compile/Inductor to OA direct dispatch and TrainingReplay using identical FP32 models, seed, inputs, targets and plain SGD semantics. CUDA TF32 is disabled. Each arm passes four changing-input output/loss/input-gradient/parameter-gradient/updated-weight gates before timing; optimizer state is empty by contract. CUDA graph capture is also checked not to update parameters. Each arm advances the same number of steps.
+
+The following synchronized host medians include one resident step, host guards/submission and synchronization. They are from a separate A100-SXM4-40GB worker and cannot be pooled with the four-step kernel-stream table above. All are microseconds.
+
+| Contract | OA direct µs | OA replay µs | Eager CUDA graph µs | Inductor CUDA graph µs | OA replay speed ratio vs graph Inductor |
+| --- | --- | --- | --- | --- | --- |
+| attention_fp32 | 4688.75 | 357.26 | 259.84 | 215.78 | 0.604x |
+| mlp_fp32 | 1321.65 | 157.12 | 104.84 | 91.94 | 0.585x |
+
+Replay removes a large Python/driver submission cost (about 8–13x versus ordinary OA dispatch in this cohort). It also beats ordinary uncaptured eager/Inductor. Once the framework controls receive CUDA graphs too, OA remains slower: the three-round OA/graph-Inductor host ratios span 0.54–0.61x. Graph-captured eager is also faster. This narrows the remaining gap to kernels/composition and replay-side host guards, rather than treating graph replay as a compiler-throughput win.
+
+## FP16/tail/full-state checks and failures
+
+Independent fresh-process GPU cases include FP32 MLP, FP32 attention/LayerNorm/GELU, FP16-RNE MLP, FP16-RNE composed attention and an odd-tail 17x65 ->33 ->17 model. OA direct and replay pass all five with changed inputs, poisoned workspaces, immutable inputs/targets and exact profiler compute counts. The half eager comparator uses custom autograd with independent RNE casts for forward/dX/dW products; it is not ordinary mixed precision.
+
+| Case | OA direct gate | OA replay gate | Eager policy gate | Inductor policy gate | OA launches/step |
+| --- | --- | --- | --- | --- | --- |
+| attention_fp32 | passed | passed | passed | passed | 74 |
+| attention_half | passed | passed | passed | failed | 120 |
+| mlp_fp32 | passed | passed | passed | passed | 18 |
+| mlp_half | passed | passed | passed | failed | 32 |
+| tail_half | passed | passed | passed | failed | 28 |
+
+Three Inductor controls failed the half-policy gate and have no admitted timings: half MLP had 61/16,384 mismatches (max 6.19e-5 at atol 2e-5); half attention had 1/112 (max 2.41e-4 at atol 2e-4); tail half had 2/289 (max 2.89e-5 at atol 2e-5). These are failures of this independently transformed comparator path, not evidence that the OA production path failed. Their source, exact tracebacks and status rows are retained. Tolerances were not increased to admit them.
+
+The current example’s half attention already declares atol=0.0002, whereas the older stricter experimental trajectory failed at atol=0.00002. FP32 and half attention remain separate contracts. This review does not claim the stricter half trajectory or an FP16 Inductor speedup.
+
+### Fresh bounded BMM and attention sweeps
+
+The current integrated production campaign was also rerun, without patching OA execution. Nine BMM shape contracts pass forward/dX/dW reference checks, poisoned graph replay and guards: B/M/N/K = 1/1/1/1, 3/7/9/5, 2/17/33/65, 2/128/128/128, 4/129/67/31, 1/256/64/128, 32/2/5/3, 2/31/33/512 and 1/511/3/17. Across the FP32 and half controls their maximum absolute reference difference is 1.08e-6. The campaign’s grouped timing order is not used for a new cross-compiler performance claim.
+
+Four composed half-attention contracts (tiny, odd-tail, medium, full LayerNorm/GELU block) pass four changing-input direct updates plus three graph replays: 616 complete field checks in total, with 84 compute launches for tiny/tail/medium and 120 for the full block. The full block passes its declared atol=0.0002 but has **two elements outside atol=0.00002 at the same rtol=0.002**. This independently reproduces the documented stricter-precision limitation; it is not hidden by the passing wider gate. `attention/production-bmm-result.json` and `attention/production-attention-result.json` retain every field, tolerance and failure count.
+
+## Builds, real cache hits and amortization
+
+Each independent model performs an uncached binary-only build, a real persistent-cache miss into a new output, and a validated cache hit into a third output. The hit must invoke no backend, ptxas, splicing or disassembly stage. No listing is requested; source/plan/executable validation stays enabled. These are fresh-output builds, not a filesystem-cold OS or container claim.
+
+| Model | Uncached build ms | Cache miss ms | Validated hit ms | Miss/hit ratio | Full replay initialize/capture ms |
+| --- | --- | --- | --- | --- | --- |
+| attention_fp32 | 1694.2 | 1419.8 | 156.1 | 9.1x | 105.1 |
+| attention_half | 7274.7 | 8633.6 | 1671.1 | 5.2x | 1159.0 |
+| mlp_fp32 | 902.5 | 757.1 | 42.0 | 18.0x | 74.8 |
+| mlp_half | 8090.5 | 8447.0 | 627.6 | 13.5x | 505.5 |
+| tail_half | 4469.9 | 4814.3 | 550.5 | 8.7x | 411.7 |
+
+The cache gap is substantially reduced: the observed real hits are 42–1,671 ms depending on model complexity, versus 757–8,634 ms misses. Half-model hit validation/source-contract generation remains hundreds of milliseconds to over a second. Full replay initialization/capture adds roughly 75–1,159 ms in the first model cohort; it is separated from steady state. `build-stages.csv` records backend, same-PTX ptxas, packaging and validation. Model-cache corruption, donor exclusion and changed weights are covered by the original full test suite.
+
+The report exports `total_after_N_runs = build_time + startup_time + N * steady_state_time` for N=1/10/100/1,000/10,000/100,000 in `amortization.csv`. It includes measured worker-local capture/planning, bundle miss, runtime load and full replay capture; Inductor’s first call includes compilation and first execution. It excludes source transfer, queue/container/driver cold startup and some framework CPU setup, so this is a resident-path estimate, not a full-deployment break-even claim. Warm/cold Inductor cache behavior is not isolated into an independent empty-container trial.

@@ -111,9 +111,9 @@ def test_mse_unmeasured_or_rejected_sizes_keep_the_serial_policy(size):
 
 def test_parallel_mse_is_limited_to_the_measured_16k_contract():
     kernel = emit_kernel('mse', [spec(128,128)]*2, spec())
-    assert kernel.name.startswith('oa_parallel_mse_')
-    assert kernel.threads == 256 and kernel.grid == (1,1,1)
-    assert '.shared .align 4 .b8 smem[1024];' in kernel.ptx
+    assert kernel.name.startswith('oa_warp_mse_')
+    assert kernel.threads == 1024 and kernel.grid == (1,1,1)
+    assert '.shared .align 4 .b8 partials[128];' in kernel.ptx
     assert 'add.rn.f32' in kernel.ptx
     assert emit_kernel('mse', [spec(16385)]*2, spec()).threads == 1
     assert emit_kernel('mse', [spec(64,256)]*2, spec()).threads == 1

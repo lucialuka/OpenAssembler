@@ -274,3 +274,13 @@ has a declared `rtol=0.002, atol=0.0002` trajectory gate. Its earlier failure un
 `atol=0.00002` is preserved; isolated products retain the tighter gate. This is
 not an exact match to arbitrary autocast trajectories, fused/masked attention,
 KV-cache half support, or a performance claim over NVIDIA/Triton.
+
+## Exact model performance follow-up, November 19
+
+[The performance campaign](../../../exp/model_perf/RESULTS.md) admits small CTA
+tiles for four FP16 full-tile products, parallel bias gradients for 128x128 and
+128x256, and a warp-based 128x128 MSE. Precision and complete training gates are
+unchanged; reduction association is checked under the existing FP32 tolerance.
+Other shapes retain their existing policies. The transpose-pack alternative
+remains unselected. Binary-only persistent-cache lookup now excludes nvdisasm;
+listing builds still bind it, and hits retain complete artifact validation.
