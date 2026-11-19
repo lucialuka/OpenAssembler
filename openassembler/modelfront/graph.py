@@ -16,6 +16,17 @@ class ModelGraphError(ValueError):
     """The model is outside the admitted native graph contract."""
 
 
+def _node_error(node, message):
+    import re
+    frames = re.findall(r'File "([^"]+)", line (\d+), in ([^\n]+)', node.meta.get('stack_trace', ''))
+    own = Path(__file__).resolve()
+    for filename, line, function in reversed(frames):
+        normalized = filename.replace('\\', '/')
+        if '/torch/' not in normalized and Path(filename).resolve() != own:
+            return f'{filename}:{line} in {function}: {message}'
+    return message
+
+
 def _torch():
     try:
         import torch
@@ -134,7 +145,9 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
                     [*captured.named_parameters(), *captured.named_buffers()]}
     try:
         # Never execute shape propagation against the caller's mutable state.
-        traced = torch.fx.symbolic_trace(captured)
+        tracer = torch.fx.Tracer()
+        tracer.record_stack_traces = True
+        traced = torch.fx.GraphModule(captured, tracer.trace(captured))
     except Exception as exc:
         import traceback
         frames = [frame for frame in traceback.extract_tb(exc.__traceback__)
@@ -164,12 +177,14 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         elif node.op == "call_method":
             supported = node.target in methods
         if not supported:
-            raise ModelGraphError(f"unsupported native model node {node.format_node()}")
+            raise ModelGraphError(_node_error(node, f"unsupported native model node {node.format_node()}"))
     try:
         from torch.fx.passes.shape_prop import ShapeProp
         with torch.no_grad():
             ShapeProp(traced).propagate(*(x.detach().clone() for x in example_inputs))
     except Exception as exc:
+        # ShapeProp retains the failing node in its error. Its stack_trace now
+        # also identifies the user's call site, including call_module nodes.
         raise ModelGraphError(f"CPU model shape propagation failed: {exc}") from exc
     for name, value in [*captured.named_parameters(), *captured.named_buffers()]:
         if name not in before_state or not torch.equal(value.detach(), before_state[name]):
@@ -193,7 +208,7 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
     serial = 0
 
     def fail(node, reason):
-        raise ModelGraphError(f"{reason}; native model node {node.format_node()}")
+        raise ModelGraphError(_node_error(node, f"{reason}; native model node {node.format_node()}"))
 
     def shape(node):
         meta = node.meta.get("tensor_meta")

@@ -2,6 +2,12 @@
 
 Status: implemented
 
+Unsupported FX nodes and later semantic/shape checks now include the user
+forward file and line through recorded trace stacks. See
+[semantic diagnostics](../../compiler/semantic-acceptance.md) and
+[the supplied CPU coverage matrix](../../compiler/coverage-priorities.md) for
+the explicit admission and evidence limits; no new operator is implied.
+
 The native model route captures a CPU `torch.nn.Module` factory with explicit
 input shapes, lowers supported FX nodes and their derivatives to an OA launch
 plan, and builds executable SM80 SASS/cubins through the native backend. CUDA

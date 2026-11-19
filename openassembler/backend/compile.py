@@ -97,6 +97,13 @@ class Compiler:
         return self.code
 
     def select(self, ins: Instr) -> None:
+        from .contracts import ContractError, validate_scalar
+        try:
+            validate_scalar(ins)
+        except ContractError as exc:
+            raise NotSupported(f'PTX line {ins.line}: {exc}') from None
+        if 'sat' in ins.mods or 'ftz' in ins.mods:
+            raise NotSupported('legacy selector cannot implement sat/ftz; use production register-allocated backend')
         op, m, a = ins.op, ins.mods, ins.args
         t = next((x for x in m if x[:1] in ("s", "u", "b", "f") and x[1:].isdigit()), None)
         if op == "ld" and "param" in m:

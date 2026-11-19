@@ -1,0 +1,47 @@
+........................................................................ [  6%]
+........................................................................ [ 13%]
+........................................................................ [ 20%]
+.................................................F...................... [ 26%]
+........................................................................ [ 33%]
+........................................................................ [ 40%]
+........................................................................ [ 47%]
+........................................................................ [ 53%]
+.................................................................s...... [ 60%]
+...................ss................................................... [ 67%]
+........................................................................ [ 74%]
+........................................................................ [ 80%]
+........................................................................ [ 87%]
+........................................................................ [ 94%]
+.....................ss....................................              [100%]
+=================================== FAILURES ===================================
+____________________ test_emulator_matches_ptx[div.rn.f32] _____________________
+
+probe = 'div.rn.f32'
+
+    @needs_corpus
+    @pytest.mark.parametrize("probe", GATE)
+    def test_emulator_matches_ptx(probe):
+        kname = ptx_probes.kernel_name(probe)
+        sass = (CORPUS / "sass" / f"{kname}.sass").read_text()
+        ptx = (CORPUS / "ptx" / f"{kname}.ptx").read_text()
+        rng = random.Random(hash(probe) & 0xFFFF)
+        checked = 0
+        for _ in range(3):
+            inputs = [tuple(diff_emu.rand32(rng) for _ in range(4)) for _ in range(32)]
+            k, kf = diff_emu.rand32(rng), diff_emu.rand32(rng)
+            got = run_probe(sass, inputs, k, kf)
+            exp = diff_emu.run_ptx(ptx, kname, inputs, k, kf)
+            for t, (g, (e, undef, approx)) in enumerate(zip(got, exp)):
+                if undef:
+                    continue
+                checked += 1
+>               assert diff_emu.same(probe, g, e, approx), (probe, t, [hex(x) for x in inputs[t]], g, e)
+E               AssertionError: ('div.rn.f32', 20, ['0x8147ec48', '0x21dea823', '0x2bae9e99', '0xc5bae70c'], (2665864348, 3317360396), (2665864349, 3317360396))
+E               assert False
+E                +  where False = <function same at 0x103560e00>('div.rn.f32', (2665864348, 3317360396), (2665864349, 3317360396), False)
+E                +    where <function same at 0x103560e00> = diff_emu.same
+
+tests/test_emu.py:87: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_emu.py::test_emulator_matches_ptx[div.rn.f32] - AssertionEr...
+1 failed, 1061 passed, 7 skipped in 192.76s (0:03:12)

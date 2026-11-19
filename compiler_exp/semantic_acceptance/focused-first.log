@@ -1,0 +1,44 @@
+.................ss..................................................... [ 35%]
+..................................s..................................... [ 70%]
+............................................................F            [100%]
+=================================== FAILURES ===================================
+_______ test_native_fused_bias_residual_relu_matches_full_integer_oracle _______
+
+    def test_native_fused_bias_residual_relu_matches_full_integer_oracle():
+        from openassembler.backend.tensor import generate as compile_tensor
+        from openassembler.emu.machine import Launch,Machine,Memory
+        from openassembler.emu.program import load_listing
+        from tests.backend_harness import listing
+    
+        plan=GemmPlan(128,128,128,"f16",epilogue="bias_residual_relu")
+        kernel=parse_module(generate(plan)).kernels["gemm"]
+>       code,labels,words,exits,registers=compile_tensor(kernel,"sm_80","safe")
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_gemm_codegen.py:305: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/backend/tensor.py:449: in generate
+    ops = ra.coalesce(ra.dce(selector.run()))
+                             ^^^^^^^^^^^^^^
+openassembler/backend/ra.py:285: in run
+    self.select(ins)
+openassembler/backend/tensor.py:156: in select
+    return super().select(ins)
+           ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.backend.tensor.TensorSelector object at 0x102d76a50>
+ins = Instr(op='ld', mods=('global', 'v2', 'f32'), args=[Vec(elems=(Var(name='%fBias0'), Var(name='%fBias1'))), Addr(base='%d33', off=0)], guard=None, line=906)
+
+    def select(self, ins: Instr) -> None:
+        from .contracts import ContractError, validate_scalar
+        try:
+            validate_scalar(ins)
+        except ContractError as exc:
+>           raise NotSupported(f'PTX line {ins.line}: {exc}') from None
+E           openassembler.backend.ra.NotSupported: PTX line 906: unsupported PTX contract ld.global.v2.f32: modifiers/types have no faithful scalar lowering
+
+openassembler/backend/ra.py:295: NotSupported
+=========================== short test summary info ============================
+FAILED tests/test_gemm_codegen.py::test_native_fused_bias_residual_relu_matches_full_integer_oracle
+1 failed, 201 passed, 3 skipped in 89.51s (0:01:29)

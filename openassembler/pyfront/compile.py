@@ -1155,8 +1155,36 @@ def _ident(name: str, what: str, node: ast.AST) -> str:
     return name
 
 
+def _check_shared_producers(fdef, names):
+    """Reject shared reads with no possible store anywhere in the kernel.
+
+    This proves a narrow missing-producer bug, not temporal initialization or
+    race freedom. An unknown write index can cover any slot and is not rejected.
+    """
+    arrays, writes = set(), {}
+    for node in ast.walk(fdef):
+        if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+                and names.resolve(node.value.func) == 'pf.shared_array'):
+            arrays.update(t.id for t in node.targets if isinstance(t, ast.Name))
+    for node in ast.walk(fdef):
+        if (isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Store)
+                and isinstance(node.value, ast.Name) and node.value.id in arrays):
+            index = _const_value(node.slice)
+            writes.setdefault(node.value.id, []).append(index if type(index) is int else None)
+    for node in ast.walk(fdef):
+        if (isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Load)
+                and isinstance(node.value, ast.Name) and node.value.id in arrays):
+            name = node.value.id
+            possible = writes.get(name, [])
+            index = _const_value(node.slice)
+            if not possible or (type(index) is int and None not in possible and index not in possible):
+                raise NotSupported(f"shared_array {name!r} read has no possible writer"
+                                   + (f" for index {index}" if type(index) is int else ''), node)
+
+
 def _compile_entry(fdef: ast.FunctionDef, names: _Names, arch: str) -> str:
     """One `.visible .entry` (no module header) for a kernel FunctionDef."""
+    _check_shared_producers(fdef, names)
     if isinstance(fdef, ast.AsyncFunctionDef):
         raise NotSupported("async kernels are not supported", fdef)
     a = fdef.args

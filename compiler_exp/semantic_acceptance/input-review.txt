@@ -1,0 +1,117 @@
+# OpenAssembler: current coverage gap review
+
+Reviewed 19 November 2026, revision `91e3f94f4f723a95bf9582bd2f6c9c3fd3cab0e3`. The original working tree was clean. All added tests, packages, caches, reports and remote payloads live in this external review directory. Production source was neither patched nor instrumented.
+
+The checkout later acquired concurrent `exp/model_perf/` additions outside this review's commands. They were preserved. The final baseline check found concurrent changes to `exp/ml_suite/RESULTS.md`. No production compiler module changed in that check. The starting audit manifest contains 11,541 files; the final working tree is no longer clean. [baseline-integrity.json](baseline-integrity.json) records the final baseline check, separately from the earlier whole-tree [source-integrity.json](source-integrity.json). Conclusions concern the frozen revision and source hashes, not subsequently created experiments or concurrently revised research results.
+
+**Assessment:** OpenAssembler is a bounded SM80 compiler with a typed Python kernel language and a small exact-shape model compiler. It is far from arbitrary Python/CUDA/PTX coverage. There are both missing semantics and accepted PTX forms that produce incorrect native results. More exact GEMM tuning does not close these compatibility gaps.
+
+## Fresh evidence
+
+| Check | Result | Meaning |
+|---|---|---|
+| Local production suite | 1021 passed, 1 failed, 58 skipped / 1080 | Python 3.13, local Torch 2.15.0; CUDA-dependent paths unavailable. The failure is a cache test's unconditional `ptxas --version`, not a demonstrated cache defect. |
+| Pinned Linux/CUDA production suite | 1076 passed, 4 failed, 0 errors, 0 skipped | Torch 2.7.1, CUDA 12.8; CPU compiler/toolkit suite, not a whole-workload GPU benchmark. |
+| Experimental suite plus whole-repo transformer test module | 287 passed | External Modal 1.6.2 dependency resolved the initial collection failure. Passing tests do not establish arbitrary compiler coverage. |
+| New capability probes | 69 cases: 12 accepted, 55 unsupported, 2 failed | Selected boundaries and controls, never a real-world success-rate estimate. Accepted means the stated capture/encoding stage succeeded. |
+| New independent semantic tests | 18 passed, 6 failed / 24 | Direct mathematical expectations, the repository PTX interpreter and encoded-SASS emulator; clean and poisoned registers. |
+| A100 confirmation | 8 contracts, 48 launches; OA 18 incorrect / 24, same-source ptxas 24 correct / 24; all guards intact | Six failing contracts and two passing controls, each with three output poison patterns per compiler. |
+| PTX syntax controls | All 35 SM80 fixtures accepted by CUDA 12.8 ptxas | Rejected OA SM80 probes are genuine accepted PTX, rather than typos in the tests. Two architecture probes were intentionally not assembled as SM80. |
+
+Hardware was **NVIDIA A100 80GB PCIe**, CC 8.0, 108 SMs, driver API version 13030. Worker Torch is 2.7.1+cu128; CUDA runtime 12.8; ptxas 12.8.61. This device differs from earlier SXM4 measurements: no absolute times are pooled. This run makes no new performance claim. Full tool versions, source and cubin hashes, launch results and resources are preserved in [hardware-results.json](hardware-results.json) and [hardware-artifacts.zip](hardware-artifacts.zip).
+
+The pinned suite's four production failures are separate from the six new compiler-semantic failures. Two came from this review's reduced payload omitting `testcases/test_whole_repo` and `exp/weaknesses/bf16_verification.py`; the missing fixtures exist in the original and frozen source. The dedicated fixture recheck result is **2 passed, 0 failed, 0 errors, 0 skipped**. Two other failures exercise welcome/color rendering with a closed captured stdout stream. The isolated welcome-module recheck is **4 passed, 1 failed, 0 errors, 0 skipped**. The original full-run failures are preserved rather than replaced by isolated results.
+
+## Priority correctness defects
+
+### P1: integer saturation is silently discarded
+
+`add.sat.s32` and `sub.sat.s32` reach the ordinary integer selector, which emits `IADD3` without saturation and without rejecting `.sat`. See [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:675).
+
+| Contract | Correct signed result / ptxas | OA on A100 |
+|---|---:|---:|
+| `INT_MAX + 1`, signed saturating add | 2147483647 | -2147483648 |
+| `INT_MIN + (-1)`, signed saturating add | -2147483648 | 2147483647 |
+| `INT_MAX - (-1)`, signed saturating sub | 2147483647 | -2147483648 |
+| `INT_MIN - 1`, signed saturating sub | -2147483648 | 2147483647 |
+
+Both independent CPU interpretation and same-source ptxas hardware agree with the expected saturated value. OA-native executable words were checked against the cubin before launch. All four failures reproduce for three poison patterns; a nonoverflowing saturating-add control passes. This is a compiler correctness defect, not merely unsupported coverage.
+
+### P1: floating predicate flush-to-zero is silently discarded
+
+`setp.ftz.eq.f32` reaches `setp()`, which emits `FSETP.EQ.AND` without `.FTZ`. See [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:537). Positive and negative minimum FP32 subnormals should compare equal to zero under this contract. Same-source ptxas returns 1; OA returns 0, for both signs and all poison patterns. The corresponding comparison without `.ftz` correctly returns 0.
+
+**Consequence:** the frontend/parser/backend acceptance ledger needs to track complete opcode + modifier + type + operand + memory/synchronization contracts. Mnemonic support, parser acceptance and valid instruction encoding do not by themselves establish semantic support. Unsupported modifiers must either receive faithful lowering or a hard rejection. Full build packaging does not repair an incorrect encoded instruction sequence. This review leaves both defects unchanged, as requested.
+
+### P2: CLI color detection can retain a closed stdout object
+
+[supports_color](/Users/lucasfang/Desktop/OpenAssembler/openassembler/ui/colors.py:13) binds `sys.stdout` as a default argument at import time. Importing it under a temporary redirected stdout, closing that stream and calling it afterward raises `ValueError: I/O operation on closed file`. A fresh-process standard-library reproducer confirms this independently of pytest; see [closed-stream-reproducer.json](closed-stream-reproducer.json). The two pinned full-suite welcome failures hit the same line. This is a CLI embedding/capture robustness issue, separate from GPU capability coverage.
+
+## Coverage relative to the stated goal
+
+| Layer | What currently works | Remaining gap and representative evidence |
+|---|---|---|
+| Python GPU kernel language | Explicit `@kernel`, `i32/u32/f32`, flat typed arrays, arithmetic, indexing, if/while, nested range loops, selected math intrinsics, static shared arrays and block barrier | No general Python objects, containers, exceptions, helper/function calls, arbitrary library calls, untyped code, FP64/BF16/FP16 language types, or variable `range` steps. Python integers wrap at 32 bits, floating operations round to FP32, and Python exception/indexing semantics differ. Typed data-dependent `while` **does** work. |
+| Model capture | CPU FX capture of bounded Linear/ReLU/tanh-GELU/softmax/LayerNorm, add/mul, reshape/permutation, concat and matrix products; symbolic derivatives and explicit native plans | Sigmoid, convolution, pooling, embedding, dropout, general reductions, tensor slices, bias broadcasting, exact GELU and tensor-dependent Python branches reject in fresh probes. No general ATen/export/dispatch semantic coverage. |
+| Model types, layouts and dimensions | Positive exact shapes, contiguous CPU FP32 examples/state; declared FP16-rounded-operand/FP32-accumulation option for products | Actual FP16/BF16/FP64 model storage, integer embeddings, arbitrary strides, empty inputs and symbolic shapes reject. Softmax/LayerNorm widths 1024 pass; 1025 reject. Model buffers have a 16,777,216-element admission cap. Low-level BF16 tensor MMA support does **not** imply BF16 model support. |
+| Training and effects | Supported symbolic backwards; MSE and plain SGD with FP32 master state; fixed-storage replay and ownership checks | Cross-entropy, Adam/AdamW/momentum state, arbitrary host training logic, RNG/dropout progression, general mutation/alias semantics and checkpoint-resume equivalence are not provided by the native model route. An explicit example kernel for an optimizer is not automatic optimizer support. |
+| CUDA language frontend | `nvcc --ptx` on individual translation units, explicit includes/flags | OA uses nvcc's source frontend. Generated PTX must still fit OA's backend. No general device-call ABI/linker, cross-file device linking, extension registration/host launch rewriting or complete CMake/package build graph. Forced nvcc inlining can avoid some calls; it does not establish call support. |
+| Repository/application execution | Static source/model discovery, bounded inferred inference configuration, source bundling and local/SSH/Modal transport | Real preprocessor/build configuration, generated sources, native/package dependency closure, arbitrary host entrypoints, custom-op integration and unseen runtime-generated code remain open. Compiling every discovered GPU file separately does not integrate it into an application. |
+| PTX entry and parameter handling | Balanced bare/visible/weak entries, inventory reconciliation and selected launch directives are repaired | ABI still accepts only explicit scalar 32/64-bit parameters. Aggregate-by-value arrays and `.ptr .global` annotated pointer parameters reject. Discovery follows bounded local quoted includes; no actual preprocessor/build-graph evaluation. |
+| Scalar PTX arithmetic | Useful 32-bit integer/FP32 subset, pointer and selected 64-bit operations, selected arithmetic fragments | Fresh accepted-by-ptxas probes reject FP64 add, scalar FP16 add, general 64-bit multiply and variable shifts. Even valid accepted forms can mishandle semantics, as saturation/FTZ demonstrate. The emulator's broader vocabulary is not the compiler's vocabulary. |
+| PTX memory/concurrency | Supported global/shared loads/stores, one block-barrier form, one full-warp butterfly-shuffle form | Atomics/CAS/reductions, fences/acquire/volatile loads, local/constant-memory lowering, general warp collectives/shuffles/barriers are incomplete. `ld.global.v4.u32` passes, while valid `v2` loads, byte stores and scalar 64-bit stores reject. Memory width support is uneven. |
+| Calls and allocation | Entry-local lowering, register/predicate allocation | Device function call rejects; no general call stack/device linker. A valid 260-live-value load/store probe rejects as out of registers. No spilling, and `.maxnreg` cannot trigger a spill strategy. |
+| Tensor instructions | Dense SM80 `mma.sync.aligned.m16n8k16.row.col.f32.f16/bf16.f16/bf16.f32`, selected LDSM and async-copy paths | TF32/other MMA shapes, sparse/integer/other tensor forms and wider synchronization semantics are not general lowerings. Async copy is restricted to unguarded 16-byte `.cg`, commits and waits 0/1/2; valid 4-byte `.ca` and wait-group 3 reject. |
+| Architecture and encoding | SM80 encoding/templates and A100 execution evidence | SM86 and SM90 probes reject: no encoder data. No validated general native backend across NVIDIA architectures. Adding a target flag cannot provide a different architecture's ISA, scheduling and resource model. |
+| Cubin/toolchain independence | OA encodes executable SASS and checks executable ownership after splicing | Ordinary builds still use ptxas for the reference and donor ELF cubin, then replace kernel text. CUDA uses nvcc, and disassembly uses nvdisasm. A fully independent assembler/object writer/linker/container toolchain is not implemented. |
+| Efficient code across workloads | Exact measured GEMM/rowwise policies, scalar scheduling and bounded packing/reuse/fusion | Installed GEMM dispatch has 44 exact contracts, 36 nonbaseline selections and 8 baseline retentions. Unknown contracts use the baseline; these are optimization cases, not 44 universal supported operations. General tails/layouts/batching/fusion, shape-general cost modelling, scheduling and launch/packing overhead remain gaps. |
+
+Core source anchors: [Python semantics](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:17); [model whitelist](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:145); [training contract](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:599); [nvcc frontend](/Users/lucasfang/Desktop/OpenAssembler/openassembler/cppfront.py:73); [tensor restrictions](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/tensor.py:194); [allocation failure](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:941); [ptxas donor and splicing](/Users/lucasfang/Desktop/OpenAssembler/openassembler/build.py:638); [target encoder](/Users/lucasfang/Desktop/OpenAssembler/openassembler/isa/encode.py:115). The current [roadmap](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/research-plan.md:10) agrees that build integration, framework effects, calls, atomics, spilling and dynamics remain workstreams.
+
+Precision is itself a coverage boundary. The model plan excludes NaN/Inf and overflowing intermediates. Its half-rounded product mode declares a straight-through input cast and independent operand rounding in backward products; that is a separate contract from strict FP32 or generic AMP. The Python kernel language also uses approximate exp/log/tanh/rsqrt intrinsics and fixed-width numerical semantics. Comparators need those exact policies, not a shared dtype label alone. See [declared numerical domain](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:180).
+
+## What changed since the earlier review
+
+The older bare/weak-entry and launch-header omission findings should not be presented as current defects: they were repaired. Current source also has broader inference discovery, half-rounded BMM/attention recipes and two more admitted exact GEMM routes. These remain bounded features. Native composed attention is unmasked; fused/causal/masked attention is outside that contract.
+
+The previous statement that model reports have no compile-phase breakdown is now too broad. [The worker](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/worker.py:322) reports CPU factory, capture/autodiff, storage planning and native bundle/weights time. It still combines PTX emission, backend generation, ptxas, packaging, disassembly and cache validation within aggregate bundle work. Per-kernel GPU timing distributions and a complete queue/startup/transfer/archive timeline remain absent from the standard report. `host_step_ms`, stream elapsed samples, launch ledgers, profiler audits and zero-vendor-compute reporting are useful existing pieces.
+
+Historical performance evidence must keep comparator meanings separate. The retained 42-contract campaign reports OA slower than same-PTX ptxas in every nominal-selected comparison, despite improving OA's own baseline. Its ptxas ratios concern nominal selections, which can differ from the frozen installed policy. cuBLAS results used a particular GemmEx call, not exhaustive cuBLASLt tuning. Earlier Triton/Inductor/eager results and the two newer exact-policy admissions have different contracts/devices and do not establish a current universal speed claim. See [comparison scope](/Users/lucasfang/Desktop/OpenAssembler/exp/dispatch_tuning/RESULTS.md:67) and [new admissions](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/memory-latency.md:89).
+
+For the full requested report contract, remaining work includes standardized stage timers, per-kernel randomized raw samples, resource/launch/fusion accounting, exact model-wide comparator semantics, correctness gates before timing and compile amortization `build + startup + N * steady_state`. Unsupported rows must stay outside performance aggregates. No failed candidate in this review was timed.
+
+## Test coverage is not capability coverage
+
+| Probe family | Cases | Accepted at stated stage | Unsupported | Incorrect |
+|---|---:|---:|---:|---:|
+| ptx | 32 | 4 | 26 | 2 |
+| target | 2 | 0 | 2 | 0 |
+| tensor | 3 | 2 | 1 | 0 |
+| python | 10 | 2 | 8 | 0 |
+| model | 22 | 4 | 18 | 0 |
+
+The hand-picked set deliberately stresses missing features. There is no defensible percentage of arbitrary Python, CUDA or PTX coverage from these counts: that needs a declared language/version/architecture domain and an independently chosen workload corpus. A thousand passing regression tests can coexist with an unsupported basic operator and a missed modifier-semantic defect. Passing CPU graph algebra also does not establish full-output, gradient, optimizer-state or performance equivalence on a GPU.
+
+There is a distribution/evidence gap as well: `.gitignore` excludes `compiler_exp/` and `docs/compiler/research-plan.md`, even though maintained docs link to them. The live working-tree doc checker passes 149 Markdown files, but the Git-based review snapshot fails 17 link/directory checks. Sixteen point to those omitted paths; one points to an omitted historical `runs/` directory. This separates locally retained evidence from what Git/Homebrew source archives can reproduce. See [.gitignore](/Users/lucasfang/Desktop/OpenAssembler/.gitignore:64) and the two documentation logs. This is separate from native ISA coverage.
+
+## Suggested order for closing the gap
+
+1. **Make acceptance semantically reliable.** Fix or reject saturation and predicate FTZ; inventory complete modifier/type/operand contracts and retain independent NVIDIA acceptance controls and A100 tests. Keep unsupported, invalid, failed and unverified distinct.
+2. **Complete a declared device target.** Prioritize SM80 atomics/order, device calls/linkage, local memory/spilling, parameter ABI and missing scalar/tensor types/forms. Test kernels emitted by nvcc from independent CUDA/CUTLASS-style inputs, not just OA-generated PTX.
+3. **Make real applications executable.** Resolve original build/dependency/extension/launch contracts and preserve CPU host work. Extend normalized framework operators, layouts/broadcasting, dtypes, RNG/effects, dynamic guards, losses and optimizer state. Add independent CNN/transformer/custom-extension applications with full state and checkpoint gates.
+4. **Generalize efficiency after correctness.** Add shape/layout coverage, fallback lowerings, fusion/packing/launch planning and measured scheduling/cost models. Compare exact PTX against ptxas, complete models against Triton/Inductor/eager and matching GEMMs against explicitly tuned/untuned libraries. Keep GPU variants and toolkit environments separate.
+5. **Expand architecture and toolchain independence explicitly.** New encoders/ABIs/resource models need their own conformance and hardware evidence. An independent cubin/linker path is a different milestone from OA ownership of replaced kernel text.
+
+“Everything” needs a precise boundary: all valid device kernels for declared targets and language semantics is a concrete conformance goal. Arbitrary Python host objects, I/O and dependency execution also need a CPU/runtime contract. Unknown generated code needs an explicit runtime specialization policy. Semantic completeness and efficient output across workloads need separate acceptance criteria; universal speed superiority cannot follow from source acceptance.
+
+## Reproduction and retained files
+
+- [probe_coverage.py](probe_coverage.py), [coverage-results.json](coverage-results.json), [fixtures/](fixtures/): exact capability probes and diagnostics.
+- [test_ptx_semantic_boundaries.py](test_ptx_semantic_boundaries.py), [semantic.xml](semantic.xml): 24 independent tests, six expected regression failures on current source.
+- [gpu_confirm.py](gpu_confirm.py), [hardware-cases.json](hardware-cases.json), [hardware-results.json](hardware-results.json), [hardware/](hardware/): same-source builds, disassembly, native/reference cubins, hardware checks and hashes.
+- [production.log](production.log), [experiments-final.log](experiments-final.log), [suite-remote/](suite-remote/): test outcomes, infrastructure limitations and pinned recheck when completed.
+- [docs-current-working-tree.log](docs-current-working-tree.log), [docs.log](docs.log): live-tree versus snapshot documentation checks.
+- [source-before.json](source-before.json), [source-integrity.json](source-integrity.json), [ignored-evidence/](ignored-evidence/): source identities, unchanged-source check and preserved current ignored research evidence.
+- [summary.json](summary.json): machine-readable aggregate. Earlier failed harness/setup attempts remain in their original logs; later passing runs do not erase them.
+
+From this directory, use `/Users/lucasfang/Desktop/OpenAssembler/.env/bin/python -B probe_coverage.py`, then `.../python -B run_suite.py -q ../test_ptx_semantic_boundaries.py`; the latter intentionally fails on the unfixed defects. `modal run gpu_confirm.py` performs the independent A100 comparison; `modal run gpu_confirm.py --mode suite` runs the pinned production/semantic suites. Dependency packages and snapshot writes stay here. Run `.../python -B snapshot.py --verify` to recheck original source identities.
