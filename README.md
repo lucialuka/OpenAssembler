@@ -149,13 +149,9 @@ LayerNorm support row/column tails and measured CTA geometry. See
 
 ## How it works
 
-```mermaid
-flowchart LR
-    A[Repository] --> B[Model capture or kernel discovery]
-    B --> C[OpenAssembler native backend]
-    C --> D[SASS and cubins]
-    D --> E[Local / SSH / Modal]
-```
+<p align="center">
+  <img src="figs/OA_Frontend_S0.png" width="820" alt="OpenAssembler">
+</p>
 
 OpenAssembler lowers supported operations to PTX, selects native instructions,
 allocates registers, schedules dependencies, and encodes SM80 machine words.
