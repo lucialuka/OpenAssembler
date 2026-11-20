@@ -2,6 +2,11 @@
 
 Status: implemented
 
+The [source diagnostics contract](../../compiler/semantic-acceptance.md) now
+rejects shared-memory reads with no possible producer, alongside existing
+literal bounds/zero-division and divergent-barrier checks. This does not provide
+general runtime bounds, temporal initialization or race analysis.
+
 A defined numeric subset of Python compiles to PTX
 and then native OpenAssembler SM80 instructions. This is not general Python,
 NumPy or PyTorch compilation.

@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "completed_utc": "2026-11-15T05:37:07.856699+00:00",
+  "scope": "Entry/ABI/discovery repair, unchanged incumbent binary streams, two admitted exact native GEMM policies; not whole-program compilation",
+  "base_git_head": "de5075045e43f3820319fd3eb65154f81f3a133a",
+  "checks": [
+    {
+      "name": "full_suite",
+      "command": ".venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "outcome": "1028 passed, 5 skipped in 207.17s (0:03:27)",
+      "log": "compiler_exp/repository_coverage/full-suite-installed.log",
+      "log_sha256": "ded0855b798205b2bf211a6eb724cb9f91bdb064375586943ab616a6e13877b2"
+    },
+    {
+      "name": "entry_tests",
+      "command": ".venv/bin/python -m pytest -q tests/test_ptx_entries.py",
+      "exit_code": 0,
+      "outcome": "24 passed in 4.97s",
+      "log": "compiler_exp/repository_coverage/entry-tests-final.log",
+      "log_sha256": "238a03944e5c2bb2cf038cf6df82c703a8c33eaaaf8e429181b31459eaecd68c"
+    },
+    {
+      "name": "cpu_torch",
+      "command": "PYTHONPATH=.venv/lib/python3.14/site-packages:. .env/bin/python -m pytest -q tests/test_model_graph.py tests/test_torchfront_numerics.py tests/test_model_discovery.py",
+      "exit_code": 0,
+      "outcome": "75 passed in 2.92s",
+      "log": "compiler_exp/repository_coverage/cpu-torch-regression.log",
+      "log_sha256": "cadf24423123dfc3cf7788321f70a2c2fb9771bdba2d25a548b4b8e59b4da08c"
+    }
+  ],
+  "evidence": {
+    "compiler_exp/repository_coverage/a100-entries-20261115T051000Z.json": {
+      "sha256": "3f9374c234475d120a1cd167c422fbfbe56a536c18b7e5e08bfbd5944c1240fa",
+      "bytes": 5064
+    },
+    "compiler_exp/repository_coverage/entry-artifacts.zip": {
+      "sha256": "115b42f886d6eaf7a43e9f7e95f94f9ca61656760b54ed15243ca0936d670c77",
+      "bytes": 12317
+    },
+    "exp/native_indexing/dispatch-continuity-20261115T053430Z.json": {
+      "sha256": "d4cc8eed5d80a4cba1368f93b84b2ee067737f30de9d1ff3b3660f4edeffb839",
+      "bytes": 648219
+    },
+    "compiler_exp/latency_hiding/runs/admission-20261115/promotion-decisions.json": {
+      "sha256": "f7d4962648c31d217a5b05359303dae61979c76ac52f479775253e832a1b4616",
+      "bytes": 21823
+    }
+  },
+  "limitations": [
+    "Five full-suite skips remain explicit",
+    "Separate CPU graph tests use local Torch 2.15.0",
+    "GPU validation/timing uses pinned Torch 2.7.1; actual A100-SXM4-80GB",
+    "New timing excludes application host work, transfers, packing, backward and optimizer",
+    "General build/link graph, CPU application packaging, custom launch integration and broader operator/dynamic coverage remain open"
+  ]
+}

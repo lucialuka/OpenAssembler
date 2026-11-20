@@ -282,12 +282,22 @@ class Selector:
                 if p not in self.env or not isinstance(self.env[p], PV):
                     raise NotSupported(f"guard on undefined predicate {p}")
                 self.cur_guard = (self.env[p], neg)
-            self.select(ins)
+            try:
+                self.select(ins)
+            except NotSupported as exc:
+                if str(exc).startswith('PTX line '):
+                    raise
+                raise NotSupported(f'PTX line {ins.line} ({ins.op}.{".".join(ins.mods)}): {exc}') from None
         for name in lab_at.get(len(self.k.body), []):
             self.emit("", label=name)
         return self.ops
 
     def select(self, ins: Instr) -> None:
+        from .contracts import ContractError, validate_scalar
+        try:
+            validate_scalar(ins)
+        except ContractError as exc:
+            raise NotSupported(f'PTX line {ins.line}: {exc}') from None
         op, m, a = ins.op, ins.mods, ins.args
         t = next((x for x in m if x[:1] in ("s", "u", "b", "f") and x[1:].isdigit()), None)
         if op == "ld" and "param" in m:
@@ -546,10 +556,26 @@ class Selector:
             ty = ".U32" if t in ("u32", "b32") else ""
             self.emit(f"ISETP.{cmp}{ty}.AND {{p0}}, PT, {{s0}}, {{s1}}, PT", [p], [x, y])
         elif t == "f32":
+            if 'ftz' in m:
+                x, y = self.flush_compare_input(x), self.flush_compare_input(self.reg32(a[2]))
             self.emit(f"FSETP.{cmp}.AND {{p0}}, PT, {{s0}}, {{s1}}, PT", [p], [x, y])
         else:
             raise NotSupported(f"setp.{t}")
         self.env[a[0].name] = p
+
+    def flush_compare_input(self, value):
+        """Flush subnormals for predicates using already-validated integer ops.
+
+        Both zero signs compare identically. Preserve every normal, infinity
+        and NaN bit pattern; do not approximate the floating comparison itself.
+        """
+        magnitude, result, subnormal = self.new(), self.new(), self.newp()
+        self.emit('LOP3.LUT {d0}, {s0}, {s1}, RZ, 0xc0, !PT',
+                  [magnitude], [value, I(0x7fffffff)])
+        self.emit('ISETP.LT.U32.AND {p0}, PT, {s0}, {s1}, PT',
+                  [subnormal], [magnitude, I(0x00800000)])
+        self.emit('SEL {d0}, RZ, {s0}, {p0}', [result], [value, (subnormal, False)])
+        return result
 
     # f32 ----------------------------------------------------------------------------
 
@@ -665,6 +691,8 @@ class Selector:
             raise NotSupported("non-register destination")
         signed = t == "s32"
         srcs = a[1:]
+        if 'sat' in ins.mods:
+            return self.saturating_integer(ins)
         if op in ("div", "rem") and isinstance(srcs[1], ImmI):
             return self.divconst(ins, srcs[0], srcs[1].value, signed)
         x = self.reg32(srcs[0]) if srcs else None
@@ -703,6 +731,23 @@ class Selector:
         else:
             raise NotSupported(f"{op}.{t}")
         self.bind(a[0].name, d)
+
+    def saturating_integer(self, ins):
+        """Signed add/sub saturation, including INT_MIN and aliased operands."""
+        x, y = self.reg32(ins.args[1]), self.reg32(ins.args[2])
+        value, overflow, sign, limit, result = (self.new() for _ in range(5))
+        predicate = self.newp()
+        self.emit('IADD3 {d0}, {s0}, ' + ('-' if ins.op == 'sub' else '') + '{s1}, RZ',
+                  [value], [x, y])
+        # add: (x ^ value) & (y ^ value); sub: (x ^ y) & (x ^ value).
+        lut = 0x42 if ins.op == 'add' else 0x18
+        self.emit(f'LOP3.LUT {{d0}}, {{s0}}, {{s1}}, {{s2}}, {lut:#x}, !PT',
+                  [overflow], [x, y, value])
+        self.emit('ISETP.LT.AND {p0}, PT, {s0}, 0x0, PT', [predicate], [overflow])
+        self.emit('SHF.R.S32.HI {d0}, RZ, 0x1f, {s0}', [sign], [x])
+        self.emit('LOP3.LUT {d0}, {s0}, {s1}, RZ, 0x3c, !PT', [limit], [sign, I(0x7fffffff)])
+        self.emit('SEL {d0}, {s0}, {s1}, {p0}', [result], [limit, value, (predicate, False)])
+        self.bind(ins.args[0].name, result)
 
     def divconst(self, ins, x_op, divisor, signed):
         if divisor < 2 or (signed and divisor >= (1 << 31)):

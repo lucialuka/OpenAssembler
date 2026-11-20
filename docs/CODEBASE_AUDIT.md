@@ -1,5 +1,12 @@
 # Repository compiler and codebase audit
 
+The November 19 [semantic and diagnostic review](compiler/semantic-acceptance.md)
+supersedes any assumption that mnemonic acceptance establishes scalar semantic
+support. Signed saturation and predicate FTZ are repaired; unknown contracts
+reject before selection. The [matrix and priority audit](compiler/coverage-priorities.md)
+keeps observed CPU acceptance, hardware correctness and open application coverage
+distinct. Git-exported documentation is checked separately from the working tree.
+
 Reviewed November 15, 2026. OpenAssembler's core is an SM80/A100 compiler from
 supported Python model/kernel, CUDA C/C++/C, and PTX sources to OA-owned native
 instructions in executable cubins. Transport changes where work runs; it does

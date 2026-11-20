@@ -6,6 +6,11 @@ discovery includes bounded quoted local headers for CUDA qualifier macros.
 PTX entry launch bounds are retained and checked when planning execution; read
 [the exact source/ABI contract](compiler/source-completeness.md).
 
+The [semantic/diagnostic contract](compiler/semantic-acceptance.md) documents
+unsupported-modifier rejection, actual PTX/user-model source lines and bounded
+static bug detection. Compilation is not a proof of arbitrary array bounds,
+memory initialization, host-program correctness or whole-model equivalence.
+
 Current native Python models use an explicit `[model]` CPU factory and shape
 contract. Read [the native model guide](research/ideas/native-model-bridge.md).
 Configured native models are selected automatically and execute only OA artifacts

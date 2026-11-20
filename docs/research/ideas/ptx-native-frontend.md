@@ -2,6 +2,11 @@
 
 Status: implemented
 
+The November 19 [semantic acceptance repair](../../compiler/semantic-acceptance.md)
+fixes signed saturation and predicate FTZ, adds explicit scalar modifier/type/
+operand admission and verifies outputs against independent math and ptxas on
+A100. The remaining unsupported forms below stay outside that contract.
+
 Supported SM80 PTX reaches OpenAssembler's own
 instruction selection, register allocation, scheduling and SASS encoder.
 Unsupported forms reject; the production CLI disables vendor GPU fallback.

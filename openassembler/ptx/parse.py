@@ -254,16 +254,21 @@ def parse_module(src: str) -> Module:
             module_decls.append(_decl(dm))
         if name in kernels:
             raise SyntaxError(f"duplicate entry definition {name}")
-        kernel = _parse_body(name, _parameters(raw_params, name), body)
+        body_start = end - len(body) - 1
+        kernel = _parse_body(name, _parameters(raw_params, name), body,
+                             first_line=src.count('\n', 0, body_start) + 1)
         kernel.directives = _directives(header, name)
         kernels[name] = kernel
         pos = end
     return Module(kernels, module_decls)
 
 
-def _parse_body(name: str, params, body: str) -> Kernel:
+def _parse_body(name: str, params, body: str, *, first_line: int = 1) -> Kernel:
     k = Kernel(name, params, [], {})
-    for n, raw in enumerate(body.split(";")):
+    offset = 0
+    for raw in body.split(";"):
+        raw_start = offset
+        offset += len(raw) + 1
         stmt = " ".join(raw.split())
         # Peel labels ("L1: add ...", possibly several).
         while (lm := re.match(r"^([A-Za-z_$][\w$]*):\s*(.*)$", stmt)):
@@ -283,5 +288,10 @@ def _parse_body(name: str, params, body: str) -> Kernel:
             continue
         if stmt.startswith("."):
             continue
-        k.body.append(parse_instr(stmt, n))
+        # Labels/directives may precede an instruction in the same segment.
+        # Find its original spelling before whitespace normalization.
+        head = stmt.split()[0]
+        relative = raw.find(head)
+        line = first_line + body.count('\n', 0, raw_start + max(0, relative))
+        k.body.append(parse_instr(stmt, line))
     return k

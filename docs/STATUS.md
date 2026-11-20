@@ -1,5 +1,25 @@
 # OpenAssembler architecture and status
 
+## November 19 semantic correctness and coverage audit
+
+Accepted scalar PTX saturation and predicate FTZ had incorrect native semantics.
+The [semantic acceptance repair](compiler/semantic-acceptance.md) implements both
+faithfully, rejects unsupported scalar modifier/type/operand combinations, and
+adds actual PTX source lines plus user FX-node file/line diagnostics. A100 80GB
+PCIe validation passes 144 launches and 25,104 output elements with guards and
+input immutability. No speed improvement is claimed for those repairs.
+
+The final local suite has 1,061 passes, seven skips and one retained baseline
+division-emulator failure; the pinned targeted regression has 100 passes.
+See [the exact validation limit](compiler/semantic-acceptance.md#final-regression-limits).
+
+The [coverage matrix audit](compiler/coverage-priorities.md) retains the supplied
+27 accepted/12 unsupported CPU contracts and all seven phase-timing repetitions,
+without mixing rejected cases into performance aggregates. BMM limits, masks,
+KV cache, embeddings, cross-entropy, Adam/AdamW and whole-repository application
+integration remain separate open work. The named experiment directories and
+roadmap now participate in Git distribution as well as live documentation.
+
 Updated **November 19, 2026**. This page describes the current source tree and
 latest completed validation. The November 11 native GEMM replay supplies the
 current exact policy table; the separate November 7 native NN composition

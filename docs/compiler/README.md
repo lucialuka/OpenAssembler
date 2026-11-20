@@ -8,6 +8,11 @@ as an implemented OA operation.
 
 ## Current implementation and evidence
 
+- [Semantic acceptance and diagnostics](semantic-acceptance.md): November 19
+  saturation/FTZ correctness repairs, explicit scalar contracts and source errors.
+- [Coverage priorities and independent matrix](coverage-priorities.md): frozen
+  CPU evidence, current bounds, open custom-kernel/model/training work and gates.
+
 - [Source completeness and launch contracts](source-completeness.md): repaired
   PTX definition discovery, explicit parameter/header rejection, retained launch
   directives, launch checks and bounded local CUDA-header discovery.
