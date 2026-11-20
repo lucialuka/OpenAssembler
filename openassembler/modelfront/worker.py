@@ -75,8 +75,13 @@ def _model(root: Path, config: dict):
 def _examples(config: dict, iteration: int = 0):
     import torch
     generator = torch.Generator(device='cpu').manual_seed(config['seed'] + 103 * iteration)
-    return [torch.randn(shape, generator=generator, dtype=torch.float32) * 0.25
-            for shape in config['input_shapes']]
+    result=[]
+    for shape,dtype,bounds in zip(config['input_shapes'],config.get('input_dtypes',['f32']*len(config['input_shapes'])),config.get('input_ranges',[[0,1]]*len(config['input_shapes']))):
+        if dtype=='f32':value=torch.randn(shape,generator=generator,dtype=torch.float32)*0.25
+        elif dtype=='i64':value=torch.randint(bounds[0],bounds[1],shape,generator=generator,dtype=torch.int64)
+        else:value=torch.randint(0,2,shape,generator=generator,dtype=torch.int64).bool()
+        result.append(value)
+    return result
 
 
 def _check(got, expected, label: str, config: dict) -> dict:
@@ -120,6 +125,13 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
             from openassembler.modelfront.reference import CPUReference
             from openassembler.modelfront.graph import extract_weights
             numeric_reference = CPUReference(plan, extract_weights(reference, plan))
+    reference_optimizer=None
+    if reference is not None and config['mode']=='training' and numeric_reference is None:
+        from .optimizer import optimizer_options
+        policy=optimizer_options(plan.get('optimizer',{}))
+        cls={'sgd':torch.optim.SGD,'adam':torch.optim.Adam,'adamw':torch.optim.AdamW}[policy['name']]
+        kwargs={} if policy['name']=='sgd' else dict(betas=(policy['beta1'],policy['beta2']),eps=policy['epsilon'],weight_decay=policy['weight_decay'],foreach=False)
+        reference_optimizer=cls(reference.parameters(),lr=config['learning_rate'],**kwargs)
     runtime = Runtime.load(output)
     from .profiling import audit_profile
     checks, times, launches, guards, audits, device_times = [], [], [], [], [], []
@@ -130,7 +142,7 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
         for iteration in range(config['steps']):
             if iteration and verify:
                 runtime.poison_workspace()
-            cpu = [x.requires_grad_(config['mode'] == 'training' and verify) for x in _examples(config, iteration)]
+            cpu = [x.requires_grad_(config['mode'] == 'training' and verify and x.dtype == torch.float32) for x in _examples(config, iteration)]
             tensors = {spec['name']: value.to('cuda') for spec, value in zip(plan['inputs'], cpu)}
             if config.get('execution', 'direct') == 'cuda_graph':
                 if stable_inputs is None:
@@ -153,8 +165,9 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
                 if len(plan['outputs']) != 1:
                     raise ValueError('MSE training requires a single model output')
                 shape = plan['buffers'][plan['outputs'][0]]['shape']
-                target = torch.randn(shape, generator=torch.Generator().manual_seed(
-                    config['seed'] + 997 + iteration), dtype=torch.float32) * 0.25
+                generator=torch.Generator().manual_seed(config['seed']+997+iteration)
+                target = (torch.randint(0,shape[1],(shape[0],),generator=generator,dtype=torch.int64)
+                          if plan.get('loss')=='cross_entropy' else torch.randn(shape,generator=generator,dtype=torch.float32)*0.25)
                 gpu_target = target.to('cuda')
                 if config.get('execution', 'direct') == 'cuda_graph':
                     if stable_target is None:
@@ -205,7 +218,7 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
                         launches.extend({**entry, 'iteration': iteration} for entry in runtime.launch_ledger)
                         guards.append(runtime.check_canaries())
                         continue
-                    loss = torch.nn.functional.mse_loss(expected_values[0], target)
+                    loss = (torch.nn.functional.cross_entropy(expected_values[0],target) if plan.get('loss')=='cross_entropy' else torch.nn.functional.mse_loss(expected_values[0], target))
                     loss.backward()
                     outputs = result['outputs']
                     for name, value in zip(plan['outputs'], expected_values):
@@ -220,10 +233,14 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
                         if isinstance(original, torch.nn.Parameter) and original.grad is not None:
                             checks.append(_check(result['gradients']['parameters'][name], original.grad,
                                                  f'{iteration}/gradient/{name}', config))
-                    with torch.no_grad():
-                        for p in reference.parameters():
-                            if p.grad is not None:
-                                p.add_(p.grad, alpha=-config['learning_rate'])
+                    reference_optimizer.step()
+                    if plan.get('optimizer',{}).get('name','sgd')!='sgd':
+                        native_state=runtime.optimizer_state_dict()
+                        for parameter in plan['parameters']:
+                            original=state[parameter['target']];name=parameter['name']
+                            if original in reference_optimizer.state and name in native_state['moments']:
+                                for key,refkey in (('m','exp_avg'),('v','exp_avg_sq')):
+                                    checks.append(_check(native_state['moments'][name][key],reference_optimizer.state[original][refkey],f'{iteration}/optimizer/{name}/{key}',config))
                     for parameter in plan['parameters']:
                         checks.append(_check(runtime.weights[parameter['name']], state[parameter['target']],
                                              f'{iteration}/parameter/{parameter["name"]}', config))
@@ -289,6 +306,9 @@ def process(request: dict) -> dict:
                 with _cpu_capture():
                     plan = capture_model(model, examples, math_mode=config['math'])
                 capture_ms = (time.perf_counter()-started)*1000
+                if config.get('optimizer_fusion',False):plan['optimizer_fusion']=True
+                if config.get('loss','mse')!='mse':plan['loss']=config['loss']
+                if config.get('optimizer_policy',{}).get('name','sgd')!='sgd':plan['optimizer']=config['optimizer_policy']
                 from .optimization import optimize_plan
                 started = time.perf_counter()
                 plan = optimize_plan(plan, storage_views=config.get('storage_views', True),

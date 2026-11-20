@@ -1,5 +1,23 @@
 # OpenAssembler architecture and status
 
+## November 20 model semantics and persistent state
+
+The [model semantics dossier](compiler/model-semantics.md) records research,
+candidate tests and production integration for rank-0..4 broadcast arithmetic,
+Boolean/causal SDPA, int64 embeddings, mean cross-entropy, Adam/AdamW and owned
+exact-bucket KV sessions. A100-SXM4-40GB production passes 779 full-tensor checks
+(1,771,766 elements); the language-block CLI build and saved replay each pass
+304 checks over eight updates with zero vendor compute. Adaptive optimizer
+state and checkpoint resume are checked against independent CPU PyTorch.
+The default MSE/SGD and existing native matrix policies remain available.
+Indexed/adaptive training requires direct execution; unknown cache shapes reject.
+The full local suite passes 1,075 tests with eight optional skips; the pinned
+Torch 2.7.1 model regression passes 215 tests. Large-vocabulary
+embedding speed, fused attention/backward, paging, adaptive graph replay and
+arbitrary repository/extension integration remain open. No whole-training
+speedup is inferred from the separate fused optimizer component timings.
+
+
 ## November 19 semantic correctness and coverage audit
 
 Accepted scalar PTX saturation and predicate FTZ had incorrect native semantics.
@@ -15,12 +33,11 @@ See [the exact validation limit](compiler/semantic-acceptance.md#final-regressio
 
 The [coverage matrix audit](compiler/coverage-priorities.md) retains the supplied
 27 accepted/12 unsupported CPU contracts and all seven phase-timing repetitions,
-without mixing rejected cases into performance aggregates. BMM limits, masks,
-KV cache, embeddings, cross-entropy, Adam/AdamW and whole-repository application
-integration remain separate open work. The named experiment directories and
+without mixing rejected cases into performance aggregates. BMM resource expansion and general repository integration remain open; the
+November 20 dossier above supersedes the mask/index/state coverage boundary. The named experiment directories and
 roadmap now participate in Git distribution as well as live documentation.
 
-Updated **November 19, 2026**. This page describes the current source tree and
+Updated **November 20, 2026**. This page describes the current source tree and
 latest completed validation. The November 11 native GEMM replay supplies the
 current exact policy table; the separate November 7 native NN composition
 campaign remains experimental. Full command syntax is in [COMMANDS.md](COMMANDS.md);
@@ -300,7 +317,7 @@ are research proposals, not additional shipping modules in this tree.
 | Copy-address reuse | Exact table/tuner policy or `--tile 64x64 --copy-address-init reuse` | 64-bit derived copy offsets, tile64 only; selected for 20 current exact contracts; no relaxation of address or synchronization checks |
 | Cooperative softmax/population LayerNorm | `rowwise --dispatch auto` exact table, `--dispatch manual` reference, or explicit `--warps-per-cta` | Contiguous bounded finite FP32, widths 1–1024, tails; five exact A100 shape/op entries use two/eight warps; all other shapes keep four warps; no affine/saved statistics/backward |
 | Scalar alias/WAR/reader/scoreboard repairs and warp synchronization | Scalar backend | Implemented full-mask butterfly shuffle form; unsupported forms fail closed |
-| Native Python models | Explicit `[model]` or `--frontend model`/`torch` | Bounded exact-shape CPU graph capture and symbolic derivatives; OA inference/MSE/SGD cubins; unsupported nodes fail |
+| Native Python models | Explicit `[model]` or `--frontend model`/`torch` | Bounded exact-shape capture, Boolean/causal attention, integer embeddings, OA MSE/CE and SGD/Adam/AdamW; unsupported nodes fail |
 | Complete state diagnostics | Native model verification and historical comparator gates | All tensors checked, bounded error details, unchanged admission tolerances |
 | ReLU/GELU/fused Adam-like examples | Compile the explicit example source | Not automatic model rewrites or a full optimized AdamW implementation |
 | AlphaTensor/Strassen factor research | Explicit `fastmm` command | Verified factorizations and bounded experiments; no established default tensor-GEMM win |

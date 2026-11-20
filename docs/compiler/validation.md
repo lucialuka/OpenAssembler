@@ -53,3 +53,12 @@ This completes the documented entry/ABI/discovery repair and two bounded
 dispatch additions. Dependency/build graph resolution, CPU application
 packaging, custom launch integration and general dynamic/operator coverage
 remain open in the [research plan](research-plan.md).
+
+## November 20 normalized model semantics
+
+The [model-state dossier](model-semantics.md) records research-first promotion,
+779 A100 full-tensor comparisons, paired split/fused optimizer measurements,
+304-check public CLI build and saved replay, 215 pinned Torch regression passes
+and 1,075 full-suite passes with eight optional skips. Raw harness/transport
+failures, complete tensors, binary identities and incumbent dispatch continuity
+are retained. Known exact-division verification limits remain separate.

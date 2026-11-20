@@ -184,6 +184,9 @@ class Runtime:
         self._tape = None
         self._gradients = None
         self._training = {}
+        self._optimizer_state = {}
+        self._optimizer_step = 0
+        self._forward_epoch = 0
         self.launches = []
         self._closed = False
         self._backward_ready = False
@@ -215,10 +218,12 @@ class Runtime:
         return cls(plan, weights, root, torch=torch)
 
     def _check(self, tensor, spec, name):
-        if (not getattr(tensor, "is_cuda", False) or str(tensor.dtype) != "torch.float32"
-                or tuple(tensor.shape) != shape_of(spec) or not tensor.is_contiguous()
-                or tensor.data_ptr() % 4):
-            raise ValueError(f"{name} needs a contiguous CUDA FP32 tensor of shape {spec['shape']}")
+        dtype = spec.get("dtype", "f32")
+        expected = {"f32":"torch.float32", "i64":"torch.int64", "bool":"torch.bool"}.get(dtype)
+        if (not getattr(tensor, "is_cuda", False) or str(tensor.dtype) != expected
+                or tuple(tensor.shape) != shape_of(spec, dtypes=("f32","i64","bool")) or not tensor.is_contiguous()
+                or tensor.data_ptr() % {"f32":4,"i64":8,"bool":1}.get(dtype,4)):
+            raise ValueError(f"{name} needs a contiguous CUDA {'FP32' if dtype == 'f32' else dtype} tensor of shape {spec['shape']}")
         device = tensor.device
         if self._device is not None and device != self._device:
             raise ValueError("all tensors in one native plan must share the same CUDA device")
@@ -276,7 +281,7 @@ class Runtime:
             external = {s["name"] for s in self.plan.get("inputs", []) + self.plan.get("parameters", [])}
             layout = self.plan.get('storage')
             if layout is None:
-                self.buffers = {name: self._allocate(spec['shape'])
+                self.buffers = {name: self._allocate(spec['shape'], dtype=spec.get("dtype","f32"))
                                 for name, spec in self.plan.get('buffers', {}).items()
                                 if name not in external and name not in self.plan.get('aliases', {})}
             else:
@@ -286,6 +291,8 @@ class Runtime:
             for output in self.plan.get("outputs", []):
                 spec = self.specs[output]
                 self._training[output] = {"loss": self._allocate([]), "seed": self._allocate(spec["shape"])}
+                if self.plan.get("loss") == "cross_entropy":
+                    self._training[output]["rows"] = self._allocate([spec["shape"][0]])
             if self._tensor_schedule is not None:
                 for name,spec in self._tensor_schedule['allocations'].items():
                     self._tensor_workspaces[name] = self._allocate(spec['shape'],dtype=spec['dtype'])
@@ -302,9 +309,10 @@ class Runtime:
 
     def _allocate(self, shape, *, dtype="f32"):
         count = math.prod(shape)
-        itemsize = 4 if dtype == "f32" else 2
+        torch_dtype = getattr(self.torch, {"f32":"float32", "f16":"float16", "i64":"int64", "bool":"bool"}[dtype])
+        itemsize = {"f32":4,"f16":2,"i64":8,"bool":1}[dtype]
         pad = 16 // itemsize
-        backing = self.torch.empty([count+2*pad], dtype=self.torch.float32 if dtype == "f32" else self.torch.float16,
+        backing = self.torch.empty([count+2*pad], dtype=torch_dtype,
                                    device=self._device)
         tensor = backing.narrow(0, pad, count).view(shape)
         self._allocations.append(backing)
@@ -321,7 +329,7 @@ class Runtime:
         self.synchronize()
         with self._context_scope():
             for tensor in [*self.buffers.values(), *(v for x in self._training.values() for v in x.values())]:
-                self._driver.memset(tensor.data_ptr(), 0xFF, math.prod(tensor.shape)*4)
+                self._driver.memset(tensor.data_ptr(), 0xFF, tensor.numel()*tensor.element_size())
             for tensor in self._tensor_workspaces.values():
                 self._driver.memset(tensor.data_ptr(),0xFF,tensor.numel()*tensor.element_size())
 
@@ -335,7 +343,7 @@ class Runtime:
             raise RuntimeError(f"native model workspace canary corruption: {bad}")
         return {"passed":True,"allocations":len(self._guards)}
 
-    def _launch(self, kernel, inputs, output, *, lr=None):
+    def _launch(self, kernel, inputs, output, *, lr=None, correction=None):
         args = [C.c_uint64(t.data_ptr()) for t in [*inputs, output]]
         if kernel.op == "sgd":
             rate = kernel.attrs.get("lr", 0.01) if lr is None else lr
@@ -344,6 +352,8 @@ class Runtime:
             from .kernels import _float
             _float(rate)
             args.append(C.c_float(rate))
+        if kernel.op in ("adam_update", "adam_fused"):
+            args.extend(C.c_float(x) for x in (lr, *correction))
         params = (C.c_void_p*len(args))(*[C.cast(C.pointer(a), C.c_void_p) for a in args])
         stream = self.torch.cuda.current_stream(self._device).cuda_stream
         if stream != self._stream_id:
@@ -421,6 +431,12 @@ class Runtime:
         devices = {self._check(values[s["name"]], s, s["name"]) for s in self.plan.get("inputs", []) + self.plan.get("parameters", [])}
         if len(devices) != 1:
             raise ValueError("native graph needs tensors on exactly one CUDA device")
+        # Index validation runs on CPU before *any* native launch or state mutation.
+        # This synchronizing check is visible host overhead, never a GPU fallback.
+        for domain in self.plan.get("index_domains", []):
+            indices = values[domain["name"]].detach().cpu()
+            if bool(((indices < domain["lower"]) | (indices >= domain["upper"])).any()):
+                raise ValueError(f"{domain['name']}: embedding index outside [{domain['lower']}, {domain['upper']})")
         self._initialize(next(iter(devices)))
         # The fixed captured graph includes all first uses every iteration.
         # No validity decision survives an SGD update or a changed external input.
@@ -430,6 +446,7 @@ class Runtime:
         with self.torch.cuda.device(self._device):
             self._run("forward", values)
         self._last = values
+        self._forward_epoch += 1
         # Saved outputs/intermediates can alias user-visible model results.
         # Protect them as well as external inputs/weights: an in-place edit of
         # a saved ReLU/softmax result must not silently alter its derivative.
@@ -488,21 +505,87 @@ class Runtime:
                            "parameters": {name: values[g] for name, g in spec.get("grad_parameters", {}).items()}}
         return self._gradients
 
+    def optimizer_state_dict(self):
+        """CPU snapshot of all moments and step; no borrowed device storage."""
+        from .optimizer import optimizer_options
+        self.synchronize()
+        return {"schema":1, "options":optimizer_options(self.plan.get("optimizer",{})),
+                "step":self._optimizer_step,
+                "moments":{n:{k:v.detach().cpu().clone() for k,v in pair.items()}
+                           for n,pair in self._optimizer_state.items()}}
+
+    def load_optimizer_state_dict(self, state):
+        from .optimizer import optimizer_options
+        options=optimizer_options(self.plan.get("optimizer",{}))
+        if self._device is None or self._tape is not None or self._gradients is not None:
+            raise ValueError("initialize forward and discard its tape before loading optimizer state")
+        if (set(state)!={"schema","options","step","moments"} or state["schema"]!=1
+                or state["options"]!=options or type(state["step"]) is not int or state["step"]<0):
+            raise ValueError("optimizer checkpoint policy or step mismatch")
+        expected=set(self.plan["backward"]["grad_parameters"]) if state["step"] and options["name"]!="sgd" else set()
+        if set(state["moments"])!=expected:raise ValueError("optimizer checkpoint parameter names mismatch")
+        for n,pair in state["moments"].items():
+            if set(pair)!={"m","v"}:raise ValueError("optimizer checkpoint needs both moments")
+            for k,v in pair.items():
+                if (v.device.type!="cpu" or v.dtype!=self.torch.float32 or list(v.shape)!=self.specs[n]["shape"]
+                        or not bool(self.torch.isfinite(v).all()) or k=="v" and bool((v<0).any())):
+                    raise ValueError("invalid optimizer checkpoint moment")
+        # All validation precedes replacement. Copies are host-to-device transfers.
+        staged={}
+        for name,pair in state["moments"].items():
+            staged[name]={}
+            for key,value in pair.items():
+                tensor=self._allocate(self.specs[name]["shape"])
+                tensor.copy_(value)
+                staged[name][key]=tensor
+        self._optimizer_state,self._optimizer_step=staged,state["step"]
+
     def update(self, lr=0.01):
-        if self._gradients is None:
-            raise RuntimeError("native SGD requires backward gradients")
+        from .optimizer import optimizer_options
+        from .kernels import _float
+        options=optimizer_options(self.plan.get("optimizer",{}))
+        if type(lr) not in (int,float) or not math.isfinite(lr) or lr<0:raise ValueError("learning rate must be finite and nonnegative")
+        _float(lr)
+        if self._gradients is None:raise RuntimeError("native optimizer requires backward gradients")
+        # Preflight the whole parameter set before updating any member.
+        for name in self._gradients["parameters"]:
+            w=self.weights[name]
+            if (w.data_ptr(),getattr(w,"_version",0))!=self._saved_versions[name]:
+                raise RuntimeError("a native parameter was replaced or modified before optimizer update")
+        step=self._optimizer_step+1
         with self.torch.cuda.device(self._device):
-            for name, gradient in self._gradients["parameters"].items():
-                weight = self.weights[name]
-                if (weight.data_ptr(),getattr(weight,"_version",0)) != self._saved_versions[name]:
-                    raise RuntimeError("a native parameter was replaced or modified between forward and SGD update")
-                self._launch(emit_kernel("sgd", [self.specs[name]]*2, self.specs[name]), [weight, gradient], weight, lr=lr)
-                increment = getattr(getattr(self.torch.autograd, "graph", None), "increment_version", None)
-                if increment:
-                    increment(weight)
-        self._gradients = None
+            for name,gradient in self._gradients["parameters"].items():
+                weight=self.weights[name];spec=self.specs[name]
+                if options["name"]=="sgd":
+                    self._launch(emit_kernel("sgd",[spec]*2,spec),[weight,gradient],weight,lr=lr)
+                else:
+                    if name not in self._optimizer_state:
+                        pair={k:self._allocate(spec["shape"]) for k in ("m","v")}
+                        with self._context_scope():
+                            for value in pair.values():self._driver.memset(value.data_ptr(),0,value.numel()*4)
+                        self._optimizer_state[name]=pair
+                    pair=self._optimizer_state[name]
+                    correction=(lr/(1-options["beta1"]**step),math.sqrt(1-options["beta2"]**step))
+                    if self.plan.get("optimizer_fusion", False):
+                        self._launch(emit_kernel("adam_fused",[spec]*4,spec,options),
+                                     [weight,pair["m"],pair["v"],gradient],weight,lr=lr,correction=correction)
+                    else:
+                        for suffix in ("m","v"):
+                            self._launch(emit_kernel("adam_"+suffix,[spec]*3,spec,options),
+                                         [pair[suffix],gradient,weight],pair[suffix])
+                        self._launch(emit_kernel("adam_update",[spec]*4,spec,options),
+                                     [weight,pair["m"],pair["v"],gradient],weight,lr=lr,correction=correction)
+                increment=getattr(getattr(self.torch.autograd,"graph",None),"increment_version",None)
+                if increment:increment(weight)
+        self._optimizer_step=step
+        self._gradients=None
 
     def train_step(self, inputs, target, lr=None):
+        if lr is not None:
+            from .kernels import _float
+            if type(lr) not in (int,float) or not math.isfinite(lr) or lr<0:
+                raise ValueError("learning rate must be finite and nonnegative")
+            _float(lr)
         training = self.plan.get("training")
         if training:
             values = dict(inputs)
@@ -518,13 +601,30 @@ class Runtime:
         else:
             if len(self.plan.get("outputs", [])) != 1:
                 raise ValueError("native MSE training requires a single model output")
+            name = self.plan["outputs"][0]
+            logits_spec = self.specs[name]
+            ce = self.plan.get("loss", "mse") == "cross_entropy"
+            target_spec = {"shape":[logits_spec["shape"][0]],"dtype":"i64"} if ce else logits_spec
+            self._check(target, target_spec, "target")
+            input_values=inputs.values() if isinstance(inputs,dict) else inputs
+            if any(value.device != target.device for value in input_values):
+                raise ValueError("target and model inputs must share the CUDA device")
+            if ce:
+                labels = target.detach().cpu()
+                if bool(((labels<0)|(labels>=logits_spec["shape"][1])).any()):
+                    raise ValueError("cross_entropy labels outside the class range; ignore_index is unsupported")
             outputs = self.forward(inputs, require_tape=True)
             name, prediction = next(iter(outputs.items()))
-            self._check(target, self.specs[name], "target")
             scratch = self._training[name]
             with self.torch.cuda.device(self._device):
-                self._launch(emit_kernel("mse", [self.specs[name]]*2, {"shape": []}), [prediction, target], scratch["loss"])
-                self._launch(emit_kernel("mse_grad", [self.specs[name]]*2, self.specs[name]), [prediction, target], scratch["seed"])
+                if ce:
+                    row_spec={"shape":[logits_spec["shape"][0]]}
+                    self._launch(emit_kernel("ce_rows",[logits_spec,target_spec],row_spec),[prediction,target],scratch["rows"])
+                    self._launch(emit_kernel("mean",[row_spec],{"shape":[]}),[scratch["rows"]],scratch["loss"])
+                    self._launch(emit_kernel("ce_grad",[logits_spec,target_spec],logits_spec),[prediction,target],scratch["seed"])
+                else:
+                    self._launch(emit_kernel("mse", [self.specs[name]]*2, {"shape": []}), [prediction, target], scratch["loss"])
+                    self._launch(emit_kernel("mse_grad", [self.specs[name]]*2, self.specs[name]), [prediction, target], scratch["seed"])
             gradients = self.backward({name: scratch["seed"]})
             loss, rate = scratch["loss"], 0.01 if lr is None else lr
         self.update(rate)

@@ -105,11 +105,12 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
 
     Supported operations include Linear, ReLU, tanh GELU, last-axis softmax and
     affine LayerNorm, exact-rank matmul, same-shape/scalar add/multiply, reshape,
-    rank-two through rank-four permutation and concatenation. Linear accepts
+    rank-two through rank-four permutation and concatenation, broadcast arithmetic,
+    dense int64 embeddings and Boolean/causal SDPA. Linear accepts
     any positive leading dimensions; flattening is explicit in the plan.
     Storage, scalar arithmetic and gradients are FP32. The explicit optional
     f16_rne_f32_accum mode rounds each matrix product's operands independently
-    to half; batched products remain a separate FP32-only contract.
+    to half; batched products retain their independently bounded operand contract.
     Branches and parameter aliases receive explicit gradient accumulation.
     """
     torch = _torch()
@@ -128,7 +129,7 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
     model_state = [*model.named_parameters(), *model.named_buffers()]
     for label, tensor in [*(('input', x) for x in example_inputs), *model_state]:
         if (not isinstance(tensor, torch.Tensor) or tensor.device.type != "cpu"
-                or tensor.dtype != torch.float32 or tensor.layout != torch.strided
+                or tensor.dtype not in ((torch.float32, torch.int64, torch.bool) if label == "input" else (torch.float32,)) or tensor.layout != torch.strided
                 or not tensor.is_contiguous() or any(dim <= 0 for dim in tensor.shape)):
             raise ModelGraphError(f"{label}: native model capture requires contiguous positive-shape CPU FP32 tensors")
         if not bool(torch.isfinite(tensor).all()):
@@ -163,9 +164,10 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         operator.matmul: "matmul", torch.matmul: "matmul", torch.mm: "matmul", torch.bmm: "bmm",
         torch.softmax: "softmax", functional.softmax: "softmax", functional.gelu: "gelu",
         functional.layer_norm: "layernorm",
+        functional.embedding: "embedding", functional.scaled_dot_product_attention: "sdpa",
         torch.cat: "concat", torch.concat: "concat",
     }
-    module_ops = (torch.nn.Linear, torch.nn.ReLU, torch.nn.Identity, torch.nn.Flatten, torch.nn.Softmax, torch.nn.GELU, torch.nn.LayerNorm)
+    module_ops = (torch.nn.Linear, torch.nn.ReLU, torch.nn.Identity, torch.nn.Flatten, torch.nn.Softmax, torch.nn.GELU, torch.nn.LayerNorm, torch.nn.Embedding)
     methods = {"relu", "add", "mul", "view", "reshape", "flatten", "transpose", "t", "permute", "contiguous", "clone", "size", "dim", "matmul", "bmm", "softmax"}
     shape_ops = {operator.getitem, getattr}
     for node in traced.graph.nodes:
@@ -202,6 +204,8 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
                                  "master_parameter_dtype": "f32",
                                  "matrix_backward": "straight-through input cast; dX and dW independently round both operands to FP16",
                                  "numerical_domain": "finite FP32 arithmetic; matrix operands must remain finite after FP16 rounding"})
+    if any(x.dtype != torch.float32 for x in example_inputs):
+        plan["contract"]["input_dtype"] = "declared per input: f32, i64 indices, bool masks"
     values, constants, aliases = {}, {}, {}
     trainable = set()
     reserved_names = {node.name for node in traced.graph.nodes}
@@ -212,15 +216,15 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
 
     def shape(node):
         meta = node.meta.get("tensor_meta")
-        if meta is None or not hasattr(meta, "shape") or meta.dtype != torch.float32:
+        if meta is None or not hasattr(meta, "shape") or meta.dtype not in (torch.float32, torch.int64, torch.bool):
             fail(node, "expected one FP32 tensor value")
         result = list(meta.shape)
         if any(type(x) is not int or x <= 0 for x in result):
             fail(node, "dynamic, empty or negative shapes are unsupported")
         return result
 
-    def buffer(name, dims):
-        plan["buffers"][name] = {"shape": list(dims), "dtype": "f32"}
+    def buffer(name, dims, dtype="f32"):
+        plan["buffers"][name] = {"shape": list(dims), "dtype": dtype}
         return name
 
     def fresh(stem, dims):
@@ -313,7 +317,7 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         if node.op == "placeholder":
             if input_index >= len(example_inputs):
                 fail(node, "all model arguments must be supplied tensor inputs")
-            name = buffer(node.name, shape(node))
+            name = buffer(node.name, shape(node), {torch.float32:"f32", torch.int64:"i64", torch.bool:"bool"}[node.meta["tensor_meta"].dtype])
             plan["inputs"].append({"name": name, **plan["buffers"][name]})
             values[node] = name
             input_index += 1
@@ -348,7 +352,8 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
             continue
 
         module = traced.get_submodule(node.target) if node.op == "call_module" else None
-        op = ("linear" if isinstance(module, torch.nn.Linear) else
+        op = ("embedding" if isinstance(module, torch.nn.Embedding) else
+              "linear" if isinstance(module, torch.nn.Linear) else
               "relu" if isinstance(module, torch.nn.ReLU) else
               "softmax" if isinstance(module, torch.nn.Softmax) else
               "gelu" if isinstance(module, torch.nn.GELU) else
@@ -368,7 +373,49 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
             continue
         dims = shape(node)
         name = buffer(node.name, dims)
-        if op == "concat":
+        if op == "embedding":
+            x = tensor(node.args[0] if node.args else node.kwargs.get("input"), node)
+            if module is not None:
+                w = parameter(node.target + ".weight", node)
+                padding, max_norm, sparse, frequency = module.padding_idx, module.max_norm, module.sparse, module.scale_grad_by_freq
+            else:
+                get = lambda i, k, default=None: node.args[i] if len(node.args)>i else node.kwargs.get(k, default)
+                w = tensor(get(1, "weight"), node)
+                padding, max_norm = get(2,"padding_idx"), get(3,"max_norm")
+                frequency, sparse = get(5,"scale_grad_by_freq",False), get(6,"sparse",False)
+            if max_norm is not None or sparse or frequency or padding is not None:
+                fail(node, "embedding requires dense gradients, no padding_idx, max_norm or frequency scaling")
+            emit("embedding", [x,w], name)
+            domain = {"name": x, "lower": 0, "upper": plan["buffers"][w]["shape"][0]}
+            if domain not in plan.setdefault("index_domains", []): plan["index_domains"].append(domain)
+        elif op == "sdpa":
+            get = lambda i, k, default=None: node.args[i] if len(node.args)>i else node.kwargs.get(k,default)
+            q,k,v = [tensor(get(i,key),node) for i,key in enumerate(("query","key","value"))]
+            mask,dropout,causal = get(3,"attn_mask"),get(4,"dropout_p",0.0),get(5,"is_causal",False)
+            if dropout != 0 or type(causal) is not bool or node.kwargs.get("enable_gqa",False):
+                fail(node,"SDPA requires dropout_p=0 and no GQA")
+            if mask is not None and causal: fail(node,"SDPA mask and is_causal cannot both be set")
+            qs,ks,vs = [plan["buffers"][x]["shape"] for x in (q,k,v)]
+            if (not 3<=len(qs)<=4 or len(ks)!=len(qs) or len(vs)!=len(qs)
+                    or qs[:-2]!=ks[:-2] or ks[:-2]!=vs[:-2] or qs[-1]!=ks[-1] or ks[-2]!=vs[-2]):
+                fail(node,"SDPA requires rank3/4 matching batch axes and compatible head dimensions")
+            batch = math.prod(qs[:-2]); length,width,head=qs[-2],ks[-2],qs[-1]
+            scale=scalar(head**-0.5 if node.kwargs.get("scale") is None else node.kwargs["scale"],node)
+            qv=view([q],fresh("query",[batch,length,head]))
+            kv=view([k],fresh("key",[batch,width,head]))
+            vv=view([v],fresh("value",[batch,width,vs[-1]]))
+            kt=emit("permute",[kv],fresh("kt",[batch,head,width]),{"axes":[0,2,1]})
+            scores=emit("bmm",[qv,kt],fresh("scores",[batch,length,width]))
+            scaled=emit("mul",[scores],fresh("scaled",[batch,length,width]),{"scalar":scale})
+            # Keep original batch rank for mask broadcasting; views never reinterpret dtype.
+            sdims=[*qs[:-2],length,width]
+            scored=view([scaled],fresh("attention_scores",sdims))
+            args=[scored] if mask is None else [scored,tensor(mask,node)]
+            probs=emit("masked_softmax",args,fresh("probabilities",sdims),{"causal":causal})
+            pv=view([probs],fresh("probabilities3",[batch,length,width]))
+            ov=emit("bmm",[pv,vv],fresh("attention_output",[batch,length,vs[-1]]))
+            view([ov],name)
+        elif op == "concat":
             raw_inputs = node.args[0] if node.args else node.kwargs.get("tensors")
             if not isinstance(raw_inputs, (tuple, list)) or len(raw_inputs) < 2:
                 fail(node, "native concatenation requires at least two tensor operands")
@@ -450,9 +497,8 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
             a, b = resolve(lhs), resolve(rhs)
             tensors = [x for x in (a, b) if isinstance(x, str) and x in plan["buffers"]]
             if len(tensors) == 2:
-                if any(plan["buffers"][x]["shape"] != dims for x in tensors):
-                    fail(node, "tensor broadcasting is unsupported; add/mul require identical shapes")
-                emit(op, tensors, name)
+                broadcast = any(plan["buffers"][x]["shape"] != dims for x in tensors)
+                emit("broadcast_"+op if broadcast else op, tensors, name)
             elif len(tensors) == 1:
                 if plan["buffers"][tensors[0]]["shape"] != dims:
                     fail(node, "scalar arithmetic must preserve the tensor shape")
@@ -573,7 +619,14 @@ def _differentiate(plan, trainable):
         elif op == "permute":
             axes = attrs["axes"]
             accumulate(args[0], emit("permute", [dy], shapes[0], {"axes": [axes.index(i) for i in range(len(axes))]}))
-        elif op == "softmax":
+        elif op == "embedding":
+            accumulate(args[1], emit("embedding_grad", [args[0],dy], shapes[1]))
+        elif op in ("broadcast_add", "broadcast_mul"):
+            full = plan["buffers"][out]["shape"]
+            for index,arg in enumerate(args):
+                g = dy if op == "broadcast_add" else emit("broadcast_mul", [dy,args[1-index]], full)
+                accumulate(arg, emit("sum_to", [g], shapes[index]) if shapes[index] != full else g)
+        elif op in ("softmax", "masked_softmax"):
             accumulate(args[0], emit("softmax_backward", [dy, out], shapes[0]))
         elif op == "gelu":
             accumulate(args[0], emit("gelu_backward", [dy, args[0]], shapes[0]))

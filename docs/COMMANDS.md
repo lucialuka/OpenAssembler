@@ -143,6 +143,15 @@ shell and does not execute pipes, redirection or arbitrary Python. When
 
 ## `compile`: kernel files, source trees and native model graphs
 
+The [indexed language-model example](../examples/native_language_model/openassembler.toml)
+uses the ordinary `compile PATH --verify` and saved `run PATH --verify` route.
+Model config now accepts per-input `f32`/`i64`/`bool`, integer verification
+`input_ranges`, `loss="cross_entropy"`, `optimizer="adam"`/`"adamw"`,
+`beta1`, `beta2`, `epsilon`, `weight_decay` and optional `optimizer_fusion`.
+See [the exact contracts](compiler/model-semantics.md); indexed inputs and
+adaptive training require direct execution.
+
+
 ```sh
 openassembler compile examples/div_by_const.ptx -o division --verify
 openassembler compile examples/vector_add.py --out-dir output_python

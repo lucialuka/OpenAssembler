@@ -41,7 +41,7 @@ These are available in the current code under their stated contracts. Explicit t
 | Feature / idea | What is established or limited |
 |---|---|
 | [Exact runtime indexing and F2I source collection](ideas/runtime-integer-indexing.md) | Repairs a real large-grid conversion-source hazard with permanent A100 regression and binary continuity evidence. |
-| [Native Python model graphs and launch plans](ideas/native-model-bridge.md) | CPU capture and symbolic backward lower supported graphs to OA-only artifacts and guarded MSE/SGD execution, including bounded FP16 BMM/attention; precision and shape contracts remain explicit. |
+| [Native Python model graphs and launch plans](ideas/native-model-bridge.md) | CPU capture and symbolic backward lower bounded broadcast/attention/indexed graphs to OA-only inference, MSE/CE and SGD/Adam/AdamW; exact cache sessions and numerical contracts remain explicit. |
 | [Recovered arithmetic instruction sequences and rounding policy](ideas/arithmetic-instruction-selection.md) | The standard backend imports retained CUDA 12.8 arithmetic fragments and generates its own words. |
 | [Constant integer division and remainder lowering](ideas/constant-division.md) | The implemented 32-bit lowering removes a reciprocal-based path from direct PTX division/remainder sites. |
 | [Cooperative population LayerNorm](ideas/cooperative-layernorm.md) | Shifted warp-per-row population LayerNorm has measured exact CTA geometry; affine parameters, saved statistics and backward remain outside the production operator. |
@@ -143,6 +143,9 @@ These are source-inspection conclusions, implementation proposals, missing hardw
 | [Fuse low-rank transforms into operand staging](ideas/low-rank-transform-fusion.md) | The existing runtime-factor and tiny compile-time studies identify this as promising future work. |
 | [Alternative multi-precision accumulation paths](ideas/multi-precision-accumulation.md) | The implemented tensor GEMM already uses mixed precision in the ordinary sense: FP16/BF16 inputs with FP32 accumulation and FP32 output. |
 | [Public CUTLASS and cuBLASLt techniques for A100](ideas/cutlass-cublas-public-techniques.md) | Tile, traversal, load-next and exact dispatch have separate implemented dossiers; generalized pipeline, staged-epilogue, split-K and joint cost-model transfers remain proposals. |
+
+November 20: the [native model dossier](ideas/native-model-bridge.md) links the
+new [model semantics and state evidence](../compiler/model-semantics.md).
 
 ## How to use and maintain this catalogue
 

@@ -641,7 +641,7 @@
       "title": "Native Python model graphs, autodiff and launch plans",
       "status": "implemented",
       "dossier": "docs/research/ideas/native-model-bridge.md",
-      "dossier_sha256": "514fb372dd762fdf98803a939914110f8ce4919b67683c44a33f6a79b50feced",
+      "dossier_sha256": "5ac7e495c8237e35db7894093f461eb591001450b071b16ef82d5660bd80fcba",
       "classification": "graph-and-state-contract",
       "code_paths": [
         "openassembler/modelfront/graph.py",
@@ -651,9 +651,12 @@
         "openassembler/modelfront/replay.py",
         "openassembler/modelfront/profiling.py",
         "openassembler/modelfront/kernels_loss.py",
+        "openassembler/modelfront/kernels_semantics.py",
+        "openassembler/modelfront/optimizer.py",
+        "openassembler/modelfront/decode.py",
         "openassembler/native_ownership.py"
       ],
-      "applicability": "Exact-shape finite FP32 CPU factories, supported FX graph and first derivatives; optional declared FP16 RNE product contract; MSE/plain SGD.",
+      "applicability": "Exact-shape finite FP32 CPU factories, supported FX graph and first derivatives; optional declared FP16 RNE product contract; broadcast arithmetic, Boolean/causal SDPA, indexed embedding/CE, SGD/Adam/AdamW and owned exact cache buckets.",
       "current_selection": "Explicit [model] or model/torch alias lowers to OA-owned cubins, fixed launch plans, guarded storage views and optional liveness slots on A100.",
       "tuning_axes": [
         "complete graph boundaries",
@@ -665,27 +668,32 @@
       ],
       "next_action": "Measure complete forward/loss/backward/update with full-state and independent profiler ownership gates; no Inductor/Triton or vendor fallback.",
       "code_sha256": {
-        "openassembler/modelfront/graph.py": "570f094685833d63342df04929ede5727c6528b1d9116e7e48169025915070e0",
+        "openassembler/modelfront/graph.py": "13305804a254dccf08d81a9bdadc3bb56caeac69bbefc4fd0408fc00297efb56",
         "openassembler/modelfront/optimization.py": "2d82fa8788c92470a96e6182a6621c7cf859e0d16f30024628cb7631088e9b8e",
-        "openassembler/modelfront/kernels.py": "64fb75762562a9e0206574c2ff83d7395712f949a053aee947a5a3a9d3d09646",
-        "openassembler/modelfront/runtime.py": "18210db1d79d309bf3ffb4c4aed325604141c879d312b34810b2dbcec2248f64",
-        "openassembler/modelfront/replay.py": "e66716b259099306063b231f45210b0fd56f4d769ec801e8e3876ce048101cf6",
+        "openassembler/modelfront/kernels.py": "98550262a7332eb7dfaac1d54e53bb32c71b1ee410b4cea3eade60f5c8698410",
+        "openassembler/modelfront/runtime.py": "9da0fb9a0304da2e16905450e195408513611b3818174a249dbbcb0c2911f728",
+        "openassembler/modelfront/replay.py": "36deec788c27d3eb6e8c71ec826d4e4891eab1f985c5930fd33b172966b584ec",
         "openassembler/modelfront/profiling.py": "59731e47fcd627129c3edae8325e1c2901ddc533c4620fcdb27953ed1c57ab5a",
         "openassembler/modelfront/kernels_loss.py": "25c24bcc0b8ed6b28b9e2651cc0a1bf2a751239db2aa94c05e64331dd8a3a1b3",
+        "openassembler/modelfront/kernels_semantics.py": "2da68871fac5f97f50f1aa4037e916343aaff2040a717ba3703878c1e8912704",
+        "openassembler/modelfront/optimizer.py": "2e3cf4046fdf41fdf38606613559cc245937a8785f0568f6f24f4598907abf0a",
+        "openassembler/modelfront/decode.py": "8e35327df0fd2c8e7568ddbf14090d474f9f6fe097c0a7533bd6fcb96e03cbf1",
         "openassembler/native_ownership.py": "f4c95da6f8005d134a4c7117197510e661a06464fb54f0d18f07e3c1c016fe00"
       },
       "retained_references": [
         "docs/compiler/coverage-priorities.md",
+        "docs/compiler/model-semantics.md",
         "docs/compiler/semantic-acceptance.md",
         "docs/research/ideas/runtime-integer-indexing.md",
         "examples/native_model/openassembler.toml",
         "exp/attention_half/RESULTS.md",
+        "exp/model_perf/RESULTS.md",
         "exp/native_model_tensor/README.md",
         "exp/native_models/README.md",
         "exp/pack_training/RESULTS.md",
         "exp/review_response/RESULTS.md"
       ],
-      "catalogue_summary": "CPU graphs and symbolic backward lower to OA-only forward/dX/dW/MSE/SGD, including bounded FP16 BMM and composed attention; precision and shape contracts remain explicit."
+      "catalogue_summary": "Bounded exact-shape OA graphs include broadcast arithmetic, masked/causal SDPA, indexed embeddings/CE, SGD/Adam/AdamW and owned cache buckets; full-state A100 and normal CLI gates pass."
     },
     {
       "id": "native-relu",

@@ -1,0 +1,2411 @@
+/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/openassembler/__init__.py
+.....................................................F.................. [ 35%]
+........................................ssFsssssssFFFFFFFFF...FFFF...... [ 71%]
+.F..FFFFFFFFFFFFF.........FF.........FFFFFFFFFFFFFF.......               [100%]
+=================================== FAILURES ===================================
+_________ test_broadcast_mutation_dtype_and_tensor_slices_fail_closed __________
+
+    def test_broadcast_mutation_dtype_and_tensor_slices_fail_closed():
+        class Broadcast(torch.nn.Module):
+            def forward(self, x, y):
+                return x + y
+    
+        class Slice(torch.nn.Module):
+            def forward(self, x):
+                return x[:, 0]
+    
+        class Inplace(torch.nn.Module):
+            def forward(self, x):
+                return torch.nn.functional.relu(x, True)
+    
+>       with pytest.raises(ModelGraphError, match="broadcasting"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'openassembler.modelfront.graph.ModelGraphError'>
+
+tests/test_model_graph.py:240: Failed
+____ test_persistent_model_cache_revalidates_and_never_retains_ptxas_donors ____
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-434/test_persistent_model_cache_re0')
+
+    @pytest.mark.oracle
+    def test_persistent_model_cache_revalidates_and_never_retains_ptxas_donors(tmp_path):
+        cache=tmp_path/'cache';first=tmp_path/'first';second=tmp_path/'second';repaired=tmp_path/'repaired'
+>       build_bundle(plan(),{},first,cache_dir=cache)
+
+tests/test_model_runtime.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels.py:459: in build_bundle
+    result=cached_build_bundle(plan,weights,output_dir,cache_dir=cache_dir,opt_level=opt_level,
+compiler_exp/model_semantics/candidate/openassembler/modelfront/model_cache.py:130: in cached_build_bundle
+    key,inputs=key_for(plan,opt_level=opt_level,sass_listings=sass_listings);entry=cache/key
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/modelfront/model_cache.py:42: in key_for
+    identity={'schema':1,'compiler_identity':compiler_identity(),'sources':sources,
+                                             ^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:66: in compiler_identity
+    h.update(path.read_bytes())
+             ^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+______ test_runtime_reuses_buffers_modules_functions_and_refreshes_inputs ______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1167ec2f0>
+
+    def test_runtime_reuses_buffers_modules_functions_and_refreshes_inputs(monkeypatch):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       x=Tensor([3]);one=runtime.forward({"x":x});allocations=len(torch.allocations)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:147: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:439: in forward
+    self._initialize(next(iter(devices)))
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:283: in _initialize
+    self.buffers = {name: self._allocate(spec['shape'], dtype=spec.get("dtype","f32"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x116730830>
+shape = [3]
+
+    def _allocate(self, shape, *, dtype="f32"):
+        count = math.prod(shape)
+>       torch_dtype = {"f32": self.torch.float32, "f16": self.torch.float16, "i64": self.torch.int64, "bool": self.torch.bool}[dtype]
+                                                         ^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Torch' object has no attribute 'float16'. Did you mean: 'float32'?
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:311: AttributeError
+_____________ test_backward_explicit_seed_and_tape_mutation_guards _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x116646b60>
+
+    def test_backward_explicit_seed_and_tape_mutation_guards(monkeypatch):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       x=Tensor([3]);runtime.forward({"x":x},require_tape=True)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:161: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:439: in forward
+    self._initialize(next(iter(devices)))
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:283: in _initialize
+    self.buffers = {name: self._allocate(spec['shape'], dtype=spec.get("dtype","f32"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x10d673110>
+shape = [3]
+
+    def _allocate(self, shape, *, dtype="f32"):
+        count = math.prod(shape)
+>       torch_dtype = {"f32": self.torch.float32, "f16": self.torch.float16, "i64": self.torch.int64, "bool": self.torch.bool}[dtype]
+                                                         ^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Torch' object has no attribute 'float16'. Did you mean: 'float32'?
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:311: AttributeError
+_____________ test_backward_rejects_user_mutation_of_saved_output ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x116787110>
+
+    def test_backward_rejects_user_mutation_of_saved_output(monkeypatch):
+        runtime, _, _ = make_runtime(monkeypatch)
+>       output = runtime.forward({'x': Tensor([3])}, require_tape=True)['y']
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:439: in forward
+    self._initialize(next(iter(devices)))
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:283: in _initialize
+    self.buffers = {name: self._allocate(spec['shape'], dtype=spec.get("dtype","f32"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x10d672e90>
+shape = [3]
+
+    def _allocate(self, shape, *, dtype="f32"):
+        count = math.prod(shape)
+>       torch_dtype = {"f32": self.torch.float32, "f16": self.torch.float16, "i64": self.torch.int64, "bool": self.torch.bool}[dtype]
+                                                         ^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Torch' object has no attribute 'float16'. Did you mean: 'float32'?
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:311: AttributeError
+________ test_runtime_uses_guarded_liveness_slots_without_reallocating _________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x116785850>
+
+    def test_runtime_uses_guarded_liveness_slots_without_reallocating(monkeypatch):
+        from openassembler.modelfront.optimization import optimize_plan
+        p = plan()
+        p['buffers'].update({n: {'shape': [3], 'dtype': 'f32'} for n in ['a', 'b']})
+        p['steps'] = [{'kernel': 'relu', 'inputs': [source], 'output': output}
+                      for source, output in [('x', 'a'), ('a', 'b'), ('b', 'y')]]
+        p = optimize_plan(p, reuse_storage=True)
+        runtime, torch, _ = make_runtime(monkeypatch, p)
+>       one = runtime.forward({'x': Tensor([3])}, require_tape=True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:190: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:439: in forward
+    self._initialize(next(iter(devices)))
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:287: in _initialize
+    self._storage_slots = [self._allocate([slot['elements']]) for slot in layout['slots']]
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x10d673610>
+shape = [3]
+
+    def _allocate(self, shape, *, dtype="f32"):
+        count = math.prod(shape)
+>       torch_dtype = {"f32": self.torch.float32, "f16": self.torch.float16, "i64": self.torch.int64, "bool": self.torch.bool}[dtype]
+                                                         ^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Torch' object has no attribute 'float16'. Did you mean: 'float32'?
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:311: AttributeError
+____________ test_shape_dtype_layout_guards_before_loading[value0] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1168a8aa0>
+value = <tests.test_model_runtime.Tensor object at 0x1098bd010>
+
+    @pytest.mark.parametrize("value",[Tensor([4]),Tensor([3],device="cpu"),Tensor([3],dtype="torch.float16"),Tensor([3],contiguous=False)])
+    def test_shape_dtype_layout_guards_before_loading(monkeypatch,value):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       with pytest.raises(ValueError,match="contiguous CUDA FP32"):runtime.forward({"x":value})
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:430: in forward
+    devices = {self._check(values[s["name"]], s, s["name"]) for s in self.plan.get("inputs", []) + self.plan.get("parameters", [])}
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x10d671310>
+tensor = <tests.test_model_runtime.Tensor object at 0x1098bd010>
+spec = {'dtype': 'f32', 'name': 'x', 'shape': [3]}, name = 'x'
+
+    def _check(self, tensor, spec, name):
+        dtype = spec.get("dtype", "f32")
+        expected = {"f32":"torch.float32", "i64":"torch.int64", "bool":"torch.bool"}.get(dtype)
+        if (not getattr(tensor, "is_cuda", False) or str(tensor.dtype) != expected
+                or tuple(tensor.shape) != shape_of(spec, dtypes=("f32","i64","bool")) or not tensor.is_contiguous()
+                or tensor.data_ptr() % {"f32":4,"i64":8,"bool":1}.get(dtype,4)):
+>           raise ValueError(f"{name} needs a contiguous CUDA tensor of the declared dtype of shape {spec['shape']}")
+E           ValueError: x needs a contiguous CUDA tensor of the declared dtype of shape [3]
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:225: ValueError
+
+During handling of the above exception, another exception occurred:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1168a8aa0>
+value = <tests.test_model_runtime.Tensor object at 0x1098bd010>
+
+    @pytest.mark.parametrize("value",[Tensor([4]),Tensor([3],device="cpu"),Tensor([3],dtype="torch.float16"),Tensor([3],contiguous=False)])
+    def test_shape_dtype_layout_guards_before_loading(monkeypatch,value):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       with pytest.raises(ValueError,match="contiguous CUDA FP32"):runtime.forward({"x":value})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'contiguous CUDA FP32'
+E        Input: 'x needs a contiguous CUDA tensor of the declared dtype of shape [3]'
+
+tests/test_model_runtime.py:206: AssertionError
+____________ test_shape_dtype_layout_guards_before_loading[value1] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1168ab490>
+value = <tests.test_model_runtime.Tensor object at 0x109823610>
+
+    @pytest.mark.parametrize("value",[Tensor([4]),Tensor([3],device="cpu"),Tensor([3],dtype="torch.float16"),Tensor([3],contiguous=False)])
+    def test_shape_dtype_layout_guards_before_loading(monkeypatch,value):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       with pytest.raises(ValueError,match="contiguous CUDA FP32"):runtime.forward({"x":value})
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:430: in forward
+    devices = {self._check(values[s["name"]], s, s["name"]) for s in self.plan.get("inputs", []) + self.plan.get("parameters", [])}
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x10d671950>
+tensor = <tests.test_model_runtime.Tensor object at 0x109823610>
+spec = {'dtype': 'f32', 'name': 'x', 'shape': [3]}, name = 'x'
+
+    def _check(self, tensor, spec, name):
+        dtype = spec.get("dtype", "f32")
+        expected = {"f32":"torch.float32", "i64":"torch.int64", "bool":"torch.bool"}.get(dtype)
+        if (not getattr(tensor, "is_cuda", False) or str(tensor.dtype) != expected
+                or tuple(tensor.shape) != shape_of(spec, dtypes=("f32","i64","bool")) or not tensor.is_contiguous()
+                or tensor.data_ptr() % {"f32":4,"i64":8,"bool":1}.get(dtype,4)):
+>           raise ValueError(f"{name} needs a contiguous CUDA tensor of the declared dtype of shape {spec['shape']}")
+E           ValueError: x needs a contiguous CUDA tensor of the declared dtype of shape [3]
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:225: ValueError
+
+During handling of the above exception, another exception occurred:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1168ab490>
+value = <tests.test_model_runtime.Tensor object at 0x109823610>
+
+    @pytest.mark.parametrize("value",[Tensor([4]),Tensor([3],device="cpu"),Tensor([3],dtype="torch.float16"),Tensor([3],contiguous=False)])
+    def test_shape_dtype_layout_guards_before_loading(monkeypatch,value):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       with pytest.raises(ValueError,match="contiguous CUDA FP32"):runtime.forward({"x":value})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'contiguous CUDA FP32'
+E        Input: 'x needs a contiguous CUDA tensor of the declared dtype of shape [3]'
+
+tests/test_model_runtime.py:206: AssertionError
+____________ test_shape_dtype_layout_guards_before_loading[value2] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11671c230>
+value = <tests.test_model_runtime.Tensor object at 0x109823750>
+
+    @pytest.mark.parametrize("value",[Tensor([4]),Tensor([3],device="cpu"),Tensor([3],dtype="torch.float16"),Tensor([3],contiguous=False)])
+    def test_shape_dtype_layout_guards_before_loading(monkeypatch,value):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       with pytest.raises(ValueError,match="contiguous CUDA FP32"):runtime.forward({"x":value})
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:430: in forward
+    devices = {self._check(values[s["name"]], s, s["name"]) for s in self.plan.get("inputs", []) + self.plan.get("parameters", [])}
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x10d671810>
+tensor = <tests.test_model_runtime.Tensor object at 0x109823750>
+spec = {'dtype': 'f32', 'name': 'x', 'shape': [3]}, name = 'x'
+
+    def _check(self, tensor, spec, name):
+        dtype = spec.get("dtype", "f32")
+        expected = {"f32":"torch.float32", "i64":"torch.int64", "bool":"torch.bool"}.get(dtype)
+        if (not getattr(tensor, "is_cuda", False) or str(tensor.dtype) != expected
+                or tuple(tensor.shape) != shape_of(spec, dtypes=("f32","i64","bool")) or not tensor.is_contiguous()
+                or tensor.data_ptr() % {"f32":4,"i64":8,"bool":1}.get(dtype,4)):
+>           raise ValueError(f"{name} needs a contiguous CUDA tensor of the declared dtype of shape {spec['shape']}")
+E           ValueError: x needs a contiguous CUDA tensor of the declared dtype of shape [3]
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:225: ValueError
+
+During handling of the above exception, another exception occurred:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11671c230>
+value = <tests.test_model_runtime.Tensor object at 0x109823750>
+
+    @pytest.mark.parametrize("value",[Tensor([4]),Tensor([3],device="cpu"),Tensor([3],dtype="torch.float16"),Tensor([3],contiguous=False)])
+    def test_shape_dtype_layout_guards_before_loading(monkeypatch,value):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       with pytest.raises(ValueError,match="contiguous CUDA FP32"):runtime.forward({"x":value})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'contiguous CUDA FP32'
+E        Input: 'x needs a contiguous CUDA tensor of the declared dtype of shape [3]'
+
+tests/test_model_runtime.py:206: AssertionError
+____________ test_shape_dtype_layout_guards_before_loading[value3] _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11670ac10>
+value = <tests.test_model_runtime.Tensor object at 0x109985940>
+
+    @pytest.mark.parametrize("value",[Tensor([4]),Tensor([3],device="cpu"),Tensor([3],dtype="torch.float16"),Tensor([3],contiguous=False)])
+    def test_shape_dtype_layout_guards_before_loading(monkeypatch,value):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       with pytest.raises(ValueError,match="contiguous CUDA FP32"):runtime.forward({"x":value})
+                                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:206: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:430: in forward
+    devices = {self._check(values[s["name"]], s, s["name"]) for s in self.plan.get("inputs", []) + self.plan.get("parameters", [])}
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x10d670e10>
+tensor = <tests.test_model_runtime.Tensor object at 0x109985940>
+spec = {'dtype': 'f32', 'name': 'x', 'shape': [3]}, name = 'x'
+
+    def _check(self, tensor, spec, name):
+        dtype = spec.get("dtype", "f32")
+        expected = {"f32":"torch.float32", "i64":"torch.int64", "bool":"torch.bool"}.get(dtype)
+        if (not getattr(tensor, "is_cuda", False) or str(tensor.dtype) != expected
+                or tuple(tensor.shape) != shape_of(spec, dtypes=("f32","i64","bool")) or not tensor.is_contiguous()
+                or tensor.data_ptr() % {"f32":4,"i64":8,"bool":1}.get(dtype,4)):
+>           raise ValueError(f"{name} needs a contiguous CUDA tensor of the declared dtype of shape {spec['shape']}")
+E           ValueError: x needs a contiguous CUDA tensor of the declared dtype of shape [3]
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:225: ValueError
+
+During handling of the above exception, another exception occurred:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11670ac10>
+value = <tests.test_model_runtime.Tensor object at 0x109985940>
+
+    @pytest.mark.parametrize("value",[Tensor([4]),Tensor([3],device="cpu"),Tensor([3],dtype="torch.float16"),Tensor([3],contiguous=False)])
+    def test_shape_dtype_layout_guards_before_loading(monkeypatch,value):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       with pytest.raises(ValueError,match="contiguous CUDA FP32"):runtime.forward({"x":value})
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'contiguous CUDA FP32'
+E        Input: 'x needs a contiguous CUDA tensor of the declared dtype of shape [3]'
+
+tests/test_model_runtime.py:206: AssertionError
+__________________ test_stream_switch_rejects_workspace_races __________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x116756180>
+
+    def test_stream_switch_rejects_workspace_races(monkeypatch):
+        runtime,torch,counts=make_runtime(monkeypatch)
+>       runtime.forward({"x":Tensor([3])});torch.stream.cuda_stream=456
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_runtime.py:212: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:439: in forward
+    self._initialize(next(iter(devices)))
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:283: in _initialize
+    self.buffers = {name: self._allocate(spec['shape'], dtype=spec.get("dtype","f32"))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.modelfront.runtime.Runtime object at 0x10d671590>
+shape = [3]
+
+    def _allocate(self, shape, *, dtype="f32"):
+        count = math.prod(shape)
+>       torch_dtype = {"f32": self.torch.float32, "f16": self.torch.float16, "i64": self.torch.int64, "bool": self.torch.bool}[dtype]
+                                                         ^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Torch' object has no attribute 'float16'. Did you mean: 'float32'?
+
+compiler_exp/model_semantics/candidate/openassembler/modelfront/runtime.py:311: AttributeError
+______ test_tensor_mode_recipes_replace_every_linear_forward_and_backward ______
+
+    def test_tensor_mode_recipes_replace_every_linear_forward_and_backward():
+        from openassembler.modelfront.kernels import tensor_recipes
+        p={"schema":1,"math":"f16_rne_f32_accum",
+           "inputs":[{"name":"x","shape":[128,128],"dtype":"f32"}],
+           "parameters":[{"name":"w","shape":[128,128],"dtype":"f32"}],
+           "buffers":{name:{"shape":[128,128],"dtype":"f32"} for name in ["y","seed","dx","dw"]},
+           "steps":[{"kernel":"linear","inputs":["x","w"],"output":"y","attrs":{"m":128,"n":128,"k":128}}],
+           "outputs":["y"],"backward":{"seed_grads":{"y":"seed"},"grad_inputs":{"x":"dx"},
+           "grad_parameters":{"w":"dw"},"steps":[
+               {"kernel":"linear_dx","inputs":["seed","w"],"output":"dx","attrs":{}},
+               {"kernel":"linear_dw","inputs":["seed","x"],"output":"dw","attrs":{}}]}}
+>       specs,steps,kernels=prepare(p)
+                            ^^^^^^^^^^
+
+tests/test_model_runtime.py:261: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels.py:306: in prepare
+    recipes = tensor_recipes(plan, specs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels.py:282: in tensor_recipes
+    recipe = emit_tensor_recipe(step["kernel"], [specs[x] for x in step["inputs"]],
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels_tensor.py:135: in emit_tensor_recipe
+    plan, decision = select_plan(GemmPlan(gm, gn, gk, "f16", tile=tile))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:133: in select_plan
+    if table.get("compiler_identity") != compiler_identity():
+                                         ^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:66: in compiler_identity
+    h.update(path.read_bytes())
+             ^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+___ test_tensor_linear_requires_explicit_precision_and_supported_full_tiles ____
+
+    def test_tensor_linear_requires_explicit_precision_and_supported_full_tiles():
+        with pytest.raises(ValueError,match='explicit math_mode'):
+            emit_tensor_recipe('linear',[spec((128,128)),spec((128,128))],spec((128,128)))
+        with pytest.raises(ValueError,match='multiple'):
+            emit_tensor_recipe('linear',[spec((127,128)),spec((128,128))],spec((127,128)),{'math_mode':MATH_MODE})
+        for op,left,right,out in [('linear',(128,512),(256,512),(128,256)),
+                                   ('linear_dx',(128,256),(256,512),(128,512)),
+                                   ('linear_dw',(128,256),(128,512),(256,512))]:
+>           recipe=emit_tensor_recipe(op,[spec(left),spec(right)],spec(out),{'math_mode':MATH_MODE})
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_tensor.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels_tensor.py:135: in emit_tensor_recipe
+    plan, decision = select_plan(GemmPlan(gm, gn, gk, "f16", tile=tile))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:133: in select_plan
+    if table.get("compiler_identity") != compiler_identity():
+                                         ^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:66: in compiler_identity
+    h.update(path.read_bytes())
+             ^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+____ test_pack_half_exact_rounding_boundaries_and_signs_in_emulator[False] _____
+
+transpose = False
+
+    @pytest.mark.parametrize('transpose',[False,True])
+    def test_pack_half_exact_rounding_boundaries_and_signs_in_emulator(transpose):
+        bits=[0,0x80000000,1,0x80000001,0x33000000,0x33000001,0x33800000,0x387fffff,
+              0x38800000,0x3f801000,0x3f803000,0xbf801000,0x477fe000,0x477ff000,
+              0x7f800000,0xff800000,0x7fc00001,0xffc00001,0x3f800000,0xbf800000,
+              0x38000000,0xb8000000,0x007fffff,0x807fffff,0x3f000000,0x40000000,
+              0x42000000,0xc2000000,0x477fefff,0xc77fefff,0x477ff001,0xc77ff001]
+        shape=(4,8)
+        stage=_pack(shape,transpose,'a0','output')
+>       code,labels,*_=generate(parse_module(stage.ptx).kernels[stage.name],'sm_80','opt')
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_tensor.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_____ test_pack_half_exact_rounding_boundaries_and_signs_in_emulator[True] _____
+
+transpose = True
+
+    @pytest.mark.parametrize('transpose',[False,True])
+    def test_pack_half_exact_rounding_boundaries_and_signs_in_emulator(transpose):
+        bits=[0,0x80000000,1,0x80000001,0x33000000,0x33000001,0x33800000,0x387fffff,
+              0x38800000,0x3f801000,0x3f803000,0xbf801000,0x477fe000,0x477ff000,
+              0x7f800000,0xff800000,0x7fc00001,0xffc00001,0x3f800000,0xbf800000,
+              0x38000000,0xb8000000,0x007fffff,0x807fffff,0x3f000000,0x40000000,
+              0x42000000,0xc2000000,0x477fefff,0xc77fefff,0x477ff001,0xc77ff001]
+        shape=(4,8)
+        stage=_pack(shape,transpose,'a0','output')
+>       code,labels,*_=generate(parse_module(stage.ptx).kernels[stage.name],'sm_80','opt')
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_tensor.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+______ test_small_path_rounds_half_boundaries_exactly_without_padded_gemm ______
+
+    def test_small_path_rounds_half_boundaries_exactly_without_padded_gemm():
+        bits = [
+            0,
+            0x80000000,
+            1,
+            0x80000001,
+            0x33000000,
+            0x33000001,
+            0x33800000,
+            0x387FFFFF,
+            0x38800000,
+            0x3F801000,
+            0x3F803000,
+            0xBF801000,
+            0x477FE000,
+            0xC77FEFFF,
+            0x38000000,
+            0xB8000000,
+        ]
+        source, destination = 0x100000, 0x200000
+        stage = rounded_operand((len(bits),), "output")
+>       code, labels, *_ = generate(
+            parse_module(stage.ptx).kernels[stage.name], "sm_80", "opt"
+        )
+
+tests/test_model_batched_tensor.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[relu-attrs0-<lambda>] _
+
+op = 'relu', attrs = {}, expected = <function <lambda> at 0x109bb4b80>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[relu_backward-attrs1-<lambda>] _
+
+op = 'relu_backward', attrs = {}, expected = <function <lambda> at 0x109bb47c0>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[add-attrs2-<lambda>] _
+
+op = 'add', attrs = {}, expected = <function <lambda> at 0x109bb49a0>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[mul-attrs3-<lambda>] _
+
+op = 'mul', attrs = {}, expected = <function <lambda> at 0x109bb4a40>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[add-attrs4-<lambda>] _
+
+op = 'add', attrs = {'scalar': 0.25}
+expected = <function <lambda> at 0x109bb4c20>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[mul-attrs5-<lambda>] _
+
+op = 'mul', attrs = {'scalar': -0.5}
+expected = <function <lambda> at 0x109bb4e00>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[copy-attrs6-<lambda>] _
+
+op = 'copy', attrs = {}, expected = <function <lambda> at 0x109bb4ea0>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[fill-attrs7-<lambda>] _
+
+op = 'fill', attrs = {'value': -0.25}
+expected = <function <lambda> at 0x109bb4f40>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_elementwise_crosses_cta_tail_and_matches_independent_math[sgd-attrs8-<lambda>] _
+
+op = 'sgd', attrs = {}, expected = <function <lambda> at 0x109bb4fe0>
+
+    @pytest.mark.parametrize("op,attrs,expected", [
+        ("relu", {}, lambda a,b:[max(x,0) for x in a]),
+        ("relu_backward", {}, lambda a,b:[x if y>0 else 0 for x,y in zip(a,b)]),
+        ("add", {}, lambda a,b:[x+y for x,y in zip(a,b)]),
+        ("mul", {}, lambda a,b:[x*y for x,y in zip(a,b)]),
+        ("add", {"scalar":0.25}, lambda a,b:[x+.25 for x in a]),
+        ("mul", {"scalar":-.5}, lambda a,b:[x*-.5 for x in a]),
+        ("copy", {}, lambda a,b:a),
+        ("fill", {"value":-.25}, lambda a,b:[-.25]*len(a)),
+        ("sgd", {}, lambda a,b:[x-.125*y for x,y in zip(a,b)]),
+    ])
+    def test_elementwise_crosses_cta_tail_and_matches_independent_math(op,attrs,expected):
+        a=[(i%13-6)*.25 for i in range(131)]
+        b=[(i%9-4)*.5 for i in range(131)]
+        data=[] if op=="fill" else [a] if op in ("relu","copy") or "scalar" in attrs else [a,b]
+        k=emit_kernel(op,[spec(131)]*len(data),spec(131),attrs)
+>       assert run(k,data)==expected(a,b)
+               ^^^^^^^^^^^
+
+tests/test_model_kernels.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_________________ test_linear_forward_dx_dw_and_bias_gradient __________________
+
+    def test_linear_forward_dx_dw_and_bias_gradient():
+        m,n,k=3,5,7
+        x=[(i%7-3)*.25 for i in range(m*k)]
+        w=[(i%9-4)*.5 for i in range(n*k)]
+        bias=[i*.25 for i in range(n)]
+        gy=[(i%5-2)*.25 for i in range(m*n)]
+        forward=[sum(x[r*k+j]*w[c*k+j] for j in range(k))+bias[c] for r in range(m) for c in range(n)]
+        dx=[sum(gy[r*n+j]*w[j*k+c] for j in range(n)) for r in range(m) for c in range(k)]
+        dw=[sum(gy[j*n+r]*x[j*k+c] for j in range(m)) for r in range(n) for c in range(k)]
+        db=[sum(gy[r*n+c] for r in range(m)) for c in range(n)]
+>       assert run(emit_kernel("linear",[spec(m,k),spec(n,k),spec(n)],spec(m,n)),[x,w,bias])==forward
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution[112] _
+
+size = 112
+
+    @pytest.mark.parametrize('size', [112, 136, 513])
+    def test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution(size):
+        a = [(i % 19 - 9)*.125 for i in range(size)]
+        b = [(i % 7 - 3)*.0625 for i in range(size)]
+        rounded = lambda value: struct.unpack('<f', struct.pack('<f', value))[0]
+        expected = 0.0
+        for x,y in zip(a,b):
+            delta = rounded(x-y)
+            expected = rounded(expected + rounded(delta*delta))
+        expected = rounded(expected * rounded(1/size))
+        kernel = emit_kernel('mse', [spec(size)]*2, spec())
+        assert kernel.threads == 32
+>       assert run(kernel,[a,b]) == [expected]
+               ^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution[136] _
+
+size = 136
+
+    @pytest.mark.parametrize('size', [112, 136, 513])
+    def test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution(size):
+        a = [(i % 19 - 9)*.125 for i in range(size)]
+        b = [(i % 7 - 3)*.0625 for i in range(size)]
+        rounded = lambda value: struct.unpack('<f', struct.pack('<f', value))[0]
+        expected = 0.0
+        for x,y in zip(a,b):
+            delta = rounded(x-y)
+            expected = rounded(expected + rounded(delta*delta))
+        expected = rounded(expected * rounded(1/size))
+        kernel = emit_kernel('mse', [spec(size)]*2, spec())
+        assert kernel.threads == 32
+>       assert run(kernel,[a,b]) == [expected]
+               ^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_ test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution[513] _
+
+size = 513
+
+    @pytest.mark.parametrize('size', [112, 136, 513])
+    def test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution(size):
+        a = [(i % 19 - 9)*.125 for i in range(size)]
+        b = [(i % 7 - 3)*.0625 for i in range(size)]
+        rounded = lambda value: struct.unpack('<f', struct.pack('<f', value))[0]
+        expected = 0.0
+        for x,y in zip(a,b):
+            delta = rounded(x-y)
+            expected = rounded(expected + rounded(delta*delta))
+        expected = rounded(expected * rounded(1/size))
+        kernel = emit_kernel('mse', [spec(size)]*2, spec())
+        assert kernel.threads == 32
+>       assert run(kernel,[a,b]) == [expected]
+               ^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+________________ test_transpose_and_reshape_no_runtime_division ________________
+
+    def test_transpose_and_reshape_no_runtime_division():
+        values=list(range(15))
+        kernel=emit_kernel("transpose2d",[spec(3,5)],spec(5,3))
+        assert "div." not in kernel.ptx and "rem." not in kernel.ptx
+>       assert run(kernel,[values])==[values[r*5+c] for c in range(5) for r in range(3)]
+               ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:145: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_______________ test_loss_and_gradient_include_tail_and_upstream _______________
+
+    def test_loss_and_gradient_include_tail_and_upstream():
+        a=[i*.25-1 for i in range(13)]
+        b=[.5]*13
+>       assert run(emit_kernel("mse",[spec(13)]*2,spec()),[a,b])[0] == pytest.approx(sum((x-y)**2 for x,y in zip(a,b))/13,rel=1e-6)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+__________ test_cooperative_softmax_and_backward_row_column_tails[1] ___________
+
+width = 1
+
+    @pytest.mark.parametrize("width",[1,3,33,513])
+    def test_cooperative_softmax_and_backward_row_column_tails(width):
+        rows=5
+        x=[(i%17-8)*.125 for i in range(rows*width)]
+        gy=[(i%11-5)*.125 for i in range(rows*width)]
+        expected=[]
+        for row in range(rows):
+            values=x[row*width:(row+1)*width];nums=[math.exp(v-max(values)) for v in values]
+            expected.extend(n/sum(nums) for n in nums)
+>       y=run(emit_kernel("softmax",[spec(rows,width)],spec(rows,width)),[x])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:186: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+__________ test_cooperative_softmax_and_backward_row_column_tails[3] ___________
+
+width = 3
+
+    @pytest.mark.parametrize("width",[1,3,33,513])
+    def test_cooperative_softmax_and_backward_row_column_tails(width):
+        rows=5
+        x=[(i%17-8)*.125 for i in range(rows*width)]
+        gy=[(i%11-5)*.125 for i in range(rows*width)]
+        expected=[]
+        for row in range(rows):
+            values=x[row*width:(row+1)*width];nums=[math.exp(v-max(values)) for v in values]
+            expected.extend(n/sum(nums) for n in nums)
+>       y=run(emit_kernel("softmax",[spec(rows,width)],spec(rows,width)),[x])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:186: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+__________ test_cooperative_softmax_and_backward_row_column_tails[33] __________
+
+width = 33
+
+    @pytest.mark.parametrize("width",[1,3,33,513])
+    def test_cooperative_softmax_and_backward_row_column_tails(width):
+        rows=5
+        x=[(i%17-8)*.125 for i in range(rows*width)]
+        gy=[(i%11-5)*.125 for i in range(rows*width)]
+        expected=[]
+        for row in range(rows):
+            values=x[row*width:(row+1)*width];nums=[math.exp(v-max(values)) for v in values]
+            expected.extend(n/sum(nums) for n in nums)
+>       y=run(emit_kernel("softmax",[spec(rows,width)],spec(rows,width)),[x])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:186: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_________ test_cooperative_softmax_and_backward_row_column_tails[513] __________
+
+width = 513
+
+    @pytest.mark.parametrize("width",[1,3,33,513])
+    def test_cooperative_softmax_and_backward_row_column_tails(width):
+        rows=5
+        x=[(i%17-8)*.125 for i in range(rows*width)]
+        gy=[(i%11-5)*.125 for i in range(rows*width)]
+        expected=[]
+        for row in range(rows):
+            values=x[row*width:(row+1)*width];nums=[math.exp(v-max(values)) for v in values]
+            expected.extend(n/sum(nums) for n in nums)
+>       y=run(emit_kernel("softmax",[spec(rows,width)],spec(rows,width)),[x])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:186: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_________ test_tanh_gelu_stable_backward_including_saturation_and_tail _________
+
+    def test_tanh_gelu_stable_backward_including_saturation_and_tail():
+        x=[-12,-8,-4,-3,-2,-.752,-.75,-.748,-1e-6,0,1e-6,.75,2,3,4,8,12]*9
+        gy=[(-1 if i%2 else 1)*(1+(i%3)*.5) for i in range(len(x))]
+        expected=[];dx=[]
+        for v,g in zip(x,gy):
+            u=math.sqrt(2/math.pi)*(v+.044715*v**3);t=math.tanh(u)
+            expected.append(.5*v*(1+t))
+            dx.append(g*(.5*(1+t)+.5*v*(1-t*t)*math.sqrt(2/math.pi)*(1+3*.044715*v*v)))
+>       assert run(emit_kernel("gelu",[spec(len(x))],spec(len(x))),[x])==pytest.approx(expected,rel=1e-4,abs=2e-6)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:203: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_____________ test_layernorm_full_affine_derivatives_with_tails[1] _____________
+
+width = 1
+
+    @pytest.mark.parametrize("width",[1,3,33,513])
+    def test_layernorm_full_affine_derivatives_with_tails(width):
+        rows=5
+        x=[1000+(i%13-6)*.125 for i in range(rows*width)]
+        gy=[(i%11-5)*.125 for i in range(rows*width)]
+        weight=[.5+(i%5)*.125 for i in range(width)]
+        bias=[(i%7-3)*.125 for i in range(width)]
+        expected=[];inverse=[]
+        for row in range(rows):
+            values=x[row*width:(row+1)*width];mean=sum(values)/width;var=sum((v-mean)**2 for v in values)/width
+            inv=1/math.sqrt(var+1e-5);inverse.append(inv);expected.extend((v-mean)*inv for v in values)
+>       y=run(emit_kernel("layernorm",[spec(rows,width)],spec(rows,width),{"epsilon":1e-5}),[x])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+_____________ test_layernorm_full_affine_derivatives_with_tails[3] _____________
+
+width = 3
+
+    @pytest.mark.parametrize("width",[1,3,33,513])
+    def test_layernorm_full_affine_derivatives_with_tails(width):
+        rows=5
+        x=[1000+(i%13-6)*.125 for i in range(rows*width)]
+        gy=[(i%11-5)*.125 for i in range(rows*width)]
+        weight=[.5+(i%5)*.125 for i in range(width)]
+        bias=[(i%7-3)*.125 for i in range(width)]
+        expected=[];inverse=[]
+        for row in range(rows):
+            values=x[row*width:(row+1)*width];mean=sum(values)/width;var=sum((v-mean)**2 for v in values)/width
+            inv=1/math.sqrt(var+1e-5);inverse.append(inv);expected.extend((v-mean)*inv for v in values)
+>       y=run(emit_kernel("layernorm",[spec(rows,width)],spec(rows,width),{"epsilon":1e-5}),[x])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+____________ test_layernorm_full_affine_derivatives_with_tails[33] _____________
+
+width = 33
+
+    @pytest.mark.parametrize("width",[1,3,33,513])
+    def test_layernorm_full_affine_derivatives_with_tails(width):
+        rows=5
+        x=[1000+(i%13-6)*.125 for i in range(rows*width)]
+        gy=[(i%11-5)*.125 for i in range(rows*width)]
+        weight=[.5+(i%5)*.125 for i in range(width)]
+        bias=[(i%7-3)*.125 for i in range(width)]
+        expected=[];inverse=[]
+        for row in range(rows):
+            values=x[row*width:(row+1)*width];mean=sum(values)/width;var=sum((v-mean)**2 for v in values)/width
+            inv=1/math.sqrt(var+1e-5);inverse.append(inv);expected.extend((v-mean)*inv for v in values)
+>       y=run(emit_kernel("layernorm",[spec(rows,width)],spec(rows,width),{"epsilon":1e-5}),[x])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+____________ test_layernorm_full_affine_derivatives_with_tails[513] ____________
+
+width = 513
+
+    @pytest.mark.parametrize("width",[1,3,33,513])
+    def test_layernorm_full_affine_derivatives_with_tails(width):
+        rows=5
+        x=[1000+(i%13-6)*.125 for i in range(rows*width)]
+        gy=[(i%11-5)*.125 for i in range(rows*width)]
+        weight=[.5+(i%5)*.125 for i in range(width)]
+        bias=[(i%7-3)*.125 for i in range(width)]
+        expected=[];inverse=[]
+        for row in range(rows):
+            values=x[row*width:(row+1)*width];mean=sum(values)/width;var=sum((v-mean)**2 for v in values)/width
+            inv=1/math.sqrt(var+1e-5);inverse.append(inv);expected.extend((v-mean)*inv for v in values)
+>       y=run(emit_kernel("layernorm",[spec(rows,width)],spec(rows,width),{"epsilon":1e-5}),[x])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_kernels.py:218: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_model_kernels.py:24: in run
+    code, labels, _, _, _ = generate(module.kernels[specification.name], "sm_80", "opt")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/build.py:122: in generate
+    code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels, model="mined")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:410: in schedule
+    out = _mined_stalls(code, out, join_at)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:515: in _mined_stalls
+    lat, pairs = _load_model()
+                 ^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/backend/compile.py:497: in _load_model
+    m = json.loads((root / "corpus" / "sm_80" / "machine_model.json").read_text())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:546: in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:632: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+___ test_measured_half_model_products_choose_small_tiles[linear-a0-b0-out0] ____
+
+op = 'linear', a = (128, 128), b = (256, 128), out = (128, 256)
+
+    @pytest.mark.parametrize(
+        "op,a,b,out",
+        [
+            ("linear", (128, 128), (256, 128), (128, 256)),
+            ("linear", (128, 256), (128, 256), (128, 128)),
+            ("linear_dx", (128, 256), (256, 128), (128, 128)),
+            ("linear_dw", (128, 256), (128, 128), (256, 128)),
+            ("linear", (128, 128), (128, 128), (128, 128)),
+        ],
+    )
+    def test_measured_half_model_products_choose_small_tiles(op, a, b, out):
+>       r = emit_tensor_recipe(
+            op, [spec(*a), spec(*b)], spec(*out), {"math_mode": MATH_MODE}
+        )
+
+tests/test_model_training_kernels.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels_tensor.py:135: in emit_tensor_recipe
+    plan, decision = select_plan(GemmPlan(gm, gn, gk, "f16", tile=tile))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:133: in select_plan
+    if table.get("compiler_identity") != compiler_identity():
+                                         ^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:66: in compiler_identity
+    h.update(path.read_bytes())
+             ^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+___ test_measured_half_model_products_choose_small_tiles[linear-a1-b1-out1] ____
+
+op = 'linear', a = (128, 256), b = (128, 256), out = (128, 128)
+
+    @pytest.mark.parametrize(
+        "op,a,b,out",
+        [
+            ("linear", (128, 128), (256, 128), (128, 256)),
+            ("linear", (128, 256), (128, 256), (128, 128)),
+            ("linear_dx", (128, 256), (256, 128), (128, 128)),
+            ("linear_dw", (128, 256), (128, 128), (256, 128)),
+            ("linear", (128, 128), (128, 128), (128, 128)),
+        ],
+    )
+    def test_measured_half_model_products_choose_small_tiles(op, a, b, out):
+>       r = emit_tensor_recipe(
+            op, [spec(*a), spec(*b)], spec(*out), {"math_mode": MATH_MODE}
+        )
+
+tests/test_model_training_kernels.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels_tensor.py:135: in emit_tensor_recipe
+    plan, decision = select_plan(GemmPlan(gm, gn, gk, "f16", tile=tile))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:133: in select_plan
+    if table.get("compiler_identity") != compiler_identity():
+                                         ^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:66: in compiler_identity
+    h.update(path.read_bytes())
+             ^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+__ test_measured_half_model_products_choose_small_tiles[linear_dx-a2-b2-out2] __
+
+op = 'linear_dx', a = (128, 256), b = (256, 128), out = (128, 128)
+
+    @pytest.mark.parametrize(
+        "op,a,b,out",
+        [
+            ("linear", (128, 128), (256, 128), (128, 256)),
+            ("linear", (128, 256), (128, 256), (128, 128)),
+            ("linear_dx", (128, 256), (256, 128), (128, 128)),
+            ("linear_dw", (128, 256), (128, 128), (256, 128)),
+            ("linear", (128, 128), (128, 128), (128, 128)),
+        ],
+    )
+    def test_measured_half_model_products_choose_small_tiles(op, a, b, out):
+>       r = emit_tensor_recipe(
+            op, [spec(*a), spec(*b)], spec(*out), {"math_mode": MATH_MODE}
+        )
+
+tests/test_model_training_kernels.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels_tensor.py:135: in emit_tensor_recipe
+    plan, decision = select_plan(GemmPlan(gm, gn, gk, "f16", tile=tile))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:133: in select_plan
+    if table.get("compiler_identity") != compiler_identity():
+                                         ^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:66: in compiler_identity
+    h.update(path.read_bytes())
+             ^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+__ test_measured_half_model_products_choose_small_tiles[linear_dw-a3-b3-out3] __
+
+op = 'linear_dw', a = (128, 256), b = (128, 128), out = (256, 128)
+
+    @pytest.mark.parametrize(
+        "op,a,b,out",
+        [
+            ("linear", (128, 128), (256, 128), (128, 256)),
+            ("linear", (128, 256), (128, 256), (128, 128)),
+            ("linear_dx", (128, 256), (256, 128), (128, 128)),
+            ("linear_dw", (128, 256), (128, 128), (256, 128)),
+            ("linear", (128, 128), (128, 128), (128, 128)),
+        ],
+    )
+    def test_measured_half_model_products_choose_small_tiles(op, a, b, out):
+>       r = emit_tensor_recipe(
+            op, [spec(*a), spec(*b)], spec(*out), {"math_mode": MATH_MODE}
+        )
+
+tests/test_model_training_kernels.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels_tensor.py:135: in emit_tensor_recipe
+    plan, decision = select_plan(GemmPlan(gm, gn, gk, "f16", tile=tile))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:133: in select_plan
+    if table.get("compiler_identity") != compiler_identity():
+                                         ^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:66: in compiler_identity
+    h.update(path.read_bytes())
+             ^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+___ test_measured_half_model_products_choose_small_tiles[linear-a4-b4-out4] ____
+
+op = 'linear', a = (128, 128), b = (128, 128), out = (128, 128)
+
+    @pytest.mark.parametrize(
+        "op,a,b,out",
+        [
+            ("linear", (128, 128), (256, 128), (128, 256)),
+            ("linear", (128, 256), (128, 256), (128, 128)),
+            ("linear_dx", (128, 256), (256, 128), (128, 128)),
+            ("linear_dw", (128, 256), (128, 128), (256, 128)),
+            ("linear", (128, 128), (128, 128), (128, 128)),
+        ],
+    )
+    def test_measured_half_model_products_choose_small_tiles(op, a, b, out):
+>       r = emit_tensor_recipe(
+            op, [spec(*a), spec(*b)], spec(*out), {"math_mode": MATH_MODE}
+        )
+
+tests/test_model_training_kernels.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/model_semantics/candidate/openassembler/modelfront/kernels_tensor.py:135: in emit_tensor_recipe
+    plan, decision = select_plan(GemmPlan(gm, gn, gk, "f16", tile=tile))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:133: in select_plan
+    if table.get("compiler_identity") != compiler_identity():
+                                         ^^^^^^^^^^^^^^^^^^^
+compiler_exp/model_semantics/candidate/openassembler/gemm_dispatch.py:66: in compiler_identity
+    h.update(path.read_bytes())
+             ^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_abc.py:625: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/model_semantics/candidate/corpus/sm_80/machine_model.json'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/pathlib/_local.py:537: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_model_graph.py::test_broadcast_mutation_dtype_and_tensor_slices_fail_closed
+FAILED tests/test_model_runtime.py::test_persistent_model_cache_revalidates_and_never_retains_ptxas_donors
+FAILED tests/test_model_runtime.py::test_runtime_reuses_buffers_modules_functions_and_refreshes_inputs
+FAILED tests/test_model_runtime.py::test_backward_explicit_seed_and_tape_mutation_guards
+FAILED tests/test_model_runtime.py::test_backward_rejects_user_mutation_of_saved_output
+FAILED tests/test_model_runtime.py::test_runtime_uses_guarded_liveness_slots_without_reallocating
+FAILED tests/test_model_runtime.py::test_shape_dtype_layout_guards_before_loading[value0]
+FAILED tests/test_model_runtime.py::test_shape_dtype_layout_guards_before_loading[value1]
+FAILED tests/test_model_runtime.py::test_shape_dtype_layout_guards_before_loading[value2]
+FAILED tests/test_model_runtime.py::test_shape_dtype_layout_guards_before_loading[value3]
+FAILED tests/test_model_runtime.py::test_stream_switch_rejects_workspace_races
+FAILED tests/test_model_runtime.py::test_tensor_mode_recipes_replace_every_linear_forward_and_backward
+FAILED tests/test_model_tensor.py::test_tensor_linear_requires_explicit_precision_and_supported_full_tiles
+FAILED tests/test_model_tensor.py::test_pack_half_exact_rounding_boundaries_and_signs_in_emulator[False]
+FAILED tests/test_model_tensor.py::test_pack_half_exact_rounding_boundaries_and_signs_in_emulator[True]
+FAILED tests/test_model_batched_tensor.py::test_small_path_rounds_half_boundaries_exactly_without_padded_gemm
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[relu-attrs0-<lambda>]
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[relu_backward-attrs1-<lambda>]
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[add-attrs2-<lambda>]
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[mul-attrs3-<lambda>]
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[add-attrs4-<lambda>]
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[mul-attrs5-<lambda>]
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[copy-attrs6-<lambda>]
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[fill-attrs7-<lambda>]
+FAILED tests/test_model_kernels.py::test_elementwise_crosses_cta_tail_and_matches_independent_math[sgd-attrs8-<lambda>]
+FAILED tests/test_model_kernels.py::test_linear_forward_dx_dw_and_bias_gradient
+FAILED tests/test_model_kernels.py::test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution[112]
+FAILED tests/test_model_kernels.py::test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution[136]
+FAILED tests/test_model_kernels.py::test_ordered_mse_preserves_scalar_fp32_sum_in_ptx_sass_and_poisoned_execution[513]
+FAILED tests/test_model_kernels.py::test_transpose_and_reshape_no_runtime_division
+FAILED tests/test_model_kernels.py::test_loss_and_gradient_include_tail_and_upstream
+FAILED tests/test_model_kernels.py::test_cooperative_softmax_and_backward_row_column_tails[1]
+FAILED tests/test_model_kernels.py::test_cooperative_softmax_and_backward_row_column_tails[3]
+FAILED tests/test_model_kernels.py::test_cooperative_softmax_and_backward_row_column_tails[33]
+FAILED tests/test_model_kernels.py::test_cooperative_softmax_and_backward_row_column_tails[513]
+FAILED tests/test_model_kernels.py::test_tanh_gelu_stable_backward_including_saturation_and_tail
+FAILED tests/test_model_kernels.py::test_layernorm_full_affine_derivatives_with_tails[1]
+FAILED tests/test_model_kernels.py::test_layernorm_full_affine_derivatives_with_tails[3]
+FAILED tests/test_model_kernels.py::test_layernorm_full_affine_derivatives_with_tails[33]
+FAILED tests/test_model_kernels.py::test_layernorm_full_affine_derivatives_with_tails[513]
+FAILED tests/test_model_training_kernels.py::test_measured_half_model_products_choose_small_tiles[linear-a0-b0-out0]
+FAILED tests/test_model_training_kernels.py::test_measured_half_model_products_choose_small_tiles[linear-a1-b1-out1]
+FAILED tests/test_model_training_kernels.py::test_measured_half_model_products_choose_small_tiles[linear_dx-a2-b2-out2]
+FAILED tests/test_model_training_kernels.py::test_measured_half_model_products_choose_small_tiles[linear_dw-a3-b3-out3]
+FAILED tests/test_model_training_kernels.py::test_measured_half_model_products_choose_small_tiles[linear-a4-b4-out4]
+45 failed, 148 passed, 9 skipped in 3.58s

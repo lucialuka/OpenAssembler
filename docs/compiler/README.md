@@ -8,6 +8,9 @@ as an implemented OA operation.
 
 ## Current implementation and evidence
 
+- [Masked attention and persistent model state](model-semantics.md): broadcasting,
+  integer embeddings/CE, Adam/AdamW, cache ownership, CLI and A100 gates.
+
 - [Semantic acceptance and diagnostics](semantic-acceptance.md): November 19
   saturation/FTZ correctness repairs, explicit scalar contracts and source errors.
 - [Coverage priorities and independent matrix](coverage-priorities.md): frozen

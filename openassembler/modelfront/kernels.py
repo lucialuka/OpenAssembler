@@ -24,8 +24,8 @@ def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
 
 
-def shape_of(spec):
-    if not isinstance(spec, dict) or spec.get("dtype", "f32") not in ("f32", "float32"):
+def shape_of(spec, *, dtypes=("f32", "float32")):
+    if not isinstance(spec, dict) or spec.get("dtype", "f32") not in dtypes:
         raise ValueError("native model tensors require f32 dtype")
     shape = spec.get("shape")
     if not isinstance(shape, (list, tuple)) or any(type(x) is not int or x <= 0 for x in shape):
@@ -70,6 +70,9 @@ class KernelSpec:
 
 def emit_kernel(op, inputs, output, attrs=None):
     """Validate a complete op contract and return deterministic supported PTX."""
+    from .kernels_semantics import SEMANTIC_OPS, emit_semantic_kernel
+    if op in SEMANTIC_OPS:
+        return emit_semantic_kernel(op, inputs, output, attrs)
     from .kernels_concat import CONCAT_OPS, emit_concat_kernel
     if op in CONCAT_OPS:
         return emit_concat_kernel(op, inputs, output, attrs)
@@ -253,12 +256,12 @@ def tensor_specs(plan):
         specs[spec["name"]] = spec
     for name, spec in plan.get("buffers", {}).items():
         if name in specs:
-            if shape_of(specs[name]) != shape_of(spec):
+            if specs[name].get("dtype", "f32") != spec.get("dtype", "f32") or shape_of(specs[name], dtypes=("f32","i64","bool")) != shape_of(spec, dtypes=("f32","i64","bool")):
                 raise ValueError("buffer metadata disagrees with input/parameter")
             continue
         specs[name] = spec
     for spec in specs.values():
-        shape_of(spec)
+        shape_of(spec, dtypes=("f32","i64","bool"))
     return specs
 
 
@@ -288,6 +291,16 @@ def prepare(plan):
         raise ValueError("unsupported native model plan schema")
     specs = tensor_specs(plan)
     from .optimization import validate_aliases, validate_storage
+    expected_domains=[]
+    external_inputs={s['name'] for s in plan.get('inputs',[])}
+    for step in plan.get('steps',[]):
+        if step.get('kernel')=='embedding':
+            index,weight=step['inputs']
+            if index not in external_inputs:raise ValueError('embedding indices must be external validated inputs')
+            domain={'name':index,'lower':0,'upper':specs[weight]['shape'][0]}
+            if domain not in expected_domains:expected_domains.append(domain)
+    if plan.get('index_domains',[])!=expected_domains:raise ValueError('embedding index domains differ from executable graph')
+    if type(plan.get('optimizer_fusion',False)) is not bool:raise ValueError('optimizer_fusion must be boolean')
     aliases = validate_aliases(plan)
     validate_storage(plan)
     recipes = tensor_recipes(plan, specs)
@@ -339,6 +352,29 @@ def prepare(plan):
     for name in backward.get("grad_parameters", {}):
         kernel = emit_kernel("sgd", [specs[name]]*2, specs[name])
         kernels[kernel.name] = kernel
+    from .optimizer import optimizer_options
+    options = optimizer_options(plan.get("optimizer", {}))
+    if options["name"] != "sgd":
+        for name in backward.get("grad_parameters", {}):
+            for op in ("adam_m", "adam_v", "adam_update", "adam_fused"):
+                kernel = emit_kernel(op, [specs[name]]*(4 if op in ("adam_update", "adam_fused") else 3), specs[name], options)
+                kernels[kernel.name] = kernel
+    if plan.get("loss", "mse") == "cross_entropy":
+        if len(plan["outputs"]) != 1:
+            raise ValueError("cross_entropy training requires one logits output")
+        output = specs[plan["outputs"][0]]
+        dims = shape_of(output)
+        if len(dims) != 2:
+            raise ValueError("cross_entropy expects rank-two [rows, classes] logits")
+        labels = {"shape": [dims[0]], "dtype": "i64"}
+        for op, args, result in (("ce_rows", [output, labels], {"shape": [dims[0]]}),
+                                 ("ce_grad", [output, labels], output)):
+            kernel = emit_kernel(op, args, result)
+            kernels[kernel.name] = kernel
+        kernel = emit_kernel("mean", [{"shape": [dims[0]]}], {"shape": []})
+        kernels[kernel.name] = kernel
+    elif plan.get("loss", "mse") != "mse":
+        raise ValueError("unsupported native loss policy")
     return specs, steps, kernels
 
 

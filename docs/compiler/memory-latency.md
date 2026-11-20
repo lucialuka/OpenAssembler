@@ -140,3 +140,12 @@ training/replay checks. The coalesced transpose-pack candidate is slower and
 rejected. This evidence does not enlarge the global GEMM dispatch table or
 attribute a general win to coalescing. Whole-task and independently paired
 regions remain distinct from standalone kernel distributions.
+
+## November 20 model-state memory traffic
+
+The [model semantics study](model-semantics.md#memory-and-latency-decisions)
+compares split/fused bias-corrected AdamW with full state gates, documents
+direct broadcast indexing and deterministic embedding-gradient costs, and
+separates append-copy cache correctness from future paging/online attention.
+It does not change the incumbent async/Tensor Core schedules or infer
+whole-training speed from component CUDA-event measurements.

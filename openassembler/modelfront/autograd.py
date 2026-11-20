@@ -75,7 +75,7 @@ class CompiledModel(torch.nn.Module):
     Backward seeds must be contiguous; implicit expanded gradients from an
     external sum/reduction require an explicit contiguous seed instead.
     An external PyTorch loss, optimizer or AccumulateGrad may execute vendor
-    arithmetic. Use ``native_train_step`` for a complete OA-owned MSE/SGD update.
+    arithmetic. Use ``native_train_step`` for OA-owned loss and optimizer updates.
     Use ``native_forward`` for persistent OA-owned inference without autograd.
     """
 
@@ -177,7 +177,7 @@ class CompiledModel(torch.nn.Module):
         return _restore(structure, outputs)
 
     def native_train_step(self, inputs, target, *, learning_rate=0.01):
-        """Run FP32 forward, mean-square loss, all gradients and SGD through OA.
+        """Run FP32 forward, the saved loss, gradients and optimizer through OA.
 
         Inputs may be a tensor, a positional sequence or an exact name mapping.
         This method bypasses PyTorch autograd and optimizer arithmetic entirely.
@@ -206,7 +206,7 @@ class CompiledModel(torch.nn.Module):
 
 
 def compile_model(model, example_inputs, output_dir, *, opt_level="opt", math_mode="fp32",
-                  storage_views=True, reuse_storage=False, sass_listings=True,tensor_packing='separate'):
+                  storage_views=True, reuse_storage=False, sass_listings=True,tensor_packing='separate', loss='mse', optimizer=None, optimizer_fusion=False):
     """Build an exact-shape CPU model and return its native CUDA Module.
 
     CUDA toolkit tools are required for the build. CPU capture never executes
@@ -223,6 +223,13 @@ def compile_model(model, example_inputs, output_dir, *, opt_level="opt", math_mo
     if tensor_packing not in ('separate','dual') or tensor_packing=='dual' and math_mode!='f16_rne_f32_accum':
         raise ValueError('dual tensor packing requires explicit f16_rne_f32_accum math')
     if tensor_packing != 'separate':plan['tensor_packing']=tensor_packing
+    from .optimizer import optimizer_options
+    policy=optimizer_options(optimizer)
+    if loss not in ('mse','cross_entropy'):raise ValueError('loss must be mse or cross_entropy')
+    if loss!='mse':plan['loss']=loss
+    if policy['name']!='sgd':plan['optimizer']=policy
+    if type(optimizer_fusion) is not bool:raise ValueError('optimizer_fusion must be boolean')
+    if optimizer_fusion:plan['optimizer_fusion']=True
     weights = extract_weights(model, plan)
     build_bundle(plan, weights, output_dir, opt_level=opt_level, sass_listings=sass_listings)
     return CompiledModel(plan, weights, output_dir)

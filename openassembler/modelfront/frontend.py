@@ -93,18 +93,29 @@ def load_config(root: Path, *, entrypoint: str | None = None, input_shapes: list
         raise ModelError('model.input_shapes must be a nonempty array of positive integer shapes')
     if any(math.prod(shape) > 2**28 for shape in shapes):
         raise ModelError('model input exceeds the bounded native model element limit')
-    if model.get('input_dtypes', ['f32'] * len(shapes)) != ['f32'] * len(shapes):
-        raise ModelError('native model inputs currently require f32; implicit precision changes are rejected')
+    dtypes=model.get('input_dtypes',['f32']*len(shapes))
+    if not isinstance(dtypes,list) or len(dtypes)!=len(shapes) or any(t not in ('f32','i64','bool') for t in dtypes):
+        raise ModelError('model.input_dtypes must declare f32, i64 or bool for each input')
+    ranges=model.get('input_ranges',[[0,1] for _ in shapes])
+    if not isinstance(ranges,list) or len(ranges)!=len(shapes):raise ModelError('input_ranges must match input count')
+    for dtype,bounds in zip(dtypes,ranges):
+        if dtype=='i64' and (not isinstance(bounds,list) or len(bounds)!=2 or any(type(x) is not int for x in bounds) or not 0<=bounds[0]<bounds[1]<=2**31):
+            raise ModelError('i64 example ranges need nonnegative integer [lower, upper) bounds')
     math_mode = model.get('math', 'fp32')
     if math_mode not in ('fp32', 'f16_rne_f32_accum'):
         raise ModelError('model.math must be fp32 or explicit f16_rne_f32_accum')
     mode = model.get('mode', 'inference')
     if mode not in ('inference', 'training'):
         raise ModelError('model.mode must be inference or training')
-    if model.get('loss', 'mse') != 'mse' or model.get('optimizer', 'sgd') != 'sgd':
-        raise ModelError('native model training currently supports MSE and plain SGD')
+    if model.get('loss','mse') not in ('mse','cross_entropy'):raise ModelError('loss must be mse or cross_entropy')
+    if any(k in model for k in ('amsgrad','maximize','capturable','differentiable','foreach','fused','decoupled_weight_decay')):
+        raise ModelError('unsupported optimizer option; use explicit SGD, Adam or AdamW policy')
+    from .optimizer import optimizer_options
+    try:
+        policy=optimizer_options({'name':model.get('optimizer','sgd'),**{k:model[k] for k in ('beta1','beta2','epsilon','weight_decay') if k in model}})
+    except ValueError as exc:raise ModelError(str(exc)) from None
     kind, host = resolve_backend(model.get('build_backend', 'auto'), model.get('host'))
-    values = dict(entrypoint=entry, factory=factory, input_shapes=shapes, input_dtypes=['f32'] * len(shapes),
+    values = dict(entrypoint=entry, factory=factory, input_shapes=shapes, input_dtypes=dtypes, input_ranges=ranges, loss=model.get('loss','mse'), optimizer_policy=policy,
                   factory_args=args, factory_kwargs=kwargs,
                   math=math_mode, mode=mode, seed=model.get('seed', 7), steps=model.get('steps', 3),
                   learning_rate=model.get('learning_rate', 0.01), rtol=model.get('rtol', 1e-4),
@@ -123,6 +134,10 @@ def load_config(root: Path, *, entrypoint: str | None = None, input_shapes: list
     execution = model.get('execution', 'direct')
     if execution not in ('direct', 'cuda_graph') or (execution == 'cuda_graph' and mode != 'training'):
         raise ModelError('model.execution must be direct or cuda_graph; cuda_graph requires training mode')
+    if execution=='cuda_graph' and (any(t!='f32' for t in dtypes) or values['loss']!='mse' or policy['name']!='sgd'):
+        raise ModelError('indexed inputs, cross_entropy and Adam require direct execution')
+    if type(model.get('optimizer_fusion',False)) is not bool:raise ModelError('optimizer_fusion must be true or false')
+    values['optimizer_fusion']=model.get('optimizer_fusion',False)
     values['execution'] = execution
     if type(model.get('sass_listings', True)) is not bool:
         raise ModelError('model.sass_listings must be true or false')

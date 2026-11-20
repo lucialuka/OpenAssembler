@@ -6,7 +6,10 @@ Unsupported FX nodes and later semantic/shape checks now include the user
 forward file and line through recorded trace stacks. See
 [semantic diagnostics](../../compiler/semantic-acceptance.md) and
 [the supplied CPU coverage matrix](../../compiler/coverage-priorities.md) for
-the explicit admission and evidence limits; no new operator is implied.
+the earlier admission and evidence limits. The November 20
+[model semantics extension](../../compiler/model-semantics.md) adds bounded
+broadcasting, masked/causal SDPA, indexed models, CE/adaptive training and owned
+cache sessions with separate hardware and CLI evidence.
 
 The native model route captures a CPU `torch.nn.Module` factory with explicit
 input shapes, lowers supported FX nodes and their derivatives to an OA launch
@@ -17,13 +20,15 @@ compute libraries are not code generation or execution fallbacks.
 
 ## Contract and ownership
 
-The graph subset covers FP32 Linear, ReLU, same-shape add/multiply, finite
+The graph subset covers FP32 Linear, ReLU, broadcast add/multiply, finite
 scalar arithmetic, immutable reshapes, rank-two through rank-four permutations,
 matmul/batched products, last-dimension softmax, tanh GELU, affine LayerNorm,
 concatenation and slice derivatives. Batched products support FP32 and explicit FP16-RNE operands with FP32 accumulation;
 exact equal batch shapes are required; broadcasting is not inferred. The
 symbolic backward graph includes input/weight/bias gradients, branch accumulation
-and aliased parameters. Complete native training uses MSE and plain SGD.
+and aliased parameters. Complete native training supports MSE or mean integer cross-entropy and plain
+SGD or explicit Adam/AdamW. Boolean/causal SDPA and dense int64-indexed
+embeddings have the bounded contracts linked above.
 Unsupported nodes report the offending FX node and fail before native execution.
 This is bounded application compilation, not arbitrary Python or all ML frameworks.
 

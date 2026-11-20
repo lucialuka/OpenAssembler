@@ -20,6 +20,8 @@ class TrainingReplay:
         _float(learning_rate)
         if isinstance(learning_rate, bool) or not math.isfinite(learning_rate) or learning_rate < 0:
             raise ValueError('learning rate must be finite and nonnegative')
+        if plan.get("index_domains") or plan.get("loss") == "cross_entropy" or plan.get("optimizer",{}).get("name","sgd") != "sgd":
+            raise ValueError("indexed inputs, cross_entropy and Adam require direct execution")
         self.runtime = Runtime(plan, weights, root)
         self.inputs, self.target = dict(inputs), target
         self._closed = False

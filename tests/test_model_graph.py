@@ -224,7 +224,7 @@ def test_unsupported_operator_fails_with_fx_node(bad):
         capture_model(torch.nn.Sequential(bad), (torch.randn(2, 3),))
 
 
-def test_broadcast_mutation_dtype_and_tensor_slices_fail_closed():
+def test_broadcast_supported_but_mutation_dtype_and_tensor_slices_fail_closed():
     class Broadcast(torch.nn.Module):
         def forward(self, x, y):
             return x + y
@@ -237,8 +237,7 @@ def test_broadcast_mutation_dtype_and_tensor_slices_fail_closed():
         def forward(self, x):
             return torch.nn.functional.relu(x, True)
 
-    with pytest.raises(ModelGraphError, match="broadcasting"):
-        capture_model(Broadcast(), (torch.randn(2, 3), torch.randn(3)))
+    assert capture_model(Broadcast(), (torch.randn(2, 3), torch.randn(3)))["steps"][0]["kernel"] == "broadcast_add"
     with pytest.raises(ModelGraphError, match="in-place ReLU"):
         capture_model(torch.nn.Sequential(torch.nn.ReLU(inplace=True)), (torch.randn(2, 3),))
     with pytest.raises(ModelGraphError, match="in-place ReLU"):

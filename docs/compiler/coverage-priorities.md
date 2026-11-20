@@ -60,9 +60,12 @@ a coverage percentage for arbitrary ML repositories.
 | P2 efficient general lowerings | Valid generic lowering first, then coalescing/vector tails, reuse/fusion, register-pressure-aware overlap | Matched whole-step timing and held-out shapes; compare current OA plus original application; include packing/transfers/host/optimizer work |
 | Separate target expansion | New ISA/ABI/resource/scheduling models beyond SM80 | Their own encoder conformance and hardware evidence; flags alone do not provide support |
 
-The listed P1 items remain **open**. This change does not claim masked attention,
-integer embedding/cross-entropy, Adam/AdamW, arbitrary model repositories or a
-whole-native character-Transformer row. A passing host Transformer test module
+The November 20 [model semantics integration](model-semantics.md) closes bounded
+FP32 contracts for broadcast arithmetic, Boolean/causal SDPA, integer embeddings,
+mean cross-entropy, Adam/AdamW and explicit KV cache sessions. Its A100 and normal
+repository CLI gates are separate from this historical CPU matrix. General
+custom extensions, arbitrary model repositories, paged caches and a
+whole-native character-Transformer performance row remain open. A passing host Transformer test module
 is not an OA execution or performance result. BMM resource expansion needs its
 own design and hardware evidence, rather than deleting admission bounds.
 

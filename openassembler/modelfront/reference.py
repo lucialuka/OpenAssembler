@@ -21,10 +21,11 @@ class CPUReference:
         if plan.get("math", "fp32") not in ("fp32", "f16_rne_f32_accum"):
             raise ModelGraphError("unsupported CPU reference numerical contract")
         self.state = None
+        self._optimizer = None
 
     def _check(self, value, spec):
         if (not isinstance(value, self.torch.Tensor) or value.device.type != "cpu"
-                or value.dtype != self.torch.float32 or list(value.shape) != spec["shape"]):
+                or value.dtype != {"f32":self.torch.float32,"i64":self.torch.int64,"bool":self.torch.bool}[spec.get("dtype","f32")] or list(value.shape) != spec["shape"]):
             raise ModelGraphError("mathematical reference requires shape-matched CPU FP32 tensors")
         return value
 
@@ -61,6 +62,21 @@ class CPUReference:
                 result = torch.relu(xs[0])
             elif op == "relu_backward":
                 result = xs[0] * (xs[1] > 0)
+            elif op == "embedding":
+                result = torch.nn.functional.embedding(xs[0],xs[1])
+            elif op == "embedding_grad":
+                result = torch.zeros(dims)
+                result.index_add_(0,xs[0].reshape(-1),xs[1].reshape(-1,dims[1]))
+            elif op == "sum_to":
+                result = xs[0].sum_to_size(dims)
+            elif op == "broadcast_add":
+                result = xs[0]+xs[1]
+            elif op == "broadcast_mul":
+                result = xs[0]*xs[1]
+            elif op == "masked_softmax":
+                mask = (torch.ones(xs[0].shape[-2:],dtype=torch.bool).tril() if attrs["causal"] else xs[1] if len(xs)>1 else torch.ones_like(xs[0],dtype=torch.bool))
+                masked=xs[0].masked_fill(~mask,-float("inf"))
+                result=torch.nan_to_num(torch.softmax(masked,dim=-1),nan=0.0)
             elif op == "add":
                 result = xs[0] + (xs[1] if len(xs) == 2 else attrs["scalar"])
             elif op == "mul":
@@ -158,12 +174,28 @@ class CPUReference:
             raise ModelGraphError("SGD learning rate must be finite and nonnegative")
         outputs = self.forward(inputs)
         name, prediction = next(iter(outputs.items()))
-        self._check(target, self.plan["buffers"][name])
+        ce=self.plan.get("loss")=="cross_entropy"
+        self._check(target, {"shape":[prediction.shape[0]],"dtype":"i64"} if ce else self.plan["buffers"][name])
         with self.torch.no_grad():
-            difference = prediction - target
-            loss = (difference * difference).mean()
-            seed = difference * (2 / difference.numel())
+            if ce:
+                loss=self.torch.nn.functional.cross_entropy(prediction,target)
+                seed=self.torch.softmax(prediction,dim=-1)
+                seed[self.torch.arange(prediction.shape[0]),target]-=1
+                seed/=prediction.shape[0]
+            else:
+                difference = prediction - target
+                loss = (difference * difference).mean()
+                seed = difference * (2 / difference.numel())
             gradients = self.backward({name: seed})
-            for parameter, gradient in gradients["parameters"].items():
-                self.weights[parameter] = self.weights[parameter] - lr * gradient
+            from .optimizer import optimizer_options
+            options=optimizer_options(self.plan.get("optimizer",{}))
+            if options["name"]=="sgd":
+                for parameter,gradient in gradients["parameters"].items():self.weights[parameter]=self.weights[parameter]-lr*gradient
+            else:
+                if self._optimizer is None:
+                    cls=self.torch.optim.Adam if options["name"]=="adam" else self.torch.optim.AdamW
+                    self._optimizer=cls(list(self.weights.values()),lr=lr,betas=(options["beta1"],options["beta2"]),eps=options["epsilon"],weight_decay=options["weight_decay"],foreach=False)
+                for group in self._optimizer.param_groups:group["lr"]=lr
+                for parameter,gradient in gradients["parameters"].items():self.weights[parameter].grad=gradient
+                self._optimizer.step();self._optimizer.zero_grad(set_to_none=True)
         return {"loss": loss, "outputs": outputs, "prediction": prediction, "gradients": gradients}
