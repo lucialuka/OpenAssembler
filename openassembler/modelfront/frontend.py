@@ -108,11 +108,11 @@ def load_config(root: Path, *, entrypoint: str | None = None, input_shapes: list
     if mode not in ('inference', 'training'):
         raise ModelError('model.mode must be inference or training')
     if model.get('loss','mse') not in ('mse','cross_entropy'):raise ModelError('loss must be mse or cross_entropy')
-    if any(k in model for k in ('amsgrad','maximize','capturable','differentiable','foreach','fused','decoupled_weight_decay')):
+    if any(k in model for k in ('capturable','differentiable','foreach','fused','decoupled_weight_decay')):
         raise ModelError('unsupported optimizer option; use explicit SGD, Adam or AdamW policy')
     from .optimizer import optimizer_options
     try:
-        policy=optimizer_options({'name':model.get('optimizer','sgd'),**{k:model[k] for k in ('beta1','beta2','epsilon','weight_decay') if k in model}})
+        policy=optimizer_options({'name':model.get('optimizer','sgd'),**{k:model[k] for k in ('beta1','beta2','epsilon','weight_decay','momentum','dampening','nesterov','maximize','amsgrad') if k in model}})
     except ValueError as exc:raise ModelError(str(exc)) from None
     kind, host = resolve_backend(model.get('build_backend', 'auto'), model.get('host'))
     values = dict(entrypoint=entry, factory=factory, input_shapes=shapes, input_dtypes=dtypes, input_ranges=ranges, loss=model.get('loss','mse'), optimizer_policy=policy,
@@ -134,16 +134,23 @@ def load_config(root: Path, *, entrypoint: str | None = None, input_shapes: list
     execution = model.get('execution', 'direct')
     if execution not in ('direct', 'cuda_graph') or (execution == 'cuda_graph' and mode != 'training'):
         raise ModelError('model.execution must be direct or cuda_graph; cuda_graph requires training mode')
-    if execution=='cuda_graph' and (any(t!='f32' for t in dtypes) or values['loss']!='mse' or policy['name']!='sgd'):
-        raise ModelError('indexed inputs, cross_entropy and Adam require direct execution')
+    if execution=='cuda_graph' and (any(t!='f32' for t in dtypes) or values['loss']!='mse' or policy!={'name':'sgd'}):
+        raise ModelError('indexed inputs, cross_entropy and nondefault optimizers require direct execution')
     if type(model.get('optimizer_fusion',False)) is not bool:raise ModelError('optimizer_fusion must be true or false')
     values['optimizer_fusion']=model.get('optimizer_fusion',False)
+    if values['optimizer_fusion'] and policy.get('amsgrad',False):raise ModelError('AMSGrad requires split optimizer updates')
     values['execution'] = execution
     if type(model.get('sass_listings', True)) is not bool:
         raise ModelError('model.sass_listings must be true or false')
     values['sass_listings'] = model.get('sass_listings', True)
     if type(values['seed']) is not int or type(values['steps']) is not int or not 1 <= values['steps'] <= 1000:
         raise ModelError('model.seed must be an integer and steps must be in [1, 1000]')
+    from .profiling import profile_iterations
+    values['profile_iterations'] = model.get('profile_iterations', 1)
+    try:
+        profile_iterations(values['steps'], values['profile_iterations'])
+    except ValueError as exc:
+        raise ModelError(f'model.{exc}') from None
     for key in ('learning_rate', 'rtol', 'atol'):
         v = values[key]
         if type(v) not in (int, float) or not math.isfinite(v) or v < 0:

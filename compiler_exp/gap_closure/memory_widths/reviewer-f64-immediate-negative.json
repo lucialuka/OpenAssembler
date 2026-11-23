@@ -1,0 +1,16 @@
+{
+  "scope": "Legal ptxas operand admission and pre-repair OA diagnostic failure; no hardware execution",
+  "before_ra_sha256": "648656461ec848cbf3343318dc3618ca1ea05a00f7a3fa32b3a566b138468b62",
+  "ptx": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nst.global.f64 [%dst],0d3FF0000000000000;\nDONE: ret; }\n",
+  "expected_store_bits_u64_hex": "3ff0000000000000",
+  "ptxas": {
+    "status": "accepted",
+    "cubin_bytes": 2728,
+    "cubin_sha256": "0a4e1882f8e9b12ec4b907647cba646e156bef8a455db64d5c5d0c81c4f055da"
+  },
+  "openassembler": {
+    "status": "failed",
+    "exception": "AttributeError",
+    "message": "'ImmF' object has no attribute 'name'"
+  }
+}

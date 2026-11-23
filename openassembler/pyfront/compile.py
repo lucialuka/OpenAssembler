@@ -20,6 +20,18 @@ place it can't is listed here (and nothing else is silently different):
   Integers are i32 (two's complement, wrapping). Python ints are unbounded: any i32
   overflow (x * y past 2**31, abs(-2**31), -(-2**31), -2**31 // -1) wraps on the GPU where
   Python would just grow. Integer literals outside i32 are rejected at compile time.
+  i64/u64 explicitly select wrapping 64-bit integers, including scalar parameters,
+  local variables, global Array elements and pure device helpers. Add/subtract,
+  bitwise and/or/xor/inversion, comparisons and constant shifts 0..63 are exact at
+  the declared width. Signed right shifts extend the sign; unsigned shifts fill
+  zero. Unary minus supports i64 and wraps at INT64_MIN. Multiplication, all
+  division/remainder, float conversions and wide shared arrays remain rejected.
+  Explicit i32/u32/i64/u64 casts preserve/truncate the low destination bits and
+  sign-extend a signed source when widening; integer literals undergo the same
+  modulo conversion. Mixed typed operands require explicit casts. Range counters
+  and array indices remain i32. These contracts do not adopt Python's unbounded
+  integer arithmetic, negative indexing or runtime exceptions.
+
   Floats are f32, not Python's float64: every operation rounds to f32. A single + - * /
   sqrt on f32 inputs is bit-identical to Python computing in float64 and rounding the
   result to f32 (float64 has > 2*24+2 bits, so the double rounding is innocuous), but a
@@ -83,7 +95,7 @@ place it can't is listed here (and nothing else is silently different):
           a hidden counter, used only when the variable is assigned in the body or
           read outside the loop). An i32 counter that would overflow (range near 2**31
           with a large step) wraps on the GPU. for/while ... else are rejected.
-  Arrays: Array(f32|i32|u32) parameters (global memory), and shared memory declared at
+  Arrays: Array(f32|i32|u32|i64|u64) parameters (global memory), and shared memory declared at
           kernel top level as  s = shared_array(f32, 256)  (i32/u32 too; constant
           positive size; at most 48 KB in total), read/written as s[i]. Indices are i32.
           Out-of-bounds indices are not checked (Python raises IndexError; the GPU
@@ -97,17 +109,26 @@ place it can't is listed here (and nothing else is silently different):
           after a tid-dependent return/break -- which would deadlock or be undefined.
           The analysis is conservative: values loaded from arrays at a tid-dependent index
           count as thread-dependent too.
+  Device helpers: same-file @device functions with explicitly annotated scalar
+          parameters and return values are inlined at each call site. Their bodies
+          contain scalar assignments, if/elif/else, while/for-range with break/continue,
+          and one terminal return expression. Nested pure helpers and numeric
+          intrinsics are allowed. Locals must be initialized on every incoming path;
+          loops conservatively may execute zero times. Arguments are copied, so helper
+          parameter/local assignments cannot change caller variables. No memory effects,
+          captures, recursion, early returns, runtime calls or cross-module helper imports are admitted.
   Not supported (NotSupported with the line): any other call, lists/tuples/dicts,
           strings, attribute access other than math./pyfront. intrinsics, augmented or
           plain assignment to more than one target, f16/f64, atomics, recursion, nested
-          functions, lambdas, try/with, global/nonlocal. Bitwise operators and ** are
-          not implemented.
+          functions, lambdas, try/with, global/nonlocal. Integer bitwise operators are
+          supported; ** is not implemented.
 """
 
 from __future__ import annotations
 
 import ast
 import inspect
+import json
 import math
 import struct
 import textwrap
@@ -127,8 +148,9 @@ _INTRINSICS = _SREGS  # back-compat name
 _THREAD_VARYING = {"tid_x", "tid_y", "tid_z"}       # differ between threads of one block
 _MATH1 = {"sqrt", "rsqrt", "exp", "log", "tanh"}
 _MATH_MODULE = {"sqrt", "exp", "log", "tanh"}       # also accepted as math.<name>
-_PF_NAMES = set(_SREGS) | _MATH1 | {"shared_array", "syncthreads", "kernel", "Array",
-                                    "f32", "i32", "u32"}
+_PF_NAMES = set(_SREGS) | _MATH1 | {"shared_array", "syncthreads", "kernel", "device", "Array", "Buffer", "atomic_add", "atomic_exchange", "atomic_compare_exchange",
+                                    "f32", "i32", "u32", "i64", "u64"}
+_INT_TYPES = {"i32": "s32", "u32": "u32", "i64": "s64", "u64": "u64"}
 _BUILTINS = {"min", "max", "abs", "float", "int", "range"}
 
 _LOG2E_F32 = 0x3FB8AA3B     # f32(log2(e)) = 1.44269502, the constant __expf multiplies by
@@ -210,6 +232,9 @@ class _Names:
                         for sub in ast.walk(t):
                             if isinstance(sub, ast.Name):
                                 self.defined.add(sub.id)
+        from openassembler.pyfront.helpers import DeviceFunctions
+
+        self.devices = DeviceFunctions(tree, self)
 
     def _dotted(self, e: ast.expr) -> str | None:
         if isinstance(e, ast.Name):
@@ -251,17 +276,20 @@ def _resolve_type(ann: ast.expr, names: _Names) -> Scalar | ArrayType:
         except SyntaxError as e:
             raise NotSupported(f"unparseable annotation {ann.value!r}", ann) from e
     r = names.resolve(ann.func if isinstance(ann, ast.Call) else ann)
+    if isinstance(ann, ast.Call) and r == "pf.Buffer":
+        from openassembler.pyfront.buffers import resolve_annotation
+        return resolve_annotation(ann,names)
     if isinstance(ann, ast.Call) and r == "pf.Array":
         if len(ann.args) != 1 or ann.keywords:
             raise NotSupported("Array(...) takes exactly one element type", ann)
         elem = _resolve_type(ann.args[0], names)
         if not isinstance(elem, Scalar):
-            raise NotSupported("Array element type must be f32, i32 or u32", ann)
+            raise NotSupported("Array element type must be f32, i32, u32, i64 or u64", ann)
         return T.Array(elem)
-    if not isinstance(ann, ast.Call) and r in ("pf.f32", "pf.i32", "pf.u32"):
+    if not isinstance(ann, ast.Call) and r in ("pf.f32", "pf.i32", "pf.u32", "pf.i64", "pf.u64"):
         return getattr(T, r[3:])
     raise NotSupported(f"unsupported type annotation {ast.unparse(ann)!r} "
-                       "(use i32, u32, f32 or Array(f32|i32|u32))", ann)
+                       "(use i32, u32, i64, u64, f32 or Array of those types)", ann)
 
 
 # ---- barrier uniformity ----------------------------------------------------------------------
@@ -296,7 +324,7 @@ class _BarrierCheck:
         for n in ast.walk(e):
             if isinstance(n, ast.Name) and n.id in self.varying:
                 return True
-            if isinstance(n, ast.Call) and self.names.resolve(n.func) in {f"pf.{t}" for t in _THREAD_VARYING}:
+            if isinstance(n, ast.Call) and self.names.resolve(n.func) in {f"pf.{t}" for t in _THREAD_VARYING | {"atomic_add", "atomic_exchange", "atomic_compare_exchange"}}:
                 return True
         return False
 
@@ -356,7 +384,7 @@ class _BarrierCheck:
 @dataclass
 class _Reg:
     name: str      # "%r3", "%f2", "%p1", "%rd1"
-    kind: str      # "s32" | "u32" | "f32" | "pred" | "ptr" (ptr = 64-bit global address)
+    kind: str      # "s32" | "u32" | "s64" | "u64" | "f32" | "pred" | "ptr" (ptr = 64-bit global address)
 
 
 @dataclass
@@ -366,6 +394,7 @@ class _Arr:
     base: _Reg            # %rd (global, generic->global converted) or %r (shared window offset)
     sym: str | None = None
     length: int | None = None
+    view: object = None
 
 
 @dataclass
@@ -385,6 +414,8 @@ class _Scope:
     n_rd: int = 0
     label_n: int = 0
     exit_label: str = "L_exit"
+    device_call_sites: int = 0
+    wide_integer: bool = False
 
     def emit(self, text: str) -> None:
         self.lines.append(text)
@@ -403,7 +434,9 @@ class _Scope:
         if kind == "pred":
             self.n_p += 1
             return _Reg(f"%p{self.n_p}", kind)
-        if kind == "ptr":
+        if kind in ("s64", "u64"):
+            self.wide_integer = True
+        if kind in ("ptr", "s64", "u64"):
             self.n_rd += 1
             return _Reg(f"%rd{self.n_rd}", kind)
         raise ValueError(kind)
@@ -450,6 +483,9 @@ class _Emitter:
         self.s, self.names, self.fdef = scope, names, fdef
         self.loops: list[tuple[str, str]] = []      # (continue label, break label)
         self.depth = 0                              # >0: inside if/loop (not kernel top level)
+        self.local_names = {a.arg for a in fdef.args.args} | {
+            n.id for n in ast.walk(fdef)
+            if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Store)}
 
     # ---- statements ----
 
@@ -484,6 +520,8 @@ class _Emitter:
 
     def visit_AugAssign(self, node: ast.AugAssign) -> None:
         if isinstance(node.target, ast.Subscript):
+            if isinstance(node.target.value,ast.Name) and getattr(self.s.arrays.get(node.target.value.id),"view",None) is not None:
+                raise NotSupported("Buffer augmented stores require an explicit checked load and assignment",node)
             arr, addr = self._address(node.target)
             cur = self._load(arr, addr)
             res, kind = self._arith(node.op, (cur, arr.elem), node.value, node)
@@ -612,6 +650,9 @@ class _Emitter:
                 raise NotSupported("syncthreads() takes no arguments", node)
             self.s.emit(" bar.sync 0;")
             return
+        if isinstance(v,ast.Call) and self.names.resolve(v.func) in {"pf.atomic_add", "pf.atomic_exchange", "pf.atomic_compare_exchange"}:
+            self._call(v)
+            return
         raise NotSupported("expression statement with no supported effect", node)
 
     def visit_Pass(self, node: ast.Pass) -> None:
@@ -638,6 +679,8 @@ class _Emitter:
             raise NotSupported("shared_array element type must be f32, i32 or u32", node)
         if not isinstance(count, int) or count <= 0:
             raise NotSupported("shared_array count must be a positive integer literal", node)
+        if elem.ptx in ("s64", "u64"):
+            raise NotSupported("shared_array currently requires a 32-bit element type", node)
         self.s.smem_bytes += 4 * count
         if self.s.smem_bytes > _SMEM_LIMIT:
             raise NotSupported(f"shared_array total {self.s.smem_bytes} bytes exceeds the "
@@ -678,15 +721,19 @@ class _Emitter:
                 pred = v
             else:                              # Python truthiness: x != 0 (NaN is truthy)
                 pred = self.s.new_reg("pred")
-                zero = "0f00000000" if k == "f32" else "0"
-                self.s.emit(f" setp.eq.{k} {pred.name}, {v.name}, {zero};")
+                if k in ("s64", "u64"):
+                    zero, _ = self._lit_as(0, k, test)
+                    pred = self._wide_compare(v, zero, k, "eq")
+                else:
+                    zero = "0f00000000" if k == "f32" else "0"
+                    self.s.emit(f" setp.eq.{k} {pred.name}, {v.name}, {zero};")
                 when = not when
         self.s.emit(f" @{'' if when else '!'}{pred.name} bra {label};")
 
     def _mov(self, dst: _Reg, src: _Reg, kind: str) -> None:
         if dst.name == src.name:
             return
-        op = {"f32": "mov.f32", "pred": "mov.pred"}.get(kind, "mov.u32")
+        op = {"f32": "mov.f32", "pred": "mov.pred", "s64": "mov.b64", "u64": "mov.b64"}.get(kind, "mov.u32")
         self.s.emit(f" {op} {dst.name}, {src.name};")
 
     # ---- expressions ----
@@ -719,6 +766,9 @@ class _Emitter:
         if isinstance(node, ast.Call):
             return self._call(node)
         if isinstance(node, ast.Subscript):
+            if isinstance(node.value,ast.Name) and getattr(self.s.arrays.get(node.value.id),"view",None) is not None:
+                from openassembler.pyfront.buffers import access
+                return access(self,node)
             arr, addr = self._address(node)
             return self._load(arr, addr), arr.elem
         if isinstance(node, ast.Constant) and isinstance(node.value, bool):
@@ -729,6 +779,13 @@ class _Emitter:
     def _lit_as(self, v, want: str, node: ast.AST) -> tuple[_Reg, str]:
         """Materialize literal v. An int literal next to an f32 operand becomes an f32
         constant (Python would promote it), but only when that conversion is exact."""
+        if want in ("s64", "u64"):
+            low, high = (-(1 << 63), (1 << 63) - 1) if want == "s64" else (0, (1 << 64) - 1)
+            if type(v) is not int or not low <= v <= high:
+                raise NotSupported(f"literal {v!r} does not fit in {want}", node)
+            r = self.s.new_reg(want)
+            self.s.emit(f" mov.{want} {r.name}, {v};")
+            return r, want
         if isinstance(v, int):
             if want == "f32":
                 if _f32_bits(float(v)) != _f32_bits(float(_f32(float(v)))) or _f32(float(v)) != v:
@@ -768,12 +825,14 @@ class _Emitter:
 
     def _mixed(self, ka, kb, node):
         raise NotSupported(f"mixed-type operands ({ka} vs {kb}); convert explicitly with "
-                           "float(x) or int(x)", node)
+                           "float(x), int(x), or typed i32/u32/i64/u64 casts", node)
 
     def _arith(self, op: ast.operator, left, right, node: ast.AST,
                into: _Reg | None = None) -> tuple[_Reg, str]:
         """left/right: AST nodes or already-evaluated (reg, kind). `into`: write a one-
         instruction result straight there (`s += x` stays a single add, as before)."""
+        if isinstance(op, (ast.BitAnd, ast.BitOr, ast.BitXor, ast.LShift, ast.RShift)):
+            return self._integer_bits(op, left, right, node, into=into)
         if isinstance(op, ast.Div):
             return self._truediv(left, right, node)
         if isinstance(op, (ast.FloorDiv, ast.Mod)):
@@ -786,12 +845,55 @@ class _Emitter:
             self._mixed(ka, kb, node)
         if ka == "pred":
             raise NotSupported("arithmetic on a comparison result", node)
+        if ka in ("s64", "u64") and mnem == "mul":
+            raise NotSupported("64-bit multiplication is not supported; no narrowing is performed", node)
         dst = into if into is not None and into.kind == ka else self.s.new_reg(ka)
         if ka == "f32":
             self.s.emit(f" {mnem}.f32 {dst.name}, {a.name}, {b.name};")
         else:
-            self.s.emit(f" {mnem}{'.lo' if mnem == 'mul' else ''}.s32 {dst.name}, {a.name}, {b.name};")
+            self.s.emit(f" {mnem}{'.lo' if mnem == 'mul' else ''}.{ka if ka in ('s64','u64') else 's32'} {dst.name}, {a.name}, {b.name};")
         return dst, ka
+
+    def _integer_bits(self, op, left, right, node, into=None):
+        if isinstance(op, (ast.LShift, ast.RShift)):
+            value, kind = self._ev(left)
+            bits = 64 if kind in ("s64", "u64") else 32
+            count = None if isinstance(right, tuple) else _const_value(right)
+            if kind not in ("s32", "u32", "s64", "u64") or type(count) is not int or not 0 <= count < bits:
+                raise NotSupported(f"integer shifts require a constant count in [0, {bits-1}]", node)
+            result = into if into is not None and into.kind == kind else self.s.new_reg(kind)
+            mnemonic = "shl.b" + str(bits) if isinstance(op, ast.LShift) else "shr." + kind
+            self.s.emit(f" {mnemonic} {result.name}, {value.name}, {count};")
+            return result, kind
+        a, ka, b, kb = self._pair(left, right, node)
+        if ka != kb or ka not in ("s32", "u32", "s64", "u64"):
+            raise NotSupported("bitwise operands require matching integer types", node)
+        result = into if into is not None and into.kind == ka else self.s.new_reg(ka)
+        mnemonic = {ast.BitAnd:"and", ast.BitOr:"or", ast.BitXor:"xor"}[type(op)]
+        self.s.emit(f" {mnemonic}.b{64 if ka.endswith('64') else 32} {result.name}, {a.name}, {b.name};")
+        return result, ka
+
+    def _integer_cast(self, want, arg, node):
+        literal = _const_value(arg)
+        if literal is not None:
+            if type(literal) is not int:
+                raise NotSupported("typed integer casts require integer values, not floats", node)
+            bits = 64 if want.endswith("64") else 32
+            literal &= (1 << bits) - 1
+            if want.startswith("s") and literal >= (1 << (bits - 1)):
+                literal -= 1 << bits
+            return self._lit_as(literal, want, arg)
+        value, kind = self._eval(arg)
+        if kind not in ("s32", "u32", "s64", "u64"):
+            raise NotSupported("typed integer casts require integer values, not floats or predicates", node)
+        result = self.s.new_reg(want)
+        self.s.emit(f" cvt.{want}.{kind} {result.name}, {value.name};")
+        return result, want
+
+    def _wide_compare(self, a, b, kind, comparison):
+        result = self.s.new_reg("pred")
+        self.s.emit(f" setp.{comparison}.{kind} {result.name}, {a.name}, {b.name};")
+        return result
 
     def _to_f32(self, x, node) -> _Reg:
         v = None if isinstance(x, tuple) else _const_value(x)
@@ -829,6 +931,8 @@ class _Emitter:
         rv = None if isinstance(right, tuple) else _const_value(right)
         if rv is not None and not isinstance(left, tuple) and _const_value(left) is None:
             a, ka = self._eval(left)                   # keep a constant divisor an immediate
+            if ka in ("s64", "u64"):
+                raise NotSupported("64-bit floor division and modulo are not supported", node)
             if ka == "f32" or isinstance(rv, float):
                 self._float_floordiv(sym, node)
             if rv == 0:
@@ -839,6 +943,8 @@ class _Emitter:
                 self._mixed(ka, "s32", node)
             return self._divconst(a, ka, rv, is_mod), ka
         a, ka, b, kb = self._pair(left, right, node)
+        if ka in ("s64", "u64") or kb in ("s64", "u64"):
+            raise NotSupported("64-bit floor division and modulo are not supported", node)
         if "f32" in (ka, kb):
             self._float_floordiv(sym, node)
         if ka != kb or ka not in ("s32", "u32"):
@@ -952,6 +1058,8 @@ class _Emitter:
         if cmp is None:
             raise NotSupported(f"comparison {op.__name__} not supported", node)
         inverted = False
+        if ka in ("s64", "u64"):
+            return self._wide_compare(a, b, ka, cmp), False
         if ka == "f32" and cmp == "ne":
             cmp, inverted = ("eq", True) if branch else ("neu", False)
         dst = self.s.new_reg("pred")
@@ -959,6 +1067,13 @@ class _Emitter:
         return dst, inverted
 
     def _unaryop(self, node: ast.UnaryOp) -> tuple[_Reg, str]:
+        if isinstance(node.op, ast.Invert):
+            value, kind = self._eval(node.operand)
+            if kind not in ("s32", "u32", "s64", "u64"):
+                raise NotSupported("bitwise inversion requires an integer", node)
+            result = self.s.new_reg(kind)
+            self.s.emit(f" xor.b{64 if kind.endswith('64') else 32} {result.name}, {value.name}, {hex((1 << (64 if kind.endswith('64') else 32)) - 1)};")
+            return result, kind
         if isinstance(node.op, ast.Not):
             raise NotSupported("'not' is only supported in an if/while condition (it is "
                                "compiled into the branch); write the inverse comparison instead", node)
@@ -967,6 +1082,10 @@ class _Emitter:
         if not isinstance(node.op, ast.USub):
             raise NotSupported(f"unary operator {type(node.op).__name__} not supported", node)
         v, k = self._eval(node.operand)
+        if k == "s64":
+            dst = self.s.new_reg(k)
+            self.s.emit(f" sub.s64 {dst.name}, 0, {v.name};")
+            return dst, k
         if k not in ("f32", "s32"):
             raise NotSupported(f"unary - on {k}", node)
         dst = self.s.new_reg(k)
@@ -974,18 +1093,33 @@ class _Emitter:
         return dst, k
 
     def _call(self, node: ast.Call) -> tuple[_Reg, str]:
+        root = node.func
+        while isinstance(root, ast.Attribute):
+            root = root.value
+        if isinstance(root, ast.Name) and root.id in self.local_names:
+            raise NotSupported(f"call target {root.id!r} is a local value", node)
+        if isinstance(node.func, ast.Name):
+            if node.func.id in self.names.devices.definitions:
+                return self.names.devices.inline(self, node)
         fname = self.names.resolve(node.func)
         if fname is None:
             raise NotSupported(f"call to {ast.unparse(node.func)!r} is not supported", node)
         if node.keywords:
             raise NotSupported(f"{fname}() keyword arguments are not supported", node)
         args, short = node.args, fname.split(".")[-1]
+        if fname.startswith("pf.") and short in {"atomic_add", "atomic_exchange", "atomic_compare_exchange"}:
+            from openassembler.pyfront.primitives import atomic
+            return atomic(self,node,short)
         if fname.startswith("pf.") and short in _SREGS:
             if args:
                 raise NotSupported(f"{short}() takes no arguments", node)
             r = self.s.new_reg("s32")
             self.s.emit(f" mov.u32 {r.name}, {_SREGS[short]};")
             return r, "s32"
+        if fname.startswith("pf.") and short in _INT_TYPES:
+            if len(args) != 1:
+                raise NotSupported(f"{short}() takes exactly one integer argument", node)
+            return self._integer_cast(_INT_TYPES[short], args[0], node)
         if fname in ("min", "max"):
             if len(args) < 2:
                 raise NotSupported(f"{fname}() needs at least two arguments (no iterables)", node)
@@ -1030,8 +1164,7 @@ class _Emitter:
             if k == "s32":
                 return v, k
             if k != "f32":
-                raise NotSupported(f"int() of {k} is not supported (u32 values >= 2**31 don't "
-                                   "fit in i32)", node)
+                raise NotSupported(f"int() of {k} is not supported; use an explicit i32/u32/i64/u64 cast for integer bit conversion", node)
             dst = self.s.new_reg("s32")
             self.s.emit(f" cvt.rzi.s32.f32 {dst.name}, {v.name};")    # truncation, like int()
             return dst, "s32"
@@ -1089,6 +1222,7 @@ class _Emitter:
         if not isinstance(sub.value, ast.Name) or sub.value.id not in self.s.arrays:
             raise NotSupported("subscript target must be a declared array", sub)
         arr = self.s.arrays[sub.value.id]
+        element_bytes = 8 if arr.elem in ("s64", "u64") else 4
         ci = _const_value(sub.slice)
         if isinstance(ci, int):
             if ci < 0:
@@ -1096,9 +1230,9 @@ class _Emitter:
                                    "like Python lists", sub)
             if arr.length is not None and ci >= arr.length:
                 raise NotSupported(f"index {ci} out of range for shared_array of {arr.length}", sub)
-            if 4 * ci < (1 << 23):                    # fits the 24-bit signed address offset
-                return arr, (f"[{arr.sym}+{4 * ci}]" if arr.space == "shared"
-                             else f"[{arr.base.name}+{4 * ci}]")
+            if element_bytes * ci < (1 << 23):                    # fits the 24-bit signed address offset
+                return arr, (f"[{arr.sym}+{element_bytes * ci}]" if arr.space == "shared"
+                             else f"[{arr.base.name}+{element_bytes * ci}]")
         idx, idx_kind = self._eval(sub.slice)
         if idx_kind != "s32":
             raise NotSupported(f"array index must be an int32 expression, not {idx_kind}", sub)
@@ -1112,16 +1246,20 @@ class _Emitter:
         # pointer into one IMAD.WIDE, and the encoder only has a template for the unsigned
         # form of that fusion (see openassembler/isa/encode.py). Negative indices are out
         # of bounds anyway (see the module docstring).
-        self.s.emit(f" mul.wide.u32 {addr.name}, {idx.name}, 4;")
+        self.s.emit(f" mul.wide.u32 {addr.name}, {idx.name}, {element_bytes};")
         self.s.emit(f" add.s64 {addr.name}, {arr.base.name}, {addr.name};")
         return arr, f"[{addr.name}]"
 
     def _load(self, arr: _Arr, addr: str) -> _Reg:
         dst = self.s.new_reg(arr.elem)
-        self.s.emit(f" ld.{arr.space}.{'f32' if arr.elem == 'f32' else 'u32'} {dst.name}, {addr};")
+        self.s.emit(f" ld.{arr.space}.{arr.elem if arr.elem in ('f32','s64','u64') else 'u32'} {dst.name}, {addr};")
         return dst
 
     def _store(self, target: ast.Subscript, val: _Reg, kind: str) -> None:
+        if isinstance(target.value,ast.Name) and getattr(self.s.arrays.get(target.value.id),"view",None) is not None:
+            from openassembler.pyfront.buffers import access
+            access(self,target,val,kind)
+            return
         arr, addr = self._address(target)
         self._store_at(arr, addr, val, kind, target)
 
@@ -1131,7 +1269,7 @@ class _Emitter:
             # not 1.0) and --verify can't see it: interpreter and SASS agree on the wrong value.
             raise NotSupported(f"storing a {kind} value into an Array of {arr.elem} "
                                "(write 1.0, not 1, for a float array; or convert with float()/int())", node)
-        self.s.emit(f" st.{arr.space}.{'f32' if arr.elem == 'f32' else 'u32'} {addr}, {val.name};")
+        self.s.emit(f" st.{arr.space}.{arr.elem if arr.elem in ('f32','s64','u64') else 'u32'} {addr}, {val.name};")
 
 
 # ---- entry points ----------------------------------------------------------------------------
@@ -1203,6 +1341,8 @@ def _compile_entry(fdef: ast.FunctionDef, names: _Names, arch: str) -> str:
         if isinstance(t, ArrayType):
             scope.params.append(("u64", arg.arg))
             scope.arrays[arg.arg] = _Arr("global", t.elem.ptx, scope.new_reg("ptr"))
+            from openassembler.pyfront.buffers import BufferType
+            if isinstance(t,BufferType):scope.arrays[arg.arg].view=t
         else:
             scope.params.append((t.ptx, arg.arg))
             scope.vars[arg.arg] = scope.new_reg(t.ptx)
@@ -1214,6 +1354,16 @@ def _compile_entry(fdef: ast.FunctionDef, names: _Names, arch: str) -> str:
 def _render(name: str, s: _Scope) -> str:
     param_list = ", ".join(f".param .{t} {n}" for t, n in s.params)
     out = [f".visible .entry {name}({param_list})\n{{"]
+    if s.wide_integer or any(a.view is not None for a in s.arrays.values()):
+        contract = {"schema": 1, "kernel": name, "parameters": [
+            {"name": pname, "kind": "array" if pname in s.arrays else "scalar",
+             "dtype": s.arrays[pname].elem if pname in s.arrays else ptx_t}
+            for ptx_t, pname in s.params]}
+        out.insert(0, "// openassembler-pyfront-types-v1 " + json.dumps(contract, sort_keys=True, separators=(",", ":")))
+    views=[(pname,s.arrays[pname].view) for _,pname in s.params if pname in s.arrays and s.arrays[pname].view is not None]
+    if views:
+        from openassembler.pyfront.buffers import metadata
+        out.insert(0,"// openassembler-pyfront-buffer-v1 "+json.dumps({"schema":1,"kernel":name,"buffers":[metadata(pname,view) for pname,view in views]},sort_keys=True,separators=(",",":")))
     for sym, ty, count in s.shared:
         out.append(f" .shared .align 4 .{'f32' if ty == 'f32' else 'b32'} {sym}[{count}];")
     if s.n_p:
@@ -1225,13 +1375,13 @@ def _render(name: str, s: _Scope) -> str:
     if s.n_rd:
         out.append(f" .reg .b64 %rd<{s.n_rd + 1}>;")
     for ptx_t, pname in s.params:
-        if ptx_t == "u64":
+        if pname in s.arrays:
             r = s.arrays[pname].base
             out.append(f" ld.param.u64 {r.name}, [{pname}];")
             out.append(f" cvta.to.global.u64 {r.name}, {r.name};")
         else:
             r = s.vars[pname]
-            out.append(f" ld.param.{'f32' if ptx_t == 'f32' else 'u32'} {r.name}, [{pname}];")
+            out.append(f" ld.param.{ptx_t if ptx_t in ('f32','s64','u64') else 'u32'} {r.name}, [{pname}];")
     out.extend(s.lines)
     out.append(f"{s.exit_label}:")
     out.append(" ret;\n}")
@@ -1283,8 +1433,8 @@ def compile_file(path: Path, arch: str = "sm_80") -> tuple[str, list[str]]:
     NotSupported naming the file and line."""
     path = Path(path)
     tree = _parse_file(path)
-    names = _Names(tree)
     try:
+        names = _Names(tree)
         kernels = _file_kernels(tree, names, path)
         if not kernels:
             return "", []
@@ -1318,8 +1468,8 @@ def find_kernel(path, entry: str | None) -> KernelRef:
     or several when entry is None (same "don't guess" policy as the rest of pyfront)."""
     path = Path(path)
     tree = _parse_file(path)
-    names = _Names(tree)
     try:
+        names = _Names(tree)
         kernels = {k.name: k for k in _file_kernels(tree, names, path)}
     except NotSupported as e:
         raise e.with_path(path) from None
@@ -1350,7 +1500,10 @@ def _live_source(fn) -> tuple[ast.FunctionDef, _Names, str | None]:
             for n in ast.walk(tree):
                 if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == fn.__name__ \
                         and first in {n.lineno, *(d.lineno for d in n.decorator_list)}:
-                    return n, _Names(tree), path
+                    try:
+                        return n, _Names(tree), path
+                    except NotSupported as e:
+                        raise e.with_path(path) from None
     lines, first = inspect.getsourcelines(fn)
     mod = ast.parse(textwrap.dedent("".join(lines)))
     ast.increment_lineno(mod, first - 1)     # report real file line numbers, not "line 2"
@@ -1386,4 +1539,19 @@ def kernel(fn):
     _no_call.__name__ = fn.__name__
     _no_call.__qualname__ = getattr(fn, "__qualname__", fn.__name__)
     _no_call._is_openassembler_kernel = True
+    return _no_call
+
+
+def device(fn):
+    """Mark a pure typed scalar helper for static inlining inside a @kernel.
+
+    Device helpers have no Python execution or separate device-call ABI. Static
+    compilation resolves their same-file source definitions without running them.
+    """
+    def _no_call(*_a, **_kw):
+        raise NotSupported(f"{fn.__name__} is a @device helper; call it inside a compiled @kernel")
+
+    _no_call.__wrapped__ = fn
+    _no_call.__name__ = fn.__name__
+    _no_call.__qualname__ = getattr(fn, "__qualname__", fn.__name__)
     return _no_call

@@ -33,7 +33,7 @@ N_LIKE = {"n", "count", "size", "len", "num", "length"}
 SMALL_INT = 16
 DEFAULT_N = 1 << 20
 BLOCK = 256
-DTYPES = {"f32": "<f", "i32": "<i", "u32": "<I", "f16": "<e", "bf16": "<H"}
+DTYPES = {"f32": "<f", "i32": "<i", "u32": "<I", "i64": "<q", "u64": "<Q", "f16": "<e", "bf16": "<H"}
 _PRICE_FALLBACK = {"A100-40GB": 0.000583, "A100": 0.000583, "A100-80GB": 0.000694, "A10": 0.000306,
                    "L4": 0.000222, "T4": 0.000164, "L40S": 0.000542, "H100": 0.001097}
 FAULT_HINT = ("if the auto-harness guessed this kernel's launch wrong (2-D grid, other buffer sizes, "
@@ -201,6 +201,14 @@ def _job(name: str, modules: dict, buffers: dict, init: dict, init_rand: dict, s
 
 
 def auto_case(t: Target, out_dir: Path, n: int, reps: int, plan: Plan) -> None:
+    if any(row.get('alignment',1)>256 for row in t.kernel.get('parameter_attributes',{}).values()):
+        plan.cases.append(Case(t.label,str(t.source),-1,None,[],
+            skip='pointer alignment above the allocation guarantee requires a specialized launch harness'))
+        return
+    if t.kernel.get('buffer_contract') is not None:
+        plan.cases.append(Case(t.label, str(t.source), -1, None, [],
+                               skip='checked Buffer kernels require --spec with their actual storage extents and bindings'))
+        return
     """The verify.py-style harness for one kernel: see this module's docstring."""
     k = t.kernel
     if k.get("gemm") is not None:
@@ -217,7 +225,8 @@ def auto_case(t: Target, out_dir: Path, n: int, reps: int, plan: Plan) -> None:
     src_names = k.get("source_params") or [p[1] for p in k["params"]]
     for i, ((ty, ptx_name), pname) in enumerate(zip(k["params"], src_names)):
         ty = ty.lstrip(".")
-        if ty in ("u64", "s64", "b64") and pname.lower() not in N_LIKE:
+        pointer = ptx_name in k.get('parameter_attributes',{})
+        if ty in ("u64", "s64", "b64") and (pointer or pname.lower() not in N_LIKE):
             if pname in buffers:
                 pname = ptx_name
             buffers[pname] = 4 * n
@@ -367,6 +376,55 @@ def load_spec(path: Path) -> dict:
     return spec
 
 
+def _checked_buffer_bindings(target, out_dir, arguments, buffers, buffer_specs=None):
+    for index,(_dtype,name) in enumerate(target.kernel['params']):
+        attributes=target.kernel.get('parameter_attributes',{}).get(name)
+        if attributes is not None:
+            argument=arguments[index]
+            alignment=attributes.get('alignment',1)
+            if argument[0]!='buf':raise RunError(f'pointer parameter {name} requires a declared buffer binding')
+            if alignment>256 or argument[2]%alignment:
+                raise RunError(f'pointer parameter {name} alignment is not established by the allocation/offset')
+    contract = target.kernel.get('buffer_contract')
+    if contract is None:
+        return
+    import hashlib
+    from openassembler.ptx.parse import parse_module
+    from openassembler.pyfront.buffers import contract_from_ptx
+    try:
+        raw = P.artifact_path(out_dir,target.entry['ptx']).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != target.entry['native_ownership']['ptx_sha256']:
+            raise ValueError('checked Buffer PTX identity differs from native build')
+        parsed = parse_module(raw.decode())
+        current = contract_from_ptx(raw.decode(),parsed.kernels[target.label])
+        if current != contract:
+            raise ValueError('checked Buffer manifest differs from validated PTX contract')
+    except (OSError,ValueError,KeyError,TypeError) as error:
+        raise RunError(f'checked Buffer launch contract unavailable or invalid: {error}') from None
+    by_name = {row['name']:row for row in contract['buffers']}
+    bindings = []
+    for (kind,name),argument in zip(target.kernel['params'],arguments):
+        row = by_name.get(name)
+        if row is not None:
+            if argument[0] != 'buf':
+                raise RunError(f'checked Buffer {name} requires a declared buffer binding')
+            if buffer_specs is not None:
+                expected_dtype = {'s32':'i32','s64':'i64'}.get(row['dtype'],row['dtype'])
+                if buffer_specs[argument[1]].get('dtype','f32') != expected_dtype:
+                    raise RunError(f'checked Buffer {name} binding has the wrong element dtype')
+            offset = argument[2]
+            needed = row['storage_elements'] * row['element_bytes']
+            if offset % row['alignment'] or buffers[argument[1]] - offset < needed:
+                raise RunError(f'checked Buffer {name} binding has insufficient storage or alignment')
+            bindings.append((argument[1],offset,offset+needed,row['access'],True))
+        elif argument[0] == 'buf':
+            bindings.append((argument[1],argument[2],buffers[argument[1]],'readwrite',False))
+    for index,left in enumerate(bindings):
+        for right in bindings[index+1:]:
+            if left[0]==right[0] and max(left[1],right[1])<min(left[2],right[2]) and (left[4] or right[4]) and (left[3]!='read' or right[3]!='read'):
+                raise RunError('checked Buffer launch rejects overlapping writable argument bindings')
+
+
 def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: str,
               only: set[tuple[str, str]] | None = None) -> None:
     buffers, init, init_rand, init_tensor16 = {}, {}, {}, {}
@@ -387,7 +445,7 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
                 init_tensor16[name] = (_seed('spec', name, bi), cnt, dt)
             else:
                 r = random.Random(_seed("spec", name, bi))
-                init[name] = struct.pack(f"<{cnt}{'i' if dt == 'i32' else 'I'}",
+                init[name] = struct.pack(f"<{cnt}{DTYPES[dt][-1]}",
                                          *(r.randrange(cnt) for _ in range(cnt)))
         elif isinstance(how, list):
             if len(how) > cnt:
@@ -400,7 +458,8 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
                             raise ValueError(f"{dt} initialization values must be numbers")
                         values.append(float(value))
                     else:
-                        lo, hi = (-2**31, 2**31) if dt == "i32" else (0, 2**32)
+                        bits = struct.calcsize(DTYPES[dt]) * 8
+                        lo, hi = (-2**(bits-1), 2**(bits-1)) if dt.startswith('i') else (0, 2**bits)
                         if type(value) is not int or not lo <= value < hi:
                             raise ValueError(f"{dt} initialization values must be integers in [{lo}, {hi})")
                         values.append(value)
@@ -446,7 +505,7 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
         for a in st.get("args", []):
             if not isinstance(a, dict) or len(a) not in (1, 2):
                 raise RunError(f"spec: step {si} arg {a!r}: use {{\"buf\": name}}, {{\"i32\": v}}, "
-                               "{\"u32\": v}, {\"f32\": v} or {\"u64\": v}")
+                               "{\"u32\": v}, {\"f32\": v}, {\"i64\": v} or {\"u64\": v}")
             if "buf" in a:
                 if not isinstance(a['buf'], str) or a["buf"] not in buffers:
                     raise RunError(f"spec: step {si} uses buffer {a['buf']!r}, not in \"buffers\"")
@@ -467,16 +526,20 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
                 if len(a) != 1 or type(a["f32"]) not in (int, float):
                     raise RunError(f"spec: step {si} invalid f32 argument")
                 args.append(("f32bits", _f32bits(float(a["f32"]))))
-            elif "u64" in a:
-                if len(a) != 1 or type(a["u64"]) is not int or not 0 <= a["u64"] < 2**64:
-                    raise RunError(f"spec: step {si} invalid u64 argument")
-                args.append(("u64", a["u64"]))
+            elif "u64" in a or "i64" in a:
+                kind = "i64" if "i64" in a else "u64"
+                value = a[kind]
+                lo, hi = (-2**63, 2**63) if kind == "i64" else (0, 2**64)
+                if len(a) != 1 or type(value) is not int or not lo <= value < hi:
+                    raise RunError(f"spec: step {si} invalid {kind} argument")
+                args.append(("u64", value & ((1 << 64) - 1)))
             else:
                 raise RunError(f"spec: step {si} arg {a!r}: unknown kind")
         nparams = len(t.kernel.get("params", []))
         if len(args) != nparams:
             raise RunError(f"spec: step {si} passes {len(args)} args to {t.label}, which takes {nparams} "
                            f"({', '.join(p[1] for p in t.kernel['params'])})")
+        _checked_buffer_bindings(t,out_dir,args,buffers,spec['buffers'])
         steps_ours.append((mod, t.label, grid, block, smem, args))
         steps_ref.append((mod, t.label, grid, block, smem, args))
     compare = spec.get("compare", list(buffers))

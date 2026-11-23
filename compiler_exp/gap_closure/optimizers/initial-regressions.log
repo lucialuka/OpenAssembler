@@ -1,0 +1,64 @@
+...........................................F......FF.................... [ 71%]
+.............................                                            [100%]
+=================================== FAILURES ===================================
+_______________ test_rejections[adam_update-inputs7-out7-attrs7] _______________
+
+op = 'adam_update'
+inputs = [{'shape': [2]}, {'shape': [2]}, {'shape': [2]}, {'shape': [2]}]
+out = {'shape': [2]}, attrs = {'amsgrad': True, 'name': 'adamw'}
+
+    @pytest.mark.parametrize('op,inputs,out,attrs',[
+     ('embedding',[{'shape':[2],'dtype':'f32'},{'shape':[4,3]}],{'shape':[2,3]},{}),
+     ('embedding',[{'shape':[2],'dtype':'i64'},{'shape':[4,3]}],{'shape':[2,4]},{}),
+     ('broadcast_add',[{'shape':[2,3]},{'shape':[2]}],{'shape':[2,3]},{}),
+     ('sum_to',[{'shape':[2,3]}],{'shape':[3,2]},{}),
+     ('masked_softmax',[{'shape':[2,3]},{'shape':[2,3]}],{'shape':[2,3]},{'causal':False}),
+     ('ce_rows',[{'shape':[2,3]},{'shape':[2],'dtype':'f32'}],{'shape':[2]},{}),
+     ('ce_grad',[{'shape':[2,1025]},{'shape':[2],'dtype':'i64'}],{'shape':[2,1025]},{}),
+     ('adam_update',[{'shape':[2]}]*4,{'shape':[2]},{'name':'adamw','amsgrad':True}),
+    ])
+    def test_rejections(op,inputs,out,attrs):
+>       with pytest.raises(ValueError):emit_kernel(op,inputs,out,attrs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_model_semantics.py:70: Failed
+_________ test_optimizer_policy_rejects_unsupported_settings[policy6] __________
+
+policy = {'amsgrad': True, 'name': 'adam'}
+
+    @pytest.mark.parametrize('policy',[
+        {'name':'adam','epsilon':0}, {'name':'adamw','beta1':1},
+        {'name':'adam','beta2':-1}, {'name':'adamw','weight_decay':-1},
+        {'name':'adam','epsilon':float('nan')}, {'name':'sgd','beta1':.9},
+        {'name':'adam','amsgrad':True}, {'name':'adamw','maximize':True},
+    ])
+    def test_optimizer_policy_rejects_unsupported_settings(policy):
+        from openassembler.modelfront.optimizer import optimizer_options
+>       with pytest.raises(ValueError):optimizer_options(policy)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_model_semantics.py:80: Failed
+_________ test_optimizer_policy_rejects_unsupported_settings[policy7] __________
+
+policy = {'maximize': True, 'name': 'adamw'}
+
+    @pytest.mark.parametrize('policy',[
+        {'name':'adam','epsilon':0}, {'name':'adamw','beta1':1},
+        {'name':'adam','beta2':-1}, {'name':'adamw','weight_decay':-1},
+        {'name':'adam','epsilon':float('nan')}, {'name':'sgd','beta1':.9},
+        {'name':'adam','amsgrad':True}, {'name':'adamw','maximize':True},
+    ])
+    def test_optimizer_policy_rejects_unsupported_settings(policy):
+        from openassembler.modelfront.optimizer import optimizer_options
+>       with pytest.raises(ValueError):optimizer_options(policy)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_model_semantics.py:80: Failed
+=========================== short test summary info ============================
+FAILED tests/test_model_semantics.py::test_rejections[adam_update-inputs7-out7-attrs7]
+FAILED tests/test_model_semantics.py::test_optimizer_policy_rejects_unsupported_settings[policy6]
+FAILED tests/test_model_semantics.py::test_optimizer_policy_rejects_unsupported_settings[policy7]
+3 failed, 98 passed in 7.55s

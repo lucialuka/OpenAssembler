@@ -1,5 +1,15 @@
 # Validation of the November 15 compiler changes
 
+For the later supplied-gap repairs, the [current register](gap-register.md)
+and [November 21 validation](../../compiler_exp/gap_closure/integration_20261121/validation.json)
+report 1,686 supported-environment passes with no skips, plus 1,294 compiler-only
+passes with 12 explicit skips. The preceding
+[November 20 validation record](../../compiler_exp/gap_closure/validation.json) reports
+1,278 supported-environment passes with no skips, plus 1,117 compiler-only
+passes with 11 explicit skips. New division and broadcast A100 gates have
+their own exact contracts. The dated runs below retain their original counts
+and limitations.
+
 The final installed implementation passes **1,028 tests with five explicit
 skips** in the compiler environment. The separate local CPU Torch run passes
 **75 tests** covering graph algebra/derivatives, numerical diagnostics and model

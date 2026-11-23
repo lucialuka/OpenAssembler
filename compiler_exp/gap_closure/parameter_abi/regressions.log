@@ -1,0 +1,30 @@
+..........F..........................................                    [100%]
+=================================== FAILURES ===================================
+__ test_annotated_and_scalar_words_remain_equal_with_real_packaged_ownership ___
+
+    def test_annotated_and_scalar_words_remain_equal_with_real_packaged_ownership():
+        if not oracle.available('ptxas'):pytest.skip('requires CUDA tools')
+        oracle.SCRATCH.mkdir(parents=True,exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='oa-pointer-abi-',dir=oracle.SCRATCH) as temporary:
+            root=Path(temporary).resolve();path=root/'input.ptx';path.write_text(source('.ptr .global .align 16'))
+            result=build.build_source(path,'ptx','input',build.Options(no_sass=True,verify=True),single=True)
+            assert result.rc==0,result.error
+            kernel=result.kernels[0];assert kernel.verify=='ok'
+            plain=source('').replace('.param .u64 .ptr .global .align 8 input','.param .u64 input')
+            before=build.generate(parse_module(plain).kernels['copy'],'sm_80','opt')
+            after=build.generate(parse_module(path.read_text()).kernels['copy'],'sm_80','opt')
+            assert before==after
+            entry=result.entry(True)
+            assert entry['kernels'][0]['parameter_attributes']['output']['alignment']==16
+            binary=result.files[entry['cubin']]
+            from openassembler.native_ownership import validate
+            validate(entry,binary)
+            entry['kernels'][0]['parameter_attributes']['output']['alignment']=8
+>           with pytest.raises(ValueError,match='inventory'):validate(entry,binary)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_parameter_pointer_abi.py:57: Failed
+=========================== short test summary info ============================
+FAILED tests/test_parameter_pointer_abi.py::test_annotated_and_scalar_words_remain_equal_with_real_packaged_ownership
+1 failed, 52 passed in 6.07s

@@ -103,8 +103,8 @@ def flatten_outputs(plan, actual):
 def capture_model(model, example_inputs, *, math_mode="fp32"):
     """Capture a CPU ``nn.Module`` and emit a JSON-serializable native program.
 
-    Supported operations include Linear, ReLU, tanh GELU, last-axis softmax and
-    affine LayerNorm, exact-rank matmul, same-shape/scalar add/multiply, reshape,
+    Supported operations include Linear, ReLU, sigmoid, static sum/mean, tanh GELU, last-axis softmax and
+    affine LayerNorm, rank-two through rank-four batch-broadcast matmul, reshape,
     rank-two through rank-four permutation and concatenation, broadcast arithmetic,
     dense int64 embeddings and Boolean/causal SDPA. Linear accepts
     any positive leading dimensions; flattening is explicit in the plan.
@@ -131,9 +131,10 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         if (not isinstance(tensor, torch.Tensor) or tensor.device.type != "cpu"
                 or tensor.dtype not in ((torch.float32, torch.int64, torch.bool) if label == "input" else (torch.float32,)) or tensor.layout != torch.strided
                 or not tensor.is_contiguous() or any(dim <= 0 for dim in tensor.shape)):
-            raise ModelGraphError(f"{label}: native model capture requires contiguous positive-shape CPU FP32 tensors")
-        if not bool(torch.isfinite(tensor).all()):
-            raise ModelGraphError(f"{label}: capture examples and initial state must contain finite FP32 values")
+            dtypes = "FP32, int64 index or Boolean mask" if label == "input" else "FP32"
+            raise ModelGraphError(f"{label}: native model capture requires contiguous positive-shape CPU {dtypes} tensors")
+        if tensor.dtype == torch.float32 and not bool(torch.isfinite(tensor).all()):
+            raise ModelGraphError(f"{label}: FP32 capture examples and initial state must contain finite FP32 values")
     spans = []
     for name, tensor in model_state:
         begin, end = tensor.data_ptr(), tensor.data_ptr() + tensor.numel() * tensor.element_size()
@@ -160,6 +161,8 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
     function_ops = {
         operator.add: "add", torch.add: "add", operator.mul: "mul", torch.mul: "mul",
         torch.relu: "relu", functional.relu: "relu", functional.linear: "linear",
+        torch.sigmoid: "sigmoid", functional.sigmoid: "sigmoid",
+        torch.sum: "sum", torch.mean: "mean",
         torch.flatten: "reshape", torch.reshape: "reshape", torch.transpose: "transpose",
         operator.matmul: "matmul", torch.matmul: "matmul", torch.mm: "matmul", torch.bmm: "bmm",
         torch.softmax: "softmax", functional.softmax: "softmax", functional.gelu: "gelu",
@@ -167,8 +170,8 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         functional.embedding: "embedding", functional.scaled_dot_product_attention: "sdpa",
         torch.cat: "concat", torch.concat: "concat",
     }
-    module_ops = (torch.nn.Linear, torch.nn.ReLU, torch.nn.Identity, torch.nn.Flatten, torch.nn.Softmax, torch.nn.GELU, torch.nn.LayerNorm, torch.nn.Embedding)
-    methods = {"relu", "add", "mul", "view", "reshape", "flatten", "transpose", "t", "permute", "contiguous", "clone", "size", "dim", "matmul", "bmm", "softmax"}
+    module_ops = (torch.nn.Linear, torch.nn.ReLU, torch.nn.Sigmoid, torch.nn.Identity, torch.nn.Flatten, torch.nn.Softmax, torch.nn.GELU, torch.nn.LayerNorm, torch.nn.Embedding)
+    methods = {"relu", "sigmoid", "sum", "mean", "add", "mul", "view", "reshape", "flatten", "transpose", "t", "permute", "contiguous", "clone", "size", "dim", "matmul", "bmm", "softmax"}
     shape_ops = {operator.getitem, getattr}
     for node in traced.graph.nodes:
         supported = node.op in ("placeholder", "get_attr", "output")
@@ -217,7 +220,7 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
     def shape(node):
         meta = node.meta.get("tensor_meta")
         if meta is None or not hasattr(meta, "shape") or meta.dtype not in (torch.float32, torch.int64, torch.bool):
-            fail(node, "expected one FP32 tensor value")
+            fail(node, "expected one tensor value with declared FP32, int64 or Boolean dtype")
         result = list(meta.shape)
         if any(type(x) is not int or x <= 0 for x in result):
             fail(node, "dynamic, empty or negative shapes are unsupported")
@@ -355,6 +358,7 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         op = ("embedding" if isinstance(module, torch.nn.Embedding) else
               "linear" if isinstance(module, torch.nn.Linear) else
               "relu" if isinstance(module, torch.nn.ReLU) else
+              "sigmoid" if isinstance(module, torch.nn.Sigmoid) else
               "softmax" if isinstance(module, torch.nn.Softmax) else
               "gelu" if isinstance(module, torch.nn.GELU) else
               "layernorm" if isinstance(module, torch.nn.LayerNorm) else
@@ -373,7 +377,49 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
             continue
         dims = shape(node)
         name = buffer(node.name, dims)
-        if op == "embedding":
+        if op in ("sum", "mean"):
+            x = tensor(node.args[0] if node.args else node.kwargs.get("input"), node)
+            xs = plan["buffers"][x]["shape"]
+            if (plan["buffers"][x]["dtype"] != "f32" or len(xs) > 4
+                    or node.kwargs.get("dtype") not in (None, torch.float32)):
+                fail(node, "sum/mean requires FP32 input/output of rank zero through four without dtype conversion")
+            if len(node.args) > 3 or set(node.kwargs) - {"input", "dim", "keepdim", "dtype", "out"}:
+                fail(node, "unsupported sum/mean argument")
+            if node.kwargs.get("out") is not None:
+                fail(node, "sum/mean out= mutation is unsupported")
+            dim = resolve(node.args[1] if len(node.args) > 1 else node.kwargs.get("dim"))
+            keepdim = resolve(node.args[2] if len(node.args) > 2 else node.kwargs.get("keepdim", False))
+            if type(keepdim) is not bool:
+                fail(node, "sum/mean keepdim must be a static Boolean")
+            rank = len(xs)
+            raw_axes = (tuple(range(rank)) if dim is None else (dim,) if type(dim) is int else dim)
+            if not isinstance(raw_axes, (tuple, list)) or any(type(i) is not int for i in raw_axes):
+                fail(node, "sum/mean dim must be static integer axes")
+            if not raw_axes:
+                raw_axes = tuple(range(rank))
+            if rank == 0:
+                if tuple(raw_axes) not in ((), (0,), (-1,)):
+                    fail(node, "invalid scalar reduction axis")
+                axes = ()
+            else:
+                if any(not -rank <= i < rank for i in raw_axes) or len({i % rank for i in raw_axes}) != len(raw_axes):
+                    fail(node, "sum/mean axes must be distinct and in range")
+                axes = tuple(sorted(i % rank for i in raw_axes))
+            kept = [1 if i in axes else n for i, n in enumerate(xs)]
+            expected = kept if keepdim else [n for i, n in enumerate(xs) if i not in axes]
+            if dims != expected:
+                fail(node, "sum/mean output disagrees with normalized axes")
+            reduced = emit("sum_to", [x], fresh("reduced", kept))
+            if op == "mean":
+                reduced = emit("mul", [reduced], fresh("mean", kept),
+                               {"scalar": 1 / math.prod(xs[i] for i in axes)})
+            view([reduced], name)
+        elif op == "sigmoid":
+            x = tensor(node.args[0] if node.args else node.kwargs.get("input"), node)
+            if plan["buffers"][x]["dtype"] != "f32" or node.kwargs.get("out") is not None:
+                fail(node, "sigmoid requires FP32 input without out= mutation or dtype conversion")
+            emit("sigmoid", [x], name)
+        elif op == "embedding":
             x = tensor(node.args[0] if node.args else node.kwargs.get("input"), node)
             if module is not None:
                 w = parameter(node.target + ".weight", node)
@@ -452,21 +498,43 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
             if weight is not None:
                 emit("channel_affine", [normalized, weight] + ([] if bias is None else [bias]), name)
         elif op in ("matmul", "bmm"):
-            a, b = tensor(node.args[0], node), tensor(node.args[1], node)
+            if node.kwargs.get("out") is not None:
+                fail(node, "matmul out= mutation is unsupported")
+            lhs = node.args[0] if node.args else node.kwargs.get("input")
+            rhs = node.args[1] if len(node.args) > 1 else node.kwargs.get("other", node.kwargs.get("mat2"))
+            a, b = tensor(lhs, node), tensor(rhs, node)
             ashape, bshape = plan["buffers"][a]["shape"], plan["buffers"][b]["shape"]
-            if len(ashape) != len(bshape) or len(ashape) < 2 or ashape[-1] != bshape[-2]:
-                fail(node, "native matmul requires matching rank and matrix inner dimensions")
-            if len(ashape) == 2 and op != "bmm":
+            if len(ashape) < 2 or len(bshape) < 2 or ashape[-1] != bshape[-2]:
+                fail(node, "native matmul requires matrix operands and matching matrix inner dimensions")
+            if ashape[:-2] != bshape[:-2] and max(len(ashape), len(bshape)) > 4:
+                fail(node, "batch-broadcast matmul requires rank two through four")
+            if op == "bmm" and (len(ashape) != 3 or len(bshape) != 3 or ashape[0] != bshape[0]):
+                fail(node, "native bmm requires rank-three operands with identical batch shapes without broadcasting")
+            if len(ashape) == len(bshape) == 2:
                 bt = emit("transpose2d", [b], fresh("matmul_weight", bshape[::-1]))
                 emit("linear", [a, bt], name, {"m": ashape[0], "n": bshape[1], "k": ashape[1]})
             else:
-                if ashape[:-2] != bshape[:-2] or op == "bmm" and len(ashape) != 3:
-                    fail(node, "native batched matmul requires identical batch shapes without broadcasting")
-                batch = math.prod(ashape[:-2])
+                from .kernels_semantics import broadcast_shape
+                if ashape[:-2] == bshape[:-2]:
+                    # Preserve the existing equal-batch flattening route even
+                    # when its input rank exceeds the new broadcast-copy bound.
+                    batches = ashape[:-2]
+                else:
+                    try:
+                        batches = list(broadcast_shape(ashape[:-2], bshape[:-2]))
+                    except ValueError as exc:
+                        fail(node, str(exc))
+                batch = math.prod(batches)
                 av, bv, target = a, b, name
-                if len(ashape) != 3:
-                    av = view([a], fresh("bmm_left", [batch, *ashape[-2:]]))
-                    bv = view([b], fresh("bmm_right", [batch, *bshape[-2:]]))
+                # Materialize only operands whose batch axes expand. The copy
+                # preserves FP32 bits; no arithmetic or dtype conversion occurs.
+                if ashape != [*batches, *ashape[-2:]]:
+                    av = emit("broadcast_to", [a], fresh("bmm_left_expanded", [*batches, *ashape[-2:]]))
+                if bshape != [*batches, *bshape[-2:]]:
+                    bv = emit("broadcast_to", [b], fresh("bmm_right_expanded", [*batches, *bshape[-2:]]))
+                if len(batches) != 1:
+                    av = view([av], fresh("bmm_left", [batch, *ashape[-2:]]))
+                    bv = view([bv], fresh("bmm_right", [batch, *bshape[-2:]]))
                     target = fresh("bmm_output", [batch, ashape[-2], bshape[-1]])
                 emit("bmm", [av, bv], target)
                 if target != name:
@@ -621,6 +689,10 @@ def _differentiate(plan, trainable):
             accumulate(args[0], emit("permute", [dy], shapes[0], {"axes": [axes.index(i) for i in range(len(axes))]}))
         elif op == "embedding":
             accumulate(args[1], emit("embedding_grad", [args[0],dy], shapes[1]))
+        elif op == "broadcast_to":
+            accumulate(args[0], emit("sum_to", [dy], shapes[0]))
+        elif op == "sum_to":
+            accumulate(args[0], emit("broadcast_to", [dy], shapes[0]))
         elif op in ("broadcast_add", "broadcast_mul"):
             full = plan["buffers"][out]["shape"]
             for index,arg in enumerate(args):
@@ -630,6 +702,8 @@ def _differentiate(plan, trainable):
             accumulate(args[0], emit("softmax_backward", [dy, out], shapes[0]))
         elif op == "gelu":
             accumulate(args[0], emit("gelu_backward", [dy, args[0]], shapes[0]))
+        elif op == "sigmoid":
+            accumulate(args[0], emit("sigmoid_backward", [dy, out], shapes[0]))
         elif op == "layernorm":
             accumulate(args[0], emit("layernorm_backward", [dy, args[0]], shapes[0], attrs))
         elif op == "channel_affine":

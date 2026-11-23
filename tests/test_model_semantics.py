@@ -64,7 +64,7 @@ def test_embedding_transformer(views,reuse):
  ('masked_softmax',[{'shape':[2,3]},{'shape':[2,3]}],{'shape':[2,3]},{'causal':False}),
  ('ce_rows',[{'shape':[2,3]},{'shape':[2],'dtype':'f32'}],{'shape':[2]},{}),
  ('ce_grad',[{'shape':[2,1025]},{'shape':[2],'dtype':'i64'}],{'shape':[2,1025]},{}),
- ('adam_update',[{'shape':[2]}]*4,{'shape':[2]},{'name':'adamw','amsgrad':True}),
+ ('adam_fused',[{'shape':[2]}]*4,{'shape':[2]},{'name':'adamw','amsgrad':True}),
 ])
 def test_rejections(op,inputs,out,attrs):
     with pytest.raises(ValueError):emit_kernel(op,inputs,out,attrs)
@@ -73,7 +73,7 @@ def test_rejections(op,inputs,out,attrs):
     {'name':'adam','epsilon':0}, {'name':'adamw','beta1':1},
     {'name':'adam','beta2':-1}, {'name':'adamw','weight_decay':-1},
     {'name':'adam','epsilon':float('nan')}, {'name':'sgd','beta1':.9},
-    {'name':'adam','amsgrad':True}, {'name':'adamw','maximize':True},
+    {'name':'adam','amsgrad':1}, {'name':'adamw','maximize':'yes'},
 ])
 def test_optimizer_policy_rejects_unsupported_settings(policy):
     from openassembler.modelfront.optimizer import optimizer_options

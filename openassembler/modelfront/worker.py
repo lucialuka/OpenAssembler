@@ -100,6 +100,8 @@ def _check(got, expected, label: str, config: dict) -> dict:
 def _run(output: Path, config: dict, verify: bool, source_root: Path | None = None) -> dict:
     import torch
     from openassembler.modelfront.runtime import Runtime
+    from .profiling import profile_iterations, kernel_distributions
+    sampled = profile_iterations(config['steps'], config.get('profile_iterations', 1)) if verify else []
     plan = json.loads((output / 'plan.json').read_text())
     reference = None
     numeric_reference = None
@@ -127,10 +129,10 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
             numeric_reference = CPUReference(plan, extract_weights(reference, plan))
     reference_optimizer=None
     if reference is not None and config['mode']=='training' and numeric_reference is None:
-        from .optimizer import optimizer_options
+        from .optimizer import optimizer_options,torch_optimizer_kwargs
         policy=optimizer_options(plan.get('optimizer',{}))
         cls={'sgd':torch.optim.SGD,'adam':torch.optim.Adam,'adamw':torch.optim.AdamW}[policy['name']]
-        kwargs={} if policy['name']=='sgd' else dict(betas=(policy['beta1'],policy['beta2']),eps=policy['epsilon'],weight_decay=policy['weight_decay'],foreach=False)
+        kwargs=dict(foreach=False,**torch_optimizer_kwargs(policy))
         reference_optimizer=cls(reference.parameters(),lr=config['learning_rate'],**kwargs)
     runtime = Runtime.load(output)
     from .profiling import audit_profile
@@ -186,13 +188,13 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
                 start = time.perf_counter()
                 gpu_start, gpu_end = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
                 gpu_start.record()
-                if verify and iteration == config['steps'] - 1:
+                if iteration in sampled:
                     with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
                                                            torch.profiler.ProfilerActivity.CUDA]) as profile:
                         result = replay.run() if replay else runtime.train_step(tensors, gpu_target, config['learning_rate'])
                         gpu_end.record()
                         torch.cuda.synchronize()
-                    audits.append(audit_profile(profile, replay.launch_ledger if replay else runtime.launch_ledger))
+                    audits.append({**audit_profile(profile, replay.launch_ledger if replay else runtime.launch_ledger), 'iteration':iteration})
                 else:
                     result = replay.run() if replay else runtime.train_step(tensors, gpu_target, config['learning_rate'])
                     gpu_end.record()
@@ -234,12 +236,22 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
                             checks.append(_check(result['gradients']['parameters'][name], original.grad,
                                                  f'{iteration}/gradient/{name}', config))
                     reference_optimizer.step()
-                    if plan.get('optimizer',{}).get('name','sgd')!='sgd':
+                    if plan.get('optimizer'):
                         native_state=runtime.optimizer_state_dict()
+                        from .optimizer import optimizer_state_keys
+                        state_keys=set(optimizer_state_keys(plan['optimizer']))
+                        expected_names=set(plan['backward']['grad_parameters']) if state_keys else set()
+                        if set(native_state['moments'])!=expected_names:
+                            raise ValueError('native optimizer state inventory differs from trainable parameters')
+                        checks.append({'name':f'{iteration}/optimizer_step','passed':native_state['step']==iteration+1,
+                                       'elements':1,'mismatches':int(native_state['step']!=iteration+1),
+                                       'max_abs':abs(native_state['step']-iteration-1)})
                         for parameter in plan['parameters']:
                             original=state[parameter['target']];name=parameter['name']
                             if original in reference_optimizer.state and name in native_state['moments']:
-                                for key,refkey in (('m','exp_avg'),('v','exp_avg_sq')):
+                                if set(native_state['moments'][name])!=state_keys:raise ValueError('incomplete native optimizer parameter state')
+                                for key,refkey in (('momentum','momentum_buffer'),('m','exp_avg'),('v','exp_avg_sq'),('max_v','max_exp_avg_sq')):
+                                    if key not in native_state['moments'][name]:continue
                                     checks.append(_check(native_state['moments'][name][key],reference_optimizer.state[original][refkey],f'{iteration}/optimizer/{name}/{key}',config))
                     for parameter in plan['parameters']:
                         checks.append(_check(runtime.weights[parameter['name']], state[parameter['target']],
@@ -247,15 +259,21 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
             else:
                 torch.cuda.synchronize()
                 start = time.perf_counter()
-                if verify and iteration == config['steps'] - 1:
+                gpu_start, gpu_end = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
+                gpu_start.record()
+                if iteration in sampled:
                     with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
                                                            torch.profiler.ProfilerActivity.CUDA]) as profile:
                         outputs = runtime.forward(tensors)
+                        gpu_end.record()
                         torch.cuda.synchronize()
-                    audits.append(audit_profile(profile, runtime.launch_ledger))
+                    audits.append({**audit_profile(profile, runtime.launch_ledger), 'iteration':iteration})
                 else:
                     outputs = runtime.forward(tensors)
+                    gpu_end.record()
                     torch.cuda.synchronize()
+                gpu_end.synchronize()
+                device_times.append(gpu_start.elapsed_time(gpu_end))
                 times.append((time.perf_counter() - start) * 1000)
                 if reference is not None:
                     for name, value in zip(plan['outputs'], expected_values):
@@ -267,13 +285,22 @@ def _run(output: Path, config: dict, verify: bool, source_root: Path | None = No
         ledger = launches
         if not ledger:
             raise ValueError('native runtime returned no executable launch ledger')
+        resources = runtime.kernel_resources() if verify else {}
+        profiles = kernel_distributions(audits, ledger, resources)
+        profiles['iterations_before_first_profile'] = sampled[0] if sampled else None
+        profiles['warmup_scope'] = 'preceding requested iterations, no extra warmup or optimizer updates; zero means no warmup'
+        unprofiled = [i for i in range(config['steps']) if i not in sampled]
         return {'schema': 1, 'backend': 'openassembler', 'mode': config['mode'],
                 'passed': all(c['passed'] for c in checks), 'verified': verify,
                 'checks': checks, 'iterations': config['steps'], 'host_step_ms': times,
                 'execution': config.get('execution', 'direct'), 'replay_prepare_ms': replay_prepare_ms,
                 'cuda_stream_elapsed_ms': device_times,
-                'profiled_iterations': [config['steps']-1] if verify else [],
-                'timing_scope': 'resident input native model dispatch, synchronization included; last verified iteration profiled; no performance comparator',
+                'profiled_iterations': sampled,
+                'kernel_profiles': profiles,
+                'profiler_free_iterations': unprofiled,
+                'profiler_free_host_step_ms': [times[i] for i in unprofiled],
+                'profiler_free_cuda_stream_elapsed_ms': [device_times[i] for i in unprofiled],
+                'timing_scope': 'resident input native model dispatch, synchronization included; profiled and profiler-free iterations labeled separately; allocation/index checks may synchronize; no performance comparator',
                 'device': {'name': device.name, 'cc': f'{device.major}.{device.minor}'},
                 'launch_count': len(ledger), 'launch_ledger': ledger,
                 'canaries': guards, 'changed_inputs': config['steps'] > 1,
@@ -293,22 +320,26 @@ def process(request: dict) -> dict:
             root = Path(d)
             output = root / 'output'
             if request['action'] == 'compile':
+                worker_started = time.perf_counter()
                 source = root / 'source'
                 blob = base64.b64decode(request['source'], validate=True)
                 unpack(blob, source)
+                unpack_ms = (time.perf_counter()-worker_started)*1000
                 from openassembler.modelfront.graph import capture_model, extract_weights
                 from openassembler.modelfront.kernels import build_bundle
                 started = time.perf_counter()
                 model = _model(source, config)
                 factory_ms = (time.perf_counter()-started)*1000
+                started = time.perf_counter()
                 examples = _examples(config)
+                examples_ms = (time.perf_counter()-started)*1000
                 started = time.perf_counter()
                 with _cpu_capture():
                     plan = capture_model(model, examples, math_mode=config['math'])
                 capture_ms = (time.perf_counter()-started)*1000
                 if config.get('optimizer_fusion',False):plan['optimizer_fusion']=True
                 if config.get('loss','mse')!='mse':plan['loss']=config['loss']
-                if config.get('optimizer_policy',{}).get('name','sgd')!='sgd':plan['optimizer']=config['optimizer_policy']
+                if config.get('optimizer_policy',{'name':'sgd'})!={'name':'sgd'}:plan['optimizer']=config['optimizer_policy']
                 from .optimization import optimize_plan
                 started = time.perf_counter()
                 plan = optimize_plan(plan, storage_views=config.get('storage_views', True),
@@ -322,26 +353,38 @@ def process(request: dict) -> dict:
                              sass_listings=config.get('sass_listings', True),cache_dir=cache_dir)
                 cache_result=json.loads((output/'model-cache-result.json').read_text()) if (output/'model-cache-result.json').is_file() else {'hit':False}
                 bundle_ms = (time.perf_counter()-started)*1000
+                started = time.perf_counter()
                 (output / 'model-source.zip').write_bytes(blob)
                 (output / 'model.json').write_text(json.dumps({'schema': 1, 'backend': 'openassembler',
                     'config': config, 'source_root': request.get('source_root'),
                     'source_digest': request['source_digest']}, indent=2))
+                metadata_ms = (time.perf_counter()-started)*1000
                 # Native source discovery remains independent from the model
                 # graph. CUDA/PTX/@kernel translation units are compiled by OA,
                 # while host files stay in the retained source bundle.
                 from openassembler.repository import native_candidates
+                started = time.perf_counter()
                 native = native_candidates(source, output)
+                discovery_ms = (time.perf_counter()-started)*1000
+                started = time.perf_counter()
                 if native:
                     from openassembler.build import Options, compile_paths
                     compiled = compile_paths(source, output / 'repository-native', Options(fallback=None))
                     if compiled.rc:
                         raise ValueError('repository contains unsupported native kernels; no fallback is allowed')
+                repository_build_ms = (time.perf_counter()-started)*1000
+                started = time.perf_counter()
                 report = _run(output, config, True, source) if request.get('verify') else {
                     'passed': True, 'verified': False, 'backend': 'openassembler',
                     'native_kernels': len(plan['steps']), 'source_native_files': len(native)}
-                report['compile_stage_ms'] = {'cpu_factory': factory_ms, 'cpu_capture_autodiff': capture_ms,
-                    'storage_planning': planning_ms, 'native_bundle_and_weights': bundle_ms}
-                report['compile_stage_scope'] = 'worker-local non-overlapping phases; excludes transport, independent repository source builds and validation'
+                validation_ms = (time.perf_counter()-started)*1000
+                report['compile_stage_ms'] = {'source_unpack': unpack_ms, 'cpu_factory': factory_ms,
+                    'cpu_examples': examples_ms, 'cpu_capture_autodiff': capture_ms,
+                    'storage_planning': planning_ms, 'native_bundle_and_weights': bundle_ms,
+                    'source_metadata': metadata_ms, 'repository_discovery': discovery_ms,
+                    'repository_native_build': repository_build_ms, 'application_validation': validation_ms}
+                report['compile_worker_total_ms'] = (time.perf_counter()-worker_started)*1000
+                report['compile_stage_scope'] = 'non-overlapping worker-local phases; validation includes GPU work only when requested; excludes request transport, remote startup/wait, final report/archive publication; cache and source timings are nested inside native_bundle_and_weights'
                 report['model_bundle_cache']={key:value for key,value in cache_result.items() if key!='native_ledger'}
                 (output / 'model-build-report.json').write_text(json.dumps(report, indent=2, allow_nan=False))
                 files = {p.relative_to(output).as_posix(): p.read_bytes() for p in output.rglob('*')

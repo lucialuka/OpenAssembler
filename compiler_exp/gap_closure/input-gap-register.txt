@@ -1,0 +1,744 @@
+The targeted failure is the stale broadcasting-rejection assertion described in G51, reproduced in both local and pinned-Torch runs. It must not be presented as an implementation failure of broadcasting. The first remote run also lacked Git for one discovery test; after installing that test dependency in the external container, that case passed. The first result remains retained. The remote image uses Python 3.11.13, below the package's declared >=3.12 requirement: this check pins Torch, not the complete supported Python environment. Local Python 3.13 satisfies the Python requirement but its Torch 2.15 is outside the supported Torch range. The common stale assertion is supported by both observed runs; this is not a claim of a fully green supported-environment suite.
+
+Historical `append_training(...loss='cross_entropy')` rejection is also not a missing CE runtime feature: that older helper remains MSE-specific. The old vector-four load/store probe now rejects its store; separate fresh load-only and store controls distinguish the two.
+
+Source inspection covers the frontend, capture/differentiation, semantic kernels, optimizer/decode/runtime/replay, scalar admission/selection/allocation, tensor backend, packaging, application discovery/worker, reporting, relevant tests and current dossiers. It is not a claim of manual review of every historical experiment or mathematical proof of every kernel. Exact probe contracts, raw diagnostics and environment versions are retained beside the report.
+
+## What is fixed, and what remains bounded
+
+| Earlier finding | Current status | Remaining boundary |
+|---|---|---|
+| Signed saturating add/sub silently wrap | **Fixed** | Broader scalar/ISA coverage and exact-division verification remain separate. |
+| FP32 predicate FTZ silently dropped | **Fixed** | Software operand normalization is faithful; direct optimized FTZ encoding is not a general new encoder capability. |
+| Closed stdout breaks CLI color detection | **Fixed** | Current-stream lookup and closed-stream handling have regression tests. |
+| Bare/weak PTX entries and launch headers omitted | **Fixed earlier** | Scalar ABI/module/link coverage is still bounded. |
+| No tensor bias broadcasting | **Bounded support added** | FP32 add/mul rank 0..4; no general matmul batch broadcasting. |
+| No embeddings / integer input route | **Bounded support added** | External int64 indices, dense gradients, host bounds checking, restricted embedding options. |
+| No masked/causal attention | **Bounded support added** | FP32 Boolean/upper-left causal SDPA; dropout/GQA/additive masks and fused online attention remain open. |
+| No cross-entropy / Adam / AdamW | **Bounded support added** | Rank-two mean CE <=1024 classes; exact restricted optimizer policy, direct execution. |
+| No persistent optimizer/resume state | **Bounded support added** | CPU-owned moments/step snapshots; parameters saved separately, no complete application checkpoint. |
+| No KV-cache state | **Bounded support added** | Exact positive past-length variants, immutable FP32 prefix copies and one-token append. |
+| Model reports lack any compile phases | **Earlier statement too broad** | Four coarse phases exist; backend/tool/packaging and per-kernel distributions remain incomplete. |
+| Evidence/roadmap missing from Git exports | **Fixed for named maintained paths** | Selected experimental directories are tracked; live and Git-export documentation checks now pass. |
+| Exact shape/tile/reduction performance weaknesses | **Some measured improvements** | Other shapes and newly supported semantic workloads need separate performance evidence. |
+
+Retained semantic-repair hardware evidence: A100 80GB PCIe, 144 launches, 25,104 elements, guards and immutability pass. Retained November 20 model integration: A100-SXM4-40GB, 779 comparisons / 1,771,766 elements, eight updates/resume, plus CLI build and saved-run checks. These devices/environments are distinct and their absolute times are not pooled. See [scalar repair evidence](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/semantic-acceptance.md:95) and [model integration evidence](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:89).
+
+## Gap register at a glance
+
+Priorities are proposed engineering order: **P0** is the unresolved verification blocker; **P1** is capability/correctness/integration needed for stated workloads; **P2** is scalability/performance/measurement after faithful lowerings exist. Target/toolchain independence is a separate product milestone, not a prerequisite to every useful SM80 workload.
+
+| ID | Gap | Priority |
+|---|---|---|
+
+| [G01](#g01) | Unresolved exact-division verification counterexample | P0 |
+| [G02](#g02) | Full semantic conformance is still a larger task than scalar admission | P1 |
+| [G03](#g03) | Custom Python types and numerical semantics remain narrow | P1 |
+| [G04](#g04) | Reusable Python functions and library calls are not generally compilable | P1 |
+| [G05](#g05) | Python objects, containers and compile-time programming lack a general route | P1 |
+| [G06](#g06) | Python control flow is useful but not unrestricted | P1 |
+| [G07](#g07) | Custom-kernel arrays have no general tensor/view/layout API | P1 |
+| [G08](#g08) | Python GPU primitive vocabulary is incomplete | P1 |
+| [G09](#g09) | Memory safety and shared-memory initialization checks are incomplete | P1 |
+| [G10](#g10) | PTX parameter ABI and module grammar are bounded | P1 |
+| [G11](#g11) | Scalar arithmetic/types/modifiers do not cover general CUDA-emitted PTX | P1 |
+| [G12](#g12) | Global/shared memory widths and vector forms remain uneven | P1 |
+| [G13](#g13) | Address spaces and module storage are not generally lowered | P1 |
+| [G14](#g14) | Atomics, reductions and memory ordering are missing compiler foundations | P1 |
+| [G15](#g15) | Warp/block collective and synchronization support is narrow | P1 |
+| [G16](#g16) | Device calls, call stacks and cross-module device linking are absent | P1 |
+| [G17](#g17) | Register/predicate spilling and general pressure management are missing | P1 |
+| [G18](#g18) | Tensor instruction and async-pipeline coverage is specialized | P1 |
+| [G19](#g19) | Native GPU architecture coverage remains SM80/A100 | Separate target |
+| [G20](#g20) | Source-to-binary toolchain independence is incomplete | Separate milestone |
+| [G21](#g21) | Framework operator coverage is still a small whitelist | P1 |
+| [G22](#g22) | Model control flow and shapes are static specializations | P1 |
+| [G23](#g23) | Model storage/dtype and AMP coverage remain restricted | P1 |
+| [G24](#g24) | Arbitrary strides, aliases and mutation effects are unsupported | P1 |
+| [G25](#g25) | Broadcast support is partial and does not extend to batched matmul | P1 |
+| [G26](#g26) | Hard resource bounds exclude common large ML shapes | P1 |
+| [G27](#g27) | Attention feature coverage remains bounded after masked/causal SDPA | P1 |
+| [G28](#g28) | Attention is decomposed and materializes quadratic intermediates | P2 |
+| [G29](#g29) | Embedding does not provide general gather/scatter/index semantics | P1 |
+| [G30](#g30) | Embedding gradient and broadcast-reduction scaling is a performance gap | P2 |
+| [G31](#g31) | Loss support is still MSE plus a narrow cross-entropy contract | P1 |
+| [G32](#g32) | Autograd interoperability is first-order and bounded | P1 |
+| [G33](#g33) | RNG, dropout and mutable model buffers remain open | P1 |
+| [G34](#g34) | Optimizer family and option coverage remains limited | P1 |
+| [G35](#g35) | Optimizer snapshots are not complete application checkpoints | P1 |
+| [G36](#g36) | Adaptive/indexed training cannot use full CUDA-graph replay | P1 |
+| [G37](#g37) | Indexed runtime validation introduces synchronizing host work | P2 |
+| [G38](#g38) | Distributed and multi-device training are not integrated native workloads | P1 for that workload |
+| [G39](#g39) | KV decoding requires precompiled positive exact-length variants | P1 |
+| [G40](#g40) | KV cache memory management copies prefixes and lacks paging | P2 |
+| [G41](#g41) | Production serving behavior is not established by bounded decode tests | P2 |
+| [G42](#g42) | Real build and dependency graphs are not resolved | P1 |
+| [G43](#g43) | Custom kernels/operators are not automatically inserted into model execution | P1 |
+| [G44](#g44) | Arbitrary host Python orchestration and environments are not packaged/executed | P1 |
+| [G45](#g45) | General scheduling, tiling and cost models remain incomplete | P2 |
+| [G46](#g46) | Whole-model fusion, packing and launch planning remain limited | P2 |
+| [G47](#g47) | Cold/warm compilation and cache-hit overhead lack complete attribution | P2 |
+| [G48](#g48) | Standard reports lack per-kernel steady-state distributions | P2 |
+| [G49](#g49) | Full-workload comparisons and compile amortization remain incomplete | P2 |
+| [G50](#g50) | Independent application and semantic test coverage is still finite | P1 evidence |
+| [G51](#g51) | Regression maintenance still contains a stale rejection and nondeterministic sampling | P1 evidence |
+
+## Verification and custom Python
+
+
+<a id="g01"></a>
+### G01 — Unresolved exact-division verification counterexample
+
+**Priority:** P0.
+
+The retained numerator `0x8147ec48` and denominator `0x21dea823` produce `0x9ee5dc9c` in the SASS emulator versus `0x9ee5dc9d` in the PTX interpreter. Baseline and post-repair records agree: saturation/FTZ fixes did not resolve this one-ULP discrepancy. MUFU and FCHK still contain approximate or hypothesis-based models. This is an unresolved verification-model issue; it is not evidence that the current native GPU division result is wrong. A random suite pass cannot supersede the fixed counterexample.
+
+**What closes this gap:** Replay the exact inputs and emitted sequence on hardware against an independent exact reference, isolate approximation/slow-path/rounding behavior, and retain a deterministic regression before changing verification status.
+
+**Evidence:** [docs/compiler/semantic-acceptance.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/semantic-acceptance.md:140); [compiler_exp/semantic_acceptance/emulator-limit-current.json](/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/semantic_acceptance/emulator-limit-current.json); [openassembler/emu/ops.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/emu/ops.py:1033).
+
+
+<a id="g02"></a>
+### G02 — Full semantic conformance is still a larger task than scalar admission
+
+**Priority:** P1.
+
+The new scalar admission schema and 426 recorded forms are valuable repairs. They enumerate admissible modifier/type/arity shapes, not 426 fully supported and hardware-proven operations. Later selection, operand restrictions, register allocation and encoding can still reject; tensor instructions have a separate checker. For example, vector-two global loads appear in the schema but the selector rejects them. Syntax acceptance, encoded words, packaged cubin, hardware correctness and speed are separate evidence levels.
+
+**What closes this gap:** Maintain one machine-readable cross-stage contract ledger with exact forms, supported operand domains, rejection reasons and independent CPU/toolkit/hardware evidence. Cover combinations and negative controls, rather than counting mnemonics or parser acceptance.
+
+**Evidence:** [openassembler/backend/contracts.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/contracts.py:18); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:656); [docs/compiler/semantic-acceptance.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/semantic-acceptance.md:50).
+
+
+<a id="g03"></a>
+### G03 — Custom Python types and numerical semantics remain narrow
+
+**Priority:** P1.
+
+The kernel language exposes only `i32`, `u32`, `f32` and arrays of those elements. It lacks user-facing half/BF16/FP64, wider integer and general Boolean/vector types. Python unbounded integers become wrapping 32-bit values and Python float64 arithmetic becomes FP32 arithmetic. Division-by-zero, conversion and negative-index behavior do not become ordinary Python exceptions. Exp/log/tanh/rsqrt are declared approximate intrinsics. Thus accepting Python syntax does not establish arbitrary Python semantics or generic mixed precision.
+
+**What closes this gap:** Define the intended typed device-language contract, implement missing types and conversions end to end, and test overflow, rounding, exceptional values and math policies independently. Keep strict FP32, approximate math and half-rounded products distinct.
+
+**Evidence:** [openassembler/pyfront/types.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/types.py:22); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:17).
+
+
+<a id="g04"></a>
+### G04 — Reusable Python functions and library calls are not generally compilable
+
+**Priority:** P1.
+
+Static compilation finds top-level `@kernel` functions and resolves a small intrinsic/import vocabulary. Arbitrary user helper calls, recursion, nested functions, lambdas and general NumPy/Python/package methods do not lower. This blocks factoring custom kernels into reusable device libraries, even when the intended computation is numeric and otherwise GPU-compatible. Import statements used for name resolution are not a package compiler or a device linker.
+
+**What closes this gap:** Add typed device-function specialization or inlining with explicit call signatures, captured constants, effect rules and source locations; support separate device calls only with a valid ABI. Test multi-module helpers without executing arbitrary top-level host code during static discovery.
+
+**Evidence:** [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:976); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:100); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:1279).
+
+
+<a id="g05"></a>
+### G05 — Python objects, containers and compile-time programming lack a general route
+
+**Priority:** P1.
+
+Lists, tuples/dicts as kernel values, strings, arbitrary attributes, comprehensions, classes, generators, exceptions and context managers are outside the numeric kernel subset. There is no general compile-time tensor/block DSL, Python object specialization or runtime object model. These restrictions affect practical parameterized custom kernels as well as arbitrary Python. Host-side objects and I/O also require a preserved host runtime, not just SASS generation.
+
+**What closes this gap:** Separate compile-time values, host-only effects and device values; admit useful static containers/constants and metaprogramming under explicit specialization rules. Preserve host effects through the application route rather than silently deleting them.
+
+**Evidence:** [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:100); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:727).
+
+
+<a id="g06"></a>
+### G06 — Python control flow is useful but not unrestricted
+
+**Priority:** P1.
+
+Data-dependent `if` and `while`, nested `range` loops, break and continue already exist; they should not be listed as wholly missing. Remaining restrictions include iteration over arbitrary iterables, nonconstant range steps, for/while-else, chained comparisons, first-class Boolean expressions and returned device values. Fixed-width loop counters can wrap. General Python execution and efficient lowering of arbitrary control-flow graphs remain outside the contract.
+
+**What closes this gap:** Extend only declared control-flow forms with branch/loop state semantics, defined overflow behavior and convergence checks. Test nested loops, early exits, loop-carried values and long-running bounds through encoding and hardware.
+
+**Evidence:** [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:548); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:622); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:79).
+
+
+<a id="g07"></a>
+### G07 — Custom-kernel arrays have no general tensor/view/layout API
+
+**Priority:** P1.
+
+`Array(TYPE)` is a flat pointer, indexed with 32-bit expressions. Shapes, strides, buffer lengths, alignment promises and ownership are not rich type-level contracts. Multidimensional layout arithmetic can be written manually, but there is no general tensor slicing/view/broadcast interface or block load/store masking abstraction. This makes arbitrary custom tensor kernels harder to express, verify and optimize, even when scalar indexing itself works.
+
+**What closes this gap:** Introduce explicit buffer/shape/stride/alignment and alias contracts, including safe masks and tails. Validate negative/runtime indices, offset overflow, views and external tensor bindings; exploit those facts for code generation without assuming contiguity.
+
+**Evidence:** [openassembler/pyfront/types.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/types.py:18); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:86).
+
+
+<a id="g08"></a>
+### G08 — Python GPU primitive vocabulary is incomplete
+
+**Priority:** P1.
+
+Python intrinsics cover thread/block coordinates, selected math, static shared arrays and `syncthreads`. They do not expose general atomics, warp votes/shuffles/reductions, asynchronous copies, device calls or tensor instructions as a complete custom-kernel language. Low-level backend support would not automatically make those facilities available from Python; conversely, adding intrinsic names without backend semantics would not add coverage.
+
+**What closes this gap:** Connect a typed primitive vocabulary to complete PTX/native contracts, including mask, scope, ordering, synchronization and collective participation rules. Test the Python-to-binary path for every admitted primitive.
+
+**Evidence:** [openassembler/pyfront/intrinsics.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/intrinsics.py); [openassembler/pyfront/__init__.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/__init__.py:38).
+
+
+<a id="g09"></a>
+### G09 — Memory safety and shared-memory initialization checks are incomplete
+
+**Priority:** P1.
+
+The recent no-possible-writer shared-read check closes one real bug class. It does not prove that a writer runs before a read, that threads synchronize correctly, or that every branch initializes a slot. General runtime global/shared bounds instrumentation, alias/race analysis and convergence proof remain absent. Static shared arrays are literal-sized, top-level allocations capped at 48 KiB in this Python frontend. Finite canary tests cannot establish safety for all future inputs.
+
+**What closes this gap:** Declare unsafe versus checked execution; add useful definite-initialization, bounds and synchronization analyses or diagnostics. Use adversarial schedules, masks, dimensions and hardware checking, while preserving explicit rejection where safety cannot be established.
+
+**Evidence:** [docs/compiler/semantic-acceptance.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/semantic-acceptance.md:80); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:136); [openassembler/pyfront/compile.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py:1181).
+
+
+## PTX, CUDA and native backend
+
+
+<a id="g10"></a>
+### G10 — PTX parameter ABI and module grammar are bounded
+
+**Priority:** P1.
+
+Bare/visible/weak entry discovery, entry inventories and selected launch directives are repaired. Parameters still accept explicit scalar 32/64-bit forms only; aggregate-by-value arrays and `.ptr .global` annotations reject. Only the documented launch-header vocabulary is admitted. The module representation and entry-centric build do not implement general PTX function/prototype/linkage/debug/relocation semantics. A CUDA frontend may emit valid PTX beyond these forms.
+
+**What closes this gap:** Implement the needed parameter layout/alignment and pointer metadata, preserve all semantic directives, and account for module symbols and functions across parsing, metadata, launches and linking. Reconcile discovered, parsed, emitted and executable inventories.
+
+**Evidence:** [openassembler/ptx/parse.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/ptx/parse.py:140); [openassembler/ptx/parse.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/ptx/parse.py:152); [docs/compiler/source-completeness.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/source-completeness.md:28).
+
+
+<a id="g11"></a>
+### G11 — Scalar arithmetic/types/modifiers do not cover general CUDA-emitted PTX
+
+**Priority:** P1.
+
+There is a useful integer32/FP32 subset plus selected pointer/64-bit operations and recorded arithmetic fragments. General FP64 arithmetic, scalar FP16 arithmetic, wide-integer multiplication, carry chains, many bit-manipulation/conversion forms and rounding/modifier combinations remain missing. Variable shifts reject; 64-bit shift counts are restricted to literal 0..31. Saturating signed add/sub and predicate FTZ are now implemented, so those old wrong-result findings are resolved.
+
+**What closes this gap:** Prioritize actual nvcc/custom-kernel blockers, implement exact modifier and type semantics, and prove them with independent bit-level references, same-source ptxas controls and hardware edge cases.
+
+**Evidence:** [openassembler/backend/contracts.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/contracts.py:18); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:419); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:688).
+
+
+<a id="g12"></a>
+### G12 — Global/shared memory widths and vector forms remain uneven
+
+**Priority:** P1.
+
+Current scalar global loads include selected narrow and 64-bit types and vector-four 32-bit loads. Vector-two global loads still reject. Byte/half/scalar-64 global stores are not general lowerings. The new admission schema also rejects `st.global.v4.u32`, even though selector code contains a vector-four store branch; vector-two stores are admitted. Fresh separate controls confirm vector-four load acceptance and vector-four store rejection. A combined load/store fixture must not be mistaken for a load failure.
+
+**What closes this gap:** Make admission and lowering agree on a published width/type/alignment matrix. Add scalar/vector load/store conversions and tail-safe alternatives, checking address alignment, guards, predication and exact written bytes.
+
+**Evidence:** [openassembler/backend/contracts.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/contracts.py:58); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:640); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:670).
+
+
+<a id="g13"></a>
+### G13 — Address spaces and module storage are not generally lowered
+
+**Priority:** P1.
+
+Global/shared pointers and kernel parameters cover current generated kernels. General local-memory accesses, constant-memory symbols, initialized global/module data and their symbol/address relocation semantics are not a complete backend facility. Parsing a storage declaration or emulating it is not the same as placing it correctly in an executable module. CUDA code using local arrays or module constants can therefore fail after nvcc succeeds.
+
+**What closes this gap:** Define storage placement, address conversion, alignment, initialization and relocation semantics for each supported address space, then validate real module data and per-thread local storage on hardware.
+
+**Evidence:** [openassembler/ptx/parse.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/ptx/parse.py:83); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:307); [openassembler/backend/contracts.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/contracts.py:41).
+
+
+<a id="g14"></a>
+### G14 — Atomics, reductions and memory ordering are missing compiler foundations
+
+**Priority:** P1.
+
+Global atomic add/CAS, reduction instructions, fences and acquire/release/volatile contracts are still rejected by the production path. These are central to custom reductions, scatter/embedding gradients, work queues and synchronization across threads or blocks. A sequential interpreter or an unordered load/store replacement cannot implement their concurrency semantics. CPU bounds validation is unrelated to this GPU memory model.
+
+**What closes this gap:** Implement complete operation/type/scope/order contracts with contention, publication/visibility, return-value and inter-block tests. Keep unimplemented ordering combinations rejected rather than treating modifiers as hints.
+
+**Evidence:** [openassembler/backend/contracts.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/contracts.py:18); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:646); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:676).
+
+
+<a id="g15"></a>
+### G15 — Warp/block collective and synchronization support is narrow
+
+**Priority:** P1.
+
+The native scalar path handles a specific full-mask, unpredicated butterfly shuffle and block barrier 0. General indexed/up/down shuffles, partial masks, votes/ballots, match/redux, additional barrier forms and broader cooperative synchronization do not form a general supported set. Current row kernels carefully fit the admitted full-warp/tail discipline. Arbitrary custom kernels may have different participant and divergence requirements.
+
+**What closes this gap:** Add collective participation and mask semantics alongside encoding and scheduling. Validate partial warps, divergent control flow, all barrier participants and memory visibility independently on hardware.
+
+**Evidence:** [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:462); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:454); [openassembler/backend/contracts.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/contracts.py:68).
+
+
+<a id="g16"></a>
+### G16 — Device calls, call stacks and cross-module device linking are absent
+
+**Priority:** P1.
+
+The backend is entry-local; a PTX device-function call rejects. There is no general device-call ABI, return-value/parameter convention, stack frame, recursive call support or device linker resolving functions across translation units/libraries. nvcc can inline some helpers before OA sees them, but this does not establish support for calls that survive. Separate cubins and donor relocations do not constitute whole-program device linking.
+
+**What closes this gap:** Implement a defined call ABI or bounded whole-program inlining/specialization, symbol resolution and stack/local allocation. Test multiple translation units, library calls, recursion policy and resource accounting.
+
+**Evidence:** [openassembler/ptx/parse.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/ptx/parse.py:83); [openassembler/backend/contracts.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/contracts.py:18); [openassembler/cppfront.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/cppfront.py:73).
+
+
+<a id="g17"></a>
+### G17 — Register/predicate spilling and general pressure management are missing
+
+**Priority:** P1.
+
+Allocation can reject with out-of-register or out-of-predicate errors. The 260-live-value reproducer still exceeds available allocation; `.maxnreg` rejects excessive output rather than selecting spills. Loop-carried non-32-bit and grouped-register constraints impose further limits. This prevents some valid large custom kernels from compiling and limits optimization freedom: a larger tile or more overlap can simply exceed resources.
+
+**What closes this gap:** Provide spill/reload and local storage semantics, group-aware allocation and pressure-aware scheduling, including predicates or a safe lowering strategy. Test both correctness and the performance/occupancy effects of imposed register limits.
+
+**Evidence:** [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:986); [openassembler/backend/ra.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/ra.py:1030); [openassembler/build.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/build.py:585).
+
+
+<a id="g18"></a>
+### G18 — Tensor instruction and async-pipeline coverage is specialized
+
+**Priority:** P1.
+
+Production supports dense SM80 m16n8k16 row/col FP16 or BF16 operands with FP32 accumulation, selected LDSM forms and unguarded 16-byte `.cg` async copies with commit and waits 0/1/2. Other shapes/types/layouts, TF32/sparse/integer tensor forms and general copy/barrier pipelines are not implemented. Tensor loop-home optimization also requires a bounded single-latch loop shape. Arbitrary CUDA/CUTLASS/Triton-generated tensor PTX is not covered by the incumbent GEMM recipe.
+
+**What closes this gap:** Expand exact instruction, register-fragment, address and synchronization contracts using independent generated inputs. Revalidate dependency schedules and resource limits rather than reusing scalar latency assumptions.
+
+**Evidence:** [openassembler/backend/tensor.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/tensor.py:200); [openassembler/backend/tensor.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/tensor.py:198); [openassembler/backend/tensor.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/tensor.py:53).
+
+
+<a id="g19"></a>
+### G19 — Native GPU architecture coverage remains SM80/A100
+
+**Priority:** Separate target.
+
+SM86 and SM90 probes still reject for missing encoder data; tensor generation explicitly requires SM80, and native model execution requires an A100-compatible contract. H100/Blackwell or other NVIDIA targets need their own native instruction encodings, ABI/metadata, scheduling and resource validation. A newer PTX target flag cannot supply these components. Even devices with related ISAs cannot inherit a performance or correctness claim without testing.
+
+**What closes this gap:** Declare supported target/toolkit combinations, build per-target encoders and machine models, and run conformance, resource, ownership and whole-workload hardware gates on each.
+
+**Evidence:** [openassembler/isa/encode.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/isa/encode.py:119); [openassembler/backend/tensor.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/tensor.py:440); [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:241).
+
+
+<a id="g20"></a>
+### G20 — Source-to-binary toolchain independence is incomplete
+
+**Priority:** Separate milestone.
+
+CUDA/C++ parsing depends on `nvcc --ptx`. Ordinary builds use ptxas for the reference and donor ELF cubin, then replace executable kernel text with OA words; nvdisasm supplies listings when requested. OA-owned executable text is real, but it is different from an independent CUDA frontend, assembler, object writer and linker. Binary-only model-cache identity no longer unnecessarily queries nvdisasm, which fixes that narrow dependency issue.
+
+**What closes this gap:** If independence is a product requirement, implement container/metadata/relocation and linking directly, with loadable-binary conformance. Preserve separate internal-backend versus total-toolchain compile measurements in the meantime.
+
+**Evidence:** [openassembler/cppfront.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/cppfront.py:73); [openassembler/build.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/build.py:633); [openassembler/modelfront/model_cache.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/model_cache.py:24).
+
+
+## Model language and tensor semantics
+
+
+<a id="g21"></a>
+### G21 — Framework operator coverage is still a small whitelist
+
+**Priority:** P1.
+
+FX capture now includes bounded embedding and SDPA as well as Linear, ReLU, tanh GELU, softmax, LayerNorm, layout/concat, add/mul and products. It still rejects common operations such as convolution, pooling, sigmoid, general sum/reductions, division, slicing/indexing and exact GELU. There is no general normalized ATen/export/decomposition/dispatch route covering arbitrary ML workloads. Implementing one operator spelling also does not automatically cover equivalent method/custom-module forms.
+
+**What closes this gap:** Build a normalized operator/effect IR with generic faithful lowerings and derivatives, then add optimized recipes. Admit independent CNN, recurrent, transformer, indexing and scientific workloads through the same normal entrypoints.
+
+**Evidence:** [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:160); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:170); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:347).
+
+
+<a id="g22"></a>
+### G22 — Model control flow and shapes are static specializations
+
+**Priority:** P1.
+
+Capture uses CPU FX tracing and exact example shapes. Tensor-dependent Python branching, symbolic shapes and general dynamically generated graph structure are not supported. The custom Python kernel language having `while` does not make an arbitrary model training loop capturable. Changing sequence/batch lengths needs already compiled contracts or a new explicit build; there is no general guard/recompile/lazy OA specialization policy.
+
+**What closes this gap:** Define shape/effect guards, guard-miss behavior and bounded AOT or explicit lazy specialization. Preserve host control flow where appropriate and test unseen values, lengths, branches and recompile/cache behavior.
+
+**Evidence:** [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:149); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:223); [openassembler/modelfront/decode.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/decode.py:59).
+
+
+<a id="g23"></a>
+### G23 — Model storage/dtype and AMP coverage remain restricted
+
+**Priority:** P1.
+
+Weights, arithmetic and gradients remain FP32. External int64 indices and Boolean masks are now admitted for specific operations, but do not provide general integer/Boolean tensor computation. True FP16/BF16/FP64 model storage, quantized/complex types, automatic mixed precision and loss scaling are not general model contracts. Low-level BF16 MMA support is separate. The half-rounded product option retains FP32 storage and declares a straight-through cast policy in backward; it is not interchangeable with generic AMP.
+
+**What closes this gap:** Specify dtype promotion, accumulation, cast derivatives, master state and overflow policies end to end. Compare complete training states under the identical policy, including exceptional and small-gradient cases.
+
+**Evidence:** [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:132); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:205); [openassembler/modelfront/kernels_semantics.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels_semantics.py:7).
+
+
+<a id="g24"></a>
+### G24 — Arbitrary strides, aliases and mutation effects are unsupported
+
+**Priority:** P1.
+
+Inputs/state must be contiguous and exact shape; distinct overlapping state tensors reject. Supported reshape aliases and view/reuse planning are not a general alias/effect system. Tensor slices, arbitrary strided views, in-place ReLU/out= mutation and state mutation during capture reject. Supported permutations may materialize copies. A model using shared mutable views, rolling buffers or channels-last layouts therefore needs more than an operator name addition.
+
+**What closes this gap:** Track base storage, offsets, strides, alias sets and mutation/version effects through capture, differentiation, planning and execution. Test overlapping views, state updates, storage reuse and backward saved-value lifetimes.
+
+**Evidence:** [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:142); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:513); [openassembler/modelfront/optimization.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/optimization.py:35).
+
+
+<a id="g25"></a>
+### G25 — Broadcast support is partial and does not extend to batched matmul
+
+**Priority:** P1.
+
+Trailing-axis FP32 add/mul broadcasting with reduction-correct backward now works through rank four, including scalar tensors. That closes the previous bias-broadcast gap. It does not add implicit dtype conversion, arbitrary rank/operation broadcasting, general expand views, or matmul batch-axis broadcasting. A `[2,M,K] @ [1,K,N]` probe still rejects, while rank-four add/mul controls encode successfully.
+
+**What closes this gap:** Extend broadcasting as an explicit shape/layout algebra per operation, including inverse gradient reductions and batch products. Validate rank, scalar, singleton and noncontiguous cases without silently expanding precision or storage contracts.
+
+**Evidence:** [openassembler/modelfront/kernels_semantics.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels_semantics.py:9); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:464).
+
+
+<a id="g26"></a>
+### G26 — Hard resource bounds exclude common large ML shapes
+
+**Priority:** P1.
+
+Softmax/LayerNorm and new CE class width are capped at 1024; every model tensor is capped at 16,777,216 elements. Half BMM requires equal flattened batch counts <=32 and positive M/N/K <=512; dual-packed linear dimensions are <=512. Standalone dense tensor GEMM has full-tile and K-multiple/layout constraints. These are distinct paths: FP32 BMM is not subject to the same 512 bound. Long contexts, large vocabularies and wider layers encounter these admission limits.
+
+**What closes this gap:** Design tiled/split reductions, larger-grid and workspace policies and tail/layout lowerings. Prove resource safety and full forward/backward correctness before raising bounds; measure allocation, padding and compile costs.
+
+**Evidence:** [openassembler/modelfront/kernels.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels.py:17); [openassembler/modelfront/kernels_tensor_batched.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels_tensor_batched.py:66); [openassembler/modelfront/kernels_tensor_dual.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels_tensor_dual.py:100); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:483).
+
+
+<a id="g27"></a>
+### G27 — Attention feature coverage remains bounded after masked/causal SDPA
+
+**Priority:** P1.
+
+FP32 rank-three/four SDPA now supports matching batch/head axes, rectangular Q/K/V, a broadcast Boolean mask or upper-left causal masking, finite scale and fully masked rows. Missing contracts include dropout, GQA/MQA-style unequal head axes, additive floating masks, simultaneous explicit mask plus causal flag, wider softmax rows and general relative-position/bias/mask operators. Upper-left non-square causality is explicitly defined; it must not be silently interpreted as a different decode alignment.
+
+**What closes this gap:** Define each mask/position/head/dropout contract and its derivative/RNG behavior. Test rectangular alignment, fully masked rows, changing masks, head sharing and complete gradients under fixed precision.
+
+**Evidence:** [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:391); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:396); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:15).
+
+
+<a id="g28"></a>
+### G28 — Attention is decomposed and materializes quadratic intermediates
+
+**Priority:** P2.
+
+The implementation performs BMM, scale, masked softmax and BMM, with a symbolic backward of that decomposition. It can fuse mask handling into softmax, but it is not an online/tiled fused attention and backward implementation. Score/probability tensors, transposes and launches remain important memory and latency costs, and the model tensor cap limits their size. The new hardware evidence is FP32; it does not establish new half-precision attention training trajectories.
+
+**What closes this gap:** Develop native fused or tiled attention/backward with explicit mask/dropout/precision contracts and shared/register/workspace budgets. Compare complete regions and training steps, including layouts and gradients, against the incumbent.
+
+**Evidence:** [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:408); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:31); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:35).
+
+
+<a id="g29"></a>
+### G29 — Embedding does not provide general gather/scatter/index semantics
+
+**Priority:** P1.
+
+Dense embeddings with external contiguous int64 indices and deterministic duplicate-index gradients are implemented. Padding indices, max-norm mutation, sparse gradients and frequency scaling reject. The plan requires validated external indices; general device-computed gather/scatter/index_select/take/index_put behavior is not a supported indexing language. Integer input admission should therefore not be described as arbitrary integer/indexed ML coverage.
+
+**What closes this gap:** Implement each indexing/gradient/alias policy explicitly, including generated indices and invalid-index behavior. Test duplicate indices, empty domains if admitted, sparse updates, padding and mutation effects.
+
+**Evidence:** [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:387); [openassembler/modelfront/kernels.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels.py:299); [openassembler/modelfront/kernels_semantics.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels_semantics.py:29).
+
+
+<a id="g30"></a>
+### G30 — Embedding gradient and broadcast-reduction scaling is a performance gap
+
+**Priority:** P2.
+
+Embedding dW assigns each table element a scan over token positions, preserving deterministic accumulation without atomics. Its work therefore grows with vocabulary x embedding width x token count, including unused rows. `sum_to` similarly serializes replicated-coordinate sums per result; the CE mean helper uses a serial reduction. These are correctness baselines, not scalable sparse/segmented or multi-CTA reduction engines. Tiny successful tests do not establish large-vocabulary training efficiency.
+
+**What closes this gap:** Compare deterministic segmentation/sorting or admitted atomic/reduction policies, parallel sums and sparse updates. Include temporary memory, preprocessing, duplicate distributions and full optimizer semantics in complete-task timing.
+
+**Evidence:** [openassembler/modelfront/kernels_semantics.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels_semantics.py:31); [openassembler/modelfront/kernels_semantics.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels_semantics.py:27); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:129).
+
+
+<a id="g31"></a>
+### G31 — Loss support is still MSE plus a narrow cross-entropy contract
+
+**Priority:** P1.
+
+CE is now supported through the compile_model/plan/runtime policy route: rank-two FP32 logits, int64 labels, unweighted mean, <=1024 classes and validated label bounds. Missing forms include probability targets, ignored labels, class weights, label smoothing, other reductions and spatial/rank-three logits without explicit restructuring. Other losses remain absent. The older `append_training` helper is still explicitly MSE/plain-SGD only; its CE rejection does not contradict the newer runtime CE route.
+
+**What closes this gap:** Normalize loss options and reductions with exact target/shape/dtype/invalid-label rules, then validate full loss/seed/gradients and optimizer state. Harmonize public APIs or document their distinct contracts clearly.
+
+**Evidence:** [openassembler/modelfront/kernels.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels.py:368); [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:615); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:667).
+
+
+<a id="g32"></a>
+### G32 — Autograd interoperability is first-order and bounded
+
+**Priority:** P1.
+
+Supported graph operations have symbolic derivatives and a PyTorch Module adapter. The adapter permits one first-order backward per forward; higher derivatives, repeated retained-graph backward and arbitrary custom autograd Functions are not general capabilities. Seeds must be contiguous. Ordinary external PyTorch loss/optimizer/AccumulateGrad may execute vendor arithmetic; using the adapter alone is not an OA-only full-training guarantee.
+
+**What closes this gap:** Extend derivative/effect IR and lifetime rules for intended higher-order, custom backward, accumulation and checkpointing semantics. Audit every GPU compute launch for composed paths and distinguish interoperable mixed execution from OA-owned training.
+
+**Evidence:** [openassembler/modelfront/autograd.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/autograd.py:47); [openassembler/modelfront/autograd.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/autograd.py:73); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:653).
+
+
+<a id="g33"></a>
+### G33 — RNG, dropout and mutable model buffers remain open
+
+**Priority:** P1.
+
+Masking and adaptive optimizer state do not provide random-number semantics. Dropout, RNG progression, random sampling and arbitrary mutable buffers are not represented as a complete native effect system; capture rejects state mutation. Training workloads with BatchNorm-like running state, stochastic depth, augmentation or sampling need state/seed ordering and resume behavior, not merely elementwise random outputs.
+
+**What closes this gap:** Introduce explicit RNG and mutable-state ownership/effects, deterministic or declared stochastic policies, derivatives and checkpoint state. Test successive changing steps and resumed sequences against the intended framework semantics.
+
+**Evidence:** [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:193); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:160); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:14).
+
+
+## Training state and execution
+
+
+<a id="g34"></a>
+### G34 — Optimizer family and option coverage remains limited
+
+**Priority:** P1.
+
+Plain SGD and bounded Adam/AdamW with FP32 moments, bias correction and explicit decay/epsilon are now implemented. Missing policies include SGD momentum/Nesterov, AMSGrad, maximize, parameter groups, differentiable updates and general optimizer families. There is one shared policy/step progression for the native plan, rather than arbitrary framework optimizer objects. Runtime learning-rate arguments are useful but not a complete scheduler/gradient-transform system.
+
+**What closes this gap:** Add exact equations/options, per-parameter/group state and update ordering, including clipping/accumulation/scheduler interactions where required. Compare moments, steps and every parameter across long trajectories and checkpoint resume.
+
+**Evidence:** [openassembler/modelfront/optimizer.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/optimizer.py:4); [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:543); [openassembler/modelfront/frontend.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/frontend.py:112).
+
+
+<a id="g35"></a>
+### G35 — Optimizer snapshots are not complete application checkpoints
+
+**Priority:** P1.
+
+The runtime now saves/restores CPU-owned moments, step and exact optimizer options with atomic validation; callers save parameter tensors separately at the same completed-update boundary. Eight-update/resume evidence covers that contract. It does not provide one complete application checkpoint including parameters, all buffers, RNG, scheduler/scaler state, data position, outstanding accumulation and environment. Borrowed outputs and live tapes also impose save/load boundaries.
+
+**What closes this gap:** Define a versioned complete checkpoint with a consistent update boundary, ownership and compatibility rules. Test interrupted/resumed complete applications, including failure before replacement and all omitted state categories.
+
+**Evidence:** [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:508); [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:517); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:43).
+
+
+<a id="g36"></a>
+### G36 — Adaptive/indexed training cannot use full CUDA-graph replay
+
+**Priority:** P1.
+
+TrainingReplay still requires fixed storage, stream and learning rate for its supported path. Indexed inputs, CE and Adam/AdamW reject graph execution because CPU bounds checks and host step-dependent coefficients cannot safely be treated as fixed captured work. The fused-optimizer microbenchmark captures fixed coefficients only. Thus the latest language-model training support is direct execution, with host dispatch costs distinct from the older MSE/SGD graph path.
+
+**What closes this gap:** Choose an explicit graph-safe bounds and step-state design, or document direct-only execution as a lasting boundary. Validate changing labels/indices and bias-correction coefficients over many replays without host work escaping the measured interval.
+
+**Evidence:** [openassembler/modelfront/replay.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/replay.py:24); [openassembler/modelfront/frontend.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/frontend.py:137); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:62).
+
+
+<a id="g37"></a>
+### G37 — Indexed runtime validation introduces synchronizing host work
+
+**Priority:** P2.
+
+Embedding indices and CE labels are copied to CPU and checked before native launches/updates. This is correct defensive validation and is not vendor GPU arithmetic fallback, but it introduces D2H transfer and synchronization in a resident-data workload. It limits graph capture and can dominate small-step latency. Verification example input ranges are not a substitute for these semantic runtime checks.
+
+**What closes this gap:** Measure validation/transfer/host time separately; study native device validation or explicit trusted-input/guard policies only with preserved failure semantics. Confirm no parameter update occurs after an invalid input and include validation in end-to-end claims.
+
+**Evidence:** [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:437); [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:613); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:25).
+
+
+<a id="g38"></a>
+### G38 — Distributed and multi-device training are not integrated native workloads
+
+**Priority:** P1 for that workload.
+
+One native plan requires tensors on exactly one CUDA device and uses a bound stream/context. There is no general native distributed program covering collectives, sharded optimizer state, tensor/pipeline/data parallelism, communication overlap and cross-rank checkpoint semantics. Running the existing compiler on a remote worker changes location, not the semantics of a multi-GPU training program.
+
+**What closes this gap:** Define the communication/ownership policy and whether vendor communication kernels are allowed, integrate sharded graphs and state, and validate complete multi-device steps including communication and synchronization costs.
+
+**Evidence:** [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:433); [openassembler/modelfront/runtime.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/runtime.py:360); [docs/compiler/research-plan.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/research-plan.md:18).
+
+
+## Inference and serving
+
+
+<a id="g39"></a>
+### G39 — KV decoding requires precompiled positive exact-length variants
+
+**Priority:** P1.
+
+DecodeSession is now a real owned cache API, but every past length must already exist in the bucket map. It accepts one-token append and positive nonempty past lengths, with fixed cache/input contracts. Unknown lengths reject; no hidden compilation occurs. This is useful bounded inference state, not general dynamic sequence handling or arbitrary beam/speculative decode. Many exact-length variants can add build time and artifact size.
+
+**What closes this gap:** Define bounded dynamic/length-bucket semantics, padding/position handling or explicit lazy specialization, including maximum context and guard misses. Test token-by-token predictions and all caches across supported transitions.
+
+**Evidence:** [openassembler/modelfront/decode.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/decode.py:16); [openassembler/modelfront/decode.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/decode.py:28); [openassembler/modelfront/decode.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/decode.py:59).
+
+
+<a id="g40"></a>
+### G40 — KV cache memory management copies prefixes and lacks paging
+
+**Priority:** P2.
+
+Cache tensors are immutable contiguous FP32 inputs/outputs; each append copies the old prefix. There is no in-place capacity buffer, page table, block allocator, cache eviction or quantized/mixed-precision KV policy. Prefix copying creates growing memory traffic and allocation pressure. Output/cache tensors borrow runtime storage, so the API rejects external producer reruns, mutation or weight changes rather than supporting arbitrary sharing.
+
+**What closes this gap:** Design storage capacity/page ownership and alias/update rules with attention-position correctness, canaries and reuse tests. Measure decode traffic, memory fragmentation and complete latency over growing contexts.
+
+**Evidence:** [openassembler/modelfront/decode.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/decode.py:36); [openassembler/modelfront/decode.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/decode.py:57); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:20).
+
+
+<a id="g41"></a>
+### G41 — Production serving behavior is not established by bounded decode tests
+
+**Priority:** P2.
+
+Prefill plus owned decode buckets does not yet establish continuous batching, concurrent requests, scheduling, beam management, cancellation, cache sharing or service throughput/tail latency. The model-semantics hardware and CLI gates validate small explicit programs and state transitions. They are not pretrained model-family, long-context, tokenizer-to-output or serving benchmarks.
+
+**What closes this gap:** Run independent complete inference applications with fixed model/checkpoint/tokenization/sampling contracts. Measure prefill and decode separately, first-token latency, per-token/tail latency, memory and throughput under declared request/concurrency distributions.
+
+**Evidence:** [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:20); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:67); [openassembler/modelfront/decode.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/decode.py:6).
+
+
+## Application/build integration
+
+
+<a id="g42"></a>
+### G42 — Real build and dependency graphs are not resolved
+
+**Priority:** P1.
+
+Repository inspection records imports/includes/build markers and performs bounded static discovery. It does not reproduce general preprocessor configuration, generated files, compilation databases, package/native dependency versions or host/device translation-unit/link graphs. Local quoted-header traversal is bounded and does not evaluate real conditionals/macros/build commands. Explicit include/flag selection helps individual files but does not reproduce arbitrary CMake/setuptools/extension builds.
+
+**What closes this gap:** Resolve original build commands and dependency identities in an isolated reproducible environment, including generated source and library linkage. Compare the original and OA builds without altering their intended workload or host behavior.
+
+**Evidence:** [openassembler/repository.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/repository.py:22); [docs/compiler/source-completeness.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/source-completeness.md:71); [docs/compiler/research-plan.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/research-plan.md:17).
+
+
+<a id="g43"></a>
+### G43 — Custom kernels/operators are not automatically inserted into model execution
+
+**Priority:** P1.
+
+The worker compiles discovered CUDA/PTX/@kernel sources independently of the captured graph. That does not connect extension registrations, operator schemas, custom autograd rules, launch dimensions, stream effects or caller buffer arguments to native model execution. A repository may contain compilable custom kernels yet have an unsupported real application. This is particularly central to the goal of arbitrary customized Python kernels used inside ML workloads.
+
+**What closes this gap:** Provide explicit custom-op/device-kernel registration with shape/dtype/layout/alias/effect and backward contracts, preserve launch bindings, and audit all model GPU launches against the native ledger through the ordinary CLI/runtime.
+
+**Evidence:** [openassembler/modelfront/worker.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/worker.py:329); [docs/CODEBASE_AUDIT.md](/Users/lucasfang/Desktop/OpenAssembler/docs/CODEBASE_AUDIT.md:35); [docs/compiler/research-plan.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/research-plan.md:18).
+
+
+<a id="g44"></a>
+### G44 — Arbitrary host Python orchestration and environments are not packaged/executed
+
+**Priority:** P1.
+
+The supported application route constructs a model factory, examples and native plan; source bundling and remote transport do not compile or preserve every training script. Data loading, CPU preprocessing, I/O, argument-driven control flow, custom package initialization and checkpoint orchestration need an application execution contract. A CPU-only algorithm can remain on CPU, but OA does not currently supply a general host runner/dependency closure for every repository. The supported Torch range is pinned, not arbitrary installed versions.
+
+**What closes this gap:** Preserve the real entrypoint/arguments/environment and CPU effects while routing GPU work to OA. Validate outputs and complete state for independent repositories; account for CPU work and transfers in end-to-end timing.
+
+**Evidence:** [openassembler/modelfront/frontend.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/frontend.py:231); [docs/compiler/research-plan.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/research-plan.md:3); [pyproject.toml](/Users/lucasfang/Desktop/OpenAssembler/pyproject.toml:16).
+
+
+## Efficiency, measurements and evidence
+
+
+<a id="g45"></a>
+### G45 — General scheduling, tiling and cost models remain incomplete
+
+**Priority:** P2.
+
+Measured scheduling, protected tensor controls and exact GEMM/rowwise/model policies improve selected cases. They do not supply a shape/layout/architecture-general optimizer balancing coalescing, address work, register pressure, occupancy, reuse, copy overlap and fusion. More buffers or earlier loads can lose through pressure; larger occupancy alone is not a speedup. Unknown contracts deliberately retain baseline policies. Exact table counts measure admitted tuning cases, not universal kernel coverage.
+
+**What closes this gap:** Use legal candidate generation with resource/dependency models, independent correctness gates and frozen held-out selection. Optimize real workload distributions and compare both the incumbent and named external controls.
+
+**Evidence:** [openassembler/backend/tensor.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/backend/tensor.py:29); [openassembler/kernels/gemm.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/kernels/gemm.py:18); [docs/compiler/memory-latency.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/memory-latency.md:13).
+
+
+<a id="g46"></a>
+### G46 — Whole-model fusion, packing and launch planning remain limited
+
+**Priority:** P2.
+
+Recent exact small-product and reduction improvements are real but retain explicit shape guards. General producer/consumer fusion, eliminating repeated transpose/round/pack/crop work, layout propagation and joint forward/backward launch planning remain opportunities. FP32 products often use scalar/tiled paths, and half recipes incur packing/padding. New broadcast, attention, embedding and optimizer kernels add composition costs that isolated GEMM or fixed-coefficient timings do not capture.
+
+**What closes this gap:** Compare complete pack+compute+crop and forward/backward/update regions with exact liveness/precision/effect rules. Reduce allocations/traffic/launches only after all storage-view/reuse, changed-input and full-state gates pass.
+
+**Evidence:** [openassembler/modelfront/kernels_tensor.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/kernels_tensor.py:87); [openassembler/modelfront/tensor_schedule.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/tensor_schedule.py:6); [exp/model_perf/RESULTS.md](/Users/lucasfang/Desktop/OpenAssembler/exp/model_perf/RESULTS.md:121).
+
+
+<a id="g47"></a>
+### G47 — Cold/warm compilation and cache-hit overhead lack complete attribution
+
+**Priority:** P2.
+
+The model worker now reports CPU factory, capture/autodiff, storage planning and native bundle/weights times. Backend emission, ptxas, packaging, disassembly and cache validation remain aggregated inside bundle work; independent repository sources and transport/validation are excluded from those four phases. Cached builds still regenerate/validate source and plan identity, which can dominate small builds. Correct binary-only nvdisasm independence does not establish fast cache hits.
+
+**What closes this gap:** Record nonoverlapping frontend/PTX/backend/ptxas/container/disassembly/cache/source/archive/startup/transfer phases for clean and validated warm builds. Preserve raw samples and distinguish remote waiting from compiler time.
+
+**Evidence:** [openassembler/modelfront/worker.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/worker.py:342); [openassembler/modelfront/model_cache.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/model_cache.py:124); [exp/model_perf/RESULTS.md](/Users/lucasfang/Desktop/OpenAssembler/exp/model_perf/RESULTS.md:142).
+
+
+<a id="g48"></a>
+### G48 — Standard reports lack per-kernel steady-state distributions
+
+**Priority:** P2.
+
+Existing reports retain host step and stream elapsed samples, ledgers, profiler audits and zero-vendor-compute fields. Some experiments provide component distributions, but the model suite commonly profiles one invocation for diagnostic per-kernel durations. That does not give repeated distributions for every unique kernel contract or attribute host validation/transfers/packing consistently. New fused optimizer timing is a component result with fixed coefficients, not a full adaptive-training distribution.
+
+**What closes this gap:** Provide per-contract repeated samples, medians/spread, launch counts, registers/shared/local memory, cubin/SASS size and graph fusion coverage. Pair profiling with ownership audits and separately measure profiler-free performance.
+
+**Evidence:** [openassembler/modelfront/worker.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/worker.py:272); [openassembler/modelfront/worker.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/worker.py:275); [exp/model_perf/RESULTS.md](/Users/lucasfang/Desktop/OpenAssembler/exp/model_perf/RESULTS.md:150).
+
+
+<a id="g49"></a>
+### G49 — Full-workload comparisons and compile amortization remain incomplete
+
+**Priority:** P2.
+
+The November 19 model campaign improved OA over its frozen incumbent, while fresh direct Triton and same-PTX ptxas controls remained faster on its three tasks. These records predate the latest semantic integrations and do not time the new language model end to end. Same-PTX ptxas isolates backend codegen; Triton/Inductor starts from an alternate model/compiler path; cuBLAS/cuBLASLt measures matching library operations; eager measures an application/runtime. They cannot be merged into one NVIDIA baseline.
+
+**What closes this gap:** Use identical model/weights/inputs, precision, masks, loss and optimizer state; gate complete correctness first. Compare clean/warm builds, resident and host-inclusive execution, and `build + startup + N*steady_state` per device/toolchain environment, with randomized raw timing samples and named speed ratios.
+
+**Evidence:** [exp/model_perf/RESULTS.md](/Users/lucasfang/Desktop/OpenAssembler/exp/model_perf/RESULTS.md:94); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:146); [docs/compiler/research-plan.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/research-plan.md:61).
+
+
+<a id="g50"></a>
+### G50 — Independent application and semantic test coverage is still finite
+
+**Priority:** P1 evidence.
+
+Thousands of passing regression/check comparisons establish their named contracts, not a percentage of arbitrary Python/CUDA/ML coverage. The 39-case historical CPU matrix lacks its original factories/full-state evidence; its reconstruction is explicitly a different source-defined corpus. New small language-block, mask-width and eight-update optimizer gates are useful but do not establish large pretrained families, long trajectories or all shape/dtype/effect combinations. Emulators and CPU algebra are not hardware or performance proof.
+
+**What closes this gap:** Maintain independent real-world and adversarial corpora with explicit coverage/rejection matrices, complete state gates and held-out models/shapes. Preserve all source/config/plan/binary hashes, GPU variants, environment versions and failure evidence; never average unsupported cases as slow results.
+
+**Evidence:** [docs/compiler/coverage-priorities.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/coverage-priorities.md:15); [docs/compiler/model-semantics.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/model-semantics.md:90); [docs/compiler/research-plan.md](/Users/lucasfang/Desktop/OpenAssembler/docs/compiler/research-plan.md:58).
+
+
+<a id="g51"></a>
+### G51 — Regression maintenance still contains a stale rejection and nondeterministic sampling
+
+**Priority:** P1 evidence.
+
+The fresh targeted suite fails `test_source_diagnostics` because it still expects supported `x + bias` broadcasting to reject. This is a stale assertion, not a broadcasting regression. A no-Torch full suite can skip that failure, so its green result is not equivalent to a supported-Torch full suite. Emulator random inputs use process-randomized Python hashes; passing a later random draw does not close the fixed division counterexample. Some older wording and error messages still describe FP32-only inputs despite admitted index/mask inputs.
+
+**What closes this gap:** Update capability/rejection tests together, run the complete supported dependency matrix, and retain deterministic seeds/counterexamples plus random-fuzz seeds. Keep API-specific limits and dated historical reports clearly separated from current support claims.
+
+**Evidence:** [tests/test_source_diagnostics.py](/Users/lucasfang/Desktop/OpenAssembler/tests/test_source_diagnostics.py:46); [tests/test_emu.py](/Users/lucasfang/Desktop/OpenAssembler/tests/test_emu.py:76); [openassembler/modelfront/graph.py](/Users/lucasfang/Desktop/OpenAssembler/openassembler/modelfront/graph.py:134).
+
+
+## Practical consequences for workload families
+
+| Intended workload | Current useful starting point | First likely remaining blockers |
+|---|---|---|
+| Handwritten elementwise/reduction Python kernel | Typed @kernel, scalar control flow and shared arrays | Device helper reuse, types/layouts/masks, missing primitives and unchecked dynamic memory accesses. |
+| Numeric Python kernels with package abstractions | Static import/name resolution | Objects/metaprogramming/functions plus faithful device library lowering. |
+| CUDA extension with scatter/reduction/device helpers | nvcc-to-PTX plus OA entry compilation | Atomics/order, ABI, calls/linking/spills, build integration and host launch bindings. |
+| CNN inference/training | Bounded model factory/FX route | Convolution/pooling and related operator/state/dtype coverage. |
+| Small FP32 token model | Embedding + causal SDPA + CE/AdamW example | Restricted options/shapes, direct dispatch, host index checks and scalable embedding/attention. |
+| Larger language model training | Existing transformer components and exact matrix recipes | Vocabulary/classes >1024, context/element/half-BMM caps, mixed precision, RNG, sharding and memory traffic. |
+| Token-by-token serving | Owned prefill/decode session | Precompiled length coverage, cache copies/paging, batching/concurrency and complete serving validation. |
+| Higher-order/differentiable optimizer workload | First-order symbolic model gradients | Higher-order autograd, custom backward/update effects and retained tape semantics. |
+
+This table predicts likely boundaries from explicit source contracts. It is not a claim that every representative third-party repository was executed.
+
+## Recommended delivery order and exit gates
+
+1. **Stabilize the verification and support ledger:** resolve G01 against hardware; retain the repaired saturation/FTZ gates; reconcile full form admission versus actual lowering; fix stale capability tests without weakening numerical gates.
+2. **Make custom Python kernels practical:** typed reusable helpers, richer buffer/layout contracts, missing useful types and primitives, then the device foundations those need—memory widths, atomics/order, calls/linkage and spills. Preserve a clear host/device boundary.
+3. **Finish normalized ML semantics:** operator coverage, layouts/effects/RNG, dtype policy, scalable shape admission, embedding/attention/loss variants and optimizer options. Keep already implemented bounded features visible rather than restarting them.
+4. **Integrate real applications and dynamic state:** original builds/dependencies and custom-op launches, complete checkpoint/host behavior, cache length/memory policies and explicit dynamic specialization. Select independent real CNN, transformer and custom-extension applications.
+5. **Generalize efficiency with complete measurements:** legal scheduling/layout/fusion/packing candidates, full-state gates, randomized paired timings and held-out confirmation. Include compile/cache/startup/host/bounds checks/transfers and amortization. Add targets/toolchain independence as separately scoped projects.
+
+Every completion claim should name exact shapes/strides, dtype/math policy, loss/optimizer options, RNG/effects, resource domain, architecture and dependency versions. Preserve source/config/plan/kernel/binary identities, all output and state comparisons, launch-ledger/profiler ownership and explicit unsupported/skipped/failed/not-run rows. A candidate only becomes a performance result after its correctness gate passes.
+
+For comparisons, use identical PTX for OA versus ptxas; identical model/workload semantics for Triton/Inductor/eager; matching matrix contracts for cuBLAS/cuBLASLt with tuning disclosed. Report named comparator/OA ratios (>1 means OA faster) and `build_time + startup_time + N * steady_state_time`. Do not combine different A100 variants or toolchains, and do not turn unsupported cases into slow timing values.

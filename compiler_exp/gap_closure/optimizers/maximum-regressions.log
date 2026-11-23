@@ -1,0 +1,43 @@
+.....................................F                                   [100%]
+=================================== FAILURES ===================================
+_________ test_amsgrad_maximum_nan_classification_and_signed_zero_ties _________
+
+    def test_amsgrad_maximum_nan_classification_and_signed_zero_ties():
+        p={'name':'adamw','amsgrad':True};shape={'shape':[8]}
+        left=[float('nan'),1.,float('nan'),0.,-0.,-0.,.3,.2]
+        right=[1.,float('nan'),float('nan'),-0.,0.,-0.,.2,.3]
+>       actual=execute(emit_kernel('adam_max',[shape]*2,shape,p),[left,right],[])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_model_optimizer_options.py:170: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kernel = KernelSpec(name='oa_model_f381ce3fc596f584b58d', op='adam_max', inputs=((8,), (8,)), output=(8,), attrs={'name': 'adam....f32 %f0,%f0,%f1,%p; selp.f32 %f0,0f7fc00000,%f0,%q;\nadd.u64 %d5,%d3,%d4; st.global.f32 [%d5],%f0;\ndone:\nret;\n}\n')
+arrays = [[nan, 1.0, nan, 0.0, -0.0, -0.0, ...], [1.0, nan, nan, -0.0, 0.0, -0.0, ...]]
+scalars = []
+
+    def execute(kernel,arrays,scalars):
+        from backend_harness import compile_ptx,listing
+        from openassembler.emu.machine import Memory,Machine,Launch
+        from openassembler.emu.program import load_listing
+        code,stats,words=compile_ptx(kernel.ptx,kernel.name);assert words
+        program=load_listing(listing(code,stats['labels']));outputs=[]
+        for poison in (None,0xdeadbeef):
+            memory=Memory();pointers=[]
+            for i,values in enumerate(arrays):
+                pointer=0x100000000+i*4096;pointers.append(pointer)
+                memory.write_bytes(pointer,struct.pack('<'+'f'*len(values),*values))
+            output=0x100100000;pointers.append(output)
+            params=struct.pack('<'+'Q'*len(pointers),*pointers)+b''.join(struct.pack('<f',v) for v in scalars)
+            for cx in range(kernel.grid[0]):Machine(program,Launch(grid=kernel.grid,block=(128,1,1),ctaid=(cx,0,0),params=params,poison=poison),memory).run()
+            outputs.append(torch.tensor([struct.unpack('<f',struct.pack('<I',memory.read(output+i*4,4)))[0] for i in range(math.prod(kernel.output))]))
+>       assert torch.equal(*outputs);return outputs[0]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x107550650>(*[tensor([   nan,    nan,    nan, 0.0000, -0.0000, -0.0000, 0.3000, 0.3000]), tensor([   nan,    nan,    nan, 0.0000, -0.0000, -0.0000, 0.3000, 0.3000])])
+E        +    where <built-in method equal of type object at 0x107550650> = torch.equal
+
+tests/test_model_optimizer_options.py:146: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_model_optimizer_options.py::test_amsgrad_maximum_nan_classification_and_signed_zero_ties
+1 failed, 37 passed in 1.61s

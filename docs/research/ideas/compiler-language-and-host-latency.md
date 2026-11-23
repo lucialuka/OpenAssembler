@@ -10,6 +10,12 @@ Measure whether parsing, optimization, encoding or autotuning takes enough host 
 
 ## Findings and implementation decision
 
+The [compilation attribution contract](../../compiler/gaps-measurement.md) now
+records source-build, cache and model-worker phases with actual cold/hit
+samples and unchanged native binaries. Remote startup/transport and individual
+backend-pass costs remain outside its scope. These measurements provide no
+evidence for a language rewrite or compile-speed improvement.
+
 OpenAssembler is Python tooling that emits/loads native cubins; the A100 executes SASS, not a Python interpreter per HMMA instruction. No complete compile-stage profile has shown that a C++ rewrite would materially improve application runtime. No rewrite was made.
 
 Frequent JIT, uncached startup and large autotuning searches can make host latency important, but that requires evidence. A whole-language migration could change code generation and introduce correctness differences without improving the measured GPU bottleneck.

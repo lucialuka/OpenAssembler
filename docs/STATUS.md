@@ -1,5 +1,34 @@
 # OpenAssembler architecture and status
 
+## November 21 compiler foundations and model operators
+
+The [current gap register](compiler/gap-register.md) records new bounded repairs
+for global memory widths/predicate values, structured typed-helper control flow,
+FP32 sigmoid/static sum/mean, and repeated profiler distributions/resources.
+The [integration record](../compiler_exp/gap_closure/integration_20261121/README.md)
+retains candidate experiments, wrong-result counterexamples and corrections,
+A100 byte/tensor/state/ownership gates, and 1,686 supported-environment test
+passes with no skips. The separate compiler-only environment passes 1,294 tests
+with 12 explicit skips. All 49 installed policies retain their native code;
+106 retained model bundles also match current native generation. These checks
+close named defects and extend explicit contracts; the full 51-gap program,
+general framework/runtime coverage and new performance comparisons remain open.
+
+## November 20 supplied-gap repairs
+
+The [51-gap register](compiler/gap-register.md) records remaining work without
+claiming completion of the full compiler program. A100 hardware isolates the
+retained division mismatch to emulator FCHK selection; its measured repair and
+fixed regression pass 3,409 exact quotient cases. New batch-broadcast matmul
+passes 72 output/gradient comparisons on A100, with canaries and profiler
+ownership checks. Same-file typed scalar `@device` helpers pass independent
+Python/PTX/encoded-SASS gates. Source/cache/worker compilation phases now retain
+explicit attribution; the cross-stage ledger records all 426 admitted scalar
+forms with representative operand domains and separate evidence levels. All
+49 installed GEMM/rowwise policies retain their native code. Dossiers linked
+from the register give methods, environments and remaining limits; no new
+performance or arbitrary-application claim follows from these repairs.
+
 ## November 20 model semantics and persistent state
 
 The [model semantics dossier](compiler/model-semantics.md) records research,

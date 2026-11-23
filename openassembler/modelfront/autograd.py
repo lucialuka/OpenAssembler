@@ -101,6 +101,65 @@ class CompiledModel(torch.nn.Module):
         """Return canonical graph-state names and the live bound tensors."""
         return {name: getattr(self, attr) for name, attr in zip(self._state_names, self._state_attributes)}
 
+    def _checkpoint_boundary(self):
+        if self._autograd_runtimes or self._training_replay is not None and not self._training_replay._closed:
+            raise RuntimeError('native checkpoint requires completed autograd and closed training replay')
+        expected_parameters={attr for attr,spec in zip(self._state_attributes,self.plan['parameters']) if spec.get('requires_grad',True)}
+        expected_buffers=set(self._state_attributes)-expected_parameters
+        if set(self._parameters)!=expected_parameters or set(self._buffers)!=expected_buffers:
+            raise RuntimeError('native checkpoint only owns state declared by the captured program')
+
+    def save_native_checkpoint(self,path,*,application=None,include_rng=True):
+        """Save complete native model/optimizer state and explicit JSON host state."""
+        self._checkpoint_boundary()
+        if self._native_runtime is None:raise RuntimeError('run native inference/training before saving a checkpoint')
+        runtime=self._native_runtime;ready=runtime._backward_ready;previous=runtime.weights
+        current=self.native_parameters()
+        for spec in self.plan['parameters']:
+            value=current[spec['name']]
+            if value.dtype!=torch.float32 or list(value.shape)!=spec['shape'] or not value.is_contiguous():
+                raise ModelGraphError('native checkpoint state differs from the captured FP32 shape/layout')
+        changed=any(current[name] is not previous.get(name) for name in current)
+        runtime.weights=current
+        if runtime._tape is None and runtime._gradients is None:runtime._backward_ready=False
+        try:
+            result=runtime.save_checkpoint(path,application=application,include_rng=include_rng)
+        except Exception:
+            runtime.weights=previous;runtime._backward_ready=ready;raise
+        runtime._backward_ready=False if changed else ready
+        if changed:runtime._last=None;runtime._saved_versions={}
+        return result
+
+    def load_native_checkpoint(self,path,*,device=None,restore_rng=True):
+        """Restore new owned parameter/buffer bindings, native state and CPU RNG.
+
+        Existing external parameter references become stale. Application JSON
+        (cursor/scheduler/scaler data) is returned for the host loop to consume.
+        """
+        from .runtime import Runtime
+        from .checkpoint import stage_checkpoint,commit_checkpoint
+        self._checkpoint_boundary()
+        created=self._native_runtime is None
+        runtime=Runtime(self.plan,self.native_parameters(),self.build_dir) if created else self._native_runtime
+        ready=runtime._backward_ready
+        if runtime._tape is None and runtime._gradients is None:runtime._backward_ready=False
+        try:
+            staged=stage_checkpoint(runtime,path,device=device,restore_rng=restore_rng)
+            parameters={};buffers={};bindings={}
+            for name,attr,spec in zip(self._state_names,self._state_attributes,self.plan['parameters']):
+                value=staged.weights[name]
+                bound=torch.nn.Parameter(value) if spec.get('requires_grad',True) else value
+                (parameters if spec.get('requires_grad',True) else buffers)[attr]=bound
+                bindings[name]=bound
+            staged.weights=bindings
+            result=commit_checkpoint(runtime,staged)
+            self._parameters=parameters;self._buffers=buffers;self._native_runtime=runtime
+            return result
+        except Exception:
+            runtime._backward_ready=ready
+            if created:runtime.close()
+            raise
+
     def _apply(self, fn, recurse=True):
         # A move/cast invalidates device bindings and preallocated launch state.
         self.close()
@@ -227,7 +286,7 @@ def compile_model(model, example_inputs, output_dir, *, opt_level="opt", math_mo
     policy=optimizer_options(optimizer)
     if loss not in ('mse','cross_entropy'):raise ValueError('loss must be mse or cross_entropy')
     if loss!='mse':plan['loss']=loss
-    if policy['name']!='sgd':plan['optimizer']=policy
+    if policy!={'name':'sgd'}:plan['optimizer']=policy
     if type(optimizer_fusion) is not bool:raise ValueError('optimizer_fusion must be boolean')
     if optimizer_fusion:plan['optimizer_fusion']=True
     weights = extract_weights(model, plan)

@@ -3,6 +3,7 @@
 Runs offline (no NVIDIA tools) on the committed corpus/sm_80/{ptx,sass}.
 """
 
+import hashlib
 import random
 import sys
 from pathlib import Path
@@ -17,6 +18,8 @@ import ptx_probes  # noqa: E402
 from openassembler.emu.fp import add, decode, encode, mul  # noqa: E402
 from openassembler.emu.ops import lut3  # noqa: E402
 from openassembler.emu.probe import run_probe  # noqa: E402
+from openassembler.emu.machine import Launch, Machine  # noqa: E402
+from openassembler.emu.program import load_listing, parse_insn  # noqa: E402
 
 CORPUS = ROOT / "corpus" / "sm_80"
 needs_corpus = pytest.mark.skipif(not (CORPUS / "sass").exists(), reason="run tools/build_corpus.py sm_80")
@@ -37,6 +40,38 @@ def test_fp_rounding_edges():
     assert encode(mul(big, decode(0x40000000))) == 0x7F800000   # overflow -> inf
     assert encode(mul(big, decode(0x40000000)), mode="RZ") == 0x7F7FFFFF
     assert encode(decode(0x00000001), ftz=True) == 0             # subnormal flush
+
+
+@pytest.mark.parametrize('sign', [0, 0x80000000])
+@pytest.mark.parametrize('exponent,slow', [(-125, True), (-103, True), (-102, False), (-101, False)])
+def test_fchk_small_dividend_boundary(sign, exponent, slow):
+    # Measured on A100 with this mantissa and denominator exponent zero.
+    # This checks the observed boundary, not a complete hardware FCHK truth table.
+    from openassembler.emu.ops import ALU
+    machine = Machine(load_listing(''), Launch(block=(1, 1, 1)))
+    warp = machine.warps[0]
+    lane = warp.lanes[0]
+    lane.r[4] = sign | ((exponent + 127) << 23) | 0x47ec48
+    lane.r[5] = 0x3fdea823
+    ALU['FCHK'](machine, lane, warp, parse_insn(0, 'FCHK P0, R4, R5', 0))
+    assert lane.p[0] is slow
+
+
+def test_exact_division_retained_counterexamples():
+    # Frozen CUDA12.8 ptxas sequence, retained independently of generated corpus
+    # availability. Expected bits come from integer-ratio RNE and the A100 replay.
+    sass = (ROOT / 'tests/data/emu/p_div_rn_f32.sass.txt').read_text()
+    cases = [
+        (0x8147ec48, 0x21dea823, 0x9ee5dc9d),
+        (0x8147ec47, 0x21dea822, 0x9ee5dc9c),
+        (0x8147ec47, 0x21dea824, 0x9ee5dc9a),
+        (0x8147ec49, 0x21dea824, 0x9ee5dc9d),
+        (0x8147ec48, 0x3fdea823, 0x80e5dc9d),
+    ]
+    inputs = [(a, b, 0, 0xc5bae70c) for a, b, _ in cases]
+    expected = [(value, 0xc5bae70c) for _, _, value in cases]
+    assert run_probe(sass, inputs, 0, 0) == expected
+    assert run_probe(sass, inputs, 0, 0, poison=0xdeadbeef) == expected
 
 
 # Probes that must match bit-exactly. Grows as coverage grows; never shrinks.
@@ -73,9 +108,12 @@ def test_emulator_matches_ptx(probe):
     kname = ptx_probes.kernel_name(probe)
     sass = (CORPUS / "sass" / f"{kname}.sass").read_text()
     ptx = (CORPUS / "ptx" / f"{kname}.ptx").read_text()
-    rng = random.Random(hash(probe) & 0xFFFF)
+    # Python's hash(str) changes across processes. Retain the full deterministic
+    # seed in failures so a numerical counterexample can be replayed exactly.
+    seed = int.from_bytes(hashlib.sha256(probe.encode('utf-8')).digest()[:8], 'big')
+    rng = random.Random(seed)
     checked = 0
-    for _ in range(3):
+    for trial in range(3):
         inputs = [tuple(diff_emu.rand32(rng) for _ in range(4)) for _ in range(32)]
         k, kf = diff_emu.rand32(rng), diff_emu.rand32(rng)
         got = run_probe(sass, inputs, k, kf)
@@ -84,5 +122,5 @@ def test_emulator_matches_ptx(probe):
             if undef:
                 continue
             checked += 1
-            assert diff_emu.same(probe, g, e, approx), (probe, t, [hex(x) for x in inputs[t]], g, e)
+            assert diff_emu.same(probe, g, e, approx), (probe, seed, trial, t, [hex(x) for x in inputs[t]], k, kf, g, e)
     assert checked > 0

@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import subprocess
 import tempfile
+import os
 
 from openassembler import project
 from openassembler.build import Options
@@ -29,6 +30,10 @@ def _sources(source: Path, output: Path, options: Options) -> tuple[Path, dict[s
 
     def add(name, path):
         nonlocal total
+        if name in payload:
+            if payload[name] != path.read_bytes():
+                raise project.ProjectError(f'source dependency changed while bundling: {path}')
+            return
         if len(payload) >= MAX_FILES or total + path.stat().st_size > MAX_BYTES:
             raise project.ProjectError('remote source bundle exceeds 256 MiB / 20000 files; '
                                        'exclude generated data or build locally')
@@ -40,6 +45,70 @@ def _sources(source: Path, output: Path, options: Options) -> tuple[Path, dict[s
 
     for path in files:
         add('source/' + path.relative_to(root).as_posix(), path)
+    from .compilation_database import discover as discover_commands
+    database, commands = discover_commands(source, options.compile_commands)
+    if commands:
+        def map_path(path):
+            path = Path(path).resolve()
+            if path.is_relative_to(root):
+                return Path('source') / path.relative_to(root)
+            return Path('build-dependencies') / Path(*path.parts[1:])
+        def include_tree(directory):
+            if not directory.is_dir():
+                raise project.ProjectError(f'compilation database include directory missing: {directory}')
+            destination = map_path(directory)
+            for path in sorted(directory.rglob('*')):
+                relative = path.relative_to(directory)
+                if any(part in project.SKIP_DIRS-{'build'} or part == '.git' for part in relative.parts) or path.resolve().is_relative_to(output.resolve()):
+                    continue
+                if path.is_symlink():
+                    raise project.ProjectError(f'compilation database dependency symlink must be materialized: {path}')
+                if path.is_file():
+                    add((destination/relative).as_posix(),path)
+        quoted_seen=set()
+        def include_quoted(path):
+            import re
+            if path in quoted_seen:return
+            quoted_seen.add(path)
+            if len(quoted_seen)>20000:raise project.ProjectError('quoted-header dependency closure exceeds 20000 files')
+            for name in re.findall(r'^\s*#\s*include\s*"([^"\n]+)"',path.read_text(errors='replace'),flags=re.M):
+                dependency=(path.parent/name).resolve()
+                if dependency.is_file():
+                    add(map_path(dependency).as_posix(),dependency)
+                    include_quoted(dependency)
+        records, origins = [], {}
+        for index, command in enumerate(commands.values()):
+            spelled=Path(os.path.abspath(command.directory/command.source_argument))
+            if spelled!=command.source:
+                raise project.ProjectError('remote compilation database source aliases must be materialized before relocation')
+            source_relative = map_path(command.source)
+            add(source_relative.as_posix(),command.source)
+            # NVCC searches a quoted include beside its translation unit even
+            # without -I. This also preserves ignored generated sibling inputs.
+            include_quoted(command.source)
+            for response in command.response_files:
+                add(map_path(response).as_posix(),Path(response))
+            working = map_path(command.directory)
+            payload[(working/'.oa-directory').as_posix()] = b''
+            flags=[];cursor=0
+            while cursor<len(command.flags):
+                token=command.flags[cursor]
+                if token in ('-I','-isystem','-include','-iquote'):
+                    path=command.resolve_path(command.flags[cursor+1]);target=map_path(path)
+                    if token=='-include':
+                        add(target.as_posix(),path)
+                        include_quoted(path)
+                    else:include_tree(path)
+                    flags.extend((token,os.path.relpath(target,working)));cursor+=2
+                elif token in ('-ccbin','--compiler-bindir') or token.startswith(('-ccbin=','--compiler-bindir=')):
+                    raise project.ProjectError('remote compilation database cannot relocate a host compiler override; use the pinned worker toolchain')
+                else:flags.append(token);cursor+=1
+            records.append({'directory':os.path.relpath(working,Path('source')),
+                            'file':os.path.relpath(source_relative,working),
+                            'arguments':['nvcc',*flags,'-c',os.path.relpath(source_relative,working)]})
+            origins[command.source.relative_to(root).as_posix()]=command.record()
+        payload['source/compile_commands.json']=json.dumps(records).encode()
+        payload['source/.oa-build-origins.json']=json.dumps(origins).encode()
     includes = []
     for index, directory in enumerate(options.include_dirs):
         directory = directory.resolve()
@@ -78,18 +147,22 @@ def compile_native(source: Path, output: Path, options: Options, name: str | Non
         project.single_output_name(source, name)
     project.load_manifest(output)
     if dry_run and backend == 'local':
+        from .compilation_database import discover as discover_commands
+        _, commands=discover_commands(source,options.compile_commands)
         files = project.walk(source, output)[0] if source.is_dir() else [source]
-        count = sum(project.classify(path, str(path.relative_to(source))).language is not None
-                    for path in files) if source.is_dir() else 1
+        count = len({path for path in files if project.classify(path,path.name).language} | set(commands))
         if not count:
             raise project.ProjectError('nothing to compile: add supported GPU kernels or configure a PyTorch application')
         print(f'native build: {count} source(s) on local; would write {output}/cubin/ and {output}/sass/')
         print('nothing was compiled or uploaded')
         return 0, set()
     root, files, includes = _sources(source, output, options)
+    from .compilation_database import discover as discover_commands
+    _, commands = discover_commands(source,options.compile_commands)
     candidates = [rel.removeprefix('source/') for rel in files if rel.startswith('source/')
                   and (source.is_file() and root / rel.removeprefix('source/') == source
-                       or source.is_dir() and project.classify(root / rel.removeprefix('source/'), rel.removeprefix('source/')).language)]
+                       or source.is_dir() and (root / rel.removeprefix('source/') in commands
+                           or project.classify(root / rel.removeprefix('source/'), rel.removeprefix('source/')).language))]
     if not candidates:
         raise project.ProjectError('nothing to compile: add supported GPU kernels, or configure '
                                    '[application] frontend="torch" in openassembler.toml for a PyTorch repository')
@@ -109,7 +182,9 @@ def _compile_locked(source, output, options, name, backend, host, budget,
     from dataclasses import asdict
     request = {'source': base64.b64encode(payload).decode(),
                'path': 'source' if source.is_dir() else 'source/' + source.name,
-               'options': {**asdict(options), 'include_dirs': includes}, 'name': name}
+               'options': {**asdict(options), 'include_dirs': includes,
+                           'compile_commands':'source/compile_commands.json' if options.compile_commands else None,
+                           'compile_command':None}, 'name': name}
     with tempfile.TemporaryDirectory(prefix='oa-native-request-') as d:
         request_file, result_file = Path(d) / 'request.json', Path(d) / 'result.json'
         request_file.write_text(json.dumps(request))
@@ -218,6 +293,8 @@ def process(request: dict) -> dict:
             source = project.artifact_path(staging, request['path'])
             options = dict(request['options'])
             options['include_dirs'] = [project.artifact_path(staging, rel) for rel in options['include_dirs']]
+            if options.get('compile_commands'):
+                options['compile_commands']=project.artifact_path(staging,options['compile_commands'])
             result = compile_paths(source, output, Options(**options), request.get('name'))
             # The archive stores relative source records; local publication rebases them.
             files = {p.relative_to(output).as_posix(): p.read_bytes() for p in output.rglob('*')

@@ -1,0 +1,237 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 17%]
+........................................................................ [ 21%]
+........................................................................ [ 25%]
+........................................................................ [ 30%]
+........................F............................................... [ 34%]
+........................................................................ [ 38%]
+........................................................................ [ 43%]
+........................................................................ [ 47%]
+........................................................................ [ 51%]
+........................................................................ [ 56%]
+........................................................................ [ 60%]
+........................................................................ [ 64%]
+........................................................................ [ 69%]
+........................................................................ [ 73%]
+........................................................................ [ 77%]
+........................................................................ [ 82%]
+........................................................................ [ 86%]
+........................................................................ [ 90%]
+.............................................FFFFFFFFFFFF............... [ 95%]
+........................................................................ [ 99%]
+.........                                                                [100%]
+=================================== FAILURES ===================================
+_ test_installed_dispatch_routes_only_current_independently_verified_contracts _
+
+    def test_installed_dispatch_routes_only_current_independently_verified_contracts():
+        table = json.loads(dispatch.TABLE.read_text())
+>       assert table["compiler_identity"] == dispatch.compiler_identity()
+E       AssertionError: assert 'bd9ac59f1d5d...5fd123b156490' == '96f7b1a2aefe...172cbdb3c0fd6'
+E         
+E         - 96f7b1a2aefeedc1747df031a6a99e8b8951dec94c3f1aea5d5172cbdb3c0fd6
+E         + bd9ac59f1d5df033964886ea498e64fdd0c0b2b2b77f13f56b75fd123b156490
+
+tests/test_gemm_dispatch.py:50: AssertionError
+______ test_auto_dispatch_is_exact_to_promoted_operation_shape[shape0-2] _______
+
+shape = ('softmax', 129, 1023), warps = 2
+
+    @pytest.mark.parametrize("shape,warps", WINNERS.items())
+    def test_auto_dispatch_is_exact_to_promoted_operation_shape(shape, warps):
+        op, rows, width = shape
+        plan, decision = select_plan(ReductionPlan(rows, width, op))
+>       assert plan.warps_per_cta == warps
+E       AssertionError: assert 4 == 2
+E        +  where 4 = ReductionPlan(rows=129, width=1023, op='softmax', epsilon=1e-05, arch='sm_80', warps_per_cta=4).warps_per_cta
+
+tests/test_rowwise_dispatch.py:31: AssertionError
+______ test_auto_dispatch_is_exact_to_promoted_operation_shape[shape1-8] _______
+
+shape = ('softmax', 4096, 1), warps = 8
+
+    @pytest.mark.parametrize("shape,warps", WINNERS.items())
+    def test_auto_dispatch_is_exact_to_promoted_operation_shape(shape, warps):
+        op, rows, width = shape
+        plan, decision = select_plan(ReductionPlan(rows, width, op))
+>       assert plan.warps_per_cta == warps
+E       AssertionError: assert 4 == 8
+E        +  where 4 = ReductionPlan(rows=4096, width=1, op='softmax', epsilon=1e-05, arch='sm_80', warps_per_cta=4).warps_per_cta
+
+tests/test_rowwise_dispatch.py:31: AssertionError
+______ test_auto_dispatch_is_exact_to_promoted_operation_shape[shape2-8] _______
+
+shape = ('softmax', 4096, 32), warps = 8
+
+    @pytest.mark.parametrize("shape,warps", WINNERS.items())
+    def test_auto_dispatch_is_exact_to_promoted_operation_shape(shape, warps):
+        op, rows, width = shape
+        plan, decision = select_plan(ReductionPlan(rows, width, op))
+>       assert plan.warps_per_cta == warps
+E       AssertionError: assert 4 == 8
+E        +  where 4 = ReductionPlan(rows=4096, width=32, op='softmax', epsilon=1e-05, arch='sm_80', warps_per_cta=4).warps_per_cta
+
+tests/test_rowwise_dispatch.py:31: AssertionError
+______ test_auto_dispatch_is_exact_to_promoted_operation_shape[shape3-8] _______
+
+shape = ('layernorm', 4096, 1), warps = 8
+
+    @pytest.mark.parametrize("shape,warps", WINNERS.items())
+    def test_auto_dispatch_is_exact_to_promoted_operation_shape(shape, warps):
+        op, rows, width = shape
+        plan, decision = select_plan(ReductionPlan(rows, width, op))
+>       assert plan.warps_per_cta == warps
+E       AssertionError: assert 4 == 8
+E        +  where 4 = ReductionPlan(rows=4096, width=1, op='layernorm', epsilon=1e-05, arch='sm_80', warps_per_cta=4).warps_per_cta
+
+tests/test_rowwise_dispatch.py:31: AssertionError
+______ test_auto_dispatch_is_exact_to_promoted_operation_shape[shape4-8] _______
+
+shape = ('layernorm', 4096, 32), warps = 8
+
+    @pytest.mark.parametrize("shape,warps", WINNERS.items())
+    def test_auto_dispatch_is_exact_to_promoted_operation_shape(shape, warps):
+        op, rows, width = shape
+        plan, decision = select_plan(ReductionPlan(rows, width, op))
+>       assert plan.warps_per_cta == warps
+E       AssertionError: assert 4 == 8
+E        +  where 4 = ReductionPlan(rows=4096, width=32, op='layernorm', epsilon=1e-05, arch='sm_80', warps_per_cta=4).warps_per_cta
+
+tests/test_rowwise_dispatch.py:31: AssertionError
+______ test_auto_dispatch_unknown_shape_keeps_four_warp_baseline[shape0] _______
+
+shape = ('softmax', 129, 1024)
+
+    @pytest.mark.parametrize("shape", [("softmax", 129, 1024), ("layernorm", 4096, 513),
+                                        ("softmax", 4096, 1024)])
+    def test_auto_dispatch_unknown_shape_keeps_four_warp_baseline(shape):
+        op, rows, width = shape
+        plan, decision = select_plan(ReductionPlan(rows, width, op))
+        assert plan.warps_per_cta == 4
+        assert decision["policy"] == "w4"
+>       assert decision["reason"] == "no unique exact rowwise entry"
+E       AssertionError: assert 'rowwise tabl...rent compiler' == 'no unique ex...rowwise entry'
+E         
+E         - no unique exact rowwise entry
+E         + rowwise table belongs to a different compiler
+
+tests/test_rowwise_dispatch.py:46: AssertionError
+______ test_auto_dispatch_unknown_shape_keeps_four_warp_baseline[shape1] _______
+
+shape = ('layernorm', 4096, 513)
+
+    @pytest.mark.parametrize("shape", [("softmax", 129, 1024), ("layernorm", 4096, 513),
+                                        ("softmax", 4096, 1024)])
+    def test_auto_dispatch_unknown_shape_keeps_four_warp_baseline(shape):
+        op, rows, width = shape
+        plan, decision = select_plan(ReductionPlan(rows, width, op))
+        assert plan.warps_per_cta == 4
+        assert decision["policy"] == "w4"
+>       assert decision["reason"] == "no unique exact rowwise entry"
+E       AssertionError: assert 'rowwise tabl...rent compiler' == 'no unique ex...rowwise entry'
+E         
+E         - no unique exact rowwise entry
+E         + rowwise table belongs to a different compiler
+
+tests/test_rowwise_dispatch.py:46: AssertionError
+______ test_auto_dispatch_unknown_shape_keeps_four_warp_baseline[shape2] _______
+
+shape = ('softmax', 4096, 1024)
+
+    @pytest.mark.parametrize("shape", [("softmax", 129, 1024), ("layernorm", 4096, 513),
+                                        ("softmax", 4096, 1024)])
+    def test_auto_dispatch_unknown_shape_keeps_four_warp_baseline(shape):
+        op, rows, width = shape
+        plan, decision = select_plan(ReductionPlan(rows, width, op))
+        assert plan.warps_per_cta == 4
+        assert decision["policy"] == "w4"
+>       assert decision["reason"] == "no unique exact rowwise entry"
+E       AssertionError: assert 'rowwise tabl...rent compiler' == 'no unique ex...rowwise entry'
+E         
+E         - no unique exact rowwise entry
+E         + rowwise table belongs to a different compiler
+
+tests/test_rowwise_dispatch.py:46: AssertionError
+______________ test_stale_or_corrupt_dispatch_table_fails_closed _______________
+
+    def test_stale_or_corrupt_dispatch_table_fails_closed():
+        plan = ReductionPlan(4096, 32, "softmax")
+        table = json.loads(TABLE.read_text())
+        stale = {**table, "compiler_identity": "0" * 64}
+        selected, decision = select_plan(plan, table=stale)
+        assert selected.warps_per_cta == 4
+        assert decision["reason"] == "rowwise table belongs to a different compiler"
+        corrupted = json.loads(json.dumps(table))
+        matching = next(entry for entry in corrupted["entries"]
+                        if entry["contract"]["op"] == "softmax"
+                        and entry["contract"]["rows"] == 4096
+                        and entry["contract"]["width"] == 32)
+        matching["ptx_body_sha256"] = "0" * 64
+        selected, decision = select_plan(plan, table=corrupted)
+        assert selected.warps_per_cta == 4
+>       assert decision["reason"] == "invalid rowwise dispatch entry"
+E       AssertionError: assert 'rowwise tabl...rent compiler' == 'invalid roww...ispatch entry'
+E         
+E         - invalid rowwise dispatch entry
+E         + rowwise table belongs to a different compiler
+
+tests/test_rowwise_dispatch.py:64: AssertionError
+______ test_promoted_table_binds_current_rowwise_identity_and_body_hashes ______
+
+    def test_promoted_table_binds_current_rowwise_identity_and_body_hashes():
+        table = json.loads(TABLE.read_text())
+>       assert table["compiler_identity"] == compiler_identity()
+E       AssertionError: assert 'dcfcf0c327a7...adf60fbf1b594' == '3800908a712e...311e3ad13d6fa'
+E         
+E         - 3800908a712e97d871cfaa740347948260b3684d393ee207372311e3ad13d6fa
+E         + dcfcf0c327a7b841bdf50b965780cb11501f368af94f19210c9adf60fbf1b594
+
+tests/test_rowwise_dispatch.py:78: AssertionError
+_____________ test_cli_automatic_dispatch_and_manual_warp_override _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11d392fc0>
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-469/test_cli_automatic_dispatch_an0')
+
+    def test_cli_automatic_dispatch_and_manual_warp_override(monkeypatch, tmp_path):
+        captured = _capture_compile(monkeypatch)
+        assert main(["rowwise", "--op", "softmax", "--rows", "4096", "--width", "32",
+                     "--out-dir", str(tmp_path)]) == 0
+>       assert captured["plan"].warps_per_cta == 8
+E       AssertionError: assert 4 == 8
+E        +  where 4 = ReductionPlan(rows=4096, width=32, op='softmax', epsilon=1e-05, arch='sm_80', warps_per_cta=4).warps_per_cta
+
+tests/test_rowwise_dispatch.py:105: AssertionError
+_ test_cli_emit_roundtrip_preserves_default_w4_body_and_exact_dispatch_metadata _
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-469/test_cli_emit_roundtrip_preser0')
+
+    def test_cli_emit_roundtrip_preserves_default_w4_body_and_exact_dispatch_metadata(tmp_path):
+        args = ["rowwise", "--op", "softmax", "--rows", "4096", "--width", "32",
+                "--emit-only", "--out-dir", str(tmp_path)]
+        assert main(args) == 0
+        source_path = tmp_path / ".build/generated/softmax.ptx"
+        emitted = source_path.read_text()
+        contract = contract_from_source(emitted)
+>       assert contract["warps_per_cta"] == 8
+E       assert 4 == 8
+
+tests/test_rowwise_dispatch.py:122: AssertionError
+----------------------------- Captured stdout call -----------------------------
+dispatch: measured / w4 (rowwise table belongs to a different compiler)
+/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-469/test_cli_emit_roundtrip_preser0/.build/generated/softmax.ptx
+=========================== short test summary info ============================
+FAILED tests/test_gemm_dispatch.py::test_installed_dispatch_routes_only_current_independently_verified_contracts
+FAILED tests/test_rowwise_dispatch.py::test_auto_dispatch_is_exact_to_promoted_operation_shape[shape0-2]
+FAILED tests/test_rowwise_dispatch.py::test_auto_dispatch_is_exact_to_promoted_operation_shape[shape1-8]
+FAILED tests/test_rowwise_dispatch.py::test_auto_dispatch_is_exact_to_promoted_operation_shape[shape2-8]
+FAILED tests/test_rowwise_dispatch.py::test_auto_dispatch_is_exact_to_promoted_operation_shape[shape3-8]
+FAILED tests/test_rowwise_dispatch.py::test_auto_dispatch_is_exact_to_promoted_operation_shape[shape4-8]
+FAILED tests/test_rowwise_dispatch.py::test_auto_dispatch_unknown_shape_keeps_four_warp_baseline[shape0]
+FAILED tests/test_rowwise_dispatch.py::test_auto_dispatch_unknown_shape_keeps_four_warp_baseline[shape1]
+FAILED tests/test_rowwise_dispatch.py::test_auto_dispatch_unknown_shape_keeps_four_warp_baseline[shape2]
+FAILED tests/test_rowwise_dispatch.py::test_stale_or_corrupt_dispatch_table_fails_closed
+FAILED tests/test_rowwise_dispatch.py::test_promoted_table_binds_current_rowwise_identity_and_body_hashes
+FAILED tests/test_rowwise_dispatch.py::test_cli_automatic_dispatch_and_manual_warp_override
+FAILED tests/test_rowwise_dispatch.py::test_cli_emit_roundtrip_preserves_default_w4_body_and_exact_dispatch_metadata
+13 failed, 1652 passed in 230.33s (0:03:50)

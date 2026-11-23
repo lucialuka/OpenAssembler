@@ -18,6 +18,8 @@ def inspect_source(source: Path, out_dir: Path | None = None) -> dict:
         classes = [
             project.classify(p, p.relative_to(source).as_posix()) for p in plan.files
         ]
+        selected = {c.path:c for c in plan.native}
+        classes = [selected.get(c.path,c) for c in classes]
         configured = plan.application_frontend == "openassembler"
         discovery = plan.model_discovery
         systems = list(plan.build_systems)

@@ -105,10 +105,13 @@ custom location, use the same `--out-dir DIR` when compiling and running.
 
 Configure a CPU FP32 `torch.nn.Module` factory and exact input shapes in
 `openassembler.toml`. The model bridge captures supported graphs and emits
-native forward, backward, MSE, and plain SGD kernels.
+native forward/backward kernels, MSE or bounded mean cross-entropy, and plain
+SGD or restricted Adam/AdamW updates.
 
 Supported operators include linear layers, residual arithmetic, batched products,
-softmax, GELU, affine LayerNorm, permutations, and concatenation. Arithmetic is
+softmax, GELU, sigmoid, static sum/mean reductions, affine LayerNorm,
+embeddings, masked/causal attention,
+permutations, and concatenation. Arithmetic is
 FP32 by default; explicit FP16-RNE operands with FP32 accumulation have their
 own numerical contract.
 
@@ -126,8 +129,9 @@ Models use saved OA-owned GPU modules, with optional CUDA Graph training replay,
 immutable storage views, guarded buffer reuse, and a validated bundle cache.
 FP16 batched products support equal batches through 32 and matrix dimensions
 through 512, including tails. Attention is composed from native operations;
-masks, broadcasting, fused attention, and arbitrary dynamic shapes remain
-outside this contract. Read the [native model guide](docs/research/ideas/native-model-bridge.md)
+FP32 Boolean/causal masks and rank-two through rank-four batch-broadcast matmul
+have explicit contracts. Fused attention and arbitrary dynamic shapes remain
+open. Read the [native model guide](docs/research/ideas/native-model-bridge.md)
 for precision, Python APIs, deployment, and verification details.
 
 ## Kernels and optimizations

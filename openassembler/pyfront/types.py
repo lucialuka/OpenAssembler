@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Scalar:
-    ptx: str   # "s32" | "u32" | "f32"
+    ptx: str   # "s32" | "u32" | "s64" | "u64" | "f32"
 
 
 @dataclass(frozen=True)
@@ -21,6 +21,8 @@ class ArrayType:
 
 i32 = Scalar("s32")
 u32 = Scalar("u32")
+i64 = Scalar("s64")
+u64 = Scalar("u64")
 f32 = Scalar("f32")
 
 

@@ -155,6 +155,37 @@ class Selector:
             return
         self.env[name] = v
 
+    def bind_pred(self, name: str, value: PV) -> None:
+        """Preserve partial/loop-carried predicate definitions in one fixed home."""
+        if name in self.homes:
+            home = self.homes[name]
+            if home is None:
+                home = self.homes[name] = self.newp()
+            if not isinstance(home, PV):
+                raise NotSupported(f"mixed predicate/register assignments to {name}")
+            last = self.ops[-1] if self.ops else None
+            if (last is not None and last.defs == [value] and not last.label
+                    and last.guard == getattr(self, "cur_guard", None)
+                    and value not in self.env.values()):
+                # The new predicate has no other reader: compute straight into
+                # the home, preserving the original instruction and its guard.
+                last.defs = [home]
+            elif value != home:
+                self.emit("PLOP3.LUT {p0}, PT, {q0}, PT, PT, 0xf0, 0x0",
+                          [home], [(value, False)])
+            value = home
+        self.env[name] = value
+
+    def snapshot_parts(self, values):
+        """A pack/unpack copies values now, including components of mutable homes."""
+        mutable = set(_flat(self.homes.values()))
+        if any(value in mutable for value in values):
+            snapshots = tuple(self.new() for _ in values)
+            for destination, value in zip(snapshots, values):
+                self.emit("MOV {d0}, {s0}", [destination], [value], copy=True)
+            return snapshots
+        return values
+
     def newp(self) -> PV:
         self.npv = getattr(self, "npv", 0) + 1
         return PV(self.npv)
@@ -231,9 +262,14 @@ class Selector:
         return v
 
     def operand64(self, operand):
-        if isinstance(operand, ImmI):
-            return (self.reg32(ImmI(operand.value & 0xffffffff)),
-                    self.reg32(ImmI((operand.value >> 32) & 0xffffffff)))
+        if isinstance(operand, (ImmI, ImmF)):
+            if isinstance(operand, ImmF) and operand.width != 64:
+                raise NotSupported(f"64-bit operand requires a 64-bit float literal: {operand}")
+            bits = operand.bits if isinstance(operand, ImmF) else operand.value
+            return (self.reg32(ImmI(bits & 0xffffffff)),
+                    self.reg32(ImmI((bits >> 32) & 0xffffffff)))
+        if not isinstance(operand, Var):
+            raise NotSupported(f"64-bit operand {operand}")
         return self.pair(operand.name)
 
     # wide multiply kept symbolic until used, so add.s64 can fuse into IMAD.WIDE ----
@@ -261,8 +297,12 @@ class Selector:
         # fixed virtual home (so values flow correctly around back edges / joins).
         counts = {}
         for ins in self.k.body:
-            if ins.args and isinstance(ins.args[0], Var) and ins.op not in ("st", "bra", "red"):
-                counts[ins.args[0].name] = counts.get(ins.args[0].name, 0) + 1
+            if ins.args and ins.op not in ("st", "bra", "red"):
+                destination = ins.args[0]
+                destinations = destination.elems if isinstance(destination, Vec) else (destination,)
+                for value in destinations:
+                    if isinstance(value, Var):
+                        counts[value.name] = counts.get(value.name, 0) + 1
         self.homes = {n: None for n, c in counts.items() if c > 1} if self.has_cfg else {}
         lab_at = {}
         for name, idx in self.k.labels.items():
@@ -307,6 +347,18 @@ class Selector:
         if op == "cvta":                                   # global generic == global
             self.bind(a[0].name, self.val64(a[1].name))
             return
+        if "pred" in m and op in ("and", "or", "xor", "not", "mov"):
+            p = self.newp()
+            srcs = [self.pred(a[1])]
+            if op in ("and", "or", "xor"):
+                srcs.append(self.pred(a[2]))
+                lut = {"and": 0xc0, "or": 0xfc, "xor": 0x3c}[op]
+                fmt = f"PLOP3.LUT {{p0}}, PT, {{q0}}, {{q1}}, PT, {lut:#x}, 0x0"
+            else:
+                fmt = f"PLOP3.LUT {{p0}}, PT, {{q0}}, PT, PT, {0x0f if op == 'not' else 0xf0:#x}, 0x0"
+            self.emit(fmt, [p], srcs)
+            self.bind_pred(a[0].name, p)
+            return
         if op == "mov" and isinstance(a[1], Var) and a[1].name in SREG_S2R:
             d = self.new()
             self.emit(f"S2R {{d0}}, {SREG_S2R[a[1].name]}", [d], [], var_lat=True)
@@ -316,10 +368,10 @@ class Selector:
             self.bind(a[0].name, C(SREG_C0[a[1].name]))
             return
         if op == "mov" and isinstance(a[1], Vec):          # pack {lo, hi}: pure renaming
-            self.bind(a[0].name, tuple(self.reg32(e) for e in a[1].elems))
+            self.bind(a[0].name, self.snapshot_parts(tuple(self.reg32(e) for e in a[1].elems)))
             return
         if op == "mov" and isinstance(a[0], Vec):          # unpack: pure renaming
-            lo, hi = self.pair(a[1].name)
+            lo, hi = self.snapshot_parts(self.pair(a[1].name))
             for e, v in zip(a[0].elems, (lo, hi)):
                 if e is not None:
                     self.bind(e.name, v)
@@ -331,7 +383,7 @@ class Selector:
             if isinstance(a[1], Var) and a[1].name.startswith("%") and a[1].name not in self.env:
                 raise NotSupported(f"special register {a[1].name}")
             if t and t.endswith("64"):
-                v = self.operand64(a[1]) if isinstance(a[1], ImmI) else self.val64(a[1].name)
+                v = self.operand64(a[1]) if isinstance(a[1], (ImmI, ImmF)) else self.val64(a[1].name)
                 if isinstance(v, tuple) and v in self.homes.values() and a[0].name not in self.homes:
                     snap = (self.new(), self.new())
                     for dst, src in zip(snap, v):
@@ -380,7 +432,9 @@ class Selector:
                 self.emit("IADD3.X {d0}, {s0}, {s1}, RZ, {q0}, !PT", [hi], [xh, yh, (carry, False)])
             else:
                 self.emit("IADD3 {d0}, {p0}, {s0}, -{s1}, RZ", [lo, carry], [xl, yl])
-                self.emit("IADD3.X {d0}, {s0}, ~{s1}, RZ, {q0}, !PT", [hi], [xh, yh, (carry, False)])
+                inverted = self.new()
+                self.emit("LOP3.LUT {d0}, {s0}, RZ, RZ, 0x0f, !PT", [inverted], [yh])
+                self.emit("IADD3.X {d0}, {s0}, {s1}, RZ, {q0}, !PT", [hi], [xh, inverted, (carry, False)])
             self.bind(a[0].name, (lo, hi))
             return
         if op == "cvt" and len(m) == 2 and all(x in ("s32", "u32", "s64", "u64") for x in m):
@@ -391,13 +445,13 @@ class Selector:
                     self.emit("SHF.R.S32.HI {d0}, RZ, 0x1f, {s0}", [hi], [lo])
                 else:
                     self.emit("MOV {d0}, 0x0", [hi])
-                self.bind(a[0].name, (lo, hi))
+                self.bind(a[0].name, self.snapshot_parts((lo, hi)))
             elif dst.endswith("32") and src.endswith("64"):
-                self.bind(a[0].name, self.operand64(a[1])[0])
+                self.bind(a[0].name, self.snapshot_parts((self.operand64(a[1])[0],))[0])
             elif dst.endswith("32"):
-                self.bind(a[0].name, self.val32(a[1]))
+                self.bind(a[0].name, self.snapshot_parts((self.val32(a[1]),))[0])
             else:
-                self.bind(a[0].name, self.operand64(a[1]))
+                self.bind(a[0].name, self.snapshot_parts(self.operand64(a[1])))
             return
         if t in ("b64", "u64", "s64") and op in ("and", "or", "xor", "shl", "shr"):
             xl, xh = self.operand64(a[1])
@@ -407,18 +461,12 @@ class Selector:
                 lut = {"and": 0xc0, "or": 0xfc, "xor": 0x3c}[op]
                 for dst, x, y in ((lo, xl, yl), (hi, xh, yh)):
                     self.emit(f"LOP3.LUT {{d0}}, {{s0}}, {{s1}}, RZ, {lut:#x}, !PT", [dst], [x, y])
-            elif isinstance(a[2], ImmI) and 0 <= a[2].value < 32:
-                sh = a[2].value
-                if op == "shl":
-                    self.emit(f"SHF.L.U32 {{d0}}, {{s0}}, {sh:#x}, RZ", [lo], [xl])
-                    self.emit(f"SHF.L.U64.HI {{d0}}, {{s0}}, {sh:#x}, {{s1}}", [hi], [xl, xh])
-                else:
-                    self.emit(f"SHF.R.U64 {{d0}}, {{s0}}, {sh:#x}, {{s1}}", [lo], [xl, xh])
-                    self.emit(f"SHF.R.{'S32' if t == 's64' else 'U32'}.HI {{d0}}, RZ, {sh:#x}, {{s0}}", [hi], [xh])
             else:
-                raise NotSupported("64-bit shifts currently require a constant in [0, 31]")
+                return self.shift64(ins, t)
             self.bind(a[0].name, (lo, hi))
             return
+        if op in ("atom", "red"):
+            return self.atomic_global(ins)
         if op == "ld" and "global" in m:
             return self.load_global(ins, t)
         if op == "st" and "global" in m:
@@ -428,18 +476,6 @@ class Selector:
             return
         if op == "bra":
             self.emit("BRA `({target})", side=True, target=a[0].name)
-            return
-        if "pred" in m and op in ("and", "or", "xor", "not", "mov"):
-            p = self.newp()
-            srcs = [self.pred(a[1])]
-            if op in ("and", "or", "xor"):
-                srcs.append(self.pred(a[2]))
-                lut = {"and": 0xc0, "or": 0xfc, "xor": 0x3c}[op]
-                fmt = f"PLOP3.LUT {{p0}}, PT, {{q0}}, {{q1}}, PT, {lut:#x}, 0x0"
-            else:
-                fmt = f"PLOP3.LUT {{p0}}, PT, {{q0}}, PT, PT, {0x0f if op == 'not' else 0xf0:#x}, 0x0"
-            self.emit(fmt, [p], srcs)
-            self.env[a[0].name] = p
             return
         if op == "setp":
             return self.setp(ins, t)
@@ -550,6 +586,8 @@ class Selector:
         if cmp is None or len(a) != 3 or not isinstance(a[0], Var):
             raise NotSupported("setp form")
         cmp = {"lo": "lt", "ls": "le", "hi": "gt", "hs": "ge"}.get(cmp, cmp).upper()
+        if t in ("s64", "u64"):
+            return self.setp64(ins, t, cmp)
         p = self.newp()
         x, y = self.reg32(a[1]), self.val32(a[2])
         if t in ("u32", "s32", "b32"):
@@ -561,7 +599,36 @@ class Selector:
             self.emit(f"FSETP.{cmp}.AND {{p0}}, PT, {{s0}}, {{s1}}, PT", [p], [x, y])
         else:
             raise NotSupported(f"setp.{t}")
-        self.env[a[0].name] = p
+        self.bind_pred(a[0].name, p)
+
+    def setp64(self, ins, dtype, comparison):
+        """Lexicographic high-word comparison with unsigned low-word tie break."""
+        low_x, high_x = self.operand64(ins.args[1])
+        low_y, high_y = self.operand64(ins.args[2])
+        result, high_pred = self.newp(), self.newp()
+        if comparison in ("EQ", "NE"):
+            self.emit(f"ISETP.{comparison}.U32.AND {{p0}}, PT, {{s0}}, {{s1}}, PT",
+                      [high_pred], [high_x, high_y])
+            if comparison == "EQ":
+                self.emit("ISETP.EQ.U32.AND {p0}, PT, {s0}, {s1}, {q0}",
+                          [result], [low_x, low_y, (high_pred, False)])
+            else:
+                low_pred = self.newp()
+                self.emit("ISETP.NE.U32.AND {p0}, PT, {s0}, {s1}, PT", [low_pred], [low_x, low_y])
+                self.emit("PLOP3.LUT {p0}, PT, {q0}, {q1}, PT, 0xfc, 0x0",
+                          [result], [(high_pred, False), (low_pred, False)])
+        else:
+            high_equal, low_pred = self.newp(), self.newp()
+            strict = "LT" if comparison in ("LT", "LE") else "GT"
+            suffix = "" if dtype == "s64" else ".U32"
+            self.emit(f"ISETP.{strict}{suffix}.AND {{p0}}, PT, {{s0}}, {{s1}}, PT",
+                      [high_pred], [high_x, high_y])
+            self.emit("ISETP.EQ.U32.AND {p0}, PT, {s0}, {s1}, PT", [high_equal], [high_x, high_y])
+            self.emit(f"ISETP.{comparison}.U32.AND {{p0}}, PT, {{s0}}, {{s1}}, {{q0}}",
+                      [low_pred], [low_x, low_y, (high_equal, False)])
+            self.emit("PLOP3.LUT {p0}, PT, {q0}, {q1}, PT, 0xfc, 0x0",
+                      [result], [(high_pred, False), (low_pred, False)])
+        self.bind_pred(ins.args[0].name, result)
 
     def flush_compare_input(self, value):
         """Flush subnormals for predicates using already-validated integer ops.
@@ -653,7 +720,12 @@ class Selector:
                     self.bind(e.name, v)  # bind(): multiply-assigned regs get a copy into their home
             return
         if "v2" in m:
-            raise NotSupported("ld.global.v2")
+            g = (self.new(), self.new())
+            self.emit(f"LDG.E.64 {{d0}}, [{{s0}}.64{off}]", [g], [base], var_lat=True)
+            for element, value in zip(a[0].elems, g):
+                if element is not None:
+                    self.bind(element.name, value)
+            return
         sfx = {"u8": ".U8", "s8": ".S8", "u16": ".U16", "s16": ".S16", "b32": "", "u32": "", "s32": "",
                "f32": "", "b64": ".64", "u64": ".64", "s64": ".64", "f64": ".64"}.get(t)
         if sfx is None:
@@ -666,6 +738,26 @@ class Selector:
             d = self.new()
             self.emit(f"LDG.E{sfx} {{d0}}, [{{s0}}.64{off}]", [d], [base], var_lat=True)
             self.bind(a[0].name, d)
+
+    def atomic_global(self, ins):
+        """Only admitted GPU-scope relaxed 32-bit integer RMW/reduction forms."""
+        returning = ins.op == "atom"
+        address = ins.args[1] if returning else ins.args[0]
+        base, offset = self._addr(address)
+        operation = ins.mods[-2]
+        sources = ins.args[2:] if returning else ins.args[1:]
+        values = [self.reg32(value) for value in sources]
+        if returning:
+            result = self.new()
+            if operation == "cas":
+                self.emit(f"ATOMG.E.CAS.STRONG.GPU PT, {{d0}}, [{{s0}}{offset}], {{s1}}, {{s2}}",
+                          [result], [base, *values], var_lat=True, side=True)
+            else:
+                self.emit(f"ATOMG.E.{operation.upper()}.STRONG.GPU PT, {{d0}}, [{{s0}}.64{offset}], {{s1}}",
+                          [result], [base, *values], var_lat=True, side=True)
+            self.bind(ins.args[0].name, result)
+        else:
+            self.emit(f"RED.E.ADD.STRONG.GPU [{{s0}}.64{offset}], {{s1}}", [], [base, *values], side=True)
 
     def store_global(self, ins, t):
         m, a = ins.mods, ins.args
@@ -681,9 +773,15 @@ class Selector:
             w = ".64" if "v2" in m else ".128"
             self.emit(f"STG.E{w} [{{s0}}.64{off}], {{s1}}", [], [base, vals], side=True)
             return
-        if t not in ("b32", "u32", "s32", "f32"):
+        if t in ("b64", "u64", "s64", "f64"):
+            value = self.wide(self.operand64(src))
+            self.emit(f"STG.E.64 [{{s0}}.64{off}], {{s1}}", [], [base, value], side=True)
+            return
+        suffix = {"b8": ".U8", "u8": ".U8", "s8": ".U8", "b16": ".U16", "u16": ".U16", "s16": ".U16",
+                  "b32": "", "u32": "", "s32": "", "f32": ""}.get(t)
+        if suffix is None:
             raise NotSupported(f"st.global.{t}")
-        self.emit(f"STG.E [{{s0}}.64{off}], {{s1}}", [], [base, self.reg32(src)], side=True)
+        self.emit(f"STG.E{suffix} [{{s0}}.64{off}], {{s1}}", [], [base, self.reg32(src)], side=True)
 
     def alu32(self, ins, t):
         op, a = ins.op, ins.args
@@ -722,15 +820,44 @@ class Selector:
             e(f"IMAD.HI{'' if signed else '.U32'} {{d0}}, {{s0}}, {{s1}}, RZ", [x, y])
         elif op == "mad" and "lo" in ins.mods:
             e("IMAD {d0}, {s0}, {s1}, {s2}", [x, y, self.reg32(srcs[2])])
-        elif op in ("shl", "shr") and isinstance(srcs[1], ImmI) and srcs[1].value < 32:
-            sh = srcs[1].value
-            if op == "shl":
-                e(f"SHF.L.U32 {{d0}}, {{s0}}, {sh:#x}, RZ", [x])
+        elif op in ("shl", "shr"):
+            if isinstance(srcs[1], ImmI) and 0 <= srcs[1].value < 32:
+                sh = srcs[1].value
+                if op == "shl":
+                    e(f"SHF.L.U32 {{d0}}, {{s0}}, {sh:#x}, RZ", [x])
+                else:
+                    e(f"SHF.R.{'S32' if signed else 'U32'}.HI {{d0}}, RZ, {sh:#x}, {{s0}}", [x])
+            elif op == "shl":
+                e("SHF.L.U32 {d0}, {s0}, {s1}, RZ", [x, self.reg32(srcs[1])])
             else:
-                e(f"SHF.R.{'S32' if signed else 'U32'}.HI {{d0}}, RZ, {sh:#x}, {{s0}}", [x])
+                e(f"SHF.R.{'S32' if signed else 'U32'}.HI {{d0}}, RZ, {{s1}}, {{s0}}", [x, self.reg32(srcs[1])])
         else:
             raise NotSupported(f"{op}.{t}")
         self.bind(a[0].name, d)
+
+    def shift64(self, ins, dtype):
+        """PTX u32 counts clamp at 64, including signed shifts across word 32."""
+        low, high = self.operand64(ins.args[1])
+        count = self.reg32(ins.args[2])
+        result_low, result_high = self.new(), self.new()
+        if ins.op == "shl":
+            self.emit("SHF.L.U32 {d0}, {s0}, {s1}, RZ", [result_low], [low, count])
+            self.emit("SHF.L.U64.HI {d0}, {s0}, {s1}, {s2}", [result_high], [low, count, high])
+        else:
+            self.emit("SHF.R.U64 {d0}, {s0}, {s1}, {s2}", [result_low], [low, count, high])
+            signed = dtype == "s64"
+            self.emit(f"SHF.R.{'S32' if signed else 'U32'}.HI {{d0}}, RZ, {{s1}}, {{s0}}",
+                      [result_high], [high, count])
+            if signed:
+                delta, arithmetic_low, selected = self.new(), self.new(), self.new()
+                upper = self.newp()
+                self.emit("IADD3 {d0}, {s0}, -0x20, RZ", [delta], [count])
+                self.emit("SHF.R.S32.HI {d0}, RZ, {s1}, {s0}", [arithmetic_low], [high, delta])
+                self.emit("ISETP.GE.U32.AND {p0}, PT, {s0}, 0x20, PT", [upper], [count])
+                self.emit("SEL {d0}, {s0}, {s1}, {p0}", [selected],
+                          [arithmetic_low, result_low, (upper, False)])
+                result_low = selected
+        self.bind(ins.args[0].name, (result_low, result_high))
 
     def saturating_integer(self, ins):
         """Signed add/sub saturation, including INT_MIN and aliased operands."""

@@ -1,0 +1,2591 @@
+{
+  "schema": 1,
+  "completed_utc": "2026-11-21T12:25:11.753697+00:00",
+  "python": "3.14.5 (main, Jun  2 2026, 22:28:56) [Clang 22.1.3 ]",
+  "scope": "Offline byte-exact independent references, encoding and normal/poisoned registers; no hardware or performance claim",
+  "source_hashes": {
+    "openassembler/backend/ra.py": "01e995cc3a0ecc04d89d00edd9359fc327e52644cb4f03ec3d81b8c24d17e1b8",
+    "openassembler/backend/contracts.py": "b94cd1bc65393dfe40d5d4b82de6654e3094b0a0c98a4db2b652f5daf2b94fbc",
+    "compiler_exp/gap_closure/memory_widths/cases.py": "68612dfe0a1f2b863b03efb5a208fc28c862e055d297e46476ab6025467d079b",
+    "compiler_exp/gap_closure/memory_widths/offline.py": "c691c954bfef744a87ae0cd52aeb717d1b3935ba4a670ecb7bd32ae49916c809"
+  },
+  "results": [
+    {
+      "name": "load_v2_b32",
+      "level": "safe",
+      "contract": {
+        "op": "ld.global.v2.b32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.b32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "78786159a39d650fe761539f03a552bce16f61bce176130c84bfe43568c2098f",
+      "status": "passed",
+      "native_words_sha256": "0d2e7823dae94c942872d29a6581aa5328438fec52021fa1428ed88bf8a1cfe3",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_b32",
+      "level": "mined",
+      "contract": {
+        "op": "ld.global.v2.b32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.b32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "78786159a39d650fe761539f03a552bce16f61bce176130c84bfe43568c2098f",
+      "status": "passed",
+      "native_words_sha256": "cffee7b2e232d068423d1b217dc603daace66451d6993a41a97238f823cdd579",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_b32",
+      "level": "sched",
+      "contract": {
+        "op": "ld.global.v2.b32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.b32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "78786159a39d650fe761539f03a552bce16f61bce176130c84bfe43568c2098f",
+      "status": "passed",
+      "native_words_sha256": "a6f98914b3bbf723b4043d64fed957e6089e61690ef6c8672c1bd6cac0ca412e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_b32",
+      "level": "opt",
+      "contract": {
+        "op": "ld.global.v2.b32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.b32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "78786159a39d650fe761539f03a552bce16f61bce176130c84bfe43568c2098f",
+      "status": "passed",
+      "native_words_sha256": "a6f98914b3bbf723b4043d64fed957e6089e61690ef6c8672c1bd6cac0ca412e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_b32",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.v4.b32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.b32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "958963762dfaabdb0d85530b4831af6d9f47d6597ac325b4da6de81e592b01cf",
+      "status": "passed",
+      "native_words_sha256": "1e244b3362ca01ff7ed1a1fb60a244cb04a2297d60e83d993aedb36c40931a25",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_b32",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.v4.b32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.b32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "958963762dfaabdb0d85530b4831af6d9f47d6597ac325b4da6de81e592b01cf",
+      "status": "passed",
+      "native_words_sha256": "f69662f183a1a79c1e9fcd765e82d09ce341d9ad69875c12db9eb2460504900e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_b32",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.v4.b32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.b32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "958963762dfaabdb0d85530b4831af6d9f47d6597ac325b4da6de81e592b01cf",
+      "status": "passed",
+      "native_words_sha256": "71ee20c8f4b72e55655e7a778ced55d7ad985f27e785f3b599fc042a616128dc",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_b32",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.v4.b32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.b32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "958963762dfaabdb0d85530b4831af6d9f47d6597ac325b4da6de81e592b01cf",
+      "status": "passed",
+      "native_words_sha256": "71ee20c8f4b72e55655e7a778ced55d7ad985f27e785f3b599fc042a616128dc",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_u32",
+      "level": "safe",
+      "contract": {
+        "op": "ld.global.v2.u32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.u32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "eff5b8017912ccf0b9b9fa177e3e6b38a00269f969714d4cd307f822ec160310",
+      "status": "passed",
+      "native_words_sha256": "0d2e7823dae94c942872d29a6581aa5328438fec52021fa1428ed88bf8a1cfe3",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_u32",
+      "level": "mined",
+      "contract": {
+        "op": "ld.global.v2.u32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.u32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "eff5b8017912ccf0b9b9fa177e3e6b38a00269f969714d4cd307f822ec160310",
+      "status": "passed",
+      "native_words_sha256": "cffee7b2e232d068423d1b217dc603daace66451d6993a41a97238f823cdd579",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_u32",
+      "level": "sched",
+      "contract": {
+        "op": "ld.global.v2.u32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.u32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "eff5b8017912ccf0b9b9fa177e3e6b38a00269f969714d4cd307f822ec160310",
+      "status": "passed",
+      "native_words_sha256": "a6f98914b3bbf723b4043d64fed957e6089e61690ef6c8672c1bd6cac0ca412e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_u32",
+      "level": "opt",
+      "contract": {
+        "op": "ld.global.v2.u32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.u32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "eff5b8017912ccf0b9b9fa177e3e6b38a00269f969714d4cd307f822ec160310",
+      "status": "passed",
+      "native_words_sha256": "a6f98914b3bbf723b4043d64fed957e6089e61690ef6c8672c1bd6cac0ca412e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_u32",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.v4.u32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.u32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "dd8764af5dc683d0d51dca4a06dc72de2e25a3d770cfe61a6098de6bd3c48c25",
+      "status": "passed",
+      "native_words_sha256": "1e244b3362ca01ff7ed1a1fb60a244cb04a2297d60e83d993aedb36c40931a25",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_u32",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.v4.u32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.u32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "dd8764af5dc683d0d51dca4a06dc72de2e25a3d770cfe61a6098de6bd3c48c25",
+      "status": "passed",
+      "native_words_sha256": "f69662f183a1a79c1e9fcd765e82d09ce341d9ad69875c12db9eb2460504900e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_u32",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.v4.u32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.u32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "dd8764af5dc683d0d51dca4a06dc72de2e25a3d770cfe61a6098de6bd3c48c25",
+      "status": "passed",
+      "native_words_sha256": "71ee20c8f4b72e55655e7a778ced55d7ad985f27e785f3b599fc042a616128dc",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_u32",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.v4.u32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.u32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "dd8764af5dc683d0d51dca4a06dc72de2e25a3d770cfe61a6098de6bd3c48c25",
+      "status": "passed",
+      "native_words_sha256": "71ee20c8f4b72e55655e7a778ced55d7ad985f27e785f3b599fc042a616128dc",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_s32",
+      "level": "safe",
+      "contract": {
+        "op": "ld.global.v2.s32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.s32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "7e924b39cacaf4332fb4a92e04b619a0eeebb1073cc76a35de95ca4808161d66",
+      "status": "passed",
+      "native_words_sha256": "0d2e7823dae94c942872d29a6581aa5328438fec52021fa1428ed88bf8a1cfe3",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_s32",
+      "level": "mined",
+      "contract": {
+        "op": "ld.global.v2.s32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.s32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "7e924b39cacaf4332fb4a92e04b619a0eeebb1073cc76a35de95ca4808161d66",
+      "status": "passed",
+      "native_words_sha256": "cffee7b2e232d068423d1b217dc603daace66451d6993a41a97238f823cdd579",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_s32",
+      "level": "sched",
+      "contract": {
+        "op": "ld.global.v2.s32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.s32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "7e924b39cacaf4332fb4a92e04b619a0eeebb1073cc76a35de95ca4808161d66",
+      "status": "passed",
+      "native_words_sha256": "a6f98914b3bbf723b4043d64fed957e6089e61690ef6c8672c1bd6cac0ca412e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_s32",
+      "level": "opt",
+      "contract": {
+        "op": "ld.global.v2.s32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.s32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "7e924b39cacaf4332fb4a92e04b619a0eeebb1073cc76a35de95ca4808161d66",
+      "status": "passed",
+      "native_words_sha256": "a6f98914b3bbf723b4043d64fed957e6089e61690ef6c8672c1bd6cac0ca412e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_s32",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.v4.s32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.s32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "e2bcde1e87b2a15dd661f451c48e325ada2c92dc9b7cc3622fd05e236c5ac165",
+      "status": "passed",
+      "native_words_sha256": "1e244b3362ca01ff7ed1a1fb60a244cb04a2297d60e83d993aedb36c40931a25",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_s32",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.v4.s32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.s32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "e2bcde1e87b2a15dd661f451c48e325ada2c92dc9b7cc3622fd05e236c5ac165",
+      "status": "passed",
+      "native_words_sha256": "f69662f183a1a79c1e9fcd765e82d09ce341d9ad69875c12db9eb2460504900e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_s32",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.v4.s32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.s32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "e2bcde1e87b2a15dd661f451c48e325ada2c92dc9b7cc3622fd05e236c5ac165",
+      "status": "passed",
+      "native_words_sha256": "71ee20c8f4b72e55655e7a778ced55d7ad985f27e785f3b599fc042a616128dc",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_s32",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.v4.s32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.s32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "e2bcde1e87b2a15dd661f451c48e325ada2c92dc9b7cc3622fd05e236c5ac165",
+      "status": "passed",
+      "native_words_sha256": "71ee20c8f4b72e55655e7a778ced55d7ad985f27e785f3b599fc042a616128dc",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_f32",
+      "level": "safe",
+      "contract": {
+        "op": "ld.global.v2.f32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.f32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "4df586ec41397e00a49968aaec603fdc8b7aa57bea1ddca9d19736c4295dd1b5",
+      "status": "passed",
+      "native_words_sha256": "0d2e7823dae94c942872d29a6581aa5328438fec52021fa1428ed88bf8a1cfe3",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_f32",
+      "level": "mined",
+      "contract": {
+        "op": "ld.global.v2.f32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.f32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "4df586ec41397e00a49968aaec603fdc8b7aa57bea1ddca9d19736c4295dd1b5",
+      "status": "passed",
+      "native_words_sha256": "cffee7b2e232d068423d1b217dc603daace66451d6993a41a97238f823cdd579",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_f32",
+      "level": "sched",
+      "contract": {
+        "op": "ld.global.v2.f32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.f32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "4df586ec41397e00a49968aaec603fdc8b7aa57bea1ddca9d19736c4295dd1b5",
+      "status": "passed",
+      "native_words_sha256": "a6f98914b3bbf723b4043d64fed957e6089e61690ef6c8672c1bd6cac0ca412e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "load_v2_f32",
+      "level": "opt",
+      "contract": {
+        "op": "ld.global.v2.f32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.f32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "4df586ec41397e00a49968aaec603fdc8b7aa57bea1ddca9d19736c4295dd1b5",
+      "status": "passed",
+      "native_words_sha256": "a6f98914b3bbf723b4043d64fed957e6089e61690ef6c8672c1bd6cac0ca412e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "97719b92b581b8188defffb9e6d82edc57747a9e3c00e898a0d8bda7ea33f027",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_f32",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.v4.f32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.f32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "0fedf4b1ff7f1882d984f925deaaefe5920c440fbde84b3ee65fd166b76108bb",
+      "status": "passed",
+      "native_words_sha256": "1e244b3362ca01ff7ed1a1fb60a244cb04a2297d60e83d993aedb36c40931a25",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_f32",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.v4.f32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.f32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "0fedf4b1ff7f1882d984f925deaaefe5920c440fbde84b3ee65fd166b76108bb",
+      "status": "passed",
+      "native_words_sha256": "f69662f183a1a79c1e9fcd765e82d09ce341d9ad69875c12db9eb2460504900e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_f32",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.v4.f32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.f32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "0fedf4b1ff7f1882d984f925deaaefe5920c440fbde84b3ee65fd166b76108bb",
+      "status": "passed",
+      "native_words_sha256": "71ee20c8f4b72e55655e7a778ced55d7ad985f27e785f3b599fc042a616128dc",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_v4_f32",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.v4.f32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.f32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "0fedf4b1ff7f1882d984f925deaaefe5920c440fbde84b3ee65fd166b76108bb",
+      "status": "passed",
+      "native_words_sha256": "71ee20c8f4b72e55655e7a778ced55d7ad985f27e785f3b599fc042a616128dc",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "197c85974c02b046a835bbedc41ad5bd3e1d4ed191ecbfe83516264016cb82d4",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b8",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.b8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "3b3628a385cb20853b6d69b957cd74bbc08506dc3ae334ae5ac4cd8909654ac1",
+      "status": "passed",
+      "native_words_sha256": "05247398618843f38ccc1447487f9d43d2dfab2ff2e1c7b8ff03bfa6345afff4",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b8",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.b8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "3b3628a385cb20853b6d69b957cd74bbc08506dc3ae334ae5ac4cd8909654ac1",
+      "status": "passed",
+      "native_words_sha256": "58e7097b03a5d7a6d08e2f1c3351dd226851a6accd64f580e4325a4c3692b521",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b8",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.b8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "3b3628a385cb20853b6d69b957cd74bbc08506dc3ae334ae5ac4cd8909654ac1",
+      "status": "passed",
+      "native_words_sha256": "dae7e6c66eb9ed52f4cbe33a52c53df05f9481ba3d5d91f6fa393a102c440639",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b8",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.b8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "3b3628a385cb20853b6d69b957cd74bbc08506dc3ae334ae5ac4cd8909654ac1",
+      "status": "passed",
+      "native_words_sha256": "dae7e6c66eb9ed52f4cbe33a52c53df05f9481ba3d5d91f6fa393a102c440639",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u8",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.u8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "a14f1ebd9422c67a1cbc39f49aa5ac3b0c50cbda30b30073c8b494f743e0dd99",
+      "status": "passed",
+      "native_words_sha256": "05247398618843f38ccc1447487f9d43d2dfab2ff2e1c7b8ff03bfa6345afff4",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u8",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.u8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "a14f1ebd9422c67a1cbc39f49aa5ac3b0c50cbda30b30073c8b494f743e0dd99",
+      "status": "passed",
+      "native_words_sha256": "58e7097b03a5d7a6d08e2f1c3351dd226851a6accd64f580e4325a4c3692b521",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u8",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.u8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "a14f1ebd9422c67a1cbc39f49aa5ac3b0c50cbda30b30073c8b494f743e0dd99",
+      "status": "passed",
+      "native_words_sha256": "dae7e6c66eb9ed52f4cbe33a52c53df05f9481ba3d5d91f6fa393a102c440639",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u8",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.u8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "a14f1ebd9422c67a1cbc39f49aa5ac3b0c50cbda30b30073c8b494f743e0dd99",
+      "status": "passed",
+      "native_words_sha256": "dae7e6c66eb9ed52f4cbe33a52c53df05f9481ba3d5d91f6fa393a102c440639",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s8",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.s8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "e7c576cb692df60b74bdbc9873e7ec03fa44c38d8912a9b2a9a805cd1659023c",
+      "status": "passed",
+      "native_words_sha256": "05247398618843f38ccc1447487f9d43d2dfab2ff2e1c7b8ff03bfa6345afff4",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s8",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.s8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "e7c576cb692df60b74bdbc9873e7ec03fa44c38d8912a9b2a9a805cd1659023c",
+      "status": "passed",
+      "native_words_sha256": "58e7097b03a5d7a6d08e2f1c3351dd226851a6accd64f580e4325a4c3692b521",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s8",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.s8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "e7c576cb692df60b74bdbc9873e7ec03fa44c38d8912a9b2a9a805cd1659023c",
+      "status": "passed",
+      "native_words_sha256": "dae7e6c66eb9ed52f4cbe33a52c53df05f9481ba3d5d91f6fa393a102c440639",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s8",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.s8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "e7c576cb692df60b74bdbc9873e7ec03fa44c38d8912a9b2a9a805cd1659023c",
+      "status": "passed",
+      "native_words_sha256": "dae7e6c66eb9ed52f4cbe33a52c53df05f9481ba3d5d91f6fa393a102c440639",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "fadbc7c4bbc159bfc33b2362d930f3a967362ca1e51e5e5bca4f03f17d4ed0dc",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b16",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.b16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "39307b130cbe391c57e0a65cdd47f9022560a936270429c2c228a586039244c6",
+      "status": "passed",
+      "native_words_sha256": "d056e8ac7b759ad7ac171550661fd1248641e171282e5d82b5fe1fd65ba33c44",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b16",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.b16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "39307b130cbe391c57e0a65cdd47f9022560a936270429c2c228a586039244c6",
+      "status": "passed",
+      "native_words_sha256": "21a90805a3eba1365e75ece81143785ae9653bcac9a606757ae91e5c67b6d215",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b16",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.b16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "39307b130cbe391c57e0a65cdd47f9022560a936270429c2c228a586039244c6",
+      "status": "passed",
+      "native_words_sha256": "cf3cbd1a7172212efe8d063ab89c364f5c89f438138fc57ee22ba5bf5bbad708",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b16",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.b16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "39307b130cbe391c57e0a65cdd47f9022560a936270429c2c228a586039244c6",
+      "status": "passed",
+      "native_words_sha256": "cf3cbd1a7172212efe8d063ab89c364f5c89f438138fc57ee22ba5bf5bbad708",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u16",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.u16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "4251f444c22b26ce215d0a5d8cd3c32b5614471523d946e88fd616b85f8bba9c",
+      "status": "passed",
+      "native_words_sha256": "d056e8ac7b759ad7ac171550661fd1248641e171282e5d82b5fe1fd65ba33c44",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u16",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.u16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "4251f444c22b26ce215d0a5d8cd3c32b5614471523d946e88fd616b85f8bba9c",
+      "status": "passed",
+      "native_words_sha256": "21a90805a3eba1365e75ece81143785ae9653bcac9a606757ae91e5c67b6d215",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u16",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.u16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "4251f444c22b26ce215d0a5d8cd3c32b5614471523d946e88fd616b85f8bba9c",
+      "status": "passed",
+      "native_words_sha256": "cf3cbd1a7172212efe8d063ab89c364f5c89f438138fc57ee22ba5bf5bbad708",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u16",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.u16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "4251f444c22b26ce215d0a5d8cd3c32b5614471523d946e88fd616b85f8bba9c",
+      "status": "passed",
+      "native_words_sha256": "cf3cbd1a7172212efe8d063ab89c364f5c89f438138fc57ee22ba5bf5bbad708",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s16",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.s16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "45e028c1b4b82205ddfd5914faba1e5dfea8627e3e3ed21677fe2387670fafe8",
+      "status": "passed",
+      "native_words_sha256": "d056e8ac7b759ad7ac171550661fd1248641e171282e5d82b5fe1fd65ba33c44",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s16",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.s16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "45e028c1b4b82205ddfd5914faba1e5dfea8627e3e3ed21677fe2387670fafe8",
+      "status": "passed",
+      "native_words_sha256": "21a90805a3eba1365e75ece81143785ae9653bcac9a606757ae91e5c67b6d215",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s16",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.s16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "45e028c1b4b82205ddfd5914faba1e5dfea8627e3e3ed21677fe2387670fafe8",
+      "status": "passed",
+      "native_words_sha256": "cf3cbd1a7172212efe8d063ab89c364f5c89f438138fc57ee22ba5bf5bbad708",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s16",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.s16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "45e028c1b4b82205ddfd5914faba1e5dfea8627e3e3ed21677fe2387670fafe8",
+      "status": "passed",
+      "native_words_sha256": "cf3cbd1a7172212efe8d063ab89c364f5c89f438138fc57ee22ba5bf5bbad708",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "c9b133de349823cfb1dec1d9377530728c79f4dfeebd7fe7ba9e62c2fe166e61",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b64",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.b64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.b64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "03ebc130cae0286f989f1e5fb3e22ad70262d0b04c8dc517a6722266144ef94f",
+      "status": "passed",
+      "native_words_sha256": "3908b8d95ed161d7d7acdfdf9e1a95cdec387832b8c67e8bebdb01816699cf34",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b64",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.b64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.b64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "03ebc130cae0286f989f1e5fb3e22ad70262d0b04c8dc517a6722266144ef94f",
+      "status": "passed",
+      "native_words_sha256": "8a3fb8b9f3e48ae19b8871152ed9c722c3cba15a39a89bd4ef32deafa2bd2916",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b64",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.b64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.b64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "03ebc130cae0286f989f1e5fb3e22ad70262d0b04c8dc517a6722266144ef94f",
+      "status": "passed",
+      "native_words_sha256": "a79ea4ce534e38c1bfe91c2fb728ffe5dfaff2d035f4d5d0475f6e0e61f401dd",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_b64",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.b64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.b64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "03ebc130cae0286f989f1e5fb3e22ad70262d0b04c8dc517a6722266144ef94f",
+      "status": "passed",
+      "native_words_sha256": "a79ea4ce534e38c1bfe91c2fb728ffe5dfaff2d035f4d5d0475f6e0e61f401dd",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u64",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.u64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.u64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "537859669422046ef3f3e63a809a224cbadf80dfa756b8b600a95f815a1ebea5",
+      "status": "passed",
+      "native_words_sha256": "3908b8d95ed161d7d7acdfdf9e1a95cdec387832b8c67e8bebdb01816699cf34",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u64",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.u64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.u64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "537859669422046ef3f3e63a809a224cbadf80dfa756b8b600a95f815a1ebea5",
+      "status": "passed",
+      "native_words_sha256": "8a3fb8b9f3e48ae19b8871152ed9c722c3cba15a39a89bd4ef32deafa2bd2916",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u64",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.u64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.u64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "537859669422046ef3f3e63a809a224cbadf80dfa756b8b600a95f815a1ebea5",
+      "status": "passed",
+      "native_words_sha256": "a79ea4ce534e38c1bfe91c2fb728ffe5dfaff2d035f4d5d0475f6e0e61f401dd",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_u64",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.u64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.u64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "537859669422046ef3f3e63a809a224cbadf80dfa756b8b600a95f815a1ebea5",
+      "status": "passed",
+      "native_words_sha256": "a79ea4ce534e38c1bfe91c2fb728ffe5dfaff2d035f4d5d0475f6e0e61f401dd",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s64",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.s64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.s64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "eb2086fa0aa2de33bc934d52ba547f976153dd3457373cbcb81701dff4a04927",
+      "status": "passed",
+      "native_words_sha256": "3908b8d95ed161d7d7acdfdf9e1a95cdec387832b8c67e8bebdb01816699cf34",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s64",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.s64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.s64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "eb2086fa0aa2de33bc934d52ba547f976153dd3457373cbcb81701dff4a04927",
+      "status": "passed",
+      "native_words_sha256": "8a3fb8b9f3e48ae19b8871152ed9c722c3cba15a39a89bd4ef32deafa2bd2916",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s64",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.s64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.s64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "eb2086fa0aa2de33bc934d52ba547f976153dd3457373cbcb81701dff4a04927",
+      "status": "passed",
+      "native_words_sha256": "a79ea4ce534e38c1bfe91c2fb728ffe5dfaff2d035f4d5d0475f6e0e61f401dd",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_s64",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.s64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.s64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "eb2086fa0aa2de33bc934d52ba547f976153dd3457373cbcb81701dff4a04927",
+      "status": "passed",
+      "native_words_sha256": "a79ea4ce534e38c1bfe91c2fb728ffe5dfaff2d035f4d5d0475f6e0e61f401dd",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_f64",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.f64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.f64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "9ff8dbf0fc40caca1cd6e4e9037c23aac71249e75c03e28240d4833a4450d36e",
+      "status": "passed",
+      "native_words_sha256": "3908b8d95ed161d7d7acdfdf9e1a95cdec387832b8c67e8bebdb01816699cf34",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_f64",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.f64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.f64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "9ff8dbf0fc40caca1cd6e4e9037c23aac71249e75c03e28240d4833a4450d36e",
+      "status": "passed",
+      "native_words_sha256": "8a3fb8b9f3e48ae19b8871152ed9c722c3cba15a39a89bd4ef32deafa2bd2916",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_f64",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.f64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.f64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "9ff8dbf0fc40caca1cd6e4e9037c23aac71249e75c03e28240d4833a4450d36e",
+      "status": "passed",
+      "native_words_sha256": "a79ea4ce534e38c1bfe91c2fb728ffe5dfaff2d035f4d5d0475f6e0e61f401dd",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "store_f64",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.f64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.f64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "9ff8dbf0fc40caca1cd6e4e9037c23aac71249e75c03e28240d4833a4450d36e",
+      "status": "passed",
+      "native_words_sha256": "a79ea4ce534e38c1bfe91c2fb728ffe5dfaff2d035f4d5d0475f6e0e61f401dd",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "08ecc5e3b20190963045745512c23c90d80f3fa761e33c90a9f4497817ea4e24",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_copy_snapshot",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "copy_snapshot"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; mov.pred %q,%p; setp.ge.u32 %p,%t,31;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b42fb0d6dbdaa1301f8a211f644c20d0c6d3b573f908eaf036bcc1d51ac429ae",
+      "status": "passed",
+      "native_words_sha256": "e0c6357d3f1c55573d810418b3087072a5cc2efb0d92dc29db51baad857d522e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "8296926980121260a93d515612d38ac88e65b366b88113b38074333a5bcc3a33",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "8296926980121260a93d515612d38ac88e65b366b88113b38074333a5bcc3a33",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_copy_snapshot",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "copy_snapshot"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; mov.pred %q,%p; setp.ge.u32 %p,%t,31;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b42fb0d6dbdaa1301f8a211f644c20d0c6d3b573f908eaf036bcc1d51ac429ae",
+      "status": "passed",
+      "native_words_sha256": "c3885c179c92a12ccf6a406312cbb7e222e556c95868a889bdc2fc13f631879e",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "8296926980121260a93d515612d38ac88e65b366b88113b38074333a5bcc3a33",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "8296926980121260a93d515612d38ac88e65b366b88113b38074333a5bcc3a33",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_copy_snapshot",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "copy_snapshot"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; mov.pred %q,%p; setp.ge.u32 %p,%t,31;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b42fb0d6dbdaa1301f8a211f644c20d0c6d3b573f908eaf036bcc1d51ac429ae",
+      "status": "passed",
+      "native_words_sha256": "16937c1f3ab1a6544d296a22f7df2c639778560f41e7789bfadcccc0f94667c4",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "8296926980121260a93d515612d38ac88e65b366b88113b38074333a5bcc3a33",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "8296926980121260a93d515612d38ac88e65b366b88113b38074333a5bcc3a33",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_copy_snapshot",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "copy_snapshot"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; mov.pred %q,%p; setp.ge.u32 %p,%t,31;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b42fb0d6dbdaa1301f8a211f644c20d0c6d3b573f908eaf036bcc1d51ac429ae",
+      "status": "passed",
+      "native_words_sha256": "16937c1f3ab1a6544d296a22f7df2c639778560f41e7789bfadcccc0f94667c4",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "8296926980121260a93d515612d38ac88e65b366b88113b38074333a5bcc3a33",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "8296926980121260a93d515612d38ac88e65b366b88113b38074333a5bcc3a33",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_guarded_copy",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "guarded_copy"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; setp.ge.u32 %q,%t,31;\n@%take mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "490afad93ec011834484e3cba3769d927c234a9b38f82b4a1b10943decaeb0fd",
+      "status": "passed",
+      "native_words_sha256": "f45ffc63bc7fa8a7e75ecdfed59461755759a85bb6c35554e82a274d318c51f9",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_guarded_copy",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "guarded_copy"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; setp.ge.u32 %q,%t,31;\n@%take mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "490afad93ec011834484e3cba3769d927c234a9b38f82b4a1b10943decaeb0fd",
+      "status": "passed",
+      "native_words_sha256": "bf80dc5c598e6efebde17c261dfd27e59e96560302f9e544704765c6898602e6",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_guarded_copy",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "guarded_copy"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; setp.ge.u32 %q,%t,31;\n@%take mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "490afad93ec011834484e3cba3769d927c234a9b38f82b4a1b10943decaeb0fd",
+      "status": "passed",
+      "native_words_sha256": "725d2ea1c076c4f85cd6f65200acf3038e5e93cadcbb6b241c21487267b47166",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_guarded_copy",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "guarded_copy"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; setp.ge.u32 %q,%t,31;\n@%take mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "490afad93ec011834484e3cba3769d927c234a9b38f82b4a1b10943decaeb0fd",
+      "status": "passed",
+      "native_words_sha256": "725d2ea1c076c4f85cd6f65200acf3038e5e93cadcbb6b241c21487267b47166",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_branch_join",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "branch_join"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; @%take bra JOIN;\nsetp.ge.u32 %p,%t,31; mov.pred %q,%p;\nJOIN: selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "ea36c16bfc46d14c240cc4ce3d7a74a2b032dfd942575739cab013b66b6ae388",
+      "status": "passed",
+      "native_words_sha256": "d25c07b3a77014b12b09411dfab705cc35bc1a7ab7d2d12da264550b1c926081",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_branch_join",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "branch_join"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; @%take bra JOIN;\nsetp.ge.u32 %p,%t,31; mov.pred %q,%p;\nJOIN: selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "ea36c16bfc46d14c240cc4ce3d7a74a2b032dfd942575739cab013b66b6ae388",
+      "status": "passed",
+      "native_words_sha256": "afed93d0d64bf95f9e34fc43f1907a52e77c59767ab85c3e887400f85a572ab4",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_branch_join",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "branch_join"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; @%take bra JOIN;\nsetp.ge.u32 %p,%t,31; mov.pred %q,%p;\nJOIN: selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "ea36c16bfc46d14c240cc4ce3d7a74a2b032dfd942575739cab013b66b6ae388",
+      "status": "passed",
+      "native_words_sha256": "955551a796d5b2810a2677c8796eef42032565b45c52285b6b97bb3d22d9bc0a",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_branch_join",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "branch_join"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; @%take bra JOIN;\nsetp.ge.u32 %p,%t,31; mov.pred %q,%p;\nJOIN: selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "ea36c16bfc46d14c240cc4ce3d7a74a2b032dfd942575739cab013b66b6ae388",
+      "status": "passed",
+      "native_words_sha256": "955551a796d5b2810a2677c8796eef42032565b45c52285b6b97bb3d22d9bc0a",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "36b99cca39c1416ec9e05540f4fc7f73178c231d13ae0eadb08e945fac2229ad",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_loop_carried",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "loop_carried"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.eq.u32 %p,%t,%t; mov.pred %q,%p; mov.u32 %count,0;\nLOOP: not.pred %q,%q; add.u32 %count,%count,1; setp.lt.u32 %r,%count,3; @%r bra LOOP;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "8fc7064e6af03b4339d22ae6bef22939eea48fc380fc02db332fc15ff2e4f515",
+      "status": "passed",
+      "native_words_sha256": "daab0812a2557a8e034f0e836265f8334ae519df0dc85f5063d06ea3969266b1",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_loop_carried",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "loop_carried"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.eq.u32 %p,%t,%t; mov.pred %q,%p; mov.u32 %count,0;\nLOOP: not.pred %q,%q; add.u32 %count,%count,1; setp.lt.u32 %r,%count,3; @%r bra LOOP;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "8fc7064e6af03b4339d22ae6bef22939eea48fc380fc02db332fc15ff2e4f515",
+      "status": "passed",
+      "native_words_sha256": "300cfb438ecefe97e748b67120e8045da90dfa6d74df22df0cc5a061524650b8",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_loop_carried",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "loop_carried"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.eq.u32 %p,%t,%t; mov.pred %q,%p; mov.u32 %count,0;\nLOOP: not.pred %q,%q; add.u32 %count,%count,1; setp.lt.u32 %r,%count,3; @%r bra LOOP;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "8fc7064e6af03b4339d22ae6bef22939eea48fc380fc02db332fc15ff2e4f515",
+      "status": "passed",
+      "native_words_sha256": "726e24b3d252c30a75340b69af29c2e3585e5a5e7de1f8589568d0c7e9d627bf",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_loop_carried",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "loop_carried"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.eq.u32 %p,%t,%t; mov.pred %q,%p; mov.u32 %count,0;\nLOOP: not.pred %q,%q; add.u32 %count,%count,1; setp.lt.u32 %r,%count,3; @%r bra LOOP;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "8fc7064e6af03b4339d22ae6bef22939eea48fc380fc02db332fc15ff2e4f515",
+      "status": "passed",
+      "native_words_sha256": "726e24b3d252c30a75340b69af29c2e3585e5a5e7de1f8589568d0c7e9d627bf",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_self_guarded",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "self_guarded"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; setp.ge.u32 %p,%t,31;\n@%q mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "9bfd5d9c6a72900de091e3d22000d8d378938b6a21cdc3977e24e2c549514434",
+      "status": "passed",
+      "native_words_sha256": "88de84826fa69bceb50d37df5f0aeef7ab038bb52799626783b230f0bfc478f0",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_self_guarded",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "self_guarded"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; setp.ge.u32 %p,%t,31;\n@%q mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "9bfd5d9c6a72900de091e3d22000d8d378938b6a21cdc3977e24e2c549514434",
+      "status": "passed",
+      "native_words_sha256": "5b4ce7a4a70e3b8368620c0778578d2282b56561e8673efef7c7fcec714b9e4d",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_self_guarded",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "self_guarded"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; setp.ge.u32 %p,%t,31;\n@%q mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "9bfd5d9c6a72900de091e3d22000d8d378938b6a21cdc3977e24e2c549514434",
+      "status": "passed",
+      "native_words_sha256": "e64b946b63f0cea9a57faa75911d9bdedd7fba3f6f7ee766a3ecd786c749cf39",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    },
+    {
+      "name": "predicate_self_guarded",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "self_guarded"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst,%wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; setp.ge.u32 %p,%t,31;\n@%q mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "9bfd5d9c6a72900de091e3d22000d8d378938b6a21cdc3977e24e2c549514434",
+      "status": "passed",
+      "native_words_sha256": "e64b946b63f0cea9a57faa75911d9bdedd7fba3f6f7ee766a3ecd786c749cf39",
+      "results": [
+        {
+          "poison": null,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        },
+        {
+          "poison": 3735928559,
+          "output_sha256": "f2191a079022d81fa60a82a5de9be119323b47c637e30d98ba6532d89feb101a",
+          "inputs_unchanged": true,
+          "mismatches": []
+        }
+      ]
+    }
+  ],
+  "passed": true
+}

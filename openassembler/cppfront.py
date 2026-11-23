@@ -34,7 +34,8 @@ def _kernel_names(ptx: str) -> list[str]:
 
 
 def compile_to_ptx_module(path: Path, *, arch: str = "sm_80", include_dirs: list[Path] | None = None,
-                          extra_flags: list[str] | None = None) -> tuple[str, list[str]]:
+                          extra_flags: list[str] | None = None, working_directory: Path | None = None,
+                          source_argument: str | None = None) -> tuple[str, list[str]]:
     """Run `nvcc --ptx` on a .cu/.cuh/.cpp/.cc/.cxx file; return (ptx_text, every
     __global__ entry in it). The file is compiled as CUDA (`-x cu`) whatever its
     extension: nvcc treats .cpp as host-only C++ (where __global__ is undefined)
@@ -57,12 +58,15 @@ def compile_to_ptx_module(path: Path, *, arch: str = "sm_80", include_dirs: list
     staged = None
     try:
         src_arg = oracle.tool_path(path)
+        if working_directory is not None:
+            oracle.tool_path(working_directory)
+            src_arg = str(source_argument or path.resolve())
     except oracle.OracleError:
         staged = scratch / f"{tag}{path.suffix}"
         staged.write_bytes(path.read_bytes())
         src_arg = oracle.tool_path(staged)
     incs = []
-    for d in [path.resolve().parent, *(include_dirs or [])]:
+    for d in ([path.resolve().parent] if working_directory is None else []) + list(include_dirs or []):
         try:
             flag = f"-I{oracle.tool_path(d)}"
         except oracle.OracleError:
@@ -70,8 +74,10 @@ def compile_to_ptx_module(path: Path, *, arch: str = "sm_80", include_dirs: list
         if flag not in incs:
             incs.append(flag)
     try:
+        output_arg = str(out_path.resolve()) if working_directory is not None else oracle.tool_path(out_path)
+        kwargs = {'cwd':working_directory} if working_directory is not None else {}
         r = oracle.run_tool("nvcc", "--ptx", "-x", "cu", f"-arch={arch}", *incs, *(extra_flags or []),
-                            "-o", oracle.tool_path(out_path), src_arg, check=False)
+                            "-o", output_arg, src_arg, check=False, **kwargs)
         if r.returncode != 0:
             msg = "\n".join(l for l in (r.stderr or r.stdout).splitlines()
                             if not l.startswith("time=")).strip()      # drop colima's own exit-status noise

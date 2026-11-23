@@ -2,8 +2,9 @@
 import hashlib
 import math
 
-SEMANTIC_OPS=frozenset({'broadcast_add','broadcast_mul','sum_to','embedding','embedding_grad',
-                       'masked_softmax','ce_rows','ce_grad','mean','adam_m','adam_v','adam_update','adam_fused'})
+SEMANTIC_OPS=frozenset({'broadcast_add','broadcast_mul','broadcast_to','sum_to','embedding','embedding_grad',
+                       'masked_softmax','ce_rows','ce_grad','mean','adam_m','adam_v','adam_update','adam_fused',
+                       'sgd_buffer_init','sgd_buffer','sgd_update','adam_max'})
 AUX_DTYPES=('f32','i64','bool')
 
 def broadcast_shape(*shapes):
@@ -17,12 +18,16 @@ def broadcast_shape(*shapes):
 
 
 def emit_semantic_kernel(op,inputs,output,attrs=None):
+    from .kernels_optimizer import OPTIMIZER_OPS,emit_optimizer_kernel
+    if op in OPTIMIZER_OPS:return emit_optimizer_kernel(op,inputs,output,attrs)
     from .kernels import KernelSpec,canonical,shape_of,_float
     attrs=dict(attrs or {});out=shape_of(output)
     shapes=tuple(shape_of(s,dtypes=AUX_DTYPES) for s in inputs)
     types=[s.get('dtype','f32') for s in inputs]
     valid=False
-    if op.startswith('broadcast_'):
+    if op=='broadcast_to':
+        valid=len(shapes)==1 and types==['f32'] and broadcast_shape(shapes[0],out)==out and len(shapes[0])<=len(out) and not attrs
+    elif op in ('broadcast_add','broadcast_mul'):
         valid=len(shapes)==2 and types==['f32','f32'] and broadcast_shape(*shapes)==out and not attrs
     elif op=='sum_to':
         valid=len(shapes)==1 and types==['f32'] and broadcast_shape(shapes[0],out)==shapes[0] and len(out)<=len(shapes[0]) and not attrs
@@ -41,6 +46,7 @@ def emit_semantic_kernel(op,inputs,output,attrs=None):
     elif op.startswith('adam_'):
         from .optimizer import optimizer_options
         attrs=optimizer_options(attrs)
+        if op=='adam_fused' and attrs.get('amsgrad',False):raise ValueError('AMSGrad requires split optimizer updates')
         valid=attrs['name'] in ('adam','adamw') and len(shapes)==(4 if op in ('adam_update','adam_fused') else 3) and all(s==out for s in shapes) and all(t=='f32' for t in types)
     if not valid:raise ValueError(f'invalid {op} shapes, dtypes or attributes')
     # Dtypes are fixed by each op contract, hence cannot collide with FP32 operators.
@@ -108,7 +114,9 @@ def emit_semantic_kernel(op,inputs,output,attrs=None):
                 lines+=['mul.wide.u32 %d10,%r6,4; add.u64 %d11,%d4,%d10; @%p1 st.global.f32 [%d11],%f0;']
     else:
         lines += [f'mad.lo.u32 %r2,%r1,128,%r0; setp.ge.u32 %p0,%r2,{count}; @%p0 bra done;']
-        if op.startswith('broadcast_'):
+        if op=='broadcast_to':
+            index('%r2',out,shapes[0],'%r3');load(0,'%r3','%f0')
+        elif op in ('broadcast_add','broadcast_mul'):
             for i,s in enumerate(shapes):index('%r2',out,s,'%r3');load(i,'%r3',f'%f{i}')
             lines.append(f'{"add" if op.endswith("add") else "mul"}.rn.f32 %f0,%f0,%f1;')
         elif op=='sum_to':
@@ -140,6 +148,7 @@ def emit_semantic_kernel(op,inputs,output,attrs=None):
         elif op in ('adam_m','adam_v'):
             # Inputs: previous moment, raw gradient, weight. Coupled decay for Adam only.
             for i in range(3):load(i,'%r2',f'%f{i}')
+            if attrs.get('maximize',False):lines += ['neg.f32 %f1,%f1;']
             if attrs['name']=='adam':lines += [f'mul.rn.f32 %f2,%f2,{_float(attrs["weight_decay"])}; add.rn.f32 %f1,%f1,%f2;']
             if op=='adam_m':
                 lines += [f'sub.rn.f32 %f1,%f1,%f0; mul.rn.f32 %f1,%f1,{_float(1-attrs["beta1"])}; add.rn.f32 %f0,%f0,%f1;']
@@ -148,6 +157,7 @@ def emit_semantic_kernel(op,inputs,output,attrs=None):
         elif op=='adam_fused':
             # ABI: weight, m, v, gradient, output weight; all reads precede writes.
             for i in range(4):load(i,'%r2',f'%f{i}')
+            if attrs.get('maximize',False):lines += ['neg.f32 %f3,%f3;']
             lines += ['ld.param.f32 %f4,[rate]; ld.param.f32 %f5,[correction1]; ld.param.f32 %f6,[correction2];']
             if attrs['name']=='adam':
                 lines += [f'mul.rn.f32 %f7,%f0,{_float(attrs["weight_decay"])}; add.rn.f32 %f3,%f3,%f7;']

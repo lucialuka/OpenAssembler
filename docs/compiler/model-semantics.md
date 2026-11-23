@@ -10,12 +10,14 @@ source identities. No vendor GPU compute fallback is introduced.
 
 | Feature | Admitted contract | Explicit boundary |
 |---|---|---|
-| Broadcasting | FP32 add/multiply with trailing-axis broadcasting, rank 0..4; backward reduces each replicated dimension to its original operand shape | No implicit dtype conversion or broadcasted matmul batch axes |
+| Broadcasting | FP32 add/multiply with trailing-axis broadcasting, rank 0..4; backward reduces each replicated dimension to its original operand shape | No implicit dtype conversion |
+| Batch-broadcast products | Rank 2..4 matmul normalizes compatible batch axes through copies/BMM and reduces replicated gradients; [contract and A100 evidence](gaps-model.md) | Exact positive shapes and existing resource/half-recipe bounds; `bmm` still requires equal batches; extra copy cost is not a speed claim |
 | Attention | `F.scaled_dot_product_attention`, FP32 rank 3/4, matching batch/head axes, rectangular Q/K/V; Boolean broadcast mask (`True` participates), or upper-left causal mask; explicit finite scale or default inverse square root | Width 1..1024; dropout zero, no GQA or additive floating mask; existing matrix resource limits remain |
 | Fully masked rows | Zero probability, output contribution and score gradient | General softmax NaN/Inf semantics are unchanged |
 | Embedding | `nn.Embedding` / `F.embedding`, external contiguous int64 indices, FP32 table, dense deterministic duplicate-index gradient | No padding index, max-norm mutation, sparse gradients or frequency scaling |
 | Cross-entropy | Rank-two FP32 `[rows,classes]` logits, int64 `[rows]` labels, stable log-sum-exp, unweighted mean; classes 1..1024 | No ignored labels, class weights, label smoothing or probability targets |
-| Adam | FP32 master weights/moments, bias correction, coupled weight decay, configurable betas, positive epsilon outside square root | No AMSGrad, maximize, differentiation through updates or parameter groups |
+| SGD extensions | Momentum/dampening/Nesterov, coupled decay and maximize; [contract and evidence](gaps-optimizers.md) | Direct execution for nondefault policies; no parameter groups |
+| Adam | FP32 master weights/moments, bias correction, coupled weight decay, configurable betas, positive epsilon outside square root; AMSGrad/maximize via [extended policy](gaps-optimizers.md) | No differentiation through updates or parameter groups; AMSGrad uses split updates |
 | AdamW | Same state with decoupled weight decay | No silent epsilon/precision changes; fusion is an explicit option |
 | KV cache | `DecodeSession`: OA prefill and precompiled exact positive past-length variants; one-token append; two immutable contiguous FP32 cache inputs and outputs | Copies the prefix; no empty-prefix bucket, paging, in-place append, unknown-length compilation or continuous batching |
 | Repository route | Ordinary model factory/config, integer/Boolean input declarations, CE/adaptive policy, source snapshot and saved native replay | Does not resolve arbitrary custom extension launch graphs, arbitrary Python effects or all third-party packages |
@@ -47,6 +49,12 @@ with nonnegative second moments. All validation precedes replacement; resumed
 moment allocations have canaries. Eight-update/resume tests compare every
 weight, gradient, first moment, second moment and step against PyTorch CPU.
 
+The later [complete checkpoint API](gaps-checkpoints.md) saves all captured
+parameters/buffers, full optimizer state, CPU RNG and explicit application JSON
+in one versioned artifact. Runtime `save_checkpoint`/`load_checkpoint` and module
+`save_native_checkpoint`/`load_native_checkpoint` stage and validate complete
+replacement bindings at an update boundary, with failure rollback checks.
+
 `DecodeSession(prefill_runtime, buckets, cache_inputs=('past_k','past_v'))`
 owns its runtimes/cache bindings. Each program returns prediction, keys and
 values in that order. All variants share the prefill parameter owner. Use
@@ -56,7 +64,7 @@ producer or changed model parameters rejects before a cache transition. Returned
 tensors borrow runtime storage. Variants must already be compiled; no hidden
 code generation occurs during decoding.
 
-Indexed inputs, cross-entropy and adaptive optimizers currently require direct
+Indexed inputs, cross-entropy and nondefault optimizers currently require direct
 execution. CUDA graph training replay rejects them explicitly: CPU bounds
 validation and host step advancement cannot safely be captured as static GPU
 work. The optimizer microbenchmark captures only a fixed-coefficient update,
@@ -122,7 +130,9 @@ the frozen executable Python AST for all twelve modified production modules.
 
 ## Memory and latency decisions
 
-Direct broadcast indexing avoids expanded operand buffers. Backward sums only
+Arithmetic broadcast indexing avoids expanded operand buffers. The separate
+[batch-broadcast product normalization](gaps-model.md) materializes expanded
+matrix operands and retains that cost explicitly. Backward sums only
 replicated coordinates, in deterministic order; large reductions still need
 parallel/split reduction studies. Embedding dW deliberately scans token positions
 per table element, avoiding atomic ordering variability. This is a correctness

@@ -16,11 +16,12 @@ function or a `find_kernel()` result) and produces the identical PTX. The PTX th
 through the exact same openassembler.backend.ra / openassembler.container.cubin
 pipeline as any other PTX in this repo.
 
-Supported: typed params (Array(f32|i32|u32), i32/u32/f32 scalars), local int/float
+Supported: typed params (Array(f32|i32|u32|i64|u64), i32/u32/i64/u64/f32 scalars), local int/float
 variables, + - * / // % (Python semantics: / is true division to f32, // and % floor
 on ints), comparisons, if/elif/else with and/or/not, for-range and while loops with
-break/continue, float()/int(), min/max/abs, sqrt (exact) and approximate
-exp/log/tanh/rsqrt (also as math.sqrt/exp/log/tanh), shared_array + syncthreads, array
+break/continue, typed integer casts and bitwise operations, float()/int(), min/max/abs, sqrt (exact) and approximate
+exp/log/tanh/rsqrt (also as math.sqrt/exp/log/tanh), same-file pure typed scalar
+@device helpers (scalar structured control flow and a terminal returned expression), shared_array + syncthreads, array
 reads/writes, and tid_x/ctaid_x/ntid_x (and _y/_z). Anything else raises NotSupported
 with the line. Every place GPU semantics differ from Python's is listed in the
 openassembler.pyfront.compile module docstring.
@@ -29,13 +30,19 @@ openassembler.pyfront.compile module docstring.
 from __future__ import annotations
 
 from openassembler.pyfront.compile import (KernelRef, NotSupported, compile_file, compile_kernel,
-                                           find_kernel, kernel)
+                                           device, find_kernel, kernel)
 from openassembler.pyfront.intrinsics import (ctaid_x, ctaid_y, ctaid_z, exp, log, ntid_x, ntid_y,
                                               ntid_z, rsqrt, shared_array, sqrt, syncthreads, tanh,
                                               tid_x, tid_y, tid_z)
-from openassembler.pyfront.types import Array, f32, i32, u32
+from openassembler.pyfront.types import Array, f32, i32, i64, u32, u64
 
-__all__ = ["Array", "f32", "i32", "u32", "NotSupported", "KernelRef", "compile_kernel",
-           "compile_file", "find_kernel", "kernel", "tid_x", "tid_y", "tid_z", "ctaid_x",
+__all__ = ["Array", "f32", "i32", "u32", "i64", "u64", "NotSupported", "KernelRef", "compile_kernel",
+           "compile_file", "find_kernel", "kernel", "device", "tid_x", "tid_y", "tid_z", "ctaid_x",
            "ctaid_y", "ctaid_z", "ntid_x", "ntid_y", "ntid_z", "sqrt", "rsqrt", "exp", "log",
            "tanh", "shared_array", "syncthreads"]
+
+from openassembler.pyfront.buffers import Buffer, BufferType
+__all__ += ["Buffer", "BufferType"]
+
+from openassembler.pyfront.intrinsics import atomic_add, atomic_exchange, atomic_compare_exchange
+__all__ += ["atomic_add", "atomic_exchange", "atomic_compare_exchange"]

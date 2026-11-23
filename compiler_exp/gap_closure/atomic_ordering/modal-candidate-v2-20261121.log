@@ -1,0 +1,132 @@
+✓ Initialized. View run at 
+https://modal.com/apps/qingyang-lucas-fang/main/ap-R55N2AZqmhXmL4rQYjCmfm
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/atomic_order
+│   ing/run_modal.py
+└── ✓ Created Function execute.
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 12.8.1
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+safe/cubin/probes.cubin  (6 kernels, opt-level=safe)
+  publication: 295 instructions, regs=20
+  both_acqrel: 301 instructions, regs=20
+  shared_add: 44 instructions, regs=16
+  shared_add_explicit: 44 instructions, regs=16
+  shared_exch: 44 instructions, regs=16
+  shared_exch_explicit: 44 instructions, regs=16
+safe/sass/probes.sass  (SASS listing from nvdisasm)
+warning: shared_add: 5 instruction(s) disassemble differently than we encoded them, e.g. 'IMAD R5, R3, 0x4, RZ' -> 'IMAD.SHL R5, R3, 0x4, RZ'
+warning: shared_add_explicit: 5 instruction(s) disassemble differently than we encoded them, e.g. 'IMAD R5, R3, 0x4, RZ' -> 'IMAD.SHL R5, R3, 0x4, RZ'
+warning: shared_exch: 5 instruction(s) disassemble differently than we encoded them, e.g. 'IMAD R4, R2, 0x4, RZ' -> 'IMAD.SHL R4, R2, 0x4, RZ'
+warning: shared_exch_explicit: 5 instruction(s) disassemble differently than we encoded them, e.g. 'IMAD R4, R2, 0x4, RZ' -> 'IMAD.SHL R4, R2, 0x4, RZ'
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/run_modal.py", line 65, in execute
+    driver.launch(fn,(4,1,1) if shared else (2,1,1),(128,1,1) if shared else (32,1,1),args)
+  File "/tmp/oa-ordering-0v_7278k/openassembler/gpu/cuda_driver.py", line 153, in launch
+  File "/tmp/oa-ordering-0v_7278k/openassembler/gpu/cuda_driver.py", line 66, in ck
+openassembler.gpu.cuda_driver.CudaError: kernel execution (cuCtxSynchronize): CUDA_ERROR_ILLEGAL_ADDRESS (700)
+Stopping app - uncaught exception raised locally: ExecutionError('Could not deserialize remote exception due to local error:\nEncountered an error when deserializing an object in the local environment (see above for details).\nThis can happen if your local environment does not have the remote exception definitions.\nHere is the remote traceback:\nTraceback (most recent call last):\n  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in handle_input_exception\n    yield\n  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync\n    values = io_context.call_function_sync()\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in call_function_sync\n    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/root/run_modal.py", line 65, in execute\n    driver.launch(fn,(4,1,1) if shared else (2,1,1),(128,1,1) if shared else (32,1,1),args)\n  .
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_serialization.py:117 in deserialize                               │
+│                                                                              │
+│   116 │   try:                                                               │
+│ ❱ 117 │   │   return Unpickler(client, io.BytesIO(s)).load()                 │
+│   118 │   except AttributeError as exc:                                      │
+╰──────────────────────────────────────────────────────────────────────────────╯
+TypeError: CudaError.__init__() missing 2 required positional arguments: 'code' 
+and 'name'
+
+The above exception was the direct cause of the following exception:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/atomic_order │
+│ ing/run_modal.py:113 in main                                                 │
+│                                                                              │
+│   112 │   stamp=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')        │
+│ ❱ 113 │   report,payload=execute.remote(files)                               │
+│   114 │   archive=HERE/('a100-'+stamp+'.zip');archive.write_bytes(base64.b64 │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_object.py:49 in wrapped                                           │
+│                                                                              │
+│    48 │   │   await self.hydrate()                                           │
+│ ❱  49 │   │   return await method(self, *args, **kwargs)                     │
+│    50                                                                        │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:2081 in remote                                       │
+│                                                                              │
+│   2080 │   │                                                                 │
+│ ❱ 2081 │   │   return await self._call_function(args, kwargs)                │
+│   2082                                                                       │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:2018 in _call_function                               │
+│                                                                              │
+│   2017 │   │                                                                 │
+│ ❱ 2018 │   │   return await invocation.run_function()                        │
+│   2019                                                                       │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:517 in run_function                                  │
+│                                                                              │
+│    516 │   │   │   # No more retries left.                                   │
+│ ❱  517 │   │   │   return await _process_result(                             │
+│    518 │   │   │   │   await_response.output.result, await_response.output.d │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/function_utils.py:547 in _process_result                    │
+│                                                                              │
+│   546 │   │   │   except DeserializationError as deser_exc:                  │
+│ ❱ 547 │   │   │   │   raise ExecutionError(                                  │
+│   548 │   │   │   │   │   "Could not deserialize remote exception due to loc │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ExecutionError: Could not deserialize remote exception due to local error:
+Encountered an error when deserializing an object in the local environment (see 
+above for details).
+This can happen if your local environment does not have the remote exception 
+definitions.
+Here is the remote traceback:
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in 
+handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in 
+call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/run_modal.py", line 65, in execute
+    driver.launch(fn,(4,1,1) if shared else (2,1,1),(128,1,1) if shared else 
+(32,1,1),args)
+  File "/tmp/oa-ordering-0v_7278k/openassembler/gpu/cuda_driver.py", line 153, 
+in launch
+  File "/tmp/oa-ordering-0v_7278k/openassembler/gpu/cuda_driver.py", line 66, in
+ck
+openassembler.gpu.cuda_driver.CudaError: kernel execution (cuCtxSynchronize): 
+CUDA_ERROR_ILLEGAL_ADDRESS (700)
+

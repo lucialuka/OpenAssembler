@@ -45,11 +45,11 @@ class OracleError(RuntimeError):
     """The NVIDIA toolkit can't be reached or can't see the given path."""
 
 
-def run_tool(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run_tool(*args: str, check: bool = True, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     """Run an NVIDIA tool from the project root: directly on Linux, inside the
     colima VM on macOS (both handled by env/cuda.sh)."""
     return subprocess.run(
-        [str(CUDA_SH), *args], cwd=ROOT, capture_output=True, text=True, check=check
+        [str(CUDA_SH), *args], cwd=cwd or ROOT, capture_output=True, text=True, check=check
     )
 
 

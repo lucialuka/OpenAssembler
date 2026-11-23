@@ -28,7 +28,8 @@ def _python_module(path: Path, arch: str) -> tuple[str, list[str], list[str]]:
 
 
 def to_ptx_module(path: Path, *, arch: str, include_dirs: list[Path] | None = None,
-                  nvcc_flags: list[str] | None = None) -> tuple[str, list[str], list[str]]:
+                  nvcc_flags: list[str] | None = None, working_directory: Path | None = None,
+                  source_argument: str | None = None) -> tuple[str, list[str], list[str]]:
     """(ptx_text, kernel names in source order, notes). Raises FrontendError for an
     unsupported extension; the frontends' own errors (pyfront.NotSupported,
     cppfront.CppFrontendError) propagate unchanged for the caller to report."""
@@ -43,7 +44,9 @@ def to_ptx_module(path: Path, *, arch: str, include_dirs: list[Path] | None = No
     if suf in CU_EXTS or suf in CPP_EXTS:
         from openassembler.cppfront import compile_to_ptx_module
 
-        ptx, names = compile_to_ptx_module(path, arch=arch, include_dirs=include_dirs, extra_flags=nvcc_flags)
+        kwargs = {'working_directory':working_directory} if working_directory is not None else {}
+        if source_argument is not None:kwargs['source_argument']=source_argument
+        ptx, names = compile_to_ptx_module(path, arch=arch, include_dirs=include_dirs, extra_flags=nvcc_flags, **kwargs)
         return ptx, names, []
     raise FrontendError(f"don't know how to compile {path.suffix or 'extension-less'!r} files "
                         f"(supported: {' '.join(PTX_EXTS + PY_EXTS + CU_EXTS + CPP_EXTS)})")

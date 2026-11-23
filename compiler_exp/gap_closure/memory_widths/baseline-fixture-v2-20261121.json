@@ -1,0 +1,1303 @@
+{
+  "schema": 1,
+  "completed_utc": "2026-11-21T12:29:29.549301+00:00",
+  "python": "3.14.5 (main, Jun  2 2026, 22:28:56) [Clang 22.1.3 ]",
+  "scope": "Offline byte-exact independent references, encoding and normal/poisoned registers; no hardware or performance claim",
+  "source_hashes": {
+    "openassembler/backend/ra.py": "01e995cc3a0ecc04d89d00edd9359fc327e52644cb4f03ec3d81b8c24d17e1b8",
+    "openassembler/backend/contracts.py": "b94cd1bc65393dfe40d5d4b82de6654e3094b0a0c98a4db2b652f5daf2b94fbc",
+    "compiler_exp/gap_closure/memory_widths/cases.py": "802c0a7e566b7a847808d70a83944af8412295ec7c3a75e2352e734809484d79",
+    "compiler_exp/gap_closure/memory_widths/offline.py": "c691c954bfef744a87ae0cd52aeb717d1b3935ba4a670ecb7bd32ae49916c809"
+  },
+  "results": [
+    {
+      "name": "load_v2_b32",
+      "level": "safe",
+      "contract": {
+        "op": "ld.global.v2.b32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.b32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "2670c11970da2c00f42a5a64b1c5aa6830879d1ef1079a9bcba064bec42ca717",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.b32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_b32",
+      "level": "mined",
+      "contract": {
+        "op": "ld.global.v2.b32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.b32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "2670c11970da2c00f42a5a64b1c5aa6830879d1ef1079a9bcba064bec42ca717",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.b32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_b32",
+      "level": "sched",
+      "contract": {
+        "op": "ld.global.v2.b32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.b32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "2670c11970da2c00f42a5a64b1c5aa6830879d1ef1079a9bcba064bec42ca717",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.b32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_b32",
+      "level": "opt",
+      "contract": {
+        "op": "ld.global.v2.b32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.b32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "2670c11970da2c00f42a5a64b1c5aa6830879d1ef1079a9bcba064bec42ca717",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.b32): ld.global.v2"
+    },
+    {
+      "name": "store_v4_b32",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.v4.b32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.b32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "dc47a902b20fd9bebbb7afe10f68e48064780b544c5c76e3eea89c8c3e7cd8e0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.b32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_b32",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.v4.b32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.b32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "dc47a902b20fd9bebbb7afe10f68e48064780b544c5c76e3eea89c8c3e7cd8e0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.b32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_b32",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.v4.b32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.b32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "dc47a902b20fd9bebbb7afe10f68e48064780b544c5c76e3eea89c8c3e7cd8e0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.b32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_b32",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.v4.b32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.b32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "dc47a902b20fd9bebbb7afe10f68e48064780b544c5c76e3eea89c8c3e7cd8e0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.b32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "load_v2_u32",
+      "level": "safe",
+      "contract": {
+        "op": "ld.global.v2.u32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.u32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "005c9151e0829604b8c9ec242e91b0ff13591d4e70a98aff72cb0a1abafcdacf",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.u32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_u32",
+      "level": "mined",
+      "contract": {
+        "op": "ld.global.v2.u32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.u32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "005c9151e0829604b8c9ec242e91b0ff13591d4e70a98aff72cb0a1abafcdacf",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.u32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_u32",
+      "level": "sched",
+      "contract": {
+        "op": "ld.global.v2.u32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.u32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "005c9151e0829604b8c9ec242e91b0ff13591d4e70a98aff72cb0a1abafcdacf",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.u32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_u32",
+      "level": "opt",
+      "contract": {
+        "op": "ld.global.v2.u32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.u32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "005c9151e0829604b8c9ec242e91b0ff13591d4e70a98aff72cb0a1abafcdacf",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.u32): ld.global.v2"
+    },
+    {
+      "name": "store_v4_u32",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.v4.u32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.u32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "c8ffa36d0e3f1fa77d0e1957919f7f7b889e199fd1de29167c2fa46e067932fd",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.u32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_u32",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.v4.u32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.u32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "c8ffa36d0e3f1fa77d0e1957919f7f7b889e199fd1de29167c2fa46e067932fd",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.u32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_u32",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.v4.u32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.u32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "c8ffa36d0e3f1fa77d0e1957919f7f7b889e199fd1de29167c2fa46e067932fd",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.u32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_u32",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.v4.u32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.u32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "c8ffa36d0e3f1fa77d0e1957919f7f7b889e199fd1de29167c2fa46e067932fd",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.u32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "load_v2_s32",
+      "level": "safe",
+      "contract": {
+        "op": "ld.global.v2.s32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.s32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "f3b83880538dcecb501561fdb92446ee5caf1ad63a40822105d777f17c947372",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.s32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_s32",
+      "level": "mined",
+      "contract": {
+        "op": "ld.global.v2.s32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.s32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "f3b83880538dcecb501561fdb92446ee5caf1ad63a40822105d777f17c947372",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.s32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_s32",
+      "level": "sched",
+      "contract": {
+        "op": "ld.global.v2.s32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.s32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "f3b83880538dcecb501561fdb92446ee5caf1ad63a40822105d777f17c947372",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.s32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_s32",
+      "level": "opt",
+      "contract": {
+        "op": "ld.global.v2.s32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.s32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "f3b83880538dcecb501561fdb92446ee5caf1ad63a40822105d777f17c947372",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.s32): ld.global.v2"
+    },
+    {
+      "name": "store_v4_s32",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.v4.s32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.s32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "859808138f6088a29d219d76080c30f7649d8f39c70520749e885e95f28d50f5",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.s32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_s32",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.v4.s32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.s32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "859808138f6088a29d219d76080c30f7649d8f39c70520749e885e95f28d50f5",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.s32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_s32",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.v4.s32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.s32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "859808138f6088a29d219d76080c30f7649d8f39c70520749e885e95f28d50f5",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.s32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_s32",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.v4.s32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.s32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "859808138f6088a29d219d76080c30f7649d8f39c70520749e885e95f28d50f5",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.s32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "load_v2_f32",
+      "level": "safe",
+      "contract": {
+        "op": "ld.global.v2.f32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.f32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "40664c2222100192f105e79e29e2ff836d1030fe546777fd70f1c6817f2475ac",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.f32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_f32",
+      "level": "mined",
+      "contract": {
+        "op": "ld.global.v2.f32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.f32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "40664c2222100192f105e79e29e2ff836d1030fe546777fd70f1c6817f2475ac",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.f32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_f32",
+      "level": "sched",
+      "contract": {
+        "op": "ld.global.v2.f32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.f32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "40664c2222100192f105e79e29e2ff836d1030fe546777fd70f1c6817f2475ac",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.f32): ld.global.v2"
+    },
+    {
+      "name": "load_v2_f32",
+      "level": "opt",
+      "contract": {
+        "op": "ld.global.v2.f32",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes load; odd lanes preserve initial vector values"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x13579bdf; mov.b32 %b,0x2468ace0;\n@%take ld.global.v2.f32 {%a,%b},[%src];\nst.global.v2.b32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "source_sha256": "40664c2222100192f105e79e29e2ff836d1030fe546777fd70f1c6817f2475ac",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (ld.global.v2.f32): ld.global.v2"
+    },
+    {
+      "name": "store_v4_f32",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.v4.f32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.f32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "2da0ae9ab4a2a9ed2304f7b5ad5f4493927e41e9892835a491f0670cbc7ee461",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.f32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_f32",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.v4.f32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.f32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "2da0ae9ab4a2a9ed2304f7b5ad5f4493927e41e9892835a491f0670cbc7ee461",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.f32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_f32",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.v4.f32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.f32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "2da0ae9ab4a2a9ed2304f7b5ad5f4493927e41e9892835a491f0670cbc7ee461",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.f32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_v4_f32",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.v4.f32",
+        "bytes": 16,
+        "alignment": 16,
+        "predication": "even lanes store; odd lanes preserve poisoned bytes"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.v4.b32 {%a,%b,%c,%d},[%src]; @%take st.global.v4.f32 [%dst],{%a,%b,%c,%d};\nDONE: ret; }\n",
+      "source_sha256": "2da0ae9ab4a2a9ed2304f7b5ad5f4493927e41e9892835a491f0670cbc7ee461",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12: unsupported PTX contract st.global.v4.f32: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b8",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.b8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "c7aada949ea6edc36d4ff395025fbb52a750668d8aebc27c46134768959f2da0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b8",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.b8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "c7aada949ea6edc36d4ff395025fbb52a750668d8aebc27c46134768959f2da0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b8",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.b8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "c7aada949ea6edc36d4ff395025fbb52a750668d8aebc27c46134768959f2da0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b8",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.b8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "c7aada949ea6edc36d4ff395025fbb52a750668d8aebc27c46134768959f2da0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u8",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.u8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "d69fbcf790f38511e0a13059319048bf47e86445aa1b716dd5a2380cab58a3b0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u8",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.u8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "d69fbcf790f38511e0a13059319048bf47e86445aa1b716dd5a2380cab58a3b0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u8",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.u8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "d69fbcf790f38511e0a13059319048bf47e86445aa1b716dd5a2380cab58a3b0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u8",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.u8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "d69fbcf790f38511e0a13059319048bf47e86445aa1b716dd5a2380cab58a3b0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s8",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.s8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "9f493e15b90df6de92d93cd8d037cd42f14477368c63d459cf10029a6c92a027",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s8",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.s8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "9f493e15b90df6de92d93cd8d037cd42f14477368c63d459cf10029a6c92a027",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s8",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.s8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "9f493e15b90df6de92d93cd8d037cd42f14477368c63d459cf10029a6c92a027",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s8",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.s8",
+        "bytes": 1,
+        "alignment": 1,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s8 [%dst+1],%a;\nDONE: ret; }\n",
+      "source_sha256": "9f493e15b90df6de92d93cd8d037cd42f14477368c63d459cf10029a6c92a027",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s8: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b16",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.b16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "4146b9b397f1157d81f1da8ce2268c03c8dfd1be4ac3c8a71b292b3cf2d0930e",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b16",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.b16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "4146b9b397f1157d81f1da8ce2268c03c8dfd1be4ac3c8a71b292b3cf2d0930e",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b16",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.b16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "4146b9b397f1157d81f1da8ce2268c03c8dfd1be4ac3c8a71b292b3cf2d0930e",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b16",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.b16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.b16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "4146b9b397f1157d81f1da8ce2268c03c8dfd1be4ac3c8a71b292b3cf2d0930e",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u16",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.u16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "35c28f22cecf0c316404edb1986f5c1e946681f67ec3f6a726bee65779f3fade",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u16",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.u16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "35c28f22cecf0c316404edb1986f5c1e946681f67ec3f6a726bee65779f3fade",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u16",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.u16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "35c28f22cecf0c316404edb1986f5c1e946681f67ec3f6a726bee65779f3fade",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u16",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.u16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.u16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "35c28f22cecf0c316404edb1986f5c1e946681f67ec3f6a726bee65779f3fade",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s16",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.s16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "e3d838480c1fa434753566335e10cb5f5260c77a3e015fffcbb22bf7c80c3b7f",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s16",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.s16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "e3d838480c1fa434753566335e10cb5f5260c77a3e015fffcbb22bf7c80c3b7f",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s16",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.s16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "e3d838480c1fa434753566335e10cb5f5260c77a3e015fffcbb22bf7c80c3b7f",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s16",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.s16",
+        "bytes": 2,
+        "alignment": 2,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b32 %a,[%src];\n@%take st.global.s16 [%dst+2],%a;\nDONE: ret; }\n",
+      "source_sha256": "e3d838480c1fa434753566335e10cb5f5260c77a3e015fffcbb22bf7c80c3b7f",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s16: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b64",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.b64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.b64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "ca14128916e46a813f2c038e5c116d33dbcb314909c8e7811be90cfcc7e42600",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b64",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.b64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.b64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "ca14128916e46a813f2c038e5c116d33dbcb314909c8e7811be90cfcc7e42600",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b64",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.b64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.b64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "ca14128916e46a813f2c038e5c116d33dbcb314909c8e7811be90cfcc7e42600",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_b64",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.b64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.b64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "ca14128916e46a813f2c038e5c116d33dbcb314909c8e7811be90cfcc7e42600",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.b64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u64",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.u64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.u64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "962621f28e557703dc26a4608a3fa17fa21d15a9f45619bc3af90d65db7bff42",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u64",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.u64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.u64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "962621f28e557703dc26a4608a3fa17fa21d15a9f45619bc3af90d65db7bff42",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u64",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.u64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.u64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "962621f28e557703dc26a4608a3fa17fa21d15a9f45619bc3af90d65db7bff42",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_u64",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.u64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.u64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "962621f28e557703dc26a4608a3fa17fa21d15a9f45619bc3af90d65db7bff42",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.u64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s64",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.s64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.s64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "24e2ecf725fd95fa1064a2a63aae9b8acc56f6a971804b1a64708638366aa5f5",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s64",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.s64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.s64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "24e2ecf725fd95fa1064a2a63aae9b8acc56f6a971804b1a64708638366aa5f5",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s64",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.s64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.s64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "24e2ecf725fd95fa1064a2a63aae9b8acc56f6a971804b1a64708638366aa5f5",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_s64",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.s64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.s64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "24e2ecf725fd95fa1064a2a63aae9b8acc56f6a971804b1a64708638366aa5f5",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.s64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_f64",
+      "level": "safe",
+      "contract": {
+        "op": "st.global.f64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.f64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "28d4d53427ff400a1be0c06a3aa0ee22d8a7c5ccc5d80a0ecfd93aa76e567ea0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.f64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_f64",
+      "level": "mined",
+      "contract": {
+        "op": "st.global.f64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.f64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "28d4d53427ff400a1be0c06a3aa0ee22d8a7c5ccc5d80a0ecfd93aa76e567ea0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.f64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_f64",
+      "level": "sched",
+      "contract": {
+        "op": "st.global.f64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.f64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "28d4d53427ff400a1be0c06a3aa0ee22d8a7c5ccc5d80a0ecfd93aa76e567ea0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.f64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "store_f64",
+      "level": "opt",
+      "contract": {
+        "op": "st.global.f64",
+        "bytes": 8,
+        "alignment": 8,
+        "predication": "even lanes store at naturally aligned nonzero offset"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src];\n@%take st.global.f64 [%dst+8],%wide;\nDONE: ret; }\n",
+      "source_sha256": "28d4d53427ff400a1be0c06a3aa0ee22d8a7c5ccc5d80a0ecfd93aa76e567ea0",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13: unsupported PTX contract st.global.f64: modifiers/types have no faithful scalar lowering"
+    },
+    {
+      "name": "predicate_copy_snapshot",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "copy_snapshot"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; mov.pred %q,%p; setp.ge.u32 %p,%t,31;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "6ca507ce6fa17510f92f3af6a812c370910d4dded314b4e89a5d0d6edf7f73b3",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_copy_snapshot",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "copy_snapshot"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; mov.pred %q,%p; setp.ge.u32 %p,%t,31;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "6ca507ce6fa17510f92f3af6a812c370910d4dded314b4e89a5d0d6edf7f73b3",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_copy_snapshot",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "copy_snapshot"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; mov.pred %q,%p; setp.ge.u32 %p,%t,31;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "6ca507ce6fa17510f92f3af6a812c370910d4dded314b4e89a5d0d6edf7f73b3",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_copy_snapshot",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "copy_snapshot"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; mov.pred %q,%p; setp.ge.u32 %p,%t,31;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "6ca507ce6fa17510f92f3af6a812c370910d4dded314b4e89a5d0d6edf7f73b3",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_guarded_copy",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "guarded_copy"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; setp.ge.u32 %q,%t,31;\n@%take mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b0df132644e201d900f4156788f8fcd42aa34f78736f41010600892abd456135",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_guarded_copy",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "guarded_copy"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; setp.ge.u32 %q,%t,31;\n@%take mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b0df132644e201d900f4156788f8fcd42aa34f78736f41010600892abd456135",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_guarded_copy",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "guarded_copy"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; setp.ge.u32 %q,%t,31;\n@%take mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b0df132644e201d900f4156788f8fcd42aa34f78736f41010600892abd456135",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_guarded_copy",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "guarded_copy"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %p,%t,17; setp.ge.u32 %q,%t,31;\n@%take mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b0df132644e201d900f4156788f8fcd42aa34f78736f41010600892abd456135",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_branch_join",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "branch_join"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; @%take bra JOIN;\nsetp.ge.u32 %p,%t,31; mov.pred %q,%p;\nJOIN: selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b041d324b6a9175d5cbf11ebbaaf5a72188200d5e092800ed796268c9007fe79",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_branch_join",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "branch_join"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; @%take bra JOIN;\nsetp.ge.u32 %p,%t,31; mov.pred %q,%p;\nJOIN: selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b041d324b6a9175d5cbf11ebbaaf5a72188200d5e092800ed796268c9007fe79",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_branch_join",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "branch_join"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; @%take bra JOIN;\nsetp.ge.u32 %p,%t,31; mov.pred %q,%p;\nJOIN: selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b041d324b6a9175d5cbf11ebbaaf5a72188200d5e092800ed796268c9007fe79",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_branch_join",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "branch_join"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; @%take bra JOIN;\nsetp.ge.u32 %p,%t,31; mov.pred %q,%p;\nJOIN: selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "b041d324b6a9175d5cbf11ebbaaf5a72188200d5e092800ed796268c9007fe79",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_loop_carried",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "loop_carried"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.eq.u32 %p,%t,%t; mov.pred %q,%p; mov.u32 %count,0;\nLOOP: not.pred %q,%q; add.u32 %count,%count,1; setp.lt.u32 %r,%count,3; @%r bra LOOP;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "d73e8c53bd5a5a3f6065a027ce9629da35b7b74078a642c62f2fa00aeb193403",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_loop_carried",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "loop_carried"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.eq.u32 %p,%t,%t; mov.pred %q,%p; mov.u32 %count,0;\nLOOP: not.pred %q,%q; add.u32 %count,%count,1; setp.lt.u32 %r,%count,3; @%r bra LOOP;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "d73e8c53bd5a5a3f6065a027ce9629da35b7b74078a642c62f2fa00aeb193403",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_loop_carried",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "loop_carried"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.eq.u32 %p,%t,%t; mov.pred %q,%p; mov.u32 %count,0;\nLOOP: not.pred %q,%q; add.u32 %count,%count,1; setp.lt.u32 %r,%count,3; @%r bra LOOP;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "d73e8c53bd5a5a3f6065a027ce9629da35b7b74078a642c62f2fa00aeb193403",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_loop_carried",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "loop_carried"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.eq.u32 %p,%t,%t; mov.pred %q,%p; mov.u32 %count,0;\nLOOP: not.pred %q,%q; add.u32 %count,%count,1; setp.lt.u32 %r,%count,3; @%r bra LOOP;\nselp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "d73e8c53bd5a5a3f6065a027ce9629da35b7b74078a642c62f2fa00aeb193403",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 12 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_self_guarded",
+      "level": "safe",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "self_guarded"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; setp.ge.u32 %p,%t,31;\n@%q mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "313e835d2b5ee55dfce4a4bb72e0ff18170f95b0cfd42ce4064ad9ef87219eba",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_self_guarded",
+      "level": "mined",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "self_guarded"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; setp.ge.u32 %p,%t,31;\n@%q mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "313e835d2b5ee55dfce4a4bb72e0ff18170f95b0cfd42ce4064ad9ef87219eba",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_self_guarded",
+      "level": "sched",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "self_guarded"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; setp.ge.u32 %p,%t,31;\n@%q mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "313e835d2b5ee55dfce4a4bb72e0ff18170f95b0cfd42ce4064ad9ef87219eba",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    },
+    {
+      "name": "predicate_self_guarded",
+      "level": "opt",
+      "contract": {
+        "op": "mov.pred and predicate assignment",
+        "bytes": 4,
+        "alignment": 4,
+        "predication": "self_guarded"
+      },
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nsetp.lt.u32 %q,%t,17; setp.ge.u32 %p,%t,31;\n@%q mov.pred %q,%p; selp.u32 %a,1,0,%q; st.global.u32 [%dst],%a;\nDONE: ret; }\n",
+      "source_sha256": "313e835d2b5ee55dfce4a4bb72e0ff18170f95b0cfd42ce4064ad9ef87219eba",
+      "status": "rejected",
+      "error": "NotSupported: PTX line 13 (mov.pred): 32-bit operand Var(name='%p')"
+    }
+  ],
+  "passed": false
+}

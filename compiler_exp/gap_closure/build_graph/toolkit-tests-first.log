@@ -1,0 +1,56 @@
+............F........                                                    [100%]
+=================================== FAILURES ===================================
+_____ test_real_nvcc_command_preserves_generated_source_and_macro_settings _____
+
+    def test_real_nvcc_command_preserves_generated_source_and_macro_settings():
+        from openassembler import build,oracle
+        from openassembler.native_ownership import validate
+        from openassembler.compilation_database import dependencies
+        if not oracle.available('nvcc') or not oracle.available('ptxas'):pytest.skip('requires real CUDA tools')
+        oracle.SCRATCH.mkdir(parents=True,exist_ok=True)
+        with tempfile.TemporaryDirectory(prefix='compile-db-',dir=oracle.SCRATCH) as temporary:
+            root=Path(temporary).resolve();(root/'build').mkdir();(root/'include').mkdir()
+            (root/'include/qualifier.h').write_text('#define OA_GLOBAL __global__\n')
+            (root/'build/config.h').write_text('#define BASE 5\n')
+            source=root/'build/generated.cu'
+            source.write_text('#include "qualifier.h"\nextern "C" OA_GLOBAL void configured(float *out,const float *x,int n) {\n'
+                              'int i=blockIdx.x*blockDim.x+threadIdx.x; if(i<n) out[i]=x[i]*SCALE+BASE; }\n')
+            row={'directory':str(root/'build'),'file':'generated.cu',
+                 'arguments':['nvcc','-I','../include','-include','config.h','-DSCALE=3','-arch=sm_80','-c','generated.cu','-o','generated.o']}
+            (root/'compile_commands.json').write_text(json.dumps([row]))
+            command=next(iter(load(root/'compile_commands.json').values()))
+>           graph=dependencies(command)
+                  ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_compilation_database.py:122: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = CompileCommand(source=PosixPath('/Users/lucasfang/Desktop/OpenAssembler/corpus/.tmp/compile-db-wtirgft6/build/generate...commands.json'), database_sha256='249feee8009abda30b3f17e4927008a0e3ac0086969ce3d4471bccab97c3f964', response_files={})
+
+    def dependencies(command, *, include_dirs=(), extra_flags=()):
+        """Resolve the preprocessed dependency graph with the actual NVCC flags."""
+        from . import oracle
+        from .cppfront import CppFrontendError
+        for path in (command.source,command.directory):oracle.tool_path(path)
+        flags=[value for directory in include_dirs for value in ('-I',str(Path(directory).resolve()))]
+        result=oracle.run_tool('nvcc','-M','-MT','oa_dependency','-x','cu','-arch=sm_80',
+                              *flags,*command.flags,*extra_flags,str(command.source),
+                              cwd=command.directory,check=False)
+        if result.returncode:
+            raise CppFrontendError(f'NVCC dependency resolution failed for {command.source}:\n{result.stderr or result.stdout}')
+        try:
+            body=result.stdout.replace('\\\n',' ').split(':',1)[1]
+            paths=shlex.split(body,posix=True)
+        except (IndexError,ValueError) as exc:
+            raise CppFrontendError(f'could not parse NVCC dependency graph: {exc}') from None
+        resolved={}
+        for name in paths:
+            path=_path(name.replace('$$','$'),command.directory)
+>           if not path.is_file():raise CppFrontendError(f'NVCC dependency is missing: {path}')
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           openassembler.cppfront.CppFrontendError: NVCC dependency is missing: /usr/include/stdc-predef.h
+
+openassembler/compilation_database.py:200: CppFrontendError
+=========================== short test summary info ============================
+FAILED tests/test_compilation_database.py::test_real_nvcc_command_preserves_generated_source_and_macro_settings
+1 failed, 20 passed in 2.33s

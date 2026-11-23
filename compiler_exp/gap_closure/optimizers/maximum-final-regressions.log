@@ -1,0 +1,27 @@
+.....................................F                                   [100%]
+=================================== FAILURES ===================================
+_________ test_amsgrad_maximum_nan_classification_and_signed_zero_ties _________
+
+    def test_amsgrad_maximum_nan_classification_and_signed_zero_ties():
+        p={'name':'adamw','amsgrad':True};shape={'shape':[8]}
+        left=[float('nan'),1.,float('nan'),0.,-0.,-0.,.3,.2]
+        right=[1.,float('nan'),float('nan'),-0.,0.,-0.,.2,.3]
+        actual=execute(emit_kernel('adam_max',[shape]*2,shape,p),[left,right],[])
+        expected=torch.maximum(torch.tensor(left),torch.tensor(right))
+        assert torch.equal(torch.isnan(actual),torch.isnan(expected))
+        finite=~torch.isnan(expected)
+>       assert torch.equal(actual[finite].view(torch.int32),expected[finite].view(torch.int32))
+E       assert False
+E        +  where False = <built-in method equal of type object at 0x109480650>(tensor([          0, -2147483648, -2147483648,  1050253722,  1050253722],\n       dtype=torch.int32), tensor([          0,           0, -2147483648,  1050253722,  1050253722],\n       dtype=torch.int32))
+E        +    where <built-in method equal of type object at 0x109480650> = torch.equal
+E        +    and   tensor([          0, -2147483648, -2147483648,  1050253722,  1050253722],\n       dtype=torch.int32) = <built-in method view of Tensor object at 0x12216d810>(torch.int32)
+E        +      where <built-in method view of Tensor object at 0x12216d810> = tensor([0.0000, -0.0000, -0.0000, 0.3000, 0.3000]).view
+E        +      and   torch.int32 = torch.int32
+E        +    and   tensor([          0,           0, -2147483648,  1050253722,  1050253722],\n       dtype=torch.int32) = <built-in method view of Tensor object at 0x12216d450>(torch.int32)
+E        +      where <built-in method view of Tensor object at 0x12216d450> = tensor([0.0000, 0.0000, -0.0000, 0.3000, 0.3000]).view
+E        +      and   torch.int32 = torch.int32
+
+tests/test_model_optimizer_options.py:174: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_model_optimizer_options.py::test_amsgrad_maximum_nan_classification_and_signed_zero_ties
+1 failed, 37 passed in 1.65s

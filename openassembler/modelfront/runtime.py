@@ -186,6 +186,7 @@ class Runtime:
         self._training = {}
         self._optimizer_state = {}
         self._optimizer_step = 0
+        self._checkpoint_backings = []
         self._forward_epoch = 0
         self.launches = []
         self._closed = False
@@ -345,7 +346,7 @@ class Runtime:
 
     def _launch(self, kernel, inputs, output, *, lr=None, correction=None):
         args = [C.c_uint64(t.data_ptr()) for t in [*inputs, output]]
-        if kernel.op == "sgd":
+        if kernel.op in ("sgd", "sgd_update"):
             rate = kernel.attrs.get("lr", 0.01) if lr is None else lr
             if isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate < 0:
                 raise ValueError("learning rate must be finite and nonnegative")
@@ -466,6 +467,31 @@ class Runtime:
     def launch_ledger(self):
         return self.launches
 
+    def kernel_resources(self):
+        """Return loaded driver resources and saved identities without launching work."""
+        if self._module is None or self._closed:
+            raise RuntimeError('initialize a live native runtime before inspecting kernel resources')
+        from openassembler.container.elf import Elf
+        result, modules = {}, {}
+        with self._context_scope():
+            for name, function in self._functions.items():
+                record = self._kernel_records[name]
+                relative = record.get('module', self.ledger['cubin'])
+                if relative not in modules:
+                    binary = _file(self.root, relative).read_bytes()
+                    sections = {section.name[6:]:len(section.data) for section in Elf.parse(binary).sections
+                                if section.name.startswith('.text.')}
+                    listing = self.root / (relative.replace('/cubin/', '/sass/'))
+                    listing = listing.with_suffix('.sass')
+                    modules[relative] = (len(binary), sections, listing.stat().st_size if listing.is_file() else None)
+                size, sections, listing_size = modules[relative]
+                result[name] = {'signature':record['signature'],'module':relative,
+                                'module_cubin_bytes':size,'kernel_text_bytes':sections[name],
+                                'module_sass_bytes':listing_size,
+                                'driver':self._driver.func_attrs(function),
+                                'dynamic_shared_bytes':record['launch']['smem']}
+        return result
+
     def synchronize(self):
         if self._device is not None:
             self._stream.synchronize()
@@ -514,34 +540,63 @@ class Runtime:
                 "moments":{n:{k:v.detach().cpu().clone() for k,v in pair.items()}
                            for n,pair in self._optimizer_state.items()}}
 
-    def load_optimizer_state_dict(self, state):
-        from .optimizer import optimizer_options
+    def _validate_optimizer_state_dict(self, state, *, allow_nonfinite=False):
+        from .optimizer import optimizer_options,optimizer_state_keys
         options=optimizer_options(self.plan.get("optimizer",{}))
-        if self._device is None or self._tape is not None or self._gradients is not None:
-            raise ValueError("initialize forward and discard its tape before loading optimizer state")
-        if (set(state)!={"schema","options","step","moments"} or state["schema"]!=1
+        if (not isinstance(state,dict) or set(state)!={"schema","options","step","moments"} or state["schema"]!=1
                 or state["options"]!=options or type(state["step"]) is not int or state["step"]<0):
             raise ValueError("optimizer checkpoint policy or step mismatch")
-        expected=set(self.plan["backward"]["grad_parameters"]) if state["step"] and options["name"]!="sgd" else set()
-        if set(state["moments"])!=expected:raise ValueError("optimizer checkpoint parameter names mismatch")
+        keys=optimizer_state_keys(options)
+        expected=set(self.plan["backward"]["grad_parameters"]) if state["step"] and keys else set()
+        if not isinstance(state["moments"],dict) or set(state["moments"])!=expected:raise ValueError("optimizer checkpoint parameter names mismatch")
         for n,pair in state["moments"].items():
-            if set(pair)!={"m","v"}:raise ValueError("optimizer checkpoint needs both moments")
+            if not isinstance(pair,dict) or set(pair)!=set(keys):raise ValueError("optimizer checkpoint needs complete policy state")
             for k,v in pair.items():
-                if (v.device.type!="cpu" or v.dtype!=self.torch.float32 or list(v.shape)!=self.specs[n]["shape"]
-                        or not bool(self.torch.isfinite(v).all()) or k=="v" and bool((v<0).any())):
+                if (not isinstance(v,self.torch.Tensor) or v.device.type!="cpu" or v.dtype!=self.torch.float32 or list(v.shape)!=self.specs[n]["shape"]
+                        or not allow_nonfinite and not bool(self.torch.isfinite(v).all())
+                        or k in ("v","max_v") and bool((v<0).any())):
                     raise ValueError("invalid optimizer checkpoint moment")
+            if "max_v" in pair and bool((pair["max_v"]<pair["v"]).any()):
+                raise ValueError("AMSGrad maximum must dominate the second moment")
+
+    def load_optimizer_state_dict(self, state):
+        if self._device is None or self._tape is not None or self._gradients is not None:
+            raise ValueError("initialize forward and discard its tape before loading optimizer state")
+        self._validate_optimizer_state_dict(state)
+        previous={v.data_ptr() for pair in self._optimizer_state.values() for v in pair.values()}
         # All validation precedes replacement. Copies are host-to-device transfers.
         staged={}
-        for name,pair in state["moments"].items():
-            staged[name]={}
-            for key,value in pair.items():
-                tensor=self._allocate(self.specs[name]["shape"])
-                tensor.copy_(value)
-                staged[name][key]=tensor
+        with self.torch.cuda.device(self._device),self.torch.cuda.stream(self._stream):
+            for name,pair in state["moments"].items():
+                staged[name]={}
+                for key,value in pair.items():
+                    tensor=self._allocate(self.specs[name]["shape"])
+                    tensor.copy_(value.contiguous())
+                    staged[name][key]=tensor
+            self._stream.synchronize()
+        retained=[(a,g) for a,g in zip(self._allocations,self._guards) if a.data_ptr()+16 not in previous]
+        self._allocations=[a for a,_ in retained];self._guards=[g for _,g in retained]
+        self._checkpoint_backings=[a for a in getattr(self,'_checkpoint_backings',[]) if a.data_ptr()+16 not in previous]
         self._optimizer_state,self._optimizer_step=staged,state["step"]
 
+    def save_checkpoint(self, path, *, application=None, include_rng=True):
+        """Atomically save all owned model/optimizer state and explicit host state."""
+        from .checkpoint import save_checkpoint
+        return save_checkpoint(self,path,application=application,include_rng=include_rng)
+
+    def load_checkpoint(self, path, *, device=None, restore_rng=True):
+        """Restore a complete checkpoint into new owned bindings at a boundary.
+
+        Returned application metadata is data, not executable host orchestration.
+        Old external tensor bindings are replaced and must be obtained again
+        from ``weights``. Existing exposed outputs are invalidated.
+        """
+        from .checkpoint import stage_checkpoint,commit_checkpoint
+        staged=stage_checkpoint(self,path,device=device,restore_rng=restore_rng)
+        return commit_checkpoint(self,staged)
+
     def update(self, lr=0.01):
-        from .optimizer import optimizer_options
+        from .optimizer import optimizer_options,optimizer_state_keys
         from .kernels import _float
         options=optimizer_options(self.plan.get("optimizer",{}))
         if type(lr) not in (int,float) or not math.isfinite(lr) or lr<0:raise ValueError("learning rate must be finite and nonnegative")
@@ -557,10 +612,23 @@ class Runtime:
             for name,gradient in self._gradients["parameters"].items():
                 weight=self.weights[name];spec=self.specs[name]
                 if options["name"]=="sgd":
-                    self._launch(emit_kernel("sgd",[spec]*2,spec),[weight,gradient],weight,lr=lr)
+                    if options=={"name":"sgd"}:
+                        self._launch(emit_kernel("sgd",[spec]*2,spec),[weight,gradient],weight,lr=lr)
+                    else:
+                        args=[weight,gradient]
+                        if options.get("momentum",0):
+                            if name not in self._optimizer_state:
+                                buffer=self._allocate(spec["shape"])
+                                self._launch(emit_kernel("sgd_buffer_init",[spec]*2,spec,options),[gradient,weight],buffer)
+                                self._optimizer_state[name]={"momentum":buffer}
+                            else:
+                                buffer=self._optimizer_state[name]["momentum"]
+                                self._launch(emit_kernel("sgd_buffer",[spec]*3,spec,options),[buffer,gradient,weight],buffer)
+                            args.append(buffer)
+                        self._launch(emit_kernel("sgd_update",[spec]*len(args),spec,options),args,weight,lr=lr)
                 else:
                     if name not in self._optimizer_state:
-                        pair={k:self._allocate(spec["shape"]) for k in ("m","v")}
+                        pair={k:self._allocate(spec["shape"]) for k in optimizer_state_keys(options)}
                         with self._context_scope():
                             for value in pair.values():self._driver.memset(value.data_ptr(),0,value.numel()*4)
                         self._optimizer_state[name]=pair
@@ -573,8 +641,12 @@ class Runtime:
                         for suffix in ("m","v"):
                             self._launch(emit_kernel("adam_"+suffix,[spec]*3,spec,options),
                                          [pair[suffix],gradient,weight],pair[suffix])
+                        second=pair["v"]
+                        if options.get("amsgrad",False):
+                            self._launch(emit_kernel("adam_max",[spec]*2,spec,options),[pair["max_v"],second],pair["max_v"])
+                            second=pair["max_v"]
                         self._launch(emit_kernel("adam_update",[spec]*4,spec,options),
-                                     [weight,pair["m"],pair["v"],gradient],weight,lr=lr,correction=correction)
+                                     [weight,pair["m"],second,gradient],weight,lr=lr,correction=correction)
                 increment=getattr(getattr(self.torch.autograd,"graph",None),"increment_version",None)
                 if increment:increment(weight)
         self._optimizer_step=step

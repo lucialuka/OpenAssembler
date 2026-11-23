@@ -77,6 +77,7 @@ class Kernel:
     decls: list[VarDecl] = field(default_factory=list)
     branchtargets: dict[str, list[str]] = field(default_factory=dict)
     directives: dict[str, tuple[int, ...]] = field(default_factory=dict)
+    parameter_attributes: dict[str, dict] = field(default_factory=dict)
 
 
 @dataclass
@@ -137,15 +138,24 @@ def entry_names(src: str) -> list[str]:
     return [definition[0] for definition in entry_definitions(src)]
 
 
-def _parameters(text: str, name: str) -> list[tuple[str, str]]:
+def _parameters(text: str, name: str, attributes=None) -> list[tuple[str, str]]:
     params = []
     for part in _split_top(text):
-        match = re.fullmatch(r'\s*\.param\s+\.(b32|u32|s32|f32|b64|u64|s64|f64)\s+([\w$]+)\s*', part)
+        match = re.fullmatch(r'\s*\.param\s+\.(b32|u32|s32|f32|b64|u64|s64|f64)\s+'
+                             r'(?:(\.ptr)(?:\s*\.(global))?(?:\s*\.align\s+([0-9]+))?\s+)?([\w$]+)\s*', part)
         if match is None:
             raise SyntaxError(f"entry {name}: unsupported parameter ABI {part!r}; scalar 32/64-bit parameters required")
-        if match[2] in {p[1] for p in params}:
-            raise SyntaxError(f"entry {name}: duplicate parameter {match[2]}")
-        params.append((match[1], match[2]))
+        dtype, pointer, space, alignment, symbol = match.groups()
+        if symbol in {p[1] for p in params}:
+            raise SyntaxError(f"entry {name}: duplicate parameter {symbol}")
+        if pointer:
+            if dtype not in ('u64','b64'):
+                raise SyntaxError(f'entry {name}: pointer parameter ABI requires u64/b64 under address_size 64')
+            align=int(alignment) if alignment is not None else 4
+            if align<1 or align & (align-1):raise SyntaxError(f'entry {name}: pointer alignment must be a positive power of two')
+            if attributes is not None:
+                attributes[symbol]={'pointer':True,'space':space or 'generic','alignment':align}
+        params.append((dtype, symbol))
     return params
 
 
@@ -255,8 +265,10 @@ def parse_module(src: str) -> Module:
         if name in kernels:
             raise SyntaxError(f"duplicate entry definition {name}")
         body_start = end - len(body) - 1
-        kernel = _parse_body(name, _parameters(raw_params, name), body,
+        attributes={}
+        kernel = _parse_body(name, _parameters(raw_params, name,attributes), body,
                              first_line=src.count('\n', 0, body_start) + 1)
+        kernel.parameter_attributes=attributes
         kernel.directives = _directives(header, name)
         kernels[name] = kernel
         pos = end

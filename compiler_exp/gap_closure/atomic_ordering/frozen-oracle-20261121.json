@@ -1,0 +1,258 @@
+{
+  "schema": 1,
+  "scope": "existing retained CUDA12.8 ptxas observations; not a fresh toolkit/hardware gate",
+  "results": [
+    {
+      "probe": "atom_acquire_gpu",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n\n.visible .entry p_atom_acquire_gpu(.param .u64 out, .param .u64 in, .param .u32 k, .param .f32 kf)\n{\n .reg .pred %p<8>; .reg .b16 %h<16>; .reg .b32 %r<64>; .reg .f32 %f<32>;\n .reg .b64 %rd<32>; .reg .f64 %fd<16>; .reg .b32 %rk; .reg .f32 %fk;\n \n ld.param.u64 %rd1, [in]; ld.param.u64 %rd2, [out];\n ld.param.u32 %rk, [k]; ld.param.f32 %fk, [kf];\n cvta.to.global.u64 %rd1, %rd1; cvta.to.global.u64 %rd2, %rd2;\n mov.u32 %r0, %tid.x; mul.wide.u32 %rd3, %r0, 16;\n add.s64 %rd4, %rd1, %rd3; add.s64 %rd5, %rd2, %rd3;\n ld.global.v4.u32 {%r1, %r2, %r3, %r4}, [%rd4];\n mov.b32 %f1, %r1; mov.b32 %f2, %r2; mov.b32 %f3, %r3;\n mov.b64 %rd6, {%r1, %r2}; mov.b64 %rd7, {%r3, %r4};\n mov.b64 %fd1, %rd6; mov.b64 %fd2, %rd7;\n mov.u32 %r11, %r4;\n atom.acquire.gpu.global.add.u32 %r10, [%rd4], %r2;\n st.global.v2.u32 [%rd5], {%r10, %r11};\n ret;\n}\n",
+      "source_sha256": "afe2b76267853f874dd0e656d77951d75c426339bff5c5f76bdc567989d2b3eb",
+      "sass_sha256": "95afabf2d2c4975cce86e36e41dfe39fbed33f367b60341a34da00fc2ecc7d77",
+      "observed_instructions": [
+        {
+          "address": "0x50",
+          "text": "LDG.E R7, [R2.64+0x4]",
+          "word": "000ea8000c1e19000000040402077981",
+          "control": "S04 - W2 R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x60",
+          "text": "LDG.E R9, [R2.64+0xc]",
+          "word": "000ee8000c1e190000000c0402097981",
+          "control": "S04 - W3 R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x70",
+          "text": "ATOMG.E.ADD.STRONG.GPU PT, R8, [R2.64], R7",
+          "word": "004ea200081ee1c400000007020879a8",
+          "control": "S01 - W2 R- wait[--2---] reuse=0000"
+        },
+        {
+          "address": "0x90",
+          "text": "CCTL.IVALL",
+          "word": "004fca000200000000000000ff00798f",
+          "control": "S05 Y W- R- wait[--2---] reuse=0000"
+        },
+        {
+          "address": "0xa0",
+          "text": "STG.E.64 [R4.64], R8",
+          "word": "008fe2000c101b040000000804007986",
+          "control": "S01 - W- R- wait[---3--] reuse=0000"
+        }
+      ]
+    },
+    {
+      "probe": "atom_relaxed_gpu",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n\n.visible .entry p_atom_relaxed_gpu(.param .u64 out, .param .u64 in, .param .u32 k, .param .f32 kf)\n{\n .reg .pred %p<8>; .reg .b16 %h<16>; .reg .b32 %r<64>; .reg .f32 %f<32>;\n .reg .b64 %rd<32>; .reg .f64 %fd<16>; .reg .b32 %rk; .reg .f32 %fk;\n \n ld.param.u64 %rd1, [in]; ld.param.u64 %rd2, [out];\n ld.param.u32 %rk, [k]; ld.param.f32 %fk, [kf];\n cvta.to.global.u64 %rd1, %rd1; cvta.to.global.u64 %rd2, %rd2;\n mov.u32 %r0, %tid.x; mul.wide.u32 %rd3, %r0, 16;\n add.s64 %rd4, %rd1, %rd3; add.s64 %rd5, %rd2, %rd3;\n ld.global.v4.u32 {%r1, %r2, %r3, %r4}, [%rd4];\n mov.b32 %f1, %r1; mov.b32 %f2, %r2; mov.b32 %f3, %r3;\n mov.b64 %rd6, {%r1, %r2}; mov.b64 %rd7, {%r3, %r4};\n mov.b64 %fd1, %rd6; mov.b64 %fd2, %rd7;\n mov.u32 %r11, %r4;\n atom.relaxed.gpu.global.add.u32 %r10, [%rd4], %r2;\n st.global.v2.u32 [%rd5], {%r10, %r11};\n ret;\n}\n",
+      "source_sha256": "ef5a6c96f4bb9504c21150e3547b2ed7a234a8bfaded918d74fc670b409e8537",
+      "sass_sha256": "ae3f4ae3434f0d69160ffc0010bf69ac20927f2aeff8127ae8442390cae1bad3",
+      "observed_instructions": [
+        {
+          "address": "0x50",
+          "text": "LDG.E R7, [R2.64+0x4]",
+          "word": "000ea8000c1e19000000040402077981",
+          "control": "S04 - W2 R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x60",
+          "text": "LDG.E R9, [R2.64+0xc]",
+          "word": "000ee2000c1e190000000c0402097981",
+          "control": "S01 - W3 R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x80",
+          "text": "ATOMG.E.ADD.STRONG.GPU PT, R8, [R2.64], R7",
+          "word": "004ee800081ee1c400000007020879a8",
+          "control": "S04 - W3 R- wait[--2---] reuse=0000"
+        },
+        {
+          "address": "0x90",
+          "text": "STG.E.64 [R4.64], R8",
+          "word": "008fe2000c101b040000000804007986",
+          "control": "S01 - W- R- wait[---3--] reuse=0000"
+        }
+      ]
+    },
+    {
+      "probe": "atom_acq_rel_sys",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n\n.visible .entry p_atom_acq_rel_sys(.param .u64 out, .param .u64 in, .param .u32 k, .param .f32 kf)\n{\n .reg .pred %p<8>; .reg .b16 %h<16>; .reg .b32 %r<64>; .reg .f32 %f<32>;\n .reg .b64 %rd<32>; .reg .f64 %fd<16>; .reg .b32 %rk; .reg .f32 %fk;\n \n ld.param.u64 %rd1, [in]; ld.param.u64 %rd2, [out];\n ld.param.u32 %rk, [k]; ld.param.f32 %fk, [kf];\n cvta.to.global.u64 %rd1, %rd1; cvta.to.global.u64 %rd2, %rd2;\n mov.u32 %r0, %tid.x; mul.wide.u32 %rd3, %r0, 16;\n add.s64 %rd4, %rd1, %rd3; add.s64 %rd5, %rd2, %rd3;\n ld.global.v4.u32 {%r1, %r2, %r3, %r4}, [%rd4];\n mov.b32 %f1, %r1; mov.b32 %f2, %r2; mov.b32 %f3, %r3;\n mov.b64 %rd6, {%r1, %r2}; mov.b64 %rd7, {%r3, %r4};\n mov.b64 %fd1, %rd6; mov.b64 %fd2, %rd7;\n mov.u32 %r11, %r4;\n atom.acq_rel.sys.global.add.u32 %r10, [%rd4], %r2;\n st.global.v2.u32 [%rd5], {%r10, %r11};\n ret;\n}\n",
+      "source_sha256": "8e15c5d9d4d5f1c4a2422f9659680de02d08e425fc6c0b8a51533a36b2cd1af3",
+      "sass_sha256": "430ff61adde9bfddaa0ace634dbf94d2b5f63bfdfe6273373b2e8e9e859994cb",
+      "observed_instructions": [
+        {
+          "address": "0x50",
+          "text": "LDG.E R7, [R2.64+0x4]",
+          "word": "000168000c1e19000000040402077981",
+          "control": "S04 - W5 R0 wait[------] reuse=0000"
+        },
+        {
+          "address": "0x60",
+          "text": "LDG.E R9, [R2.64+0xc]",
+          "word": "000162000c1e190000000c0402097981",
+          "control": "S01 - W5 R0 wait[------] reuse=0000"
+        },
+        {
+          "address": "0x70",
+          "text": "MEMBAR.ALL.SYS",
+          "word": "000fec000000b0000000000000007992",
+          "control": "S06 - W- R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x80",
+          "text": "ERRBAR",
+          "word": "000fc0000000000000000000000079ab",
+          "control": "S00 Y W- R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x90",
+          "text": "ATOMG.E.ADD.STRONG.SYS PT, R8, [R2.64], R7",
+          "word": "020ea200081f41c400000007020879a8",
+          "control": "S01 - W2 R- wait[-----5] reuse=0000"
+        },
+        {
+          "address": "0xb0",
+          "text": "CCTL.IVALL",
+          "word": "004fca000200000000000000ff00798f",
+          "control": "S05 Y W- R- wait[--2---] reuse=0000"
+        },
+        {
+          "address": "0xc0",
+          "text": "STG.E.64 [R4.64], R8",
+          "word": "000fe2000c101b040000000804007986",
+          "control": "S01 - W- R- wait[------] reuse=0000"
+        }
+      ]
+    },
+    {
+      "probe": "fence_acq_rel_gpu",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n\n.visible .entry p_fence_acq_rel_gpu(.param .u64 out, .param .u64 in, .param .u32 k, .param .f32 kf)\n{\n .reg .pred %p<8>; .reg .b16 %h<16>; .reg .b32 %r<64>; .reg .f32 %f<32>;\n .reg .b64 %rd<32>; .reg .f64 %fd<16>; .reg .b32 %rk; .reg .f32 %fk;\n \n ld.param.u64 %rd1, [in]; ld.param.u64 %rd2, [out];\n ld.param.u32 %rk, [k]; ld.param.f32 %fk, [kf];\n cvta.to.global.u64 %rd1, %rd1; cvta.to.global.u64 %rd2, %rd2;\n mov.u32 %r0, %tid.x; mul.wide.u32 %rd3, %r0, 16;\n add.s64 %rd4, %rd1, %rd3; add.s64 %rd5, %rd2, %rd3;\n ld.global.v4.u32 {%r1, %r2, %r3, %r4}, [%rd4];\n mov.b32 %f1, %r1; mov.b32 %f2, %r2; mov.b32 %f3, %r3;\n mov.b64 %rd6, {%r1, %r2}; mov.b64 %rd7, {%r3, %r4};\n mov.b64 %fd1, %rd6; mov.b64 %fd2, %rd7;\n mov.u32 %r11, %r4;\n st.global.u32 [%rd5+8], %r1; fence.acq_rel.gpu; ld.volatile.global.u32 %r10, [%rd4+16];\n st.global.v2.u32 [%rd5], {%r10, %r11};\n ret;\n}\n",
+      "source_sha256": "824323c549bc39cfeea1361c95bba42d35530db10d9b55817c405f404700de8e",
+      "sass_sha256": "e1f3828ece25242a30ad3f243978664bc3618f75052dcbf6fa7f2503e8c0a079",
+      "observed_instructions": [
+        {
+          "address": "0x50",
+          "text": "LDG.E R7, [R2.64]",
+          "word": "000ea2000c1e19000000000402077981",
+          "control": "S01 - W2 R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x70",
+          "text": "LDG.E R9, [R2.64+0xc]",
+          "word": "000168000c1e190000000c0402097981",
+          "control": "S04 - W5 R0 wait[------] reuse=0000"
+        },
+        {
+          "address": "0x80",
+          "text": "STG.E [R4.64+0x8], R7",
+          "word": "0041e2000c1019040000080704007986",
+          "control": "S01 - W- R0 wait[--2---] reuse=0000"
+        },
+        {
+          "address": "0x90",
+          "text": "MEMBAR.ALL.GPU",
+          "word": "000fec000000a0000000000000007992",
+          "control": "S06 - W- R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0xa0",
+          "text": "ERRBAR",
+          "word": "000fc0000000000000000000000079ab",
+          "control": "S00 Y W- R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0xb0",
+          "text": "CCTL.IVALL",
+          "word": "03ffca000200000000000000ff00798f",
+          "control": "S05 Y W- R- wait[012345] reuse=0000"
+        },
+        {
+          "address": "0xc0",
+          "text": "LDG.E.STRONG.SYS R8, [R2.64+0x10]",
+          "word": "000ea8000c1f59000000100402087981",
+          "control": "S04 - W2 R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0xd0",
+          "text": "STG.E.64 [R4.64], R8",
+          "word": "024fe2000c101b040000000804007986",
+          "control": "S01 - W- R- wait[--2--5] reuse=0000"
+        }
+      ]
+    },
+    {
+      "probe": "st_release",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n\n.visible .entry p_st_release(.param .u64 out, .param .u64 in, .param .u32 k, .param .f32 kf)\n{\n .reg .pred %p<8>; .reg .b16 %h<16>; .reg .b32 %r<64>; .reg .f32 %f<32>;\n .reg .b64 %rd<32>; .reg .f64 %fd<16>; .reg .b32 %rk; .reg .f32 %fk;\n \n ld.param.u64 %rd1, [in]; ld.param.u64 %rd2, [out];\n ld.param.u32 %rk, [k]; ld.param.f32 %fk, [kf];\n cvta.to.global.u64 %rd1, %rd1; cvta.to.global.u64 %rd2, %rd2;\n mov.u32 %r0, %tid.x; mul.wide.u32 %rd3, %r0, 16;\n add.s64 %rd4, %rd1, %rd3; add.s64 %rd5, %rd2, %rd3;\n ld.global.v4.u32 {%r1, %r2, %r3, %r4}, [%rd4];\n mov.b32 %f1, %r1; mov.b32 %f2, %r2; mov.b32 %f3, %r3;\n mov.b64 %rd6, {%r1, %r2}; mov.b64 %rd7, {%r3, %r4};\n mov.b64 %fd1, %rd6; mov.b64 %fd2, %rd7;\n mov.u32 %r11, %r4;\n st.release.gpu.global.u32 [%rd5+8], %r1; mov.u32 %r10, 0;\n st.global.v2.u32 [%rd5], {%r10, %r11};\n ret;\n}\n",
+      "source_sha256": "ce65a0756fe16cb9c2157d22d0cec519c1f5c9ec2b1518ca4dcd1a6d3469c3e9",
+      "sass_sha256": "82319c3681bd65f80e40ff9fdb93193854b7eb1911594f7a5d2b3235d5518868",
+      "observed_instructions": [
+        {
+          "address": "0x50",
+          "text": "LDG.E R9, [R2.64+0xc]",
+          "word": "000168000c1e190000000c0402097981",
+          "control": "S04 - W5 R0 wait[------] reuse=0000"
+        },
+        {
+          "address": "0x60",
+          "text": "LDG.E R7, [R2.64]",
+          "word": "000162000c1e19000000000402077981",
+          "control": "S01 - W5 R0 wait[------] reuse=0000"
+        },
+        {
+          "address": "0x90",
+          "text": "MEMBAR.ALL.GPU",
+          "word": "000fec000000a0000000000000007992",
+          "control": "S06 - W- R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0xa0",
+          "text": "ERRBAR",
+          "word": "000fc0000000000000000000000079ab",
+          "control": "S00 Y W- R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0xb0",
+          "text": "STG.E.64 [R4.64], R8",
+          "word": "020fe8000c101b040000000804007986",
+          "control": "S04 - W- R- wait[-----5] reuse=0000"
+        },
+        {
+          "address": "0xc0",
+          "text": "STG.E.STRONG.GPU [R4.64+0x8], R7",
+          "word": "000fe2000c10f9040000080704007986",
+          "control": "S01 - W- R- wait[------] reuse=0000"
+        }
+      ]
+    },
+    {
+      "probe": "ld_acquire",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n\n.visible .entry p_ld_acquire(.param .u64 out, .param .u64 in, .param .u32 k, .param .f32 kf)\n{\n .reg .pred %p<8>; .reg .b16 %h<16>; .reg .b32 %r<64>; .reg .f32 %f<32>;\n .reg .b64 %rd<32>; .reg .f64 %fd<16>; .reg .b32 %rk; .reg .f32 %fk;\n \n ld.param.u64 %rd1, [in]; ld.param.u64 %rd2, [out];\n ld.param.u32 %rk, [k]; ld.param.f32 %fk, [kf];\n cvta.to.global.u64 %rd1, %rd1; cvta.to.global.u64 %rd2, %rd2;\n mov.u32 %r0, %tid.x; mul.wide.u32 %rd3, %r0, 16;\n add.s64 %rd4, %rd1, %rd3; add.s64 %rd5, %rd2, %rd3;\n ld.global.v4.u32 {%r1, %r2, %r3, %r4}, [%rd4];\n mov.b32 %f1, %r1; mov.b32 %f2, %r2; mov.b32 %f3, %r3;\n mov.b64 %rd6, {%r1, %r2}; mov.b64 %rd7, {%r3, %r4};\n mov.b64 %fd1, %rd6; mov.b64 %fd2, %rd7;\n mov.u32 %r11, %r4;\n ld.acquire.gpu.global.u32 %r10, [%rd4+16];\n st.global.v2.u32 [%rd5], {%r10, %r11};\n ret;\n}\n",
+      "source_sha256": "510f1fa63408b71540d7cb7d530f7d628bcd038ab97f79a0eec4f0104f1fb58c",
+      "sass_sha256": "80274f7b884dd328de015915d11f581b24afdad6ed035a6378697d87c7e6baa5",
+      "observed_instructions": [
+        {
+          "address": "0x50",
+          "text": "LDG.E R7, [R2.64+0xc]",
+          "word": "000ea8000c1e190000000c0402077981",
+          "control": "S04 - W2 R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x60",
+          "text": "LDG.E.STRONG.GPU R6, [R2.64+0x10]",
+          "word": "000ee2000c1ef9000000100402067981",
+          "control": "S01 - W3 R- wait[------] reuse=0000"
+        },
+        {
+          "address": "0x80",
+          "text": "CCTL.IVALL",
+          "word": "008fca000200000000000000ff00798f",
+          "control": "S05 Y W- R- wait[---3--] reuse=0000"
+        },
+        {
+          "address": "0x90",
+          "text": "STG.E.64 [R4.64], R6",
+          "word": "004fe2000c101b040000000604007986",
+          "control": "S01 - W- R- wait[--2---] reuse=0000"
+        }
+      ]
+    }
+  ]
+}

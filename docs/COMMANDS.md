@@ -148,6 +148,10 @@ uses the ordinary `compile PATH --verify` and saved `run PATH --verify` route.
 Model config now accepts per-input `f32`/`i64`/`bool`, integer verification
 `input_ranges`, `loss="cross_entropy"`, `optimizer="adam"`/`"adamw"`,
 `beta1`, `beta2`, `epsilon`, `weight_decay` and optional `optimizer_fusion`.
+SGD also accepts `momentum`, `dampening`, `nesterov` and `maximize`; Adam/AdamW
+accept `amsgrad` and `maximize`. Nondefault optimizer policies require direct
+execution, and AMSGrad requires split updates. See the
+[optimizer policy contract](compiler/gaps-optimizers.md).
 See [the exact contracts](compiler/model-semantics.md); indexed inputs and
 adaptive training require direct execution.
 
@@ -209,6 +213,7 @@ These options are also accepted by `cnr`.
 | `--fallback ptxas` | Disabled | Retained parser spelling; rejected by the production CLI. Unsupported forms need OA implementation. |
 | `-I DIR`, `--include DIR` | None | Additional CUDA include directory; repeatable. The source file's directory is included; directory builds also add the discovered repository root. |
 | `--nvcc-flag FLAG` | None | Additional CUDA compiler flag; repeatable. Use `--nvcc-flag=-DNAME=VALUE` when a value begins with `-`. |
+| `--compile-commands FILE` | Source-root `compile_commands.json` when present | Consume recorded NVCC translation-unit flags/working directories, including generated source discovery. Host/link stages are not executed. |
 | `--dump-ptx` | Off | Print generated/input PTX. |
 | `--no-sass` | Off | Omit the readable `nvdisasm` listing; still produce cubins and metadata. |
 | `--backend MODE` | `auto` | Shared build/run destination: `local`, `modal`, `user@host`, or `ssh` with `--host`. Native auto builds locally; models use configuration. |
@@ -235,6 +240,12 @@ nondefault optimization/trial flags and `--job-timeout`; use `--budget`
 for its stage watchdog. `--no-sass` also applies to models and overrides listing
 emission without changing the cubin. The model configuration controls precision, seed, steps,
 verification tolerances and default transport. See the native model dossier.
+
+`[model] profile_iterations` selects the final N existing verification steps for
+profiling (integer 1..`steps`, default 1). Repeated per-kernel samples include
+binary/shape/launch identities and loaded resource counts. Reports label
+profiler-free whole-step samples separately; profiling adds no training updates.
+See the [profiling contract](compiler/gaps-profiling.md).
 
 Native remote builds ship this compiler/data and publish artifacts locally.
 `--backend` applies to both `cnr` stages; `--build-backend` overrides compilation.
@@ -509,14 +520,14 @@ Save this as `launch.json`, after compiling the matching vector-add example:
 
 Check the actual compiled entry name/argument order in the manifest; use the
 repository's `examples/run_spec.json` when running `examples/vector_add.py`.
-Buffer `count` is an element count. Types are `f32`, `i32`, `u32`, `f16`, `bf16`;
+Buffer `count` is an element count. Types are `f32`, `i32`, `u32`, `i64`, `u64`, `f16`, `bf16`;
 initialization is `random`, `zeros`, or an explicit numeric list. FP16/BF16
 random inputs are exact small integers. An explicit list initializes that
 prefix of the buffer; remaining elements stay zero. It does not repeat.
 `grid` and `block` may be positive integers or lists of
 one to three dimensions. Shared bytes are given by `smem`. Each step may also
 specify `source` to disambiguate an entry. Arguments use `buf` plus optional
-byte `offset`, or one scalar key: `i32`, `u32`, `f32`, `u64`. Offsets must be
+byte `offset`, or one scalar key: `i32`, `u32`, `i64`, `u64`, `f32`. Offsets must be
 aligned and inside their buffer. Multiple steps describe a pipeline; `compare`
 defaults to all buffers. Spec-level `reps` overrides the CLI repetition count.
 

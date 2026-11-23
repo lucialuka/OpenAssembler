@@ -32,8 +32,10 @@ and the corrected fixed-arity workload source are retained.
 ## Confirmed boundary
 
 Accepted cases cover bounded Linear/activations/reductions/layouts/concat and
-explicitly half-rounded products. Rejections include unsupported sigmoid,
-general sum, slicing, division, exact GELU/dropout; FP16/noncontiguous/NaN
+explicitly half-rounded products. The dated corpus rejected sigmoid and general
+sum; [the November 21 extension](gaps-operators.md) now admits bounded FP32
+sigmoid and static sum/mean without relabeling that earlier evidence. Current
+rejections include slicing, division, exact GELU/dropout; FP16/noncontiguous/NaN
 examples; half BMM batch 33 or dimension 513; and half dual-linear dimension
 513. Current half BMM still requires matching batch shapes, batch count at most
 32 and positive M/N/K at most 512. No resource limit is raised merely to turn
@@ -47,6 +49,13 @@ Capability and correctness counts remain separate; a larger test count is not
 a coverage percentage for arbitrary ML repositories.
 
 ## Priorities and complete acceptance criteria
+
+The [current supplied gap register](gap-register.md) tracks all 51 exit gates.
+The previously fixed exact-division counterexample now has a
+[hardware-isolated emulator repair](gaps-verification.md); broader numerical
+conformance still requires its own evidence. New [typed helpers](gaps-python.md),
+[batch-broadcast products](gaps-model.md), [contract ledger](gaps-contracts.md)
+and [compilation attribution](gaps-measurement.md) have explicit bounded scopes.
 
 | Priority | Work and candidate experiments | Required completion evidence |
 |---|---|---|

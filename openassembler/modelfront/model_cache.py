@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import shutil
 import tempfile
+import time
 
 from .kernels import canonical
 
@@ -121,51 +122,79 @@ def _checked_entry(root,plan,key,inputs):
     return files
 
 
+@contextmanager
+def _phase_ms(stages, name):
+    started = time.perf_counter()
+    try:
+        yield
+    finally:
+        stages[name] += (time.perf_counter() - started) * 1000
+
+
 def cached_build_bundle(plan,weights,output_dir,*,cache_dir=None,opt_level='opt',sass_listings=True,build=None):
     """Build or restore an OA bundle and always serialize the caller's weights."""
     from .kernels import _build_bundle_uncached
     from .runtime import save_weights,validate_bundle
     build=build or _build_bundle_uncached
     output=Path(output_dir).resolve();cache=Path(cache_dir).expanduser().resolve() if cache_dir else default_cache_dir().resolve()
-    key,inputs=key_for(plan,opt_level=opt_level,sass_listings=sass_listings);entry=cache/key
+    stages=dict.fromkeys(('identity_and_source_generation','lock_wait','entry_validation',
+                          'restore_weights_and_validate','native_build_and_weights',
+                          'publish_and_validate','cleanup_and_validate'),0.0)
+    with _phase_ms(stages,'identity_and_source_generation'):
+        key,inputs=key_for(plan,opt_level=opt_level,sass_listings=sass_listings)
+    entry=cache/key
+    metrics={'compile_stage_ms':stages,
+             'compile_stage_scope':'non-overlapping worker-local cache/build phases; source_builds are nested native build timings, never cache-hit compile work',
+             'source_builds':[]}
     rebuild_reason='cache miss'
+    lock_started=time.perf_counter()
     with _key_lock(cache,key):
+        stages['lock_wait']=(time.perf_counter()-lock_started)*1000
         try:
-            files=_checked_entry(entry,plan,key,inputs)
+            with _phase_ms(stages,'entry_validation'):
+                files=_checked_entry(entry,plan,key,inputs)
         except (OSError,ValueError,KeyError,TypeError) as exc:
             files=None
             rebuild_reason=str(exc)
         if files is not None:
-            output.mkdir(parents=True,exist_ok=True)
-            for name in files:
-                destination=output/name;destination.parent.mkdir(parents=True,exist_ok=True)
-                destination.write_bytes((entry/name).read_bytes())
-            if weights is not None:save_weights(weights,plan,output)
-            else:
-                (output/'weights.json').unlink(missing_ok=True)
-                shutil.rmtree(output/'weights',ignore_errors=True)
-            ledger=json.loads((output/'native-ledger.json').read_text())
-            _remove_donor_artifacts(output,ledger)
-            validate_bundle(output,plan)
+            with _phase_ms(stages,'restore_weights_and_validate'):
+                output.mkdir(parents=True,exist_ok=True)
+                for name in files:
+                    destination=output/name;destination.parent.mkdir(parents=True,exist_ok=True)
+                    destination.write_bytes((entry/name).read_bytes())
+                if weights is not None:save_weights(weights,plan,output)
+                else:
+                    (output/'weights.json').unlink(missing_ok=True)
+                    shutil.rmtree(output/'weights',ignore_errors=True)
+                ledger=json.loads((output/'native-ledger.json').read_text())
+                _remove_donor_artifacts(output,ledger)
+                validate_bundle(output,plan)
             return {'hit':True,'key':key,'cached_files':len(files),
-                    'native_ledger':json.loads((output/'native-ledger.json').read_text())}
-        ledger=build(plan,weights,output,opt_level=opt_level,sass_listings=sass_listings)
+                    'native_ledger':ledger,**metrics}
+        with _phase_ms(stages,'native_build_and_weights'):
+            ledger=build(plan,weights,output,opt_level=opt_level,sass_listings=sass_listings)
+        manifest=output/'native'/'manifest.json'
+        if manifest.is_file():
+            metrics['source_builds']=[{key:row[key] for key in ('language','compile_stage_ms','compile_total_ms','compile_stage_scope') if key in row}
+                                     for row in json.loads(manifest.read_text()).get('entries',[])]
         files=_file_hashes(output)
         if not files:raise ValueError('native model build produced no cacheable OA artifacts')
-        with tempfile.TemporaryDirectory(prefix='.oa-model-cache-',dir=cache) as temporary:
-            staging=Path(temporary)/'entry';staging.mkdir()
-            for name in files:
-                source=output/name;destination=staging/name;destination.parent.mkdir(parents=True,exist_ok=True)
-                destination.write_bytes(source.read_bytes())
-            record={'schema':1,'key':key,'inputs':inputs,'files':files}
-            (staging/'cache-record.json').write_bytes(canonical(record))
-            _checked_entry(staging,plan,key,inputs)
-            if entry.is_symlink():entry.unlink()
-            elif entry.exists():shutil.rmtree(entry)
-            staging.rename(entry)
+        with _phase_ms(stages,'publish_and_validate'):
+            with tempfile.TemporaryDirectory(prefix='.oa-model-cache-',dir=cache) as temporary:
+                staging=Path(temporary)/'entry';staging.mkdir()
+                for name in files:
+                    source=output/name;destination=staging/name;destination.parent.mkdir(parents=True,exist_ok=True)
+                    destination.write_bytes(source.read_bytes())
+                record={'schema':1,'key':key,'inputs':inputs,'files':files}
+                (staging/'cache-record.json').write_bytes(canonical(record))
+                _checked_entry(staging,plan,key,inputs)
+                if entry.is_symlink():entry.unlink()
+                elif entry.exists():shutil.rmtree(entry)
+                staging.rename(entry)
         # Drop ptxas donor cubins from the private build tree after OA output is
         # fully built and validated. They are not runtime artifacts or cache inputs.
-        _remove_donor_artifacts(output,ledger)
-        validate_bundle(output,plan)
+        with _phase_ms(stages,'cleanup_and_validate'):
+            _remove_donor_artifacts(output,ledger)
+            validate_bundle(output,plan)
         return {'hit':False,'key':key,'cached_files':len(files),'rebuild_reason':rebuild_reason,
-                'native_ledger':ledger}
+                'native_ledger':ledger,**metrics}

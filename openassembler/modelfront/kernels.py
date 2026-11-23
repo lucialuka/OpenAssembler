@@ -354,10 +354,20 @@ def prepare(plan):
         kernels[kernel.name] = kernel
     from .optimizer import optimizer_options
     options = optimizer_options(plan.get("optimizer", {}))
-    if options["name"] != "sgd":
+    if options["name"] == "sgd" and options != {"name":"sgd"}:
         for name in backward.get("grad_parameters", {}):
-            for op in ("adam_m", "adam_v", "adam_update", "adam_fused"):
-                kernel = emit_kernel(op, [specs[name]]*(4 if op in ("adam_update", "adam_fused") else 3), specs[name], options)
+            for op in (("sgd_buffer_init","sgd_buffer","sgd_update") if options.get("momentum",0) else ("sgd_update",)):
+                arity=2 if op=="sgd_buffer_init" or op=="sgd_update" and not options.get("momentum",0) else 3
+                kernel=emit_kernel(op,[specs[name]]*arity,specs[name],options)
+                kernels[kernel.name]=kernel
+    elif options["name"] != "sgd":
+        if options.get("amsgrad",False) and plan.get("optimizer_fusion",False):
+            raise ValueError("AMSGrad requires split optimizer updates")
+        for name in backward.get("grad_parameters", {}):
+            for op in (("adam_m", "adam_v", "adam_update", "adam_max") if options.get("amsgrad",False) else
+                       ("adam_m", "adam_v", "adam_update", "adam_fused")):
+                arity=2 if op=="adam_max" else 4 if op in ("adam_update","adam_fused") else 3
+                kernel = emit_kernel(op, [specs[name]]*arity, specs[name], options)
                 kernels[kernel.name] = kernel
     if plan.get("loss", "mse") == "cross_entropy":
         if len(plan["outputs"]) != 1:

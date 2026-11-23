@@ -11,10 +11,13 @@ import hashlib
 import math
 
 NN_OPS = frozenset({"softmax", "softmax_backward", "gelu", "gelu_backward",
+                    "sigmoid", "sigmoid_backward",
                     "layernorm", "layernorm_backward", "channel_affine", "channel_mul", "channel_grad", "channel_sum"})
 
 
 def emit_nn_kernel(op, inputs, output, attrs=None):
+    if op.startswith("sigmoid"):
+        return _emit_sigmoid_kernel(op, inputs, output, attrs)
     if op.startswith("layernorm") or op.startswith("channel_"):
         return _emit_norm_kernel(op,inputs,output,attrs)
     from .kernels import KernelSpec, _float, canonical, shape_of
@@ -106,6 +109,47 @@ def emit_nn_kernel(op, inputs, output, attrs=None):
         lines += ["st.global.f32 [%d6],%f0;"]
     lines += ["done:","ret;","}"]
     return KernelSpec(name,op,shapes,out,attrs,grid,threads,"\n".join(lines)+"\n")
+
+
+def _emit_sigmoid_kernel(op, inputs, output, attrs=None):
+    """Stable sigmoid with approximate exp2/reciprocal and saved-output derivative.
+
+    Clamp abs(x) before exp2 scaling so finite extreme inputs cannot overflow
+    the intermediate. Subnormal exponential tails flush to zero explicitly.
+    """
+    from .kernels import KernelSpec, _float, canonical, shape_of
+    shapes = tuple(shape_of(x) for x in inputs)
+    out = shape_of(output)
+    attrs = dict(attrs or {})
+    if (op not in ("sigmoid", "sigmoid_backward") or attrs
+            or len(shapes) != (2 if op.endswith("backward") else 1)
+            or any(shape != out for shape in shapes)):
+        raise ValueError("sigmoid requires matching FP32 shapes, exact arity and no attributes")
+    signature = {"op": op, "inputs": shapes, "output": out, "attrs": attrs}
+    name = "oa_model_" + hashlib.sha256(canonical(signature)).hexdigest()[:20]
+    params = [f".param .u64 a{i}" for i in range(len(shapes))] + [".param .u64 output"]
+    count = math.prod(out)
+    lines = [f".visible .entry {name}({','.join(params)}) {{",
+             ".reg .b32 %r<4>; .reg .b64 %d<8>; .reg .f32 %f<8>; .reg .pred %p<2>;",
+             "ld.param.u64 %d0,[a0]; ld.param.u64 %d2,[output];"]
+    if len(shapes) == 2:
+        lines += ["ld.param.u64 %d1,[a1];"]
+    lines += ["mov.u32 %r0,%tid.x; mov.u32 %r1,%ctaid.x; mad.lo.u32 %r2,%r1,128,%r0;",
+              f"setp.ge.u32 %p0,%r2,{count}; @%p0 bra done;",
+              "mul.wide.u32 %d3,%r2,4; add.u64 %d4,%d0,%d3; add.u64 %d6,%d2,%d3;",
+              "ld.global.f32 %f0,[%d4];"]
+    if op == "sigmoid":
+        lines += ["abs.f32 %f1,%f0;", f"min.f32 %f1,%f1,{_float(104)};",
+                  f"mul.rn.f32 %f1,%f1,{_float(-math.log2(math.e))}; ex2.approx.ftz.f32 %f1,%f1;",
+                  f"add.rn.f32 %f2,%f1,{_float(1)}; rcp.approx.ftz.f32 %f2,%f2;",
+                  "mul.rn.f32 %f3,%f1,%f2; setp.ge.f32 %p1,%f0,0f00000000;",
+                  "selp.f32 %f0,%f2,%f3,%p1;"]
+    else:
+        lines += ["add.u64 %d5,%d1,%d3; ld.global.f32 %f1,[%d5];",
+                  f"sub.rn.f32 %f2,{_float(1)},%f1;",
+                  "mul.rn.f32 %f2,%f2,%f1; mul.rn.f32 %f0,%f0,%f2;"]
+    lines += ["st.global.f32 [%d6],%f0;", "done:", "ret;", "}"]
+    return KernelSpec(name, op, shapes, out, attrs, ((count + 127)//128, 1, 1), 128, "\n".join(lines)+"\n")
 
 
 def _emit_norm_kernel(op,inputs,output,attrs=None):

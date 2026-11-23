@@ -33,6 +33,8 @@ import concurrent.futures
 import hashlib
 import math
 import os
+import time
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -57,6 +59,8 @@ class Options:
     include_dirs: list[Path] = field(default_factory=list)
     nvcc_flags: list[str] = field(default_factory=list)
     dump_ptx: bool = False
+    compile_commands: Path | None = None
+    compile_command: object = None
 
 
 def _err(msg: str) -> None:
@@ -145,7 +149,12 @@ def verify_kernel(module, kname: str, code, labels, ptx_text: str, trials: int) 
     else, which covers pyfront/cppfront kernels and hand-written PTX with any
     signature."""
     kernel = module.kernels[kname]
-    if tuple(kernel.params) == _PROBE_PARAMS and not kernel.directives:
+    from openassembler.verify import parameter_contract_from_ptx
+    try:
+        parameter_contract = parameter_contract_from_ptx(ptx_text,kernel)
+    except ValueError as exc:
+        return 'not-verified', f'invalid typed parameter contract: {exc}'
+    if tuple(kernel.params) == _PROBE_PARAMS and not kernel.directives and parameter_contract is None:
         import random
 
         from openassembler.emu.probe import run_probe
@@ -180,7 +189,7 @@ def verify_kernel(module, kname: str, code, labels, ptx_text: str, trials: int) 
             count = max(64, math.prod(block)) if block else 64
             grid = (math.ceil(count / math.prod(block)), 1, 1) if block else 1
             mismatches = run_and_diff(module, kname, code, labels, n_elems=count, seed=trial,
-                                      grid=grid, block=block)
+                                      grid=grid, block=block, parameter_contract=parameter_contract)
         except NotModeled as e:
             return "not-verified", (f"the PTX reference interpreter can't model this kernel ({e}). "
                                     "The cubin was kept, but --verify cannot check it; write your own "
@@ -441,7 +450,9 @@ class KernelOut:
     tensor: dict | None = None
     gemm: dict | None = None
     rowwise: dict | None = None
+    buffer_contract: dict | None = None
     directives: dict = field(default_factory=dict)
+    parameter_attributes: dict = field(default_factory=dict)
 
     def record(self) -> dict:
         r = {"name": self.name, "params": [list(p) for p in self.params], "compiled_by": self.compiled_by,
@@ -457,8 +468,12 @@ class KernelOut:
             r["gemm"] = self.gemm
         if self.rowwise is not None:
             r["rowwise"] = self.rowwise
+        if self.buffer_contract is not None:
+            r["buffer_contract"] = self.buffer_contract
         if self.directives:
             r["ptx_directives"] = self.directives
+        if self.parameter_attributes:
+            r['parameter_attributes']=self.parameter_attributes
         return r
 
 
@@ -476,6 +491,19 @@ class SourceOut:
     files: dict[str, bytes | str] = field(default_factory=dict)
     rc: int = 0
     native_ownership: dict | None = None
+    compile_stage_ms: dict[str, float] = field(default_factory=lambda: dict.fromkeys(
+        ('source_hash', 'frontend', 'ptx_parse', 'backend', 'verification',
+         'ptxas_container', 'packaging_ownership', 'disassembly'), 0.0))
+    compile_total_ms: float = 0.0
+    build_contract: dict | None = None
+
+    @contextmanager
+    def phase(self, name):
+        started = time.perf_counter()
+        try:
+            yield
+        finally:
+            self.compile_stage_ms[name] += (time.perf_counter() - started) * 1000
 
     @property
     def kept(self) -> list[KernelOut]:
@@ -491,9 +519,13 @@ class SourceOut:
 
     def entry(self, no_sass: bool) -> dict:
         e = {"source": str(self.src.resolve()), "source_sha256": self.sha, "language": self.language,
-             **self.paths(no_sass), "kernels": [k.record() for k in self.kept]}
+             **self.paths(no_sass), "kernels": [k.record() for k in self.kept],
+             "compile_stage_ms": dict(self.compile_stage_ms), "compile_total_ms": self.compile_total_ms,
+             "compile_stage_scope": "non-overlapping worker-local wall time; includes tool startup; excludes discovery, output publication and transport"}
         if self.native_ownership is not None:
             e['native_ownership'] = self.native_ownership
+        if self.build_contract is not None:
+            e['build_contract'] = self.build_contract
         if self.failed:
             e["failed"] = [{"name": k.name, "error": k.error.splitlines()[0]} for k in self.failed]
         return e
@@ -508,24 +540,49 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
     """Compile one source file into in-memory outputs (SourceOut.files); nothing is
     written here. `single`: a --kernel that isn't in this file is an error (in a repo
     it just means this file has nothing to build)."""
+    started = time.perf_counter()
+    so = SourceOut(src, language, name)
+    try:
+        return _build_source(so, opt, single=single)
+    finally:
+        so.compile_total_ms = (time.perf_counter() - started) * 1000
+        so.compile_stage_ms['unattributed'] = max(0.0, so.compile_total_ms - sum(so.compile_stage_ms.values()))
+
+
+def _build_source(so: SourceOut, opt: Options, *, single: bool) -> SourceOut:
     from openassembler.backend import ra
     from openassembler.frontend import FrontendError, to_ptx_module
     from openassembler.isa.encode import EncodeError
     from openassembler.ptx.parse import parse_module
 
-    so = SourceOut(src, language, name)
+    src, language, name = so.src, so.language, so.name
+    if opt.compile_command is not None:
+        so.build_contract = opt.compile_command.record()
     try:
-        so.sha = P.sha256_file(src)
+        with so.phase('source_hash'):
+            so.sha = P.sha256_file(src)
     except OSError as e:
         so.error, so.rc = f"can't read {src}: {e.strerror}", 1
         return so
 
     # 1. frontend
     try:
-        if language == "cuda":
-            _need("nvcc")
-        ptx, names, notes = to_ptx_module(src, arch=opt.arch, include_dirs=opt.include_dirs,
-                                          nvcc_flags=opt.nvcc_flags)
+        with so.phase('frontend'):
+            if language == "cuda":
+                _need("nvcc")
+                if opt.compile_command is not None:
+                    from .compilation_database import dependencies
+                    so.build_contract['dependencies'] = dependencies(opt.compile_command,
+                        include_dirs=opt.include_dirs, extra_flags=opt.nvcc_flags)
+                    so.build_contract['toolchain'] = oracle.run_tool('nvcc','--version').stdout
+            kwargs = {}
+            flags = opt.nvcc_flags
+            if opt.compile_command is not None:
+                flags = [*opt.compile_command.flags, *flags]
+                kwargs['working_directory'] = opt.compile_command.directory
+                kwargs['source_argument'] = opt.compile_command.source_argument
+            ptx, names, notes = to_ptx_module(src, arch=opt.arch, include_dirs=opt.include_dirs,
+                                              nvcc_flags=flags, **kwargs)
         so.notes += notes
     except KeyboardInterrupt:
         raise
@@ -541,7 +598,8 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
     if opt.dump_ptx:
         print(ptx)
     try:
-        module = parse_module(ptx)
+        with so.phase('ptx_parse'):
+            module = parse_module(ptx)
     except Exception as e:  # noqa: BLE001 -- PTX we can't parse (yet): report, don't crash
         so.error, so.rc = f"can't parse the PTX: {type(e).__name__}: {e}", 1
         return so
@@ -568,7 +626,15 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
     rowwise_contract = rowwise_contract_from_source(ptx)
     for kname in sel:
         k = KernelOut(kname, list(module.kernels[kname].params))
+        from openassembler.pyfront.buffers import contract_from_ptx
+        try:
+            k.buffer_contract = contract_from_ptx(ptx,module.kernels[kname])
+        except ValueError as error:
+            k.error = f'invalid checked Buffer contract: {error}'
+            so.kernels.append(k)
+            continue
         k.directives = {key: list(value) for key, value in module.kernels[kname].directives.items()}
+        k.parameter_attributes = module.kernels[kname].parameter_attributes
         tensor_config = None
         if gemm_contract is not None and kname == "gemm":
             from openassembler.backend.tensor import TensorConfig
@@ -579,8 +645,9 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
         so.kernels.append(k)
         why, can_fallback = "", False
         try:
-            code, labels, words, exits, nregs = generate(module.kernels[kname], opt.arch, opt.opt_level,
-                                                      tensor_config=tensor_config)
+            with so.phase('backend'):
+                code, labels, words, exits, nregs = generate(module.kernels[kname], opt.arch, opt.opt_level,
+                                                          tensor_config=tensor_config)
             if k.directives.get('maxnreg') and nregs > k.directives['maxnreg'][0]:
                 raise ra.NotSupported(f"OA register count {nregs} exceeds .maxnreg {k.directives['maxnreg'][0]}; spilling is not implemented")
         except KeyboardInterrupt:
@@ -607,7 +674,8 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
                 k.rowwise = rowwise_contract
             if opt.verify:
                 try:
-                    k.verify, k.verify_msg = verify_kernel(module, kname, code, labels, ptx, opt.trials)
+                    with so.phase('verification'):
+                        k.verify, k.verify_msg = verify_kernel(module, kname, code, labels, ptx, opt.trials)
                 except KeyboardInterrupt:
                     raise
                 except Exception as e:  # noqa: BLE001 -- the emulator/interpreter gave up: say so
@@ -635,8 +703,9 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
     if keep != set(module.kernels):
         ptx = restrict_ptx(ptx, keep)
     try:
-        _need("ptxas")
-        ref = ptxas_build(ptx, opt.arch)
+        with so.phase('ptxas_container'):
+            _need("ptxas")
+            ref = ptxas_build(ptx, opt.arch)
     except KeyboardInterrupt:
         raise
     except ToolkitMissing as e:
@@ -653,8 +722,9 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
 
     # 4. splice every kernel we compiled into that one container
     ours = {k.name: k.words for k in so.kept if k.compiled_by == "openassembler"}
-    cubin = splice_kernels(ref, ours)
-    regs = regcounts(cubin)
+    with so.phase('packaging_ownership'):
+        cubin = splice_kernels(ref, ours)
+        regs = regcounts(cubin)
     for k in so.kept:
         k.registers = regs.get(k.name, k.registers)
     # Bind deployed bytes to every exact OA instruction, even with --no-sass.
@@ -663,11 +733,12 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
         from openassembler.container.cubin import text_words
         from openassembler.native_ownership import record as ownership_record
         try:
-            for k in so.kept:
-                if text_words(cubin,k.name) != k.words[0]:
-                    raise ValueError(f'{k.name}: cubin text differs from OA encoder output')
-            so.native_ownership = ownership_record(cubin,[k.record() for k in so.kept],
-                                                   ptx_sha256=hashlib.sha256(ptx.encode()).hexdigest())
+            with so.phase('packaging_ownership'):
+                for k in so.kept:
+                    if text_words(cubin,k.name) != k.words[0]:
+                        raise ValueError(f'{k.name}: cubin text differs from OA encoder output')
+                so.native_ownership = ownership_record(cubin,[k.record() for k in so.kept],
+                                                       ptx_sha256=hashlib.sha256(ptx.encode()).hexdigest())
         except (ValueError,StopIteration,KeyError,IndexError,struct.error) as exc:
             so.error,so.rc = f'could not establish native executable ownership: {exc}',1
             return so
@@ -676,8 +747,9 @@ def build_source(src: Path, language: str, name: str, opt: Options, *, single: b
     sass = None
     if not opt.no_sass:
         try:
-            _need("nvdisasm")
-            listing = disasm(cubin)
+            with so.phase('disassembly'):
+                _need("nvdisasm")
+                listing = disasm(cubin)
         except KeyboardInterrupt:
             raise
         except (ToolkitMissing, subprocess.CalledProcessError, FileNotFoundError, OSError, oracle.OracleError) as e:
@@ -843,6 +915,8 @@ def _compile_paths(src: Path, out_dir: Path, opt: Options, o_name: str | None = 
         return CompileResult(1)
 
     try:
+        from openassembler.compilation_database import discover as discover_commands
+        _database, commands = discover_commands(src_abs, opt.compile_commands)
         if single:
             lang = P.language_of(src)
             if lang is None:
@@ -862,7 +936,13 @@ def _compile_paths(src: Path, out_dir: Path, opt: Options, o_name: str | None = 
                 return CompileResult(1)
             root = src_abs
             files, _used_git = P.walk(root, out_dir_abs)
+            for source in commands:
+                if source.is_relative_to(out_dir_abs):
+                    raise P.ProjectError('compilation database source is inside OA output directory')
+                if source not in files:
+                    files.append(source)
             cls = [P.classify(f, f.relative_to(root).as_posix()) for f in files]
+            cls = [P.Classified(c.path,c.rel,'cuda','') if c.path.resolve() in commands else c for c in cls]
             skipped = {}
             for c in cls:
                 if c.language is None:
@@ -948,7 +1028,9 @@ def _compile_paths(src: Path, out_dir: Path, opt: Options, o_name: str | None = 
 
     def build_one(item):
         s, lang, name = item
-        o = opt if single else Options(**{**opt.__dict__, "include_dirs": [*opt.include_dirs, root]})
+        command = commands.get(s)
+        includes = opt.include_dirs if single or command is not None else [*opt.include_dirs, root]
+        o = Options(**{**opt.__dict__, 'include_dirs':includes,'compile_command':command})
         return build_source(s, lang, name, o, single=single)
 
     if build_jobs == 1:

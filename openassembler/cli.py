@@ -46,7 +46,8 @@ def _compile_opts(a: argparse.Namespace):
 
     return Options(arch=a.arch, opt_level=a.opt_level, kernel=a.kernel, verify=a.verify, trials=a.trials,
                    fallback=a.fallback, no_sass=a.no_sass, include_dirs=[Path(d) for d in a.include],
-                   nvcc_flags=list(a.nvcc_flag), dump_ptx=a.dump_ptx)
+                   nvcc_flags=list(a.nvcc_flag), dump_ptx=a.dump_ptx,
+                   compile_commands=Path(a.compile_commands) if a.compile_commands else None)
 
 
 def _frontend_choice(src: Path, out_dir: Path | None, requested: str, *, entrypoint=None, input_shapes=None):
@@ -59,7 +60,7 @@ def _model_compile_opts(a: argparse.Namespace) -> dict:
     from openassembler.modelfront.frontend import ModelError
     if a.arch != 'sm_80' or a.fallback:
         raise ModelError('native models require sm_80 and OA code generation without vendor fallback')
-    if a.kernel or a.include or a.nvcc_flag or a.dump_ptx or a.out or a.opt_level != 'opt' or a.trials != 6:
+    if a.kernel or a.include or a.nvcc_flag or a.dump_ptx or a.out or a.opt_level != 'opt' or a.trials != 6 or a.compile_commands:
         raise ModelError('kernel selection, naming, frontend flags and nondefault '
                          '--opt-level/--trials apply to standalone native kernels')
     if a.job_timeout is not None:
@@ -139,7 +140,7 @@ def cmd_compile(a: argparse.Namespace) -> int:
     if frontend == "model":
         from openassembler.modelfront.frontend import compile_model_repository
         return compile_model_repository(root, output_dir(root, a.out_dir), **_model_compile_opts(a))
-    if plan is not None and not plan.has_native:
+    if plan is not None and not plan.has_native and not a.compile_commands:
         from openassembler.repository import native_error
         a._failure = str(native_error(plan))
         print(f"error: {a._failure}", file=sys.stderr)
@@ -291,7 +292,7 @@ def cmd_cnr(a: argparse.Namespace) -> int:
             return 0
         return run_model_repository(out, backend=a.backend, host=a.host, gpu=a.gpu,
                                     budget=a.budget, verify=a.verify, dry_run=False)
-    if plan is not None and not plan.has_native:
+    if plan is not None and not plan.has_native and not a.compile_commands:
         from openassembler.repository import native_error
         a._failure = str(native_error(plan))
         print(f"error: {a._failure}", file=sys.stderr)
@@ -591,6 +592,8 @@ def _add_compile_args(pc: argparse.ArgumentParser) -> None:
                          "are always included)")
     pc.add_argument("--nvcc-flag", action="append", default=[], metavar="FLAG",
                     help="extra nvcc flag, e.g. --nvcc-flag=-DTILE=32 (repeatable)")
+    pc.add_argument('--compile-commands', metavar='FILE', default=None,
+                    help='NVCC compilation database (default: compile_commands.json in the source root)')
     pc.add_argument("--dump-ptx", action="store_true", help="print the PTX each source compiled to")
     pc.add_argument("--no-sass", action="store_true", help="write only the cubins; skip the nvdisasm listing")
     pc.add_argument("--frontend", choices=("auto", "native", "model", "torch", "triton", "inductor"), default="auto",

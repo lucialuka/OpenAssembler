@@ -1,0 +1,96 @@
+✓ Initialized. View run at 
+https://modal.com/apps/qingyang-lucas-fang/main/ap-QOHwVfb8G7gZ2IRnpQUnlN
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/memory_width
+│   s/run_modal.py
+└── ✓ Created Function execute.
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 12.8.1
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+error: couldn't build the ELF container with ptxas (our backend splices its code into one; see README "How it works"):
+  ptxas corpus/.tmp/build_2_ab39a2e5.ptx, line 217; error   : Arguments mismatch for instruction 'st'
+ptxas fatal   : Ptx assembly aborted due to errors
+Traceback (most recent call last):
+  File "/pkg/modal/_runtime/container_io_manager.py", line 987, in handle_input_exception
+    yield
+  File "/pkg/modal/_container_entrypoint.py", line 189, in run_input_sync
+    values = io_context.call_function_sync()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/pkg/modal/_runtime/container_io_manager.py", line 266, in call_function_sync
+    expected_value_or_values = self.finalized_function.callable(*args, **kwargs)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/run_modal.py", line 58, in execute
+    raise RuntimeError(f'candidate compile {level} failed: {result}')
+RuntimeError: candidate compile safe failed: CompileResult(rc=1, out_dir=PosixPath('/tmp/oa-g12-wnd_ory6/safe'), built=[], failed_sources=[PosixPath('/tmp/oa-g12-wnd_ory6/fixtures.ptx')], errors=[{'source': '/tmp/oa-g12-wnd_ory6/fixtures.ptx', 'error': 'couldn\'t build the ELF container with ptxas (our backend splices its code into one; see README "How it works"):\n  ptxas corpus/.tmp/build_2_ab39a2e5.ptx, line 217; error   : Arguments mismatch for instruction \'st\'\nptxas fatal   : Ptx assembly aborted due to errors', 'kernels': []}])
+Stopping app - uncaught exception raised locally: RuntimeError('candidate compile safe failed: CompileResult(rc=1, out_dir=PosixPath(\'/tmp/oa-g12-wnd_ory6/safe\'), built=[], failed_sources=[PosixPath(\'/tmp/oa-g12-wnd_ory6/fixtures.ptx\')], errors=[{\'source\': \'/tmp/oa-g12-wnd_ory6/fixtures.ptx\', \'error\': \'couldn\\\'t build the ELF container with ptxas (our backend splices its code into one; see README "How it works"):\\n  ptxas corpus/.tmp/build_2_ab39a2e5.ptx, line 217; error   : Arguments mismatch for instruction \\\'st\\\'\\nptxas fatal   : Ptx assembly aborted due to errors\', \'kernels\': []}])').
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/memory_width │
+│ s/run_modal.py:118 in main                                                   │
+│                                                                              │
+│   117 │   stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')      │
+│ ❱ 118 │   report, payload = execute.remote(files)                            │
+│   119 │   archive = HERE / ('a100-' + stamp + '.artifacts.zip')              │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_object.py:49 in wrapped                                           │
+│                                                                              │
+│    48 │   │   await self.hydrate()                                           │
+│ ❱  49 │   │   return await method(self, *args, **kwargs)                     │
+│    50                                                                        │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:2081 in remote                                       │
+│                                                                              │
+│   2080 │   │                                                                 │
+│ ❱ 2081 │   │   return await self._call_function(args, kwargs)                │
+│   2082                                                                       │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:2018 in _call_function                               │
+│                                                                              │
+│   2017 │   │                                                                 │
+│ ❱ 2018 │   │   return await invocation.run_function()                        │
+│   2019                                                                       │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:517 in run_function                                  │
+│                                                                              │
+│    516 │   │   │   # No more retries left.                                   │
+│ ❱  517 │   │   │   return await _process_result(                             │
+│    518 │   │   │   │   await_response.output.result, await_response.output.d │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/function_utils.py:572 in _process_result                    │
+│                                                                              │
+│   571 │   │   │                                                              │
+│ ❱ 572 │   │   │   raise exc_with_hints(exc)                                  │
+│   573                                                                        │
+│                                                                              │
+│     ...Remote call to Modal Function (ta-01M7Z17YWBEN84ZNJCN3B5320R)...      │
+│                                                                              │
+│ /root/run_modal.py:58 in execute                                             │
+│                                                                              │
+│ ❱ 58 raise RuntimeError(f'candidate compile {level} failed: {result}')       │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+RuntimeError: candidate compile safe failed: CompileResult(rc=1, 
+out_dir=PosixPath('/tmp/oa-g12-wnd_ory6/safe'), built=[], 
+failed_sources=[PosixPath('/tmp/oa-g12-wnd_ory6/fixtures.ptx')], 
+errors=[{'source': '/tmp/oa-g12-wnd_ory6/fixtures.ptx', 'error': 'couldn\'t 
+build the ELF container with ptxas (our backend splices its code into one; see 
+README "How it works"):\n  ptxas corpus/.tmp/build_2_ab39a2e5.ptx, line 217; 
+error   : Arguments mismatch for instruction \'st\'\nptxas fatal   : Ptx 
+assembly aborted due to errors', 'kernels': []}])

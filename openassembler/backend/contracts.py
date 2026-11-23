@@ -47,6 +47,9 @@ def scalar_forms():
     for op in ('neg','abs','min','max'): add(op,'f32',2 if op in ('neg','abs') else 3)
     for t in ('s32','u32','b32'):
         for cmp in ('eq','ne','lt','le','gt','ge','lo','ls','hi','hs'): add('setp',cmp+'.'+t,3)
+    for t in ('s64','u64'):
+        for cmp in ('eq','ne','lt','le','gt','ge'): add('setp',cmp+'.'+t,3)
+    for cmp in ('lo','ls','hi','hs'): add('setp',cmp+'.u64',3)
     for cmp in ('eq','ne','lt','le','gt','ge','equ','neu','ltu','leu','gtu','geu','num','nan'):
         add('setp',cmp+'.f32',3)
         add('setp',cmp+'.ftz.f32',3)
@@ -55,12 +58,20 @@ def scalar_forms():
         for width in ('','v2.','v4.'):
             for op in ('ld','st'): add(op,'shared.'+width+t,2)
         for cache in ('','wb.','cg.','cs.','wt.'):
-            for width in ('','v2.'): add('st','global.'+cache+width+t,2)
+            for width in ('','v2.','v4.'): add('st','global.'+cache+width+t,2)
+    for t in ('b8','u8','s8','b16','u16','s16','b64','u64','s64','f64'):
+        for cache in ('','wb.','cg.','cs.','wt.'): add('st','global.'+cache+t,2)
     for t in ('u8','s8','u16','s16','b32','u32','s32','f32','b64','u64','s64','f64'):
         for cache in ('','nc.','cg.','cs.','lu.','ca.'):
             add('ld','global.'+cache+t,2)
             if t in ('b32','u32','s32','f32'):
                 for width in ('v2.','v4.'): add('ld','global.'+cache+width+t,2)
+    for prefix in ('global.','relaxed.gpu.global.'):
+        for dtype in ('u32','s32'):
+            add('atom',prefix+'add.'+dtype,3)
+            add('red',prefix+'add.'+dtype,2)
+        add('atom',prefix+'exch.b32',3)
+        add('atom',prefix+'cas.b32',4)
     for op in ('ret','bra'):
         for m in ('','uni'): add(op,m,0 if op=='ret' else 1)
     add('bar','sync',1)
@@ -88,7 +99,14 @@ def validate_scalar(ins):
         vectors = [x for x in a if isinstance(x,Vec)]
         if ins.mods != ('b64',) or len(vectors)!=1 or len(vectors[0].elems)!=2:
             raise ContractError(f'{name}: packed/unpacked moves require .b64 and two 32-bit registers')
-    if ins.op in ('ld','st'):
+    if ins.op in ('atom','red'):
+        returning = ins.op == 'atom'
+        address = a[1] if returning else a[0]
+        sources = a[2:] if returning else a[1:]
+        if (returning and not isinstance(a[0],Var) or not isinstance(address,Addr)
+                or address.off % 4 or any(not isinstance(value,(Var,ImmI)) for value in sources)):
+            raise ContractError(f'{name}: requires a register result, naturally aligned address and scalar integer sources')
+    elif ins.op in ('ld','st'):
         address, value = (a[1], a[0]) if ins.op=='ld' else (a[0], a[1])
         if not isinstance(address, Addr):
             raise ContractError(f'{name}: memory operand must be an address')

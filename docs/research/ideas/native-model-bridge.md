@@ -2,6 +2,8 @@
 
 Status: implemented
 
+[Repeated kernel profiling](../../compiler/gaps-profiling.md) can audit the final N existing verified iterations, retaining per-contract samples/resources and separately labeled profiler-free whole-step samples. It adds no optimizer updates and establishes no speed ratio.
+
 Unsupported FX nodes and later semantic/shape checks now include the user
 forward file and line through recorded trace stacks. See
 [semantic diagnostics](../../compiler/semantic-acceptance.md) and
@@ -20,15 +22,27 @@ compute libraries are not code generation or execution fallbacks.
 
 ## Contract and ownership
 
-The graph subset covers FP32 Linear, ReLU, broadcast add/multiply, finite
+The graph subset covers FP32 Linear, ReLU, sigmoid, static sum/mean,
+broadcast add/multiply, finite
 scalar arithmetic, immutable reshapes, rank-two through rank-four permutations,
 matmul/batched products, last-dimension softmax, tanh GELU, affine LayerNorm,
 concatenation and slice derivatives. Batched products support FP32 and explicit FP16-RNE operands with FP32 accumulation;
-exact equal batch shapes are required; broadcasting is not inferred. The
+rank-two through rank-four `matmul` now normalizes compatible batch axes through
+explicit copies and equal-batch BMM; `bmm` itself still requires equal batches.
+The [batch-broadcast contract and evidence](../../compiler/gaps-model.md) record
+the extra memory cost and unchanged resource limits. The
+[sigmoid/reduction extension](../../compiler/gaps-operators.md) records static
+axis/keepdim, approximate sigmoid math, derivatives and independent A100/CLI
+gates. The
 symbolic backward graph includes input/weight/bias gradients, branch accumulation
 and aliased parameters. Complete native training supports MSE or mean integer cross-entropy and plain
-SGD or explicit Adam/AdamW. Boolean/causal SDPA and dense int64-indexed
+SGD (including momentum/dampening/Nesterov/decay/maximize) or explicit Adam/AdamW
+with optional AMSGrad/maximize. The [optimizer policy dossier](../../compiler/gaps-optimizers.md)
+records direct state/resume evidence and graph/fusion boundaries. Boolean/causal SDPA and dense int64-indexed
 embeddings have the bounded contracts linked above.
+The [complete checkpoint route](../../compiler/gaps-checkpoints.md) restores all
+captured parameters/buffers, policy state, CPU RNG and explicit application JSON
+at a completed boundary through Runtime and CompiledModel APIs.
 Unsupported nodes report the offending FX node and fail before native execution.
 This is bounded application compilation, not arbitrary Python or all ML frameworks.
 
@@ -262,7 +276,9 @@ separate packing remains the default. Optional zero padding plus a crop/bias
 stage admits odd dimensions and flattened rank-three linear inputs up to 512
 per logical matrix dimension. The 1024-wide captured-training stress fails its
 gradient gate and is excluded. The later bounded FP16 BMM extension below
-supersedes the earlier attention restriction; broadcasting remains excluded. Exact-bit pack tests, four-step training, poisoned
+supersedes the earlier attention restriction; the later
+[batch-broadcast normalization](../../compiler/gaps-model.md) extends its
+formerly equal-batch frontend contract. Exact-bit pack tests, four-step training, poisoned
 changed-input graph replay, profiler ownership and repository direct/replay
 bridge checks are retained with the report.
 
@@ -270,7 +286,8 @@ bridge checks are retained with the report.
 
 The [November 14 campaign](../../../exp/attention_half/RESULTS.md) extends the
 explicit half contract to BMM forward, dX and dW. Rank-three products require
-matching batches; rank-four matmul flattens equal batch axes without broadcasting.
+matching batches. The later batch-broadcast frontend normalizes rank-two through
+rank-four `matmul` into those same equal-batch products.
 The flattened batch bound is 32 and every logical M/N/K is at most 512.
 Larger products pack padded normal/transposed half layouts, use OA GEMM with
 CTA-z byte strides and crop FP32 outputs. When M, N and reduction length are all

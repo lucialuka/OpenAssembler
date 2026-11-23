@@ -39,3 +39,7 @@ syncthreads = _stub("syncthreads", "Block-wide barrier (bar.sync 0), like CUDA's
 
 __all__ = ["tid_x", "tid_y", "tid_z", "ctaid_x", "ctaid_y", "ctaid_z", "ntid_x", "ntid_y",
            "ntid_z", "sqrt", "rsqrt", "exp", "log", "tanh", "shared_array", "syncthreads"]
+
+atomic_add = _stub("atomic_add", "GPU relaxed 32-bit integer atomic add; returns old value.")
+atomic_exchange = _stub("atomic_exchange", "GPU relaxed u32 atomic exchange; returns old bits.")
+atomic_compare_exchange = _stub("atomic_compare_exchange", "GPU relaxed u32 atomic CAS; returns old bits.")

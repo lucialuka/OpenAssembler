@@ -27,6 +27,7 @@ BUILD_MARKERS = {
     "Makefile": "make",
     "meson.build": "meson",
     "Cargo.toml": "cargo",
+    "compile_commands.json": "compilation-database",
 }
 
 
@@ -108,7 +109,13 @@ def inspect(root: Path, out_dir: Path | None = None) -> RepositoryPlan:
     if not root.is_dir():
         raise project.ProjectError(f"repository path is not a directory: {root}")
     files, used_git = project.walk(root, (out_dir or root / "output").resolve())
+    from .compilation_database import discover as discover_commands
+    database, commands = discover_commands(root)
+    for source in commands:
+        if source not in files:
+            files.append(source)
     classes = tuple(project.classify(path, path.relative_to(root).as_posix()) for path in files)
+    classes = tuple(project.Classified(c.path,c.rel,'cuda') if c.path.resolve() in commands else c for c in classes)
     native = tuple(c for c in classes if c.language is not None)
     systems = tuple(sorted({kind for path in files if path.parent == root
                             for marker, kind in BUILD_MARKERS.items()

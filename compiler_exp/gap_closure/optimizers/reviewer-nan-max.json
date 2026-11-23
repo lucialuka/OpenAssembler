@@ -1,0 +1,12 @@
+{
+  "scope": "Independent code-review NaN state counterexample; offline SASS observation only, CPU Torch control pending",
+  "op": "adam_max",
+  "inputs": [
+    "0x3f800000",
+    "0x7fc00000"
+  ],
+  "observed_native_emulator": "0x3f800000",
+  "torch_maximum_expected": "NaN propagation; confirm with supported CPU Torch",
+  "source_ptx": ".visible .entry oa_model_74409458edbb626bd38d(.param .u64 a0,.param .u64 a1,.param .u64 output) {\n.reg .b32 %r<4>; .reg .b64 %d<10>; .reg .f32 %f<8>; .reg .pred %p;\nld.param.u64 %d0,[a0];\nld.param.u64 %d1,[a1];\nld.param.u64 %d3,[output]; mov.u32 %r0,%tid.x; mov.u32 %r1,%ctaid.x;\nmad.lo.u32 %r2,%r1,128,%r0; setp.ge.u32 %p,%r2,1; @%p bra done;\nmul.wide.u32 %d4,%r2,4;\nadd.u64 %d5,%d0,%d4; ld.global.f32 %f0,[%d5];\nadd.u64 %d5,%d1,%d4; ld.global.f32 %f1,[%d5];\nmax.f32 %f0,%f0,%f1;\nadd.u64 %d5,%d3,%d4; st.global.f32 [%d5],%f0;\ndone:\nret;\n}\n",
+  "issue": "PTX max.f32 ignores the single NaN operand; docs currently do not restrict gradient values to finite inputs"
+}

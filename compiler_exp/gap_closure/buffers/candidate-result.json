@@ -1,0 +1,437 @@
+{
+  "baseline": {
+    "status": "rejected",
+    "reason": "unsupported type annotation \"Buffer(f32, (3, 4), strides=(6, 1), access='read')\" (use i32, u32, i64, u64, f32 or Array of those types) (/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/buffers/fixture.py, line 7)"
+  },
+  "candidate": {
+    "passed": true,
+    "python": "3.12.10",
+    "source_sha256": "3a94e9f256f5d4b86dcb8cbe99b10876619de2bcc12f81e530ab14f61289a5f3",
+    "ptx_sha256": "ba08db6d14deeba3bb68437dca3e7097927f9902b758d62a58c58fdbec37c2fd",
+    "cases": [
+      {
+        "name": "transpose",
+        "arrays": {
+          "a": [
+            "f32",
+            [
+              0.0,
+              1.0,
+              2.0,
+              3.0,
+              4.0,
+              5.0,
+              6.0,
+              7.0,
+              8.0,
+              9.0,
+              10.0,
+              11.0,
+              12.0,
+              13.0,
+              14.0,
+              15.0
+            ]
+          ],
+          "out": [
+            "f32",
+            [
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0,
+              -999.0
+            ]
+          ],
+          "coords": [
+            "i32",
+            [
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              0,
+              3,
+              1,
+              2,
+              2,
+              0,
+              2,
+              3,
+              3,
+              0,
+              0,
+              4,
+              2147483647,
+              0,
+              -2147483648,
+              1,
+              1,
+              1,
+              1,
+              3,
+              2,
+              2,
+              0,
+              2,
+              2,
+              1
+            ]
+          ]
+        },
+        "expected": {
+          "a": [
+            0.0,
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            10.0,
+            11.0,
+            12.0,
+            13.0,
+            14.0,
+            15.0
+          ],
+          "out": [
+            0.5,
+            -999.0,
+            2.5,
+            3.5,
+            -999.0,
+            -999.0,
+            -999.0,
+            7.5,
+            8.5,
+            9.5,
+            -999.0,
+            -999.0,
+            12.5,
+            13.5,
+            14.5,
+            15.5
+          ],
+          "coords": [
+            -1,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            0,
+            3,
+            1,
+            2,
+            2,
+            0,
+            2,
+            3,
+            3,
+            0,
+            0,
+            4,
+            2147483647,
+            0,
+            -2147483648,
+            1,
+            1,
+            1,
+            1,
+            3,
+            2,
+            2,
+            0,
+            2,
+            2,
+            1
+          ]
+        },
+        "native": [
+          {
+            "level": "safe",
+            "native_sha256": "cc4a0338f666616d800b9fdbbfd6ba5a000fe59b3e8d3238e31c373372bc4dd0",
+            "registers": 16,
+            "passed": true
+          },
+          {
+            "level": "mined",
+            "native_sha256": "df9d915082a94e2149dfb66f6b98fc46ca3627654ad34528df8cd5dbc0bfaae3",
+            "registers": 16,
+            "passed": true
+          },
+          {
+            "level": "sched",
+            "native_sha256": "47d6ba3fb1f72574fab54430f6a94efae09374e8b1f86618344171f511f5c282",
+            "registers": 16,
+            "passed": true
+          },
+          {
+            "level": "opt",
+            "native_sha256": "47d6ba3fb1f72574fab54430f6a94efae09374e8b1f86618344171f511f5c282",
+            "registers": 16,
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "name": "checked_wide",
+        "arrays": {
+          "a": [
+            "i64",
+            [
+              -9223372036854775808,
+              -1,
+              0,
+              1,
+              4294967296,
+              9223372036854775807,
+              99,
+              -33
+            ]
+          ],
+          "out": [
+            "i64",
+            [
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999
+            ]
+          ],
+          "coords": [
+            "i32",
+            [
+              -2147483648,
+              -1,
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              2147483647,
+              0,
+              7,
+              -20,
+              20
+            ]
+          ],
+          "loads": [
+            "i64",
+            [
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999
+            ]
+          ]
+        },
+        "expected": {
+          "a": [
+            -9223372036854775808,
+            -1,
+            0,
+            1,
+            4294967296,
+            9223372036854775807,
+            99,
+            -33
+          ],
+          "out": [
+            -9223372036854775807,
+            0,
+            1,
+            2,
+            4294967297,
+            -9223372036854775808,
+            100,
+            -32
+          ],
+          "coords": [
+            -2147483648,
+            -1,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            2147483647,
+            0,
+            7,
+            -20,
+            20
+          ],
+          "loads": [
+            0,
+            0,
+            -9223372036854775808,
+            -1,
+            0,
+            1,
+            4294967296,
+            9223372036854775807,
+            99,
+            -33,
+            0,
+            0,
+            -9223372036854775808,
+            -33,
+            0,
+            0
+          ]
+        },
+        "native": [
+          {
+            "level": "safe",
+            "native_sha256": "683ab8606b929a5d588e5f62b7f4f4a7109bc7a2b8a88c59bccb593e6580c229",
+            "registers": 18,
+            "passed": true
+          },
+          {
+            "level": "mined",
+            "native_sha256": "f7890cc9ba7106e10a21e60b560fe11511e63ba2495af3e30de64b1dcf82c905",
+            "registers": 18,
+            "passed": true
+          },
+          {
+            "level": "sched",
+            "native_sha256": "087b36a31e960341ca2d51154276cb66c1af2601dbcc9fa2142ea9d7d16424f4",
+            "registers": 18,
+            "passed": true
+          },
+          {
+            "level": "opt",
+            "native_sha256": "087b36a31e960341ca2d51154276cb66c1af2601dbcc9fa2142ea9d7d16424f4",
+            "registers": 18,
+            "passed": true
+          }
+        ],
+        "passed": true
+      },
+      {
+        "name": "broadcast",
+        "arrays": {
+          "a": [
+            "i32",
+            [
+              11,
+              22,
+              33,
+              44
+            ]
+          ],
+          "out": [
+            "i32",
+            [
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999,
+              -999
+            ]
+          ]
+        },
+        "expected": {
+          "a": [
+            11,
+            22,
+            33,
+            44
+          ],
+          "out": [
+            11,
+            22,
+            33,
+            44,
+            11,
+            22,
+            33,
+            44,
+            11,
+            22,
+            33,
+            44
+          ]
+        },
+        "native": [
+          {
+            "level": "safe",
+            "native_sha256": "62ecaa40bea409c82354749ec7b4d4de80fd8d72c9e667da67c826bf664e08e3",
+            "registers": 16,
+            "passed": true
+          },
+          {
+            "level": "mined",
+            "native_sha256": "54b01b5f5e3e592db86b77ba0d85613d1ebec1d4d56fabfb84b18cf325a6f09d",
+            "registers": 16,
+            "passed": true
+          },
+          {
+            "level": "sched",
+            "native_sha256": "c220da7dcfb2a893806b35f8abc1bbad2f1b7b447aef43e0429261f033bcdf74",
+            "registers": 16,
+            "passed": true
+          },
+          {
+            "level": "opt",
+            "native_sha256": "c220da7dcfb2a893806b35f8abc1bbad2f1b7b447aef43e0429261f033bcdf74",
+            "registers": 16,
+            "passed": true
+          }
+        ],
+        "passed": true
+      }
+    ],
+    "hardware": "not_run",
+    "performance": "not_measured"
+  }
+}

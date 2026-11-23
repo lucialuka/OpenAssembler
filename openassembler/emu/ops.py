@@ -1096,11 +1096,12 @@ def f32_from_float(y: float) -> int:
 
 @alu("FCHK")
 def _fchk(m, th, wp, insn):
-    # FCHK P, a, b: true when a/b must take the slow path. The exact hardware rule is
-    # unmeasured; this is a CONSERVATIVE superset: any special operand, or a quotient /
-    # dividend whose exponent leaves [-125, 126] (where the RCP + Newton sequence can
-    # overflow, underflow or lose precision). Taking the slow path more often than the
-    # GPU is always correct, because the slow path handles every input.
+    # FCHK P, a, b selects the division slow path. The A100 replay in
+    # docs/compiler/gaps-verification.md measures the small-dividend guard:
+    # below 2^-102 the fast path's FMA residual can underflow and corrupt a
+    # normal quotient. The former [-125,126] dividend range missed this.
+    # Retain existing exponent/special checks elsewhere; this operational
+    # model is not a complete reconstruction of the hardware FCHK predicate.
     p, a, b = insn.ops
     av, bv = fsrc(m, th, wp, a, insn), fsrc(m, th, wp, b, insn)
     def exp(q):
@@ -1113,7 +1114,7 @@ def _fchk(m, th, wp, insn):
         m.pwr(th, wp, p, True)  # zero dividend: fast path's "FFMA ..., RZ" would drop -0's sign
         return
     ea, eb = exp(av.q), exp(bv.q)
-    m.pwr(th, wp, p, not (-125 <= ea <= 126 and -125 <= eb <= 126 and -125 <= ea - eb <= 126))
+    m.pwr(th, wp, p, not (-102 <= ea <= 126 and -125 <= eb <= 126 and -125 <= ea - eb <= 126))
 
 
 

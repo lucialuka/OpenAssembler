@@ -1,0 +1,164 @@
+..sss..........................................ss....................... [  6%]
+................................................................s......s [ 12%]
+ssssss.....................sss..................sss......sssssssssssssss [ 18%]
+ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [ 24%]
+sssssssssssssssssssssssssssssssssssssssssssssss......................... [ 30%]
+........................................................................ [ 36%]
+........................................................................ [ 42%]
+.................................ssss.................................ss [ 48%]
+ssssss.ssssssssssssssssss............................ssss............... [ 54%]
+........................................................................ [ 60%]
+................................................................ssFsssss [ 66%]
+ss...................................................................... [ 72%]
+.......................................s..................s..s.......... [ 78%]
+........................................................................ [ 84%]
+........................................................................ [ 91%]
+...................................................F...........F........ [ 97%]
+..................................                                       [100%]
+=================================== FAILURES ===================================
+____ test_persistent_model_cache_revalidates_and_never_retains_ptxas_donors ____
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-448/test_persistent_model_cache_re0')
+
+    @pytest.mark.oracle
+    def test_persistent_model_cache_revalidates_and_never_retains_ptxas_donors(tmp_path):
+        cache=tmp_path/'cache';first=tmp_path/'first';second=tmp_path/'second';repaired=tmp_path/'repaired'
+>       build_bundle(plan(),{},first,cache_dir=cache)
+
+tests/test_model_runtime.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/modelfront/kernels.py:459: in build_bundle
+    result=cached_build_bundle(plan,weights,output_dir,cache_dir=cache_dir,opt_level=opt_level,
+openassembler/modelfront/model_cache.py:130: in cached_build_bundle
+    key,inputs=key_for(plan,opt_level=opt_level,sass_listings=sass_listings);entry=cache/key
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+openassembler/modelfront/model_cache.py:44: in key_for
+    'toolchain':toolchain_identity(sass_listings),'plan':plan,'arch':'sm_80',
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+openassembler/modelfront/model_cache.py:27: in toolchain_identity
+    return {name:oracle.run_tool(name,'--version').stdout for name in names}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+openassembler/oracle.py:51: in run_tool
+    return subprocess.run(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['/private/tmp/openassembler-gap-baseline/env/cuda.sh', 'ptxas', '--version'],)
+kwargs = {'cwd': PosixPath('/private/tmp/openassembler-gap-baseline'), 'stderr': -1, 'stdout': -1, 'text': True}
+process = <Popen: returncode: 1 args: ['/private/tmp/openassembler-gap-baseline/env/cu...>
+stdout = ''
+stderr = 'env/cuda.sh: /private/tmp/openassembler-gap-baseline is outside $HOME, which is all the colima VM mounts.\n  Move the repo under /Users/lucasfang (or run colima with a mount for this path).\n'
+retcode = 1
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['/private/tmp/openassembler-gap-baseline/env/cuda.sh', 'ptxas', '--version']' returned non-zero exit status 1.
+
+/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/subprocess.py:571: CalledProcessError
+_ test_model_rejection_points_to_user_forward[x + self.bias-broadcasting is unsupported] _
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-448/test_model_rejection_points_to1')
+expression = 'x + self.bias', needle = 'broadcasting is unsupported'
+
+    @pytest.mark.parametrize('expression,needle', [('torch.sigmoid(x)','unsupported native model node'),
+                                                 ('x + self.bias','broadcasting is unsupported')])
+    def test_model_rejection_points_to_user_forward(tmp_path,expression,needle):
+        torch=pytest.importorskip('torch')
+        from openassembler.modelfront.graph import capture_model,ModelGraphError
+        source=tmp_path/'user_network.py'
+        source.write_text('import torch\nclass Net(torch.nn.Module):\n'
+                          '    def __init__(self):\n        super().__init__()\n'
+                          '        self.bias = torch.nn.Parameter(torch.zeros(3))\n'
+                          '    def forward(self,x):\n        return '+expression+'\n')
+        spec=importlib.util.spec_from_file_location('oa_user_diagnostic_test',source)
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+>       with pytest.raises(ModelGraphError,match=needle) as error:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'openassembler.modelfront.graph.ModelGraphError'>
+
+tests/test_source_diagnostics.py:57: Failed
+________ test_transformer_repo_dry_run_selects_its_configured_workload _________
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-448/test_transformer_repo_dry_run_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x11d390c50>
+
+    def test_transformer_repo_dry_run_selects_its_configured_workload(tmp_path, capsys):
+        out = tmp_path / "output"
+        assert main(["compile", str(EXAMPLE), "--frontend", "torch", "--out-dir", str(out), "--verify", "--dry-run"]) == 1
+>       assert 'legacy Inductor application frontend is disabled' in capsys.readouterr().err
+E       AssertionError: assert 'legacy Inductor application frontend is disabled' in 'error: model frontend requires a repository directory\n'
+E        +  where 'error: model frontend requires a repository directory\n' = CaptureResult(out='', err='error: model frontend requires a repository directory\n').err
+E        +    where CaptureResult(out='', err='error: model frontend requires a repository directory\n') = readouterr()
+E        +      where readouterr = <_pytest.capture.CaptureFixture object at 0x11d390c50>.readouterr
+
+tests/test_torchfront.py:24: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_model_runtime.py::test_persistent_model_cache_revalidates_and_never_retains_ptxas_donors
+FAILED tests/test_source_diagnostics.py::test_model_rejection_points_to_user_forward[x + self.bias-broadcasting is unsupported]
+FAILED tests/test_torchfront.py::test_transformer_repo_dry_run_selects_its_configured_workload
+3 failed, 984 passed, 199 skipped in 172.13s (0:02:52)

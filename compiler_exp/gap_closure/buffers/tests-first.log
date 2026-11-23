@@ -1,0 +1,322 @@
+..........................FFFFFFF                                        [100%]
+=================================== FAILURES ===================================
+_____________ test_host_bindings_fail_closed_before_launch[short] ______________
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-511/test_host_bindings_fail_closed0')
+bad = 'short'
+
+    @pytest.mark.parametrize('bad', ['short','unaligned','alias','raw_pointer','tampered'])
+    def test_host_bindings_fail_closed_before_launch(tmp_path,bad):
+>       target=bindings(tmp_path);buffers={'x':64,'y':64,'coords':64,'loads':128};args=[('buf','x',0),('buf','y',0),('buf','coords',0),('buf','loads',0)]
+               ^^^^^^^^^^^^^^^^^^
+
+tests/test_pyfront_buffers.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_pyfront_buffers.py:58: in bindings
+    ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_buffers.py','checked_wide'));kernel=parse_module(ptx).kernels['checked_wide'];contract=contract_from_ptx(ptx,kernel)
+                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = '.version 8.7\n.target sm_80\n.address_size 64\n\n// openassembler-pyfront-buffer-v1 {"buffers":[{"access":"read","ali...%rd14, %r9, 8;\n add.u64 %rd14, %rd2, %rd14;\n st.global.s64 [%rd14], %rd13;\nL_buffer_checked_2:\nL_exit:\n ret;\n}\n'
+kernel = Kernel(name='checked_wide', params=[('u64', 'a'), ('u64', 'out'), ('u64', 'coords'), ('u64', 'loads')], body=[Instr(op..., labels={'L_buffer_checked_1': 28, 'L_buffer_checked_2': 45, 'L_exit': 45}, decls=[], branchtargets={}, directives={})
+
+    def contract_from_ptx(source,kernel):
+        """Validate shaped-buffer metadata against the entry ABI and storage rules."""
+        import json
+        from openassembler.pyfront.types import Scalar
+        marker='// openassembler-pyfront-buffer-v1 '
+        records={}
+        for line in source.splitlines():
+            text=line.strip()
+            if not text.startswith(marker.rstrip()):continue
+            if not text.startswith(marker):raise ValueError('malformed checked Buffer metadata')
+            try:record=json.loads(text[len(marker):])
+            except ValueError:raise ValueError('malformed checked Buffer JSON') from None
+            if not isinstance(record,dict) or set(record)!={'schema','kernel','buffers'} or record.get('schema')!=1 or type(record['schema'])is not int or not isinstance(record['kernel'],str) or not isinstance(record['buffers'],list):raise ValueError('invalid checked Buffer schema')
+            if record['kernel'] in records:raise ValueError('duplicate checked Buffer entry')
+            records[record['kernel']]=record
+        result=records.get(kernel.name)
+        if result is None:return None
+        params=dict(kernel.params);seen=set()
+        for row in result['buffers']:
+            keys={'name','shape','strides','alignment','access','element_bytes','storage_elements'}
+>           if not isinstance(row,dict) or set(row)!=keys or row['name'] in seen or params.get(row['name'])!='u64':raise ValueError('checked Buffer does not match PTX pointer ABI')
+                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: checked Buffer does not match PTX pointer ABI
+
+openassembler/pyfront/buffers.py:119: ValueError
+___________ test_host_bindings_fail_closed_before_launch[unaligned] ____________
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-511/test_host_bindings_fail_closed1')
+bad = 'unaligned'
+
+    @pytest.mark.parametrize('bad', ['short','unaligned','alias','raw_pointer','tampered'])
+    def test_host_bindings_fail_closed_before_launch(tmp_path,bad):
+>       target=bindings(tmp_path);buffers={'x':64,'y':64,'coords':64,'loads':128};args=[('buf','x',0),('buf','y',0),('buf','coords',0),('buf','loads',0)]
+               ^^^^^^^^^^^^^^^^^^
+
+tests/test_pyfront_buffers.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_pyfront_buffers.py:58: in bindings
+    ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_buffers.py','checked_wide'));kernel=parse_module(ptx).kernels['checked_wide'];contract=contract_from_ptx(ptx,kernel)
+                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = '.version 8.7\n.target sm_80\n.address_size 64\n\n// openassembler-pyfront-buffer-v1 {"buffers":[{"access":"read","ali...%rd14, %r9, 8;\n add.u64 %rd14, %rd2, %rd14;\n st.global.s64 [%rd14], %rd13;\nL_buffer_checked_2:\nL_exit:\n ret;\n}\n'
+kernel = Kernel(name='checked_wide', params=[('u64', 'a'), ('u64', 'out'), ('u64', 'coords'), ('u64', 'loads')], body=[Instr(op..., labels={'L_buffer_checked_1': 28, 'L_buffer_checked_2': 45, 'L_exit': 45}, decls=[], branchtargets={}, directives={})
+
+    def contract_from_ptx(source,kernel):
+        """Validate shaped-buffer metadata against the entry ABI and storage rules."""
+        import json
+        from openassembler.pyfront.types import Scalar
+        marker='// openassembler-pyfront-buffer-v1 '
+        records={}
+        for line in source.splitlines():
+            text=line.strip()
+            if not text.startswith(marker.rstrip()):continue
+            if not text.startswith(marker):raise ValueError('malformed checked Buffer metadata')
+            try:record=json.loads(text[len(marker):])
+            except ValueError:raise ValueError('malformed checked Buffer JSON') from None
+            if not isinstance(record,dict) or set(record)!={'schema','kernel','buffers'} or record.get('schema')!=1 or type(record['schema'])is not int or not isinstance(record['kernel'],str) or not isinstance(record['buffers'],list):raise ValueError('invalid checked Buffer schema')
+            if record['kernel'] in records:raise ValueError('duplicate checked Buffer entry')
+            records[record['kernel']]=record
+        result=records.get(kernel.name)
+        if result is None:return None
+        params=dict(kernel.params);seen=set()
+        for row in result['buffers']:
+            keys={'name','shape','strides','alignment','access','element_bytes','storage_elements'}
+>           if not isinstance(row,dict) or set(row)!=keys or row['name'] in seen or params.get(row['name'])!='u64':raise ValueError('checked Buffer does not match PTX pointer ABI')
+                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: checked Buffer does not match PTX pointer ABI
+
+openassembler/pyfront/buffers.py:119: ValueError
+_____________ test_host_bindings_fail_closed_before_launch[alias] ______________
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-511/test_host_bindings_fail_closed2')
+bad = 'alias'
+
+    @pytest.mark.parametrize('bad', ['short','unaligned','alias','raw_pointer','tampered'])
+    def test_host_bindings_fail_closed_before_launch(tmp_path,bad):
+>       target=bindings(tmp_path);buffers={'x':64,'y':64,'coords':64,'loads':128};args=[('buf','x',0),('buf','y',0),('buf','coords',0),('buf','loads',0)]
+               ^^^^^^^^^^^^^^^^^^
+
+tests/test_pyfront_buffers.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_pyfront_buffers.py:58: in bindings
+    ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_buffers.py','checked_wide'));kernel=parse_module(ptx).kernels['checked_wide'];contract=contract_from_ptx(ptx,kernel)
+                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = '.version 8.7\n.target sm_80\n.address_size 64\n\n// openassembler-pyfront-buffer-v1 {"buffers":[{"access":"read","ali...%rd14, %r9, 8;\n add.u64 %rd14, %rd2, %rd14;\n st.global.s64 [%rd14], %rd13;\nL_buffer_checked_2:\nL_exit:\n ret;\n}\n'
+kernel = Kernel(name='checked_wide', params=[('u64', 'a'), ('u64', 'out'), ('u64', 'coords'), ('u64', 'loads')], body=[Instr(op..., labels={'L_buffer_checked_1': 28, 'L_buffer_checked_2': 45, 'L_exit': 45}, decls=[], branchtargets={}, directives={})
+
+    def contract_from_ptx(source,kernel):
+        """Validate shaped-buffer metadata against the entry ABI and storage rules."""
+        import json
+        from openassembler.pyfront.types import Scalar
+        marker='// openassembler-pyfront-buffer-v1 '
+        records={}
+        for line in source.splitlines():
+            text=line.strip()
+            if not text.startswith(marker.rstrip()):continue
+            if not text.startswith(marker):raise ValueError('malformed checked Buffer metadata')
+            try:record=json.loads(text[len(marker):])
+            except ValueError:raise ValueError('malformed checked Buffer JSON') from None
+            if not isinstance(record,dict) or set(record)!={'schema','kernel','buffers'} or record.get('schema')!=1 or type(record['schema'])is not int or not isinstance(record['kernel'],str) or not isinstance(record['buffers'],list):raise ValueError('invalid checked Buffer schema')
+            if record['kernel'] in records:raise ValueError('duplicate checked Buffer entry')
+            records[record['kernel']]=record
+        result=records.get(kernel.name)
+        if result is None:return None
+        params=dict(kernel.params);seen=set()
+        for row in result['buffers']:
+            keys={'name','shape','strides','alignment','access','element_bytes','storage_elements'}
+>           if not isinstance(row,dict) or set(row)!=keys or row['name'] in seen or params.get(row['name'])!='u64':raise ValueError('checked Buffer does not match PTX pointer ABI')
+                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: checked Buffer does not match PTX pointer ABI
+
+openassembler/pyfront/buffers.py:119: ValueError
+__________ test_host_bindings_fail_closed_before_launch[raw_pointer] ___________
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-511/test_host_bindings_fail_closed3')
+bad = 'raw_pointer'
+
+    @pytest.mark.parametrize('bad', ['short','unaligned','alias','raw_pointer','tampered'])
+    def test_host_bindings_fail_closed_before_launch(tmp_path,bad):
+>       target=bindings(tmp_path);buffers={'x':64,'y':64,'coords':64,'loads':128};args=[('buf','x',0),('buf','y',0),('buf','coords',0),('buf','loads',0)]
+               ^^^^^^^^^^^^^^^^^^
+
+tests/test_pyfront_buffers.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_pyfront_buffers.py:58: in bindings
+    ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_buffers.py','checked_wide'));kernel=parse_module(ptx).kernels['checked_wide'];contract=contract_from_ptx(ptx,kernel)
+                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = '.version 8.7\n.target sm_80\n.address_size 64\n\n// openassembler-pyfront-buffer-v1 {"buffers":[{"access":"read","ali...%rd14, %r9, 8;\n add.u64 %rd14, %rd2, %rd14;\n st.global.s64 [%rd14], %rd13;\nL_buffer_checked_2:\nL_exit:\n ret;\n}\n'
+kernel = Kernel(name='checked_wide', params=[('u64', 'a'), ('u64', 'out'), ('u64', 'coords'), ('u64', 'loads')], body=[Instr(op..., labels={'L_buffer_checked_1': 28, 'L_buffer_checked_2': 45, 'L_exit': 45}, decls=[], branchtargets={}, directives={})
+
+    def contract_from_ptx(source,kernel):
+        """Validate shaped-buffer metadata against the entry ABI and storage rules."""
+        import json
+        from openassembler.pyfront.types import Scalar
+        marker='// openassembler-pyfront-buffer-v1 '
+        records={}
+        for line in source.splitlines():
+            text=line.strip()
+            if not text.startswith(marker.rstrip()):continue
+            if not text.startswith(marker):raise ValueError('malformed checked Buffer metadata')
+            try:record=json.loads(text[len(marker):])
+            except ValueError:raise ValueError('malformed checked Buffer JSON') from None
+            if not isinstance(record,dict) or set(record)!={'schema','kernel','buffers'} or record.get('schema')!=1 or type(record['schema'])is not int or not isinstance(record['kernel'],str) or not isinstance(record['buffers'],list):raise ValueError('invalid checked Buffer schema')
+            if record['kernel'] in records:raise ValueError('duplicate checked Buffer entry')
+            records[record['kernel']]=record
+        result=records.get(kernel.name)
+        if result is None:return None
+        params=dict(kernel.params);seen=set()
+        for row in result['buffers']:
+            keys={'name','shape','strides','alignment','access','element_bytes','storage_elements'}
+>           if not isinstance(row,dict) or set(row)!=keys or row['name'] in seen or params.get(row['name'])!='u64':raise ValueError('checked Buffer does not match PTX pointer ABI')
+                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: checked Buffer does not match PTX pointer ABI
+
+openassembler/pyfront/buffers.py:119: ValueError
+____________ test_host_bindings_fail_closed_before_launch[tampered] ____________
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-511/test_host_bindings_fail_closed4')
+bad = 'tampered'
+
+    @pytest.mark.parametrize('bad', ['short','unaligned','alias','raw_pointer','tampered'])
+    def test_host_bindings_fail_closed_before_launch(tmp_path,bad):
+>       target=bindings(tmp_path);buffers={'x':64,'y':64,'coords':64,'loads':128};args=[('buf','x',0),('buf','y',0),('buf','coords',0),('buf','loads',0)]
+               ^^^^^^^^^^^^^^^^^^
+
+tests/test_pyfront_buffers.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_pyfront_buffers.py:58: in bindings
+    ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_buffers.py','checked_wide'));kernel=parse_module(ptx).kernels['checked_wide'];contract=contract_from_ptx(ptx,kernel)
+                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = '.version 8.7\n.target sm_80\n.address_size 64\n\n// openassembler-pyfront-buffer-v1 {"buffers":[{"access":"read","ali...%rd14, %r9, 8;\n add.u64 %rd14, %rd2, %rd14;\n st.global.s64 [%rd14], %rd13;\nL_buffer_checked_2:\nL_exit:\n ret;\n}\n'
+kernel = Kernel(name='checked_wide', params=[('u64', 'a'), ('u64', 'out'), ('u64', 'coords'), ('u64', 'loads')], body=[Instr(op..., labels={'L_buffer_checked_1': 28, 'L_buffer_checked_2': 45, 'L_exit': 45}, decls=[], branchtargets={}, directives={})
+
+    def contract_from_ptx(source,kernel):
+        """Validate shaped-buffer metadata against the entry ABI and storage rules."""
+        import json
+        from openassembler.pyfront.types import Scalar
+        marker='// openassembler-pyfront-buffer-v1 '
+        records={}
+        for line in source.splitlines():
+            text=line.strip()
+            if not text.startswith(marker.rstrip()):continue
+            if not text.startswith(marker):raise ValueError('malformed checked Buffer metadata')
+            try:record=json.loads(text[len(marker):])
+            except ValueError:raise ValueError('malformed checked Buffer JSON') from None
+            if not isinstance(record,dict) or set(record)!={'schema','kernel','buffers'} or record.get('schema')!=1 or type(record['schema'])is not int or not isinstance(record['kernel'],str) or not isinstance(record['buffers'],list):raise ValueError('invalid checked Buffer schema')
+            if record['kernel'] in records:raise ValueError('duplicate checked Buffer entry')
+            records[record['kernel']]=record
+        result=records.get(kernel.name)
+        if result is None:return None
+        params=dict(kernel.params);seen=set()
+        for row in result['buffers']:
+            keys={'name','shape','strides','alignment','access','element_bytes','storage_elements'}
+>           if not isinstance(row,dict) or set(row)!=keys or row['name'] in seen or params.get(row['name'])!='u64':raise ValueError('checked Buffer does not match PTX pointer ABI')
+                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: checked Buffer does not match PTX pointer ABI
+
+openassembler/pyfront/buffers.py:119: ValueError
+_________ test_host_nonoverlap_views_and_readonly_broadcast_are_valid __________
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-511/test_host_nonoverlap_views_and0')
+
+    def test_host_nonoverlap_views_and_readonly_broadcast_are_valid(tmp_path):
+>       target=bindings(tmp_path);buffers={'storage':128,'coords':64,'loads':128};args=[('buf','storage',0),('buf','storage',64),('buf','coords',0),('buf','loads',0)]
+               ^^^^^^^^^^^^^^^^^^
+
+tests/test_pyfront_buffers.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_pyfront_buffers.py:58: in bindings
+    ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_buffers.py','checked_wide'));kernel=parse_module(ptx).kernels['checked_wide'];contract=contract_from_ptx(ptx,kernel)
+                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = '.version 8.7\n.target sm_80\n.address_size 64\n\n// openassembler-pyfront-buffer-v1 {"buffers":[{"access":"read","ali...%rd14, %r9, 8;\n add.u64 %rd14, %rd2, %rd14;\n st.global.s64 [%rd14], %rd13;\nL_buffer_checked_2:\nL_exit:\n ret;\n}\n'
+kernel = Kernel(name='checked_wide', params=[('u64', 'a'), ('u64', 'out'), ('u64', 'coords'), ('u64', 'loads')], body=[Instr(op..., labels={'L_buffer_checked_1': 28, 'L_buffer_checked_2': 45, 'L_exit': 45}, decls=[], branchtargets={}, directives={})
+
+    def contract_from_ptx(source,kernel):
+        """Validate shaped-buffer metadata against the entry ABI and storage rules."""
+        import json
+        from openassembler.pyfront.types import Scalar
+        marker='// openassembler-pyfront-buffer-v1 '
+        records={}
+        for line in source.splitlines():
+            text=line.strip()
+            if not text.startswith(marker.rstrip()):continue
+            if not text.startswith(marker):raise ValueError('malformed checked Buffer metadata')
+            try:record=json.loads(text[len(marker):])
+            except ValueError:raise ValueError('malformed checked Buffer JSON') from None
+            if not isinstance(record,dict) or set(record)!={'schema','kernel','buffers'} or record.get('schema')!=1 or type(record['schema'])is not int or not isinstance(record['kernel'],str) or not isinstance(record['buffers'],list):raise ValueError('invalid checked Buffer schema')
+            if record['kernel'] in records:raise ValueError('duplicate checked Buffer entry')
+            records[record['kernel']]=record
+        result=records.get(kernel.name)
+        if result is None:return None
+        params=dict(kernel.params);seen=set()
+        for row in result['buffers']:
+            keys={'name','shape','strides','alignment','access','element_bytes','storage_elements'}
+>           if not isinstance(row,dict) or set(row)!=keys or row['name'] in seen or params.get(row['name'])!='u64':raise ValueError('checked Buffer does not match PTX pointer ABI')
+                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: checked Buffer does not match PTX pointer ABI
+
+openassembler/pyfront/buffers.py:119: ValueError
+________________ test_buffer_metadata_and_verifier_fail_closed _________________
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-511/test_buffer_metadata_and_verif0')
+
+    def test_buffer_metadata_and_verifier_fail_closed(tmp_path):
+>       target=bindings(tmp_path);source=(tmp_path/'source.ptx').read_text();kernel=parse_module(source).kernels['checked_wide']
+               ^^^^^^^^^^^^^^^^^^
+
+tests/test_pyfront_buffers.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_pyfront_buffers.py:58: in bindings
+    ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_buffers.py','checked_wide'));kernel=parse_module(ptx).kernels['checked_wide'];contract=contract_from_ptx(ptx,kernel)
+                                                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+source = '.version 8.7\n.target sm_80\n.address_size 64\n\n// openassembler-pyfront-buffer-v1 {"buffers":[{"access":"read","ali...%rd14, %r9, 8;\n add.u64 %rd14, %rd2, %rd14;\n st.global.s64 [%rd14], %rd13;\nL_buffer_checked_2:\nL_exit:\n ret;\n}\n'
+kernel = Kernel(name='checked_wide', params=[('u64', 'a'), ('u64', 'out'), ('u64', 'coords'), ('u64', 'loads')], body=[Instr(op..., labels={'L_buffer_checked_1': 28, 'L_buffer_checked_2': 45, 'L_exit': 45}, decls=[], branchtargets={}, directives={})
+
+    def contract_from_ptx(source,kernel):
+        """Validate shaped-buffer metadata against the entry ABI and storage rules."""
+        import json
+        from openassembler.pyfront.types import Scalar
+        marker='// openassembler-pyfront-buffer-v1 '
+        records={}
+        for line in source.splitlines():
+            text=line.strip()
+            if not text.startswith(marker.rstrip()):continue
+            if not text.startswith(marker):raise ValueError('malformed checked Buffer metadata')
+            try:record=json.loads(text[len(marker):])
+            except ValueError:raise ValueError('malformed checked Buffer JSON') from None
+            if not isinstance(record,dict) or set(record)!={'schema','kernel','buffers'} or record.get('schema')!=1 or type(record['schema'])is not int or not isinstance(record['kernel'],str) or not isinstance(record['buffers'],list):raise ValueError('invalid checked Buffer schema')
+            if record['kernel'] in records:raise ValueError('duplicate checked Buffer entry')
+            records[record['kernel']]=record
+        result=records.get(kernel.name)
+        if result is None:return None
+        params=dict(kernel.params);seen=set()
+        for row in result['buffers']:
+            keys={'name','shape','strides','alignment','access','element_bytes','storage_elements'}
+>           if not isinstance(row,dict) or set(row)!=keys or row['name'] in seen or params.get(row['name'])!='u64':raise ValueError('checked Buffer does not match PTX pointer ABI')
+                                                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           ValueError: checked Buffer does not match PTX pointer ABI
+
+openassembler/pyfront/buffers.py:119: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_pyfront_buffers.py::test_host_bindings_fail_closed_before_launch[short]
+FAILED tests/test_pyfront_buffers.py::test_host_bindings_fail_closed_before_launch[unaligned]
+FAILED tests/test_pyfront_buffers.py::test_host_bindings_fail_closed_before_launch[alias]
+FAILED tests/test_pyfront_buffers.py::test_host_bindings_fail_closed_before_launch[raw_pointer]
+FAILED tests/test_pyfront_buffers.py::test_host_bindings_fail_closed_before_launch[tampered]
+FAILED tests/test_pyfront_buffers.py::test_host_nonoverlap_views_and_readonly_broadcast_are_valid
+FAILED tests/test_pyfront_buffers.py::test_buffer_metadata_and_verifier_fail_closed
+7 failed, 26 passed in 0.34s

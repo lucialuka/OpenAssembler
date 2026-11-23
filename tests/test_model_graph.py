@@ -218,7 +218,7 @@ def test_native_mse_backward_and_sgd_match_cpu_reference():
     assert "training" not in base
 
 
-@pytest.mark.parametrize("bad", [torch.nn.Sigmoid(), torch.nn.Dropout()])
+@pytest.mark.parametrize("bad", [torch.nn.SiLU(), torch.nn.Dropout()])
 def test_unsupported_operator_fails_with_fx_node(bad):
     with pytest.raises(ModelGraphError, match="unsupported native model node"):
         capture_model(torch.nn.Sequential(bad), (torch.randn(2, 3),))

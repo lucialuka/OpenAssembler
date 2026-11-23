@@ -146,6 +146,12 @@ steps = 3
 build_backend = "modal"
 ```
 
+Set `profile_iterations = 3` with `steps = 4` to profile the final three verified
+iterations after one preceding step. The default profiles only the last verified
+iteration. Reports retain per-contract kernel samples/resources and distinguish
+profiled from profiler-free whole-step samples; profiling adds no optimizer
+updates. See the [profiling contract](compiler/gaps-profiling.md).
+
 Optional training configuration adds execution = "cuda_graph" for fixed-storage
 OA training replay and sass_listings = false for binary-only output. Input
 values change in place. Preparation executes no optimizer update; each replay

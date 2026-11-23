@@ -131,6 +131,13 @@ integer add/sub saturation and predicate `.ftz` semantics.
 
 ## Final regression limits
 
+The limits below describe the retained November 19 run. The November 20
+[exact-division investigation](gaps-verification.md) subsequently isolated the
+fixed counterexample to emulator FCHK slow-path selection and repaired its
+measured small-dividend guard. Hardware passes 3,409 exact quotients across all
+four OA levels; general FCHK predicate reconstruction remains incomplete. The
+old failed records below remain historical evidence.
+
 The [machine-readable validation record](../../compiler_exp/semantic_acceptance/validation.json)
 binds the checks, raw failures, source/hardware records and explicit limits.
 

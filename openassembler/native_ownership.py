@@ -5,6 +5,7 @@ the build records hashes only after comparing every executable word to OA output
 """
 from __future__ import annotations
 import hashlib
+from copy import deepcopy
 from openassembler.container.elf import Elf,EM_CUDA
 
 
@@ -26,9 +27,13 @@ def record(binary,kernels,*,ptx_sha256):
     if set(texts)!={k['name'] for k in kernels} or any(k.get('compiled_by')!='openassembler' for k in kernels):
         raise ValueError("native ownership requires complete OA executable text coverage")
     for kernel in kernels:
-        texts[kernel['name']]['params']=kernel['params']
+        texts[kernel['name']]['params']=deepcopy(kernel['params'])
         if kernel.get('ptx_directives'):
-            texts[kernel['name']]['ptx_directives']=kernel['ptx_directives']
+            texts[kernel['name']]['ptx_directives']=deepcopy(kernel['ptx_directives'])
+        if kernel.get('buffer_contract') is not None:
+            texts[kernel['name']]['buffer_contract']=deepcopy(kernel['buffer_contract'])
+        if kernel.get('parameter_attributes'):
+            texts[kernel['name']]['parameter_attributes']=deepcopy(kernel['parameter_attributes'])
     return {'schema':1,'arch':'sm_80','cubin_sha256':hashlib.sha256(binary).hexdigest(),
             'ptx_sha256':ptx_sha256,'kernels':texts}
 
@@ -49,6 +54,10 @@ def validate(entry,binary):
         texts[kernel['name']]['params']=kernel['params']
         if kernel.get('ptx_directives'):
             texts[kernel['name']]['ptx_directives']=kernel['ptx_directives']
+        if kernel.get('buffer_contract') is not None:
+            texts[kernel['name']]['buffer_contract']=kernel['buffer_contract']
+        if kernel.get('parameter_attributes'):
+            texts[kernel['name']]['parameter_attributes']=kernel['parameter_attributes']
     if set(texts)!={k['name'] for k in kernels} or texts!=proof.get('kernels'):
         raise ValueError("native module text/register/ABI inventory differs from its OA build")
     return binary

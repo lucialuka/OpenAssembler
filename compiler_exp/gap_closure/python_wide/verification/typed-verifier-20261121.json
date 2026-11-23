@@ -1,0 +1,1055 @@
+{
+  "schema": 1,
+  "python": "3.14.5 (main, Jun  2 2026, 22:28:56) [Clang 22.1.3 ]",
+  "scope": "Offline metadata/ABI/element-width checker experiment; no hardware or general memory-safety claim",
+  "baseline": {
+    "status": "rejected",
+    "exception": "TypeError",
+    "reason": "run_and_diff() got an unexpected keyword argument 'parameter_contract'",
+    "legacy_mismatches": [],
+    "legacy_ptx_parameter_values": [
+      {
+        "input": 139637976727552,
+        "output": 139637976731648,
+        "value": 139637976735744,
+        "n": 19
+      }
+    ],
+    "typed_expected_u64_scalar": 9223372036854775808,
+    "legacy_observation": "u64 data scalar was guessed to be a pointer; no typed coverage claim"
+  },
+  "positive_results": [
+    {
+      "dtype": "f32",
+      "seed": 0,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"f32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"f32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"f32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .f32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .f32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.f32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.f32 %x,[%src]; add.rn.f32 %x,%x,%value;\nst.global.f32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "f32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "f32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "f32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "f32",
+      "seed": 3,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"f32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"f32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"f32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .f32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .f32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.f32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.f32 %x,[%src]; add.rn.f32 %x,%x,%value;\nst.global.f32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "f32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "f32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "f32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "f32",
+      "seed": 4,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"f32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"f32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"f32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .f32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .f32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.f32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.f32 %x,[%src]; add.rn.f32 %x,%x,%value;\nst.global.f32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "f32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "f32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "f32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "f32",
+      "seed": 6,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"f32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"f32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"f32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .f32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .f32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.f32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.f32 %x,[%src]; add.rn.f32 %x,%x,%value;\nst.global.f32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "f32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "f32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "f32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "s32",
+      "seed": 0,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"s32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"s32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"s32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .s32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .s32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.s32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.s32 %x,[%src]; add.s32 %x,%x,%value;\nst.global.s32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "s32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "s32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "s32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "s32",
+      "seed": 3,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"s32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"s32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"s32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .s32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .s32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.s32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.s32 %x,[%src]; add.s32 %x,%x,%value;\nst.global.s32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "s32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "s32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "s32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "s32",
+      "seed": 4,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"s32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"s32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"s32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .s32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .s32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.s32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.s32 %x,[%src]; add.s32 %x,%x,%value;\nst.global.s32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "s32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "s32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "s32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "s32",
+      "seed": 6,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"s32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"s32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"s32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .s32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .s32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.s32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.s32 %x,[%src]; add.s32 %x,%x,%value;\nst.global.s32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "s32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "s32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "s32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "u32",
+      "seed": 0,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"u32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"u32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"u32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .u32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .u32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.u32 %x,[%src]; add.u32 %x,%x,%value;\nst.global.u32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "u32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "u32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "u32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "u32",
+      "seed": 3,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"u32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"u32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"u32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .u32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .u32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.u32 %x,[%src]; add.u32 %x,%x,%value;\nst.global.u32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "u32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "u32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "u32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "u32",
+      "seed": 4,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"u32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"u32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"u32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .u32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .u32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.u32 %x,[%src]; add.u32 %x,%x,%value;\nst.global.u32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "u32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "u32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "u32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "u32",
+      "seed": 6,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"u32\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"u32\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"u32\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .u32 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .u32 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.u32 %x,[%src]; add.u32 %x,%x,%value;\nst.global.u32 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "u32"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "u32"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "u32"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "s64",
+      "seed": 0,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"s64\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"s64\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"s64\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .s64 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .s64 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.s64 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,8; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.s64 %x,[%src]; add.s64 %x,%x,%value;\nst.global.s64 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "s64"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "s64"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "s64"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "s64",
+      "seed": 3,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"s64\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"s64\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"s64\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .s64 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .s64 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.s64 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,8; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.s64 %x,[%src]; add.s64 %x,%x,%value;\nst.global.s64 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "s64"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "s64"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "s64"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "s64",
+      "seed": 4,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"s64\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"s64\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"s64\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .s64 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .s64 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.s64 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,8; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.s64 %x,[%src]; add.s64 %x,%x,%value;\nst.global.s64 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "s64"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "s64"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "s64"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "s64",
+      "seed": 6,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"s64\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"s64\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"s64\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .s64 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .s64 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.s64 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,8; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.s64 %x,[%src]; add.s64 %x,%x,%value;\nst.global.s64 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "s64"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "s64"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "s64"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "u64",
+      "seed": 0,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"u64\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"u64\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"u64\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .u64 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .u64 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u64 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,8; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.u64 %x,[%src]; add.u64 %x,%x,%value;\nst.global.u64 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "u64"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "u64"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "u64"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "u64",
+      "seed": 3,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"u64\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"u64\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"u64\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .u64 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .u64 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u64 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,8; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.u64 %x,[%src]; add.u64 %x,%x,%value;\nst.global.u64 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "u64"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "u64"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "u64"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "u64",
+      "seed": 4,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"u64\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"u64\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"u64\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .u64 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .u64 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u64 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,8; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.u64 %x,[%src]; add.u64 %x,%x,%value;\nst.global.u64 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "u64"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "u64"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "u64"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    },
+    {
+      "dtype": "u64",
+      "seed": 6,
+      "passed": true,
+      "source": "// openassembler-pyfront-types-v1 {\"schema\": 1, \"kernel\": \"typed\", \"parameters\": [{\"name\": \"input\", \"kind\": \"array\", \"dtype\": \"u64\"}, {\"name\": \"output\", \"kind\": \"array\", \"dtype\": \"u64\"}, {\"name\": \"value\", \"kind\": \"scalar\", \"dtype\": \"u64\"}, {\"name\": \"n\", \"kind\": \"scalar\", \"dtype\": \"u32\"}]}\n.version 8.7\n.target sm_80\n.address_size 64\n.visible .entry typed(.param .u64 input,.param .u64 output,.param .u64 value,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst;\n.reg .u64 %value,%x; .reg .u32 %t,%n; .reg .pred %end;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u64 %value,[value];\nld.param.u32 %n,[n]; mov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,8; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nld.global.u64 %x,[%src]; add.u64 %x,%x,%value;\nst.global.u64 [%dst],%x;\nDONE: ret; }\n",
+      "contract": {
+        "schema": 1,
+        "kernel": "typed",
+        "parameters": [
+          {
+            "name": "input",
+            "kind": "array",
+            "dtype": "u64"
+          },
+          {
+            "name": "output",
+            "kind": "array",
+            "dtype": "u64"
+          },
+          {
+            "name": "value",
+            "kind": "scalar",
+            "dtype": "u64"
+          },
+          {
+            "name": "n",
+            "kind": "scalar",
+            "dtype": "u32"
+          }
+        ]
+      },
+      "mismatches": []
+    }
+  ],
+  "high_word_corruption": {
+    "rejected": true,
+    "mismatches": [
+      {
+        "param": "output",
+        "index": 2,
+        "ours": 4294967295,
+        "expected": 9223372036854775807
+      },
+      {
+        "param": "output",
+        "index": 3,
+        "ours": 0,
+        "expected": 9223372036854775808
+      },
+      {
+        "param": "output",
+        "index": 4,
+        "ours": 4294967295,
+        "expected": 18446744073709551615
+      },
+      {
+        "param": "output",
+        "index": 6,
+        "ours": 0,
+        "expected": 4294967296
+      },
+      {
+        "param": "output",
+        "index": 7,
+        "ours": 610839776,
+        "expected": 1393753992385309920
+      },
+      {
+        "param": "output",
+        "index": 8,
+        "ours": 3626764237,
+        "expected": 7106521602475165645
+      },
+      {
+        "param": "output",
+        "index": 9,
+        "ours": 3255389356,
+        "expected": 16422101724900707500
+      },
+      {
+        "param": "output",
+        "index": 10,
+        "ours": 1806341205,
+        "expected": 746805015404516437
+      },
+      {
+        "param": "output",
+        "index": 11,
+        "ours": 1112038970,
+        "expected": 17809683713383489082
+      },
+      {
+        "param": "output",
+        "index": 12,
+        "ours": 2195908194,
+        "expected": 8963783824838420066
+      },
+      {
+        "param": "output",
+        "index": 13,
+        "ours": 1739178872,
+        "expected": 16938433693753131896
+      },
+      {
+        "param": "output",
+        "index": 14,
+        "ours": 3366389305,
+        "expected": 15308084094301570617
+      },
+      {
+        "param": "output",
+        "index": 15,
+        "ours": 1302718217,
+        "expected": 17852758786694309641
+      },
+      {
+        "param": "output",
+        "index": 16,
+        "ours": 2046968324,
+        "expected": 6604845167042249220
+      },
+      {
+        "param": "output",
+        "index": 17,
+        "ours": 2505606783,
+        "expected": 16448235973081859711
+      },
+      {
+        "param": "output",
+        "index": 18,
+        "ours": 3900315155,
+        "expected": 4029557120079369747
+      },
+      {
+        "param": "output:poisoned",
+        "index": 0,
+        "ours": 10171922058166927360,
+        "expected": 0
+      },
+      {
+        "param": "output:poisoned",
+        "index": 1,
+        "ours": 10171922058166927361,
+        "expected": 1
+      },
+      {
+        "param": "output:poisoned",
+        "index": 2,
+        "ours": 10171922062461894655,
+        "expected": 9223372036854775807
+      },
+      {
+        "param": "output:poisoned",
+        "index": 3,
+        "ours": 10171922058166927360,
+        "expected": 9223372036854775808
+      },
+      {
+        "param": "output:poisoned",
+        "index": 4,
+        "ours": 10171922062461894655,
+        "expected": 18446744073709551615
+      },
+      {
+        "param": "output:poisoned",
+        "index": 5,
+        "ours": 10171922062461894655,
+        "expected": 4294967295
+      },
+      {
+        "param": "output:poisoned",
+        "index": 6,
+        "ours": 10171922058166927360,
+        "expected": 4294967296
+      },
+      {
+        "param": "output:poisoned",
+        "index": 7,
+        "ours": 10171922058777767136,
+        "expected": 1393753992385309920
+      },
+      {
+        "param": "output:poisoned",
+        "index": 8,
+        "ours": 10171922061793691597,
+        "expected": 7106521602475165645
+      },
+      {
+        "param": "output:poisoned",
+        "index": 9,
+        "ours": 10171922061422316716,
+        "expected": 16422101724900707500
+      },
+      {
+        "param": "output:poisoned",
+        "index": 10,
+        "ours": 10171922059973268565,
+        "expected": 746805015404516437
+      },
+      {
+        "param": "output:poisoned",
+        "index": 11,
+        "ours": 10171922059278966330,
+        "expected": 17809683713383489082
+      },
+      {
+        "param": "output:poisoned",
+        "index": 12,
+        "ours": 10171922060362835554,
+        "expected": 8963783824838420066
+      },
+      {
+        "param": "output:poisoned",
+        "index": 13,
+        "ours": 10171922059906106232,
+        "expected": 16938433693753131896
+      },
+      {
+        "param": "output:poisoned",
+        "index": 14,
+        "ours": 10171922061533316665,
+        "expected": 15308084094301570617
+      },
+      {
+        "param": "output:poisoned",
+        "index": 15,
+        "ours": 10171922059469645577,
+        "expected": 17852758786694309641
+      },
+      {
+        "param": "output:poisoned",
+        "index": 16,
+        "ours": 10171922060213895684,
+        "expected": 6604845167042249220
+      },
+      {
+        "param": "output:poisoned",
+        "index": 17,
+        "ours": 10171922060672534143,
+        "expected": 16448235973081859711
+      },
+      {
+        "param": "output:poisoned",
+        "index": 18,
+        "ours": 10171922062067242515,
+        "expected": 4029557120079369747
+      }
+    ]
+  },
+  "matching_out_of_bounds_write": {
+    "rejected": true,
+    "mismatches": [
+      {
+        "param": "output:sass-guard",
+        "index": 64,
+        "ours": 224,
+        "expected": 165
+      },
+      {
+        "param": "output:sass-guard",
+        "index": 65,
+        "ours": 172,
+        "expected": 165
+      },
+      {
+        "param": "output:sass-guard",
+        "index": 66,
+        "ours": 104,
+        "expected": 165
+      },
+      {
+        "param": "output:sass-guard",
+        "index": 67,
+        "ours": 36,
+        "expected": 165
+      },
+      {
+        "param": "output:sass-guard",
+        "index": 68,
+        "ours": 223,
+        "expected": 165
+      },
+      {
+        "param": "output:sass-guard",
+        "index": 69,
+        "ours": 155,
+        "expected": 165
+      },
+      {
+        "param": "output:sass-guard",
+        "index": 70,
+        "ours": 87,
+        "expected": 165
+      },
+      {
+        "param": "output:sass-guard",
+        "index": 71,
+        "ours": 19,
+        "expected": 165
+      },
+      {
+        "param": "output:poisoned-guard",
+        "index": 64,
+        "ours": 224,
+        "expected": 165
+      },
+      {
+        "param": "output:poisoned-guard",
+        "index": 65,
+        "ours": 172,
+        "expected": 165
+      },
+      {
+        "param": "output:poisoned-guard",
+        "index": 66,
+        "ours": 104,
+        "expected": 165
+      },
+      {
+        "param": "output:poisoned-guard",
+        "index": 67,
+        "ours": 36,
+        "expected": 165
+      },
+      {
+        "param": "output:poisoned-guard",
+        "index": 68,
+        "ours": 223,
+        "expected": 165
+      },
+      {
+        "param": "output:poisoned-guard",
+        "index": 69,
+        "ours": 155,
+        "expected": 165
+      },
+      {
+        "param": "output:poisoned-guard",
+        "index": 70,
+        "ours": 87,
+        "expected": 165
+      },
+      {
+        "param": "output:poisoned-guard",
+        "index": 71,
+        "ours": 19,
+        "expected": 165
+      },
+      {
+        "param": "output:ptx-guard",
+        "index": 64,
+        "ours": 224,
+        "expected": 165
+      },
+      {
+        "param": "output:ptx-guard",
+        "index": 65,
+        "ours": 172,
+        "expected": 165
+      },
+      {
+        "param": "output:ptx-guard",
+        "index": 66,
+        "ours": 104,
+        "expected": 165
+      },
+      {
+        "param": "output:ptx-guard",
+        "index": 67,
+        "ours": 36,
+        "expected": 165
+      },
+      {
+        "param": "output:ptx-guard",
+        "index": 68,
+        "ours": 223,
+        "expected": 165
+      },
+      {
+        "param": "output:ptx-guard",
+        "index": 69,
+        "ours": 155,
+        "expected": 165
+      },
+      {
+        "param": "output:ptx-guard",
+        "index": 70,
+        "ours": 87,
+        "expected": 165
+      },
+      {
+        "param": "output:ptx-guard",
+        "index": 71,
+        "ours": 19,
+        "expected": 165
+      }
+    ]
+  },
+  "source_hashes": {
+    "openassembler/verify.py": "584b6107518ea953f0d273d2373b0c703b3d918a05b447bf525973301b609a9d",
+    "tests/test_verify_typed.py": "735eb355f24bdf8b87bc82631036f4b9d8c29b20957a66576b20a28b842b0829",
+    "tests/test_verify.py": "a13c03b30582bdd96c6dd87800a9404011138a9165fa5b7ce024dd8c215982db",
+    "compiler_exp/gap_closure/python_wide/verification/experiment.py": "03f40311ede578b9ccaf2347283f036aeee0bfcf4a57a7ecd82af307a02d82f6",
+    "compiler_exp/gap_closure/python_wide/verification/baseline-verify.py": "82ce424fa60e608814cd780278aeaee723c8a7074167e0880d29730fd10349bb"
+  },
+  "passed": true
+}

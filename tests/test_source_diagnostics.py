@@ -42,8 +42,8 @@ def test_color_detection_resolves_current_stream_and_tolerates_closed_stream(mon
     assert supports_color(closed) is False
 
 
-@pytest.mark.parametrize('expression,needle', [('torch.sigmoid(x)','unsupported native model node'),
-                                             ('x + self.bias','broadcasting is unsupported')])
+@pytest.mark.parametrize('expression,needle', [('torch.sin(x)','unsupported native model node'),
+                                             ('torch.add(x, self.bias, alpha=2)','add alpha other than one is unsupported')])
 def test_model_rejection_points_to_user_forward(tmp_path,expression,needle):
     torch=pytest.importorskip('torch')
     from openassembler.modelfront.graph import capture_model,ModelGraphError
@@ -57,3 +57,20 @@ def test_model_rejection_points_to_user_forward(tmp_path,expression,needle):
     with pytest.raises(ModelGraphError,match=needle) as error:
         capture_model(module.Net(),[torch.ones(2,3)])
     assert f'{source}:7 in forward' in str(error.value)
+
+
+def test_supported_bias_broadcasting_is_captured():
+    torch=pytest.importorskip('torch')
+    from openassembler.modelfront.graph import capture_model,extract_weights
+    from openassembler.modelfront.kernels import prepare
+    from openassembler.modelfront.reference import CPUReference
+    class Net(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.bias=torch.nn.Parameter(torch.tensor([-1.,0.,2.]))
+        def forward(self,x):return x+self.bias
+    model=Net();x=torch.arange(6,dtype=torch.float32).reshape(2,3)
+    plan=capture_model(model,[x]);prepare(plan)
+    assert plan['steps'][0]['kernel']=='broadcast_add'
+    actual=CPUReference(plan,extract_weights(model,plan)).forward({'x':x})
+    torch.testing.assert_close(actual[plan['outputs'][0]],model(x))

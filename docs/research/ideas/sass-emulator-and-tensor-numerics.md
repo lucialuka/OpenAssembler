@@ -10,6 +10,13 @@ Run the generated assembly in a software model before allocating a GPU. Model pe
 
 ## Findings and implementation decision
 
+The [exact-division investigation](../../compiler/gaps-verification.md) resolves
+the retained one-ULP mismatch by measuring A100 FCHK slow-path selection and
+repairing the emulator's small-dividend guard. All 3,409 exact quotient controls
+pass across the four OA optimization levels; general hardware FCHK predicate
+reconstruction remains incomplete. Emulator sampling now uses stable seeds and
+retains an always-running fixed-counterexample regression.
+
 The emulator supports the recorded scalar and tensor families, including HMMA/IMMA/DMMA, LDSM and asynchronous-copy probes. Recorded finite tensor cases match 512/512 lanes per tested family, including FP16, BF16, TF32, integer and FP64 tensor operations. This does not mean the production compiler generates all those modes; its native GEMM input contract remains FP16/BF16.
 
 Earlier faults exposed uniform operations executed once per thread instead of once per warp, truncated wide-register reads, shared-memory races, uninitialized transpose inputs and special floating-point cases. Those faulty probes are excluded explicitly in replay tests.

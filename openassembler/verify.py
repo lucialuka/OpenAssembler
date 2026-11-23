@@ -27,16 +27,19 @@ from __future__ import annotations
 
 import random
 import struct
+import json
 from dataclasses import dataclass
 
 from openassembler.emu.machine import Launch as SassLaunch
 from openassembler.emu.machine import Machine, Memory
 from openassembler.ptx.interp import Launch as InterpLaunch
 from openassembler.ptx.interp import run_kernel
-from openassembler.ptx.parse import Kernel, Module
+from openassembler.ptx.parse import Kernel, Module, parse_module
 
 _SCALAR_FMT = {"u32": "<I", "s32": "<i", "f32": "<f", "u64": "<Q", "s64": "<q", "f64": "<d"}
 PARAM_BASE = {"sm_80": 0x160, "sm_86": 0x160, "sm_89": 0x160, "sm_90": 0x210, "sm_100": 0x380}
+_TYPE_METADATA = '// openassembler-pyfront-types-v1 '
+_TYPED_WIDTH = {'f32': 4, 's32': 4, 'u32': 4, 's64': 8, 'u64': 8}
 
 
 @dataclass
@@ -45,6 +48,59 @@ class Mismatch:
     index: int
     ours: int
     expected: int
+
+
+def _parameter_contract(kernel: Kernel, contract: dict) -> list[dict]:
+    """Validate explicit array/scalar roles against the actual PTX parameter ABI."""
+    if (not isinstance(contract, dict) or set(contract) != {'schema', 'kernel', 'parameters'}
+            or type(contract['schema']) is not int or contract['schema'] != 1
+            or contract['kernel'] != kernel.name or not isinstance(contract['parameters'], list)):
+        raise ValueError('invalid pyfront parameter contract schema or kernel identity')
+    parameters = contract['parameters']
+    if (len(parameters) != len(kernel.params)
+            or len({name for _, name in kernel.params}) != len(kernel.params)):
+        raise ValueError('parameter contract does not match PTX parameter count')
+    for parameter, (ptx_type, name) in zip(parameters, kernel.params):
+        if (not isinstance(parameter, dict) or set(parameter) != {'name', 'kind', 'dtype'}
+                or parameter['name'] != name or parameter['kind'] not in ('array', 'scalar')
+                or parameter['dtype'] not in _TYPED_WIDTH):
+            raise ValueError(f'invalid parameter contract for PTX parameter {name}')
+        required = 'u64' if parameter['kind'] == 'array' else parameter['dtype']
+        if ptx_type != required:
+            raise ValueError(f'parameter contract for {name} requires PTX .{required}, got .{ptx_type}')
+    return parameters
+
+
+def parameter_contract_from_ptx(source: str, kernel: Kernel) -> dict | None:
+    """Read optional pyfront metadata; malformed/duplicate tags never fall back."""
+    if any(line.strip().startswith('// openassembler-pyfront-buffer-v1') for line in source.splitlines()):
+        raise ValueError('shaped buffer verification requires explicit shape/stride/storage bounds; generic allocation is not verified')
+    records = {}
+    for line_number, line in enumerate(source.splitlines(), 1):
+        line = line.strip()
+        if not line.startswith(_TYPE_METADATA.rstrip()):
+            continue
+        if not line.startswith(_TYPE_METADATA):
+            raise ValueError(f'invalid pyfront parameter metadata at line {line_number}')
+        try:
+            record = json.loads(line[len(_TYPE_METADATA):])
+        except (ValueError, TypeError) as exc:
+            raise ValueError(f'invalid pyfront parameter metadata at line {line_number}: {exc}') from None
+        if not isinstance(record, dict) or not isinstance(record.get('kernel'), str):
+            raise ValueError(f'invalid pyfront parameter metadata at line {line_number}')
+        if record['kernel'] in records:
+            raise ValueError(f'duplicate pyfront parameter metadata for {record["kernel"]}')
+        records[record['kernel']] = record
+    if records:
+        module = parse_module(source)
+        for name, record in records.items():
+            if name not in module.kernels:
+                raise ValueError(f'parameter contract names unknown PTX kernel {name}')
+            _parameter_contract(module.kernels[name], record)
+    contract = records.get(kernel.name)
+    if contract is not None:
+        _parameter_contract(kernel, contract)
+    return contract
 
 
 def _rand_scalar(rng: random.Random, ptx_type: str, n_elems: int):
@@ -94,11 +150,14 @@ def launch_geometry(n_elems: int, grid: Dim = 1, block: Dim | None = None
 
 def run_and_diff(mod: Module, kname: str, sass_code, sass_labels, n_elems: int = 64,
                   arch: str = "sm_80", seed: int = 0, grid: Dim = 1,
-                  block: Dim | None = None) -> list[Mismatch]:
+                  block: Dim | None = None, parameter_contract: dict | None = None) -> list[Mismatch]:
     """Build matching inputs, run both engines, return every differing
     (param, index) pair -- empty means bit-exact. `sass_code`/`sass_labels`
     are exactly what openassembler.backend.ra.compile_kernel returns.
     `grid`/`block`: see the module docstring (defaults: 1 CTA of n_elems)."""
+    if parameter_contract is not None:
+        return _run_typed_and_diff(mod, kname, sass_code, sass_labels, n_elems, arch, seed,
+                                   grid, block, parameter_contract)
     import sys
     from pathlib import Path
 
@@ -119,7 +178,7 @@ def run_and_diff(mod: Module, kname: str, sass_code, sass_labels, n_elems: int =
     n_like = {"n", "count", "size", "len", "num", "length"}
     base_addr = 0x7F00_0000_0000
     for ptx_type, name in k.params:
-        if ptx_type == "u64":
+        if ptx_type == "u64" or k.parameter_attributes.get(name,{}).get('pointer'):
             addr = base_addr
             base_addr += max(4096, n_elems * 8 + 256)  # generous gap, 8B/elem covers f64 too
             arrays[name] = addr
@@ -168,4 +227,78 @@ def run_and_diff(mod: Module, kname: str, sass_code, sass_labels, n_elems: int =
             e = ptx_mem.read(addr + 4 * i, 4)
             if g != e:
                 mismatches.append(Mismatch(name, i, g, e))
+    return mismatches
+
+
+def _typed_bits(rng, dtype, index):
+    """Deterministic boundary bits followed by seeded data, preserving high words."""
+    if dtype == 'f32':
+        return struct.unpack('<I', struct.pack('<f', rng.uniform(-8, 8)))[0]
+    width = _TYPED_WIDTH[dtype] * 8
+    edges = (0, 1, (1 << (width - 1)) - 1, 1 << (width - 1), (1 << width) - 1,
+             0xffffffff, 0x100000000 & ((1 << width) - 1), 0x13579bdf2468ace0 & ((1 << width) - 1))
+    return edges[index % len(edges)] if index < len(edges) else rng.getrandbits(width)
+
+
+def _run_typed_and_diff(mod, kname, sass_code, sass_labels, n_elems, arch, seed,
+                        grid, block, contract):
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / 'tools'))
+    from bench_build import listing
+    from openassembler.emu.program import load_listing
+
+    kernel = mod.kernels[kname]
+    parameters = _parameter_contract(kernel, contract)
+    if type(n_elems) is not int or n_elems < 1:
+        raise ValueError('typed verification requires a positive element count')
+    gdim, bdim = launch_geometry(n_elems, grid, block)
+    rng = random.Random(seed)
+    sass_mem, ptx_mem = Memory(), Memory()
+    interp_params, packed, arrays = {}, [], {}
+    address = 0x7f00_0000_0000
+    guard = bytes([0xa5]) * 64
+    dimension_names = {'n', 'count', 'size', 'len', 'num', 'length', 'rows', 'cols', 'width', 'height', 'batch', 'stride'}
+    for parameter in parameters:
+        name, dtype = parameter['name'], parameter['dtype']
+        width = _TYPED_WIDTH[dtype]
+        if parameter['kind'] == 'array':
+            address = (address + 15) // 16 * 16
+            values = [_typed_bits(rng, dtype, i + seed) for i in range(n_elems)]
+            payload = b''.join(value.to_bytes(width, 'little') for value in values)
+            arrays[name] = (address, width, len(payload))
+            for memory in (sass_mem, ptx_mem):
+                memory.write_bytes(address - len(guard), guard + payload + guard)
+            bits, width = address, 8
+            address += max(4096, len(payload) + 256)
+        else:
+            bits = n_elems if dtype != 'f32' and name.lower() in dimension_names else _typed_bits(rng, dtype, seed)
+        interp_params[name] = bits
+        _align(packed, width)
+        packed.append(bits.to_bytes(width, 'little'))
+    sass_params = b''.join(packed)
+    program = load_listing(listing(sass_code, sass_labels))
+    poisoned_mem = Memory(dict(sass_mem.data))
+    ctaids = [(x, y, z) for z in range(gdim[2]) for y in range(gdim[1]) for x in range(gdim[0])]
+    for poison, memory in ((None, sass_mem), (0xdeadbeef, poisoned_mem)):
+        for ctaid in ctaids:
+            Machine(program, SassLaunch(grid=gdim, block=bdim, ctaid=ctaid, params=sass_params,
+                    param_base=PARAM_BASE.get(arch, 0x160), poison=poison), memory).run()
+    for ctaid in ctaids:
+        run_kernel(mod, kname, InterpLaunch(grid=gdim, block=bdim, ctaid=ctaid, params=interp_params), ptx_mem)
+    mismatches = []
+    for name, (address, width, size) in arrays.items():
+        for tag, memory in (('', sass_mem), (':poisoned', poisoned_mem)):
+            for index in range(n_elems):
+                actual, expected = memory.read(address + width * index, width), ptx_mem.read(address + width * index, width)
+                if actual != expected:
+                    mismatches.append(Mismatch(name + tag, index, actual, expected))
+        # Check each engine's guards against their initial bytes, including when
+        # both engines make the same out-of-bounds write. This is a bounded probe,
+        # not general proof that arbitrary caller buffer extents are safe.
+        for tag, memory in ((':sass-guard', sass_mem), (':poisoned-guard', poisoned_mem), (':ptx-guard', ptx_mem)):
+            for offset in (*range(-len(guard), 0), *range(size, size + len(guard))):
+                value = memory.read(address + offset, 1)
+                if value != 0xa5:
+                    mismatches.append(Mismatch(name + tag, offset, value, 0xa5))
     return mismatches

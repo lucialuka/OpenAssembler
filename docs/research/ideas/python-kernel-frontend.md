@@ -2,6 +2,12 @@
 
 Status: implemented
 
+The [typed helper contract](../../compiler/gaps-python.md) adds same-file
+`@device` scalar inlining with explicit signatures, separate local bindings and
+effect/recursion limits. Independent Python/PTX/encoded-SASS gates and 72
+frontend regressions pass; this adds no cross-module call ABI or GPU performance
+claim.
+
 The [source diagnostics contract](../../compiler/semantic-acceptance.md) now
 rejects shared-memory reads with no possible producer, alongside existing
 literal bounds/zero-division and divergent-barrier checks. This does not provide

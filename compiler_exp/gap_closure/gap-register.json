@@ -1,0 +1,468 @@
+{
+  "schema": 1,
+  "date": "2026-11-21",
+  "input_sha256": "44122f3248c6ea5ae2cc4b7e2af0f6bbb2f770c9fcbb2ac78e9664ccdff71932",
+  "scope": "51 supplied gaps; bounded changes do not close the entire roadmap",
+  "all_gaps_closed": false,
+  "gaps": [
+    {
+      "id": "G01",
+      "title": "Unresolved exact-division verification counterexample",
+      "priority": "P0.",
+      "status": "counterexample-resolved",
+      "progress": "Hardware isolates the retained mismatch to emulator FCHK slow-path selection; bounded model repair and deterministic regression. General FCHK truth remains incomplete.",
+      "evidence": "docs/compiler/gaps-verification.md",
+      "exit_gate": "Replay the exact inputs and emitted sequence on hardware against an independent exact reference, isolate approximation/slow-path/rounding behavior, and retain a deterministic regression before changing verification status."
+    },
+    {
+      "id": "G02",
+      "title": "Full semantic conformance is still a larger task than scalar admission",
+      "priority": "P1.",
+      "status": "partial",
+      "progress": "Every scalar admission declaration has representative cross-stage fixture records, operand variants and negative controls. General independent semantics/hardware conformance is still open.",
+      "evidence": "docs/compiler/gaps-contracts.md",
+      "exit_gate": "Maintain one machine-readable cross-stage contract ledger with exact forms, supported operand domains, rejection reasons and independent CPU/toolkit/hardware evidence. Cover combinations and negative controls, rather than counting mnemonics or parser acceptance."
+    },
+    {
+      "id": "G03",
+      "title": "Custom Python types and numerical semantics remain narrow",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Define the intended typed device-language contract, implement missing types and conversions end to end, and test overflow, rounding, exceptional values and math policies independently. Keep strict FP32, approximate math and half-rounded products distinct."
+    },
+    {
+      "id": "G04",
+      "title": "Reusable Python functions and library calls are not generally compilable",
+      "priority": "P1.",
+      "status": "partial",
+      "progress": "Same-file typed scalar @device helpers support structured control flow with terminal returns and definite initialization. Cross-module helpers, general Python/library calls and device ABI remain open.",
+      "evidence": "docs/compiler/gaps-python.md",
+      "exit_gate": "Add typed device-function specialization or inlining with explicit call signatures, captured constants, effect rules and source locations; support separate device calls only with a valid ABI. Test multi-module helpers without executing arbitrary top-level host code during static discovery."
+    },
+    {
+      "id": "G05",
+      "title": "Python objects, containers and compile-time programming lack a general route",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Separate compile-time values, host-only effects and device values; admit useful static containers/constants and metaprogramming under explicit specialization rules. Preserve host effects through the application route rather than silently deleting them."
+    },
+    {
+      "id": "G06",
+      "title": "Python control flow is useful but not unrestricted",
+      "priority": "P1.",
+      "status": "partial",
+      "progress": "Typed scalar device helpers admit branches/range/while/break/continue with conservative definite initialization; arbitrary iterables, dynamic range steps, early helper returns and general Python control flow remain open.",
+      "evidence": "docs/compiler/gaps-python.md",
+      "exit_gate": "Extend only declared control-flow forms with branch/loop state semantics, defined overflow behavior and convergence checks. Test nested loops, early exits, loop-carried values and long-running bounds through encoding and hardware."
+    },
+    {
+      "id": "G07",
+      "title": "Custom-kernel arrays have no general tensor/view/layout API",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Introduce explicit buffer/shape/stride/alignment and alias contracts, including safe masks and tails. Validate negative/runtime indices, offset overflow, views and external tensor bindings; exploit those facts for code generation without assuming contiguity."
+    },
+    {
+      "id": "G08",
+      "title": "Python GPU primitive vocabulary is incomplete",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Connect a typed primitive vocabulary to complete PTX/native contracts, including mask, scope, ordering, synchronization and collective participation rules. Test the Python-to-binary path for every admitted primitive."
+    },
+    {
+      "id": "G09",
+      "title": "Memory safety and shared-memory initialization checks are incomplete",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Declare unsafe versus checked execution; add useful definite-initialization, bounds and synchronization analyses or diagnostics. Use adversarial schedules, masks, dimensions and hardware checking, while preserving explicit rejection where safety cannot be established."
+    },
+    {
+      "id": "G10",
+      "title": "PTX parameter ABI and module grammar are bounded",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Implement the needed parameter layout/alignment and pointer metadata, preserve all semantic directives, and account for module symbols and functions across parsing, metadata, launches and linking. Reconcile discovered, parsed, emitted and executable inventories."
+    },
+    {
+      "id": "G11",
+      "title": "Scalar arithmetic/types/modifiers do not cover general CUDA-emitted PTX",
+      "priority": "P1.",
+      "status": "partial",
+      "progress": "mov.pred and guarded/loop-carried predicate assignments preserve values; packed/unpacked scalar64 snapshots and immediate operands have explicit regression gates. Broader scalar arithmetic and encoder coverage remain open.",
+      "evidence": "docs/compiler/gaps-memory.md",
+      "exit_gate": "Prioritize actual nvcc/custom-kernel blockers, implement exact modifier and type semantics, and prove them with independent bit-level references, same-source ptxas controls and hardware edge cases."
+    },
+    {
+      "id": "G12",
+      "title": "Global/shared memory widths and vector forms remain uneven",
+      "priority": "P1.",
+      "status": "partial",
+      "progress": "Global v2 32-bit loads, v4 32-bit stores and scalar byte/halfword/64-bit stores pass independent byte gates. Shared narrow/64-bit accesses, vector64, ordering and runtime alignment checking remain open.",
+      "evidence": "docs/compiler/gaps-memory.md",
+      "exit_gate": "Make admission and lowering agree on a published width/type/alignment matrix. Add scalar/vector load/store conversions and tail-safe alternatives, checking address alignment, guards, predication and exact written bytes."
+    },
+    {
+      "id": "G13",
+      "title": "Address spaces and module storage are not generally lowered",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Define storage placement, address conversion, alignment, initialization and relocation semantics for each supported address space, then validate real module data and per-thread local storage on hardware."
+    },
+    {
+      "id": "G14",
+      "title": "Atomics, reductions and memory ordering are missing compiler foundations",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Implement complete operation/type/scope/order contracts with contention, publication/visibility, return-value and inter-block tests. Keep unimplemented ordering combinations rejected rather than treating modifiers as hints."
+    },
+    {
+      "id": "G15",
+      "title": "Warp/block collective and synchronization support is narrow",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Add collective participation and mask semantics alongside encoding and scheduling. Validate partial warps, divergent control flow, all barrier participants and memory visibility independently on hardware."
+    },
+    {
+      "id": "G16",
+      "title": "Device calls, call stacks and cross-module device linking are absent",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Implement a defined call ABI or bounded whole-program inlining/specialization, symbol resolution and stack/local allocation. Test multiple translation units, library calls, recursion policy and resource accounting."
+    },
+    {
+      "id": "G17",
+      "title": "Register/predicate spilling and general pressure management are missing",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Provide spill/reload and local storage semantics, group-aware allocation and pressure-aware scheduling, including predicates or a safe lowering strategy. Test both correctness and the performance/occupancy effects of imposed register limits."
+    },
+    {
+      "id": "G18",
+      "title": "Tensor instruction and async-pipeline coverage is specialized",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Expand exact instruction, register-fragment, address and synchronization contracts using independent generated inputs. Revalidate dependency schedules and resource limits rather than reusing scalar latency assumptions."
+    },
+    {
+      "id": "G19",
+      "title": "Native GPU architecture coverage remains SM80/A100",
+      "priority": "Separate target.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Declare supported target/toolkit combinations, build per-target encoders and machine models, and run conformance, resource, ownership and whole-workload hardware gates on each."
+    },
+    {
+      "id": "G20",
+      "title": "Source-to-binary toolchain independence is incomplete",
+      "priority": "Separate milestone.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "If independence is a product requirement, implement container/metadata/relocation and linking directly, with loadable-binary conformance. Preserve separate internal-backend versus total-toolchain compile measurements in the meantime."
+    },
+    {
+      "id": "G21",
+      "title": "Framework operator coverage is still a small whitelist",
+      "priority": "P1.",
+      "status": "partial",
+      "progress": "FP32 sigmoid and static rank0..4 sum/mean reductions and backward pass full-state A100/CLI gates. Convolution/pooling and general framework operator/effect coverage remain open.",
+      "evidence": "docs/compiler/gaps-operators.md",
+      "exit_gate": "Build a normalized operator/effect IR with generic faithful lowerings and derivatives, then add optimized recipes. Admit independent CNN, recurrent, transformer, indexing and scientific workloads through the same normal entrypoints."
+    },
+    {
+      "id": "G22",
+      "title": "Model control flow and shapes are static specializations",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Define shape/effect guards, guard-miss behavior and bounded AOT or explicit lazy specialization. Preserve host control flow where appropriate and test unseen values, lengths, branches and recompile/cache behavior."
+    },
+    {
+      "id": "G23",
+      "title": "Model storage/dtype and AMP coverage remain restricted",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Specify dtype promotion, accumulation, cast derivatives, master state and overflow policies end to end. Compare complete training states under the identical policy, including exceptional and small-gradient cases."
+    },
+    {
+      "id": "G24",
+      "title": "Arbitrary strides, aliases and mutation effects are unsupported",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Track base storage, offsets, strides, alias sets and mutation/version effects through capture, differentiation, planning and execution. Test overlapping views, state updates, storage reuse and backward saved-value lifetimes."
+    },
+    {
+      "id": "G25",
+      "title": "Broadcast support is partial and does not extend to batched matmul",
+      "priority": "P1.",
+      "status": "partial",
+      "progress": "Rank2..4 contiguous batch-broadcast matmul and reduced gradients pass A100; arbitrary rank/layout/operation broadcasting remains open.",
+      "evidence": "docs/compiler/gaps-model.md",
+      "exit_gate": "Extend broadcasting as an explicit shape/layout algebra per operation, including inverse gradient reductions and batch products. Validate rank, scalar, singleton and noncontiguous cases without silently expanding precision or storage contracts."
+    },
+    {
+      "id": "G26",
+      "title": "Hard resource bounds exclude common large ML shapes",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Design tiled/split reductions, larger-grid and workspace policies and tail/layout lowerings. Prove resource safety and full forward/backward correctness before raising bounds; measure allocation, padding and compile costs."
+    },
+    {
+      "id": "G27",
+      "title": "Attention feature coverage remains bounded after masked/causal SDPA",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Define each mask/position/head/dropout contract and its derivative/RNG behavior. Test rectangular alignment, fully masked rows, changing masks, head sharing and complete gradients under fixed precision."
+    },
+    {
+      "id": "G28",
+      "title": "Attention is decomposed and materializes quadratic intermediates",
+      "priority": "P2.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Develop native fused or tiled attention/backward with explicit mask/dropout/precision contracts and shared/register/workspace budgets. Compare complete regions and training steps, including layouts and gradients, against the incumbent."
+    },
+    {
+      "id": "G29",
+      "title": "Embedding does not provide general gather/scatter/index semantics",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Implement each indexing/gradient/alias policy explicitly, including generated indices and invalid-index behavior. Test duplicate indices, empty domains if admitted, sparse updates, padding and mutation effects."
+    },
+    {
+      "id": "G30",
+      "title": "Embedding gradient and broadcast-reduction scaling is a performance gap",
+      "priority": "P2.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Compare deterministic segmentation/sorting or admitted atomic/reduction policies, parallel sums and sparse updates. Include temporary memory, preprocessing, duplicate distributions and full optimizer semantics in complete-task timing."
+    },
+    {
+      "id": "G31",
+      "title": "Loss support is still MSE plus a narrow cross-entropy contract",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Normalize loss options and reductions with exact target/shape/dtype/invalid-label rules, then validate full loss/seed/gradients and optimizer state. Harmonize public APIs or document their distinct contracts clearly."
+    },
+    {
+      "id": "G32",
+      "title": "Autograd interoperability is first-order and bounded",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Extend derivative/effect IR and lifetime rules for intended higher-order, custom backward, accumulation and checkpointing semantics. Audit every GPU compute launch for composed paths and distinguish interoperable mixed execution from OA-owned training."
+    },
+    {
+      "id": "G33",
+      "title": "RNG, dropout and mutable model buffers remain open",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Introduce explicit RNG and mutable-state ownership/effects, deterministic or declared stochastic policies, derivatives and checkpoint state. Test successive changing steps and resumed sequences against the intended framework semantics."
+    },
+    {
+      "id": "G34",
+      "title": "Optimizer family and option coverage remains limited",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Add exact equations/options, per-parameter/group state and update ordering, including clipping/accumulation/scheduler interactions where required. Compare moments, steps and every parameter across long trajectories and checkpoint resume."
+    },
+    {
+      "id": "G35",
+      "title": "Optimizer snapshots are not complete application checkpoints",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Define a versioned complete checkpoint with a consistent update boundary, ownership and compatibility rules. Test interrupted/resumed complete applications, including failure before replacement and all omitted state categories."
+    },
+    {
+      "id": "G36",
+      "title": "Adaptive/indexed training cannot use full CUDA-graph replay",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Choose an explicit graph-safe bounds and step-state design, or document direct-only execution as a lasting boundary. Validate changing labels/indices and bias-correction coefficients over many replays without host work escaping the measured interval."
+    },
+    {
+      "id": "G37",
+      "title": "Indexed runtime validation introduces synchronizing host work",
+      "priority": "P2.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Measure validation/transfer/host time separately; study native device validation or explicit trusted-input/guard policies only with preserved failure semantics. Confirm no parameter update occurs after an invalid input and include validation in end-to-end claims."
+    },
+    {
+      "id": "G38",
+      "title": "Distributed and multi-device training are not integrated native workloads",
+      "priority": "P1 for that workload.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Define the communication/ownership policy and whether vendor communication kernels are allowed, integrate sharded graphs and state, and validate complete multi-device steps including communication and synchronization costs."
+    },
+    {
+      "id": "G39",
+      "title": "KV decoding requires precompiled positive exact-length variants",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Define bounded dynamic/length-bucket semantics, padding/position handling or explicit lazy specialization, including maximum context and guard misses. Test token-by-token predictions and all caches across supported transitions."
+    },
+    {
+      "id": "G40",
+      "title": "KV cache memory management copies prefixes and lacks paging",
+      "priority": "P2.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Design storage capacity/page ownership and alias/update rules with attention-position correctness, canaries and reuse tests. Measure decode traffic, memory fragmentation and complete latency over growing contexts."
+    },
+    {
+      "id": "G41",
+      "title": "Production serving behavior is not established by bounded decode tests",
+      "priority": "P2.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Run independent complete inference applications with fixed model/checkpoint/tokenization/sampling contracts. Measure prefill and decode separately, first-token latency, per-token/tail latency, memory and throughput under declared request/concurrency distributions."
+    },
+    {
+      "id": "G42",
+      "title": "Real build and dependency graphs are not resolved",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Resolve original build commands and dependency identities in an isolated reproducible environment, including generated source and library linkage. Compare the original and OA builds without altering their intended workload or host behavior."
+    },
+    {
+      "id": "G43",
+      "title": "Custom kernels/operators are not automatically inserted into model execution",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Provide explicit custom-op/device-kernel registration with shape/dtype/layout/alias/effect and backward contracts, preserve launch bindings, and audit all model GPU launches against the native ledger through the ordinary CLI/runtime."
+    },
+    {
+      "id": "G44",
+      "title": "Arbitrary host Python orchestration and environments are not packaged/executed",
+      "priority": "P1.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Preserve the real entrypoint/arguments/environment and CPU effects while routing GPU work to OA. Validate outputs and complete state for independent repositories; account for CPU work and transfers in end-to-end timing."
+    },
+    {
+      "id": "G45",
+      "title": "General scheduling, tiling and cost models remain incomplete",
+      "priority": "P2.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Use legal candidate generation with resource/dependency models, independent correctness gates and frozen held-out selection. Optimize real workload distributions and compare both the incumbent and named external controls."
+    },
+    {
+      "id": "G46",
+      "title": "Whole-model fusion, packing and launch planning remain limited",
+      "priority": "P2.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Compare complete pack+compute+crop and forward/backward/update regions with exact liveness/precision/effect rules. Reduce allocations/traffic/launches only after all storage-view/reuse, changed-input and full-state gates pass."
+    },
+    {
+      "id": "G47",
+      "title": "Cold/warm compilation and cache-hit overhead lack complete attribution",
+      "priority": "P2.",
+      "status": "partial",
+      "progress": "Source, cache and worker phases now attributed; cold/hit samples retain identical binaries. Remote startup/transport and separate tensor-pass attribution remain open.",
+      "evidence": "docs/compiler/gaps-measurement.md",
+      "exit_gate": "Record nonoverlapping frontend/PTX/backend/ptxas/container/disassembly/cache/source/archive/startup/transfer phases for clean and validated warm builds. Preserve raw samples and distinguish remote waiting from compiler time."
+    },
+    {
+      "id": "G48",
+      "title": "Standard reports lack per-kernel steady-state distributions",
+      "priority": "P2.",
+      "status": "partial",
+      "progress": "Optional repeated profiler audits retain per-contract samples/distributions, loaded resources and binary sizes, with profiler-free whole-step arrays separately labeled. Profiler-free per-kernel performance, fusion and complete host/transfer attribution remain open.",
+      "evidence": "docs/compiler/gaps-profiling.md",
+      "exit_gate": "Provide per-contract repeated samples, medians/spread, launch counts, registers/shared/local memory, cubin/SASS size and graph fusion coverage. Pair profiling with ownership audits and separately measure profiler-free performance."
+    },
+    {
+      "id": "G49",
+      "title": "Full-workload comparisons and compile amortization remain incomplete",
+      "priority": "P2.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Use identical model/weights/inputs, precision, masks, loss and optimizer state; gate complete correctness first. Compare clean/warm builds, resident and host-inclusive execution, and `build + startup + N*steady_state` per device/toolchain environment, with randomized raw timing samples and named speed ratios."
+    },
+    {
+      "id": "G50",
+      "title": "Independent application and semantic test coverage is still finite",
+      "priority": "P1 evidence.",
+      "status": "open",
+      "progress": "Original exit gate remains required.",
+      "evidence": null,
+      "exit_gate": "Maintain independent real-world and adversarial corpora with explicit coverage/rejection matrices, complete state gates and held-out models/shapes. Preserve all source/config/plan/binary hashes, GPU variants, environment versions and failure evidence; never average unsupported cases as slow results."
+    },
+    {
+      "id": "G51",
+      "title": "Regression maintenance still contains a stale rejection and nondeterministic sampling",
+      "priority": "P1 evidence.",
+      "status": "fixed-for-recorded-regressions",
+      "progress": "Stale bias-broadcast rejection replaced with genuine rejection plus capability control; stable emulator seeds, fixed division case and dtype diagnostics repaired. Tested dependency environments are named; no exhaustive Python/platform matrix claim.",
+      "evidence": "docs/compiler/gaps-model.md",
+      "exit_gate": "Update capability/rejection tests together, run the complete supported dependency matrix, and retain deterministic seeds/counterexamples plus random-fuzz seeds. Keep API-specific limits and dated historical reports clearly separated from current support claims."
+    }
+  ]
+}

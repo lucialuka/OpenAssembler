@@ -1,0 +1,438 @@
+FFFFFFFFFFFFFFFFFFFF..........                                           [100%]
+=================================== FAILURES ===================================
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[safe-checked] __
+
+case = {'arrays': {'coords': [-2147483648, -1, 0, 1, 2, 3, ...], 'returned': [-999, -999, -999, -999, -999, -999, ...], 'stat...'returned': [0, 0, 10, 10, 10, 10, ...], 'state': [14, 12, 12, 12, 12, 12, ...]}, 'name': 'checked', 'scalar': {}, ...}
+level = 'safe'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[safe-evaluation_order] _
+
+case = {'arrays': {'out': [99], 'state': [1, 5, 9]}, 'expected': {'out': [7], 'state': [0, 12, 10]}, 'name': 'evaluation_order', 'scalar': {}, ...}
+level = 'safe'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+___ test_primitive_old_values_effects_bounds_and_evaluation_order[safe-add] ____
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0], 'values': [1, 1, 1, 1, 1, 1, ...]}, '...': [0, 1, 2, 3, 4, 5, ...], 'state': [16], 'values': [1, 1, 1, 1, 1, 1, ...]}, 'name': 'add', 'scalar': {'n': 16}, ...}
+level = 'safe'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[safe-exchange] _
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0]}, 'expected': {'returned': [0, 1, 2, 3, 4, 5, ...], 'state': [16]}, 'name': 'exchange', 'scalar': {'n': 16}, ...}
+level = 'safe'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[safe-compare_exchange] _
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0]}, 'expected': {'returned': [0, 1, 1, 1, 1, 1, ...], 'state': [1]}, 'name': 'compare_exchange', 'scalar': {'n': 16}, ...}
+level = 'safe'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[mined-checked] _
+
+case = {'arrays': {'coords': [-2147483648, -1, 0, 1, 2, 3, ...], 'returned': [-999, -999, -999, -999, -999, -999, ...], 'stat...'returned': [0, 0, 10, 10, 10, 10, ...], 'state': [14, 12, 12, 12, 12, 12, ...]}, 'name': 'checked', 'scalar': {}, ...}
+level = 'mined'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[mined-evaluation_order] _
+
+case = {'arrays': {'out': [99], 'state': [1, 5, 9]}, 'expected': {'out': [7], 'state': [0, 12, 10]}, 'name': 'evaluation_order', 'scalar': {}, ...}
+level = 'mined'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+___ test_primitive_old_values_effects_bounds_and_evaluation_order[mined-add] ___
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0], 'values': [1, 1, 1, 1, 1, 1, ...]}, '...': [0, 1, 2, 3, 4, 5, ...], 'state': [16], 'values': [1, 1, 1, 1, 1, 1, ...]}, 'name': 'add', 'scalar': {'n': 16}, ...}
+level = 'mined'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[mined-exchange] _
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0]}, 'expected': {'returned': [0, 1, 2, 3, 4, 5, ...], 'state': [16]}, 'name': 'exchange', 'scalar': {'n': 16}, ...}
+level = 'mined'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[mined-compare_exchange] _
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0]}, 'expected': {'returned': [0, 1, 1, 1, 1, 1, ...], 'state': [1]}, 'name': 'compare_exchange', 'scalar': {'n': 16}, ...}
+level = 'mined'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[sched-checked] _
+
+case = {'arrays': {'coords': [-2147483648, -1, 0, 1, 2, 3, ...], 'returned': [-999, -999, -999, -999, -999, -999, ...], 'stat...'returned': [0, 0, 10, 10, 10, 10, ...], 'state': [14, 12, 12, 12, 12, 12, ...]}, 'name': 'checked', 'scalar': {}, ...}
+level = 'sched'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[sched-evaluation_order] _
+
+case = {'arrays': {'out': [99], 'state': [1, 5, 9]}, 'expected': {'out': [7], 'state': [0, 12, 10]}, 'name': 'evaluation_order', 'scalar': {}, ...}
+level = 'sched'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+___ test_primitive_old_values_effects_bounds_and_evaluation_order[sched-add] ___
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0], 'values': [1, 1, 1, 1, 1, 1, ...]}, '...': [0, 1, 2, 3, 4, 5, ...], 'state': [16], 'values': [1, 1, 1, 1, 1, 1, ...]}, 'name': 'add', 'scalar': {'n': 16}, ...}
+level = 'sched'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[sched-exchange] _
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0]}, 'expected': {'returned': [0, 1, 2, 3, 4, 5, ...], 'state': [16]}, 'name': 'exchange', 'scalar': {'n': 16}, ...}
+level = 'sched'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[sched-compare_exchange] _
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0]}, 'expected': {'returned': [0, 1, 1, 1, 1, 1, ...], 'state': [1]}, 'name': 'compare_exchange', 'scalar': {'n': 16}, ...}
+level = 'sched'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+__ test_primitive_old_values_effects_bounds_and_evaluation_order[opt-checked] __
+
+case = {'arrays': {'coords': [-2147483648, -1, 0, 1, 2, 3, ...], 'returned': [-999, -999, -999, -999, -999, -999, ...], 'stat...'returned': [0, 0, 10, 10, 10, 10, ...], 'state': [14, 12, 12, 12, 12, 12, ...]}, 'name': 'checked', 'scalar': {}, ...}
+level = 'opt'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[opt-evaluation_order] _
+
+case = {'arrays': {'out': [99], 'state': [1, 5, 9]}, 'expected': {'out': [7], 'state': [0, 12, 10]}, 'name': 'evaluation_order', 'scalar': {}, ...}
+level = 'opt'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+____ test_primitive_old_values_effects_bounds_and_evaluation_order[opt-add] ____
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0], 'values': [1, 1, 1, 1, 1, 1, ...]}, '...': [0, 1, 2, 3, 4, 5, ...], 'state': [16], 'values': [1, 1, 1, 1, 1, 1, ...]}, 'name': 'add', 'scalar': {'n': 16}, ...}
+level = 'opt'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[opt-exchange] __
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0]}, 'expected': {'returned': [0, 1, 2, 3, 4, 5, ...], 'state': [16]}, 'name': 'exchange', 'scalar': {'n': 16}, ...}
+level = 'opt'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+_ test_primitive_old_values_effects_bounds_and_evaluation_order[opt-compare_exchange] _
+
+case = {'arrays': {'returned': [-999, -999, -999, -999, -999, -999, ...], 'state': [0]}, 'expected': {'returned': [0, 1, 1, 1, 1, 1, ...], 'state': [1]}, 'name': 'compare_exchange', 'scalar': {'n': 16}, ...}
+level = 'opt'
+
+    @pytest.mark.parametrize('case',CASES,ids=[c['name']for c in CASES])
+    @pytest.mark.parametrize('level',['safe','mined','sched','opt'])
+    def test_primitive_old_values_effects_bounds_and_evaluation_order(case,level):
+        from openassembler.ptx.parse import parse_module
+        ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_primitives.py',case['name']));kernel=parse_module(ptx).kernels[case['name']]
+        addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+        for kind,name in kernel.params:blob+=struct.pack('<Q'if kind=='u64'else'<I',addresses.get(name,case['scalar'].get(name)))
+        code,labels,*_=build.generate(kernel,'sm_80',level)
+        for poison in(None,0xdeadbeef):
+            memory=Memory()
+>           for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+                                                                                                                                                ^
+E           NameError: name 'x' is not defined
+
+tests/test_pyfront_primitives.py:23: NameError
+=============================== warnings summary ===============================
+tests/test_pyfront_primitives.py:18
+  /Users/lucasfang/Desktop/OpenAssembler/tests/test_pyfront_primitives.py:18: SyntaxWarning: invalid decimal literal
+    addresses={name:0x100000000+i*8192+256for i,name in enumerate(case['arrays'])};blob=b''
+
+tests/test_pyfront_primitives.py:23
+  /Users/lucasfang/Desktop/OpenAssembler/tests/test_pyfront_primitives.py:23: SyntaxWarning: invalid hexadecimal literal
+    for name,values in case['arrays'].items():memory.write_bytes(addresses[name]-256,b'\xa5'*256+struct.pack('<'+str(len(values))+'I',*(x&0xfffffffffor x in values))+b'\xa5'*256)
+
+tests/test_pyfront_primitives.py:26
+  /Users/lucasfang/Desktop/OpenAssembler/tests/test_pyfront_primitives.py:26: SyntaxWarning: invalid hexadecimal literal
+    assert[memory.read(addresses[name]+4*i,4)for i in range(len(expected))]==[x&0xfffffffffor x in expected]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[safe-checked]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[safe-evaluation_order]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[safe-add]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[safe-exchange]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[safe-compare_exchange]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[mined-checked]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[mined-evaluation_order]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[mined-add]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[mined-exchange]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[mined-compare_exchange]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[sched-checked]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[sched-evaluation_order]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[sched-add]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[sched-exchange]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[sched-compare_exchange]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[opt-checked]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[opt-evaluation_order]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[opt-add]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[opt-exchange]
+FAILED tests/test_pyfront_primitives.py::test_primitive_old_values_effects_bounds_and_evaluation_order[opt-compare_exchange]
+20 failed, 10 passed, 3 warnings in 0.23s

@@ -1,0 +1,101 @@
+{
+  "scope": "Independent retained wrong-result repro before snapshot repair; no GPU or performance claim",
+  "python": "3.12.10",
+  "before_ra_sha256": "648656461ec848cbf3343318dc3618ca1ea05a00f7a3fa32b3a566b138468b62",
+  "cases": [
+    {
+      "name": "packed_snapshot",
+      "ptx": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nmov.b32 %a,0x11111111; mov.b32 %b,0x22222222;\nmov.b64 %wide,{%a,%b};\n@%take mov.b32 %a,0x33333333;\nst.global.u64 [%dst],%wide;\nDONE: ret; }\n",
+      "input_hex": "01000000020000000300000004000000010000000200000003000000040000000100000002000000030000000400000001000000020000000300000004000000",
+      "expected_u64_hex": [
+        "2222222211111111",
+        "2222222211111111",
+        "2222222211111111",
+        "2222222211111111"
+      ],
+      "expected_reference": "Independent integer bit packing and PTX interpreter agree",
+      "threads": 4,
+      "levels": [
+        {
+          "level": "safe",
+          "actual_u64_hex": [
+            "2222222233333333",
+            "2222222211111111",
+            "2222222233333333",
+            "2222222211111111"
+          ],
+          "mismatch_lanes": [
+            0,
+            2
+          ],
+          "native_text_sha256": "f2dc9cae7a1a1999d5c19c8fbf795213c227f285051d846aa4b2f10ede003b25",
+          "registers": 16,
+          "status": "failed"
+        },
+        {
+          "level": "opt",
+          "actual_u64_hex": [
+            "2222222233333333",
+            "2222222211111111",
+            "2222222233333333",
+            "2222222211111111"
+          ],
+          "mismatch_lanes": [
+            0,
+            2
+          ],
+          "native_text_sha256": "52d6a3efc84691b7f21fd1f27ff7624178040a8dc00f1d60bf7917b7c2e644ac",
+          "registers": 16,
+          "status": "failed"
+        }
+      ]
+    },
+    {
+      "name": "unpacked_snapshot",
+      "ptx": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 input,.param .u32 n) {\n.reg .u64 %input,%output,%offset,%src,%dst; .reg .b64 %wide;\n.reg .b32 %t,%n,%odd,%a,%b,%c,%d,%v,%count;\n.reg .pred %end,%take,%p,%q,%r;\nld.param.u64 %input,[input]; ld.param.u64 %output,[output]; ld.param.u32 %n,[n];\nmov.u32 %t,%tid.x; setp.ge.u32 %end,%t,%n; @%end bra DONE;\nmul.wide.u32 %offset,%t,16; add.u64 %src,%input,%offset; add.u64 %dst,%output,%offset;\nand.b32 %odd,%t,1; setp.eq.u32 %take,%odd,0;\nld.global.b64 %wide,[%src]; mov.b64 {%a,%b},%wide;\n@%take ld.global.b64 %wide,[%src+8];\nst.global.v2.u32 [%dst],{%a,%b};\nDONE: ret; }\n",
+      "input_hex": "01000000020000000300000004000000010000000200000003000000040000000100000002000000030000000400000001000000020000000300000004000000",
+      "expected_u64_hex": [
+        "0000000200000001",
+        "0000000200000001",
+        "0000000200000001",
+        "0000000200000001"
+      ],
+      "expected_reference": "Independent integer bit packing and PTX interpreter agree",
+      "threads": 4,
+      "levels": [
+        {
+          "level": "safe",
+          "actual_u64_hex": [
+            "0000000400000003",
+            "0000000200000001",
+            "0000000400000003",
+            "0000000200000001"
+          ],
+          "mismatch_lanes": [
+            0,
+            2
+          ],
+          "native_text_sha256": "f0f28abc51a5b0c41e4bf5c5ce84f69e638f9e5790c5f637d2836b2354330237",
+          "registers": 16,
+          "status": "failed"
+        },
+        {
+          "level": "opt",
+          "actual_u64_hex": [
+            "0000000400000003",
+            "0000000200000001",
+            "0000000400000003",
+            "0000000200000001"
+          ],
+          "mismatch_lanes": [
+            0,
+            2
+          ],
+          "native_text_sha256": "71a94268612c427916d3b96d78fd81f080aa5622df9b6487c9c974a807a60649",
+          "registers": 16,
+          "status": "failed"
+        }
+      ]
+    }
+  ]
+}
