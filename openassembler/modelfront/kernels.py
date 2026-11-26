@@ -82,6 +82,9 @@ def emit_kernel(op, inputs, output, attrs=None):
     from .kernels_nn import NN_OPS, emit_nn_kernel
     if op in NN_OPS:
         return emit_nn_kernel(op,inputs,output,attrs)
+    from .kernels_conv import CONV_OPS, emit_conv_kernel
+    if op in CONV_OPS:
+        return emit_conv_kernel(op, inputs, output, attrs)
     if op not in OPS:
         raise ValueError(f"unsupported native model operator: {op}")
     shapes = tuple(shape_of(x) for x in inputs)

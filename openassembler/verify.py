@@ -65,8 +65,6 @@ def _parameter_contract(kernel: Kernel, contract: dict) -> list[dict]:
                 or parameter['name'] != name or parameter['kind'] not in ('array', 'scalar')
                 or parameter['dtype'] not in _TYPED_WIDTH):
             raise ValueError(f'invalid parameter contract for PTX parameter {name}')
-        if parameter['dtype'] == 'bool' and parameter['kind'] != 'scalar':
-            raise ValueError('Boolean array storage has no validated parameter contract')
         required = 'u64' if parameter['kind'] == 'array' else 'u8' if parameter['dtype'] == 'bool' else parameter['dtype']
         if ptx_type != required:
             raise ValueError(f'parameter contract for {name} requires PTX .{required}, got .{ptx_type}')

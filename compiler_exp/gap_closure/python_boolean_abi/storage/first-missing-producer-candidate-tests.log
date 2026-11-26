@@ -1,0 +1,78 @@
+......................F...........................................       [100%]
+=================================== FAILURES ===================================
+_ test_original_type_effect_convergence_negatives[shared_bounds-@kernel\ndef k(out:Array(bool)):\n    s=shared_array(bool,1)\n    s[0]=True\n    out[0]=s[1]\n-out of range] _
+
+name = 'shared_bounds'
+source = '@kernel\ndef k(out:Array(bool)):\n    s=shared_array(bool,1)\n    s[0]=True\n    out[0]=s[1]\n'
+reason = 'out of range'
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-666/test_original_type_effect_conv8')
+
+    @pytest.mark.parametrize('name,source,reason',NEGATIVES,ids=lambda v:v if isinstance(v,str)and len(v)<30 else None)
+    def test_original_type_effect_convergence_negatives(name,source,reason,tmp_path):
+     path=tmp_path/(name+'.py');path.write_text(HEADER+source)
+>    with pytest.raises(NotSupported,match=reason):compile_file(path)
+                                                   ^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_boolean_abi/storage/test_storage_contracts.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py:1683: in compile_file
+    raise e.with_path(path) from None
+compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py:1680: in compile_file
+    entries.append(_compile_entry(k, names, arch))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py:1551: in _compile_entry
+    _check_shared_producers(fdef, names)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+fdef = <ast.FunctionDef object at 0x1088399d0>
+names = <openassembler.pyfront.compile._Names object at 0x108801a00>
+
+    def _check_shared_producers(fdef, names):
+        """Reject shared reads with no possible store anywhere in the kernel.
+    
+        This proves a narrow missing-producer bug, not temporal initialization or
+        race freedom. An unknown write index can cover any slot and is not rejected.
+        """
+        arrays, writes = set(), {}
+        for node in ast.walk(fdef):
+            if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+                    and names.resolve(node.value.func) == 'pf.shared_array'):
+                arrays.update(t.id for t in node.targets if isinstance(t, ast.Name))
+        for node in ast.walk(fdef):
+            if (isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Store)
+                    and isinstance(node.value, ast.Name) and node.value.id in arrays):
+                index = _const_value(node.slice)
+                writes.setdefault(node.value.id, []).append(index if type(index) is int else None)
+        for node in ast.walk(fdef):
+            if (isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Load)
+                    and isinstance(node.value, ast.Name) and node.value.id in arrays):
+                name = node.value.id
+                possible = writes.get(name, [])
+                index = _const_value(node.slice)
+                if not possible or (type(index) is int and None not in possible and index not in possible):
+>                   raise NotSupported(f"shared_array {name!r} read has no possible writer"
+                                       + (f" for index {index}" if type(index) is int else ''), node)
+E                   openassembler.pyfront.compile.NotSupported: shared_array 's' read has no possible writer for index 1 (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-666/test_original_type_effect_conv8/shared_bounds.py, line 6)
+
+compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py:1542: NotSupported
+
+During handling of the above exception, another exception occurred:
+
+name = 'shared_bounds'
+source = '@kernel\ndef k(out:Array(bool)):\n    s=shared_array(bool,1)\n    s[0]=True\n    out[0]=s[1]\n'
+reason = 'out of range'
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-666/test_original_type_effect_conv8')
+
+    @pytest.mark.parametrize('name,source,reason',NEGATIVES,ids=lambda v:v if isinstance(v,str)and len(v)<30 else None)
+    def test_original_type_effect_convergence_negatives(name,source,reason,tmp_path):
+     path=tmp_path/(name+'.py');path.write_text(HEADER+source)
+>    with pytest.raises(NotSupported,match=reason):compile_file(path)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E    AssertionError: Regex pattern did not match.
+E     Regex: 'out of range'
+E     Input: "shared_array 's' read has no possible writer for index 1 (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-666/test_original_type_effect_conv8/shared_bounds.py, line 6)"
+
+compiler_exp/gap_closure/python_boolean_abi/storage/test_storage_contracts.py:50: AssertionError
+=========================== short test summary info ============================
+FAILED compiler_exp/gap_closure/python_boolean_abi/storage/test_storage_contracts.py::test_original_type_effect_convergence_negatives[shared_bounds-@kernel\ndef k(out:Array(bool)):\n    s=shared_array(bool,1)\n    s[0]=True\n    out[0]=s[1]\n-out of range]
+1 failed, 65 passed in 0.35s

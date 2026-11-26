@@ -1,0 +1,227 @@
+{
+  "schema": 1,
+  "passed": true,
+  "files": [
+    {
+      "file": "tests/data/boolean_value_fixtures.json",
+      "baseline_sha256": "37cb8c5a365aecb0426a2907a1b6cb3e26d7c5fff29f701eb53a03004c4af37e",
+      "current_sha256": "95a9ee0ed8ac969a04a60e316ae92d3f288ea305a408360498fd66d0b5d4ca0d"
+    },
+    {
+      "file": "tests/data/boolean_helper_fixtures.json",
+      "baseline_sha256": "ea9eed6b5bb3c18ad493bd0ac705a580ae71c8fd8e07d1b5a5aa1d2148c26b2a",
+      "current_sha256": "22a1c8bc41dbc5a4400abb9fe1f142282c65e6d1d67f0e63cba8b9e402402658"
+    },
+    {
+      "file": "tests/data/boolean_parameter_fixtures.json",
+      "baseline_sha256": "2f4802c517194f2651748964780369347e120a459dd6ae05f974cc053fd07874",
+      "current_sha256": "e38e3e7f5779b0078116e74e0f144fbfd2335859ca53442bc6e86d8736842d95"
+    }
+  ],
+  "updates": [
+    {
+      "file": "tests/data/boolean_value_fixtures.json",
+      "before": {
+        "name": "bool_parameter_array",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),value:Array(bool)):\n    a[0]=i32(value)\n",
+        "reason": "annotation"
+      },
+      "after": {
+        "name": "bool_parameter_array",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),value:Array(bool)):\n    a[0]=i32(value)\n",
+        "reason": "used as a value"
+      }
+    },
+    {
+      "file": "tests/data/boolean_helper_fixtures.json",
+      "before": {
+        "name": "bool_array_argument",
+        "source": "from openassembler.pyfront import *\n@device\ndef h(x:Array(bool))->bool:\n    return True\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+        "reason": "unsupported type annotation"
+      },
+      "after": {
+        "name": "bool_array_argument",
+        "source": "from openassembler.pyfront import *\n@device\ndef h(x:Array(bool))->bool:\n    return True\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+        "reason": "scalar"
+      }
+    },
+    {
+      "file": "tests/data/boolean_helper_fixtures.json",
+      "before": {
+        "name": "bool_array_return",
+        "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->Array(bool):\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+        "reason": "unsupported type annotation"
+      },
+      "after": {
+        "name": "bool_array_return",
+        "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->Array(bool):\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+        "reason": "scalar"
+      }
+    },
+    {
+      "file": "tests/data/boolean_helper_fixtures.json",
+      "before": {
+        "name": "kernel_parameter_array",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:Array(bool)):\n    a[0]=i32(flag)\n",
+        "reason": "unsupported type annotation"
+      },
+      "after": {
+        "name": "kernel_parameter_array",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:Array(bool)):\n    a[0]=i32(flag)\n",
+        "reason": "used as a value"
+      }
+    },
+    {
+      "file": "tests/data/boolean_helper_fixtures.json",
+      "before": {
+        "name": "array_parameter",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(bool)):\n    a[0]=True\n",
+        "reason": "unsupported type annotation"
+      },
+      "after": {
+        "name": "array_parameterstore_requires_bool",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(bool)):\n    a[0]=1\n",
+        "reason": "storing"
+      }
+    },
+    {
+      "file": "tests/data/boolean_helper_fixtures.json",
+      "before": {
+        "name": "buffer_parameter",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Buffer(bool,(4,))):\n    a[0]=True\n",
+        "reason": "unsupported type annotation"
+      },
+      "after": {
+        "name": "buffer_parameterstore_requires_bool",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Buffer(bool,(4,))):\n    a[0]=1\n",
+        "reason": "storing"
+      }
+    },
+    {
+      "file": "tests/data/boolean_parameter_fixtures.json",
+      "before": {
+        "name": "array",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(bool)):\n    a[0]=True\n",
+        "reason": "annotation"
+      },
+      "after": {
+        "name": "arraystore_requires_bool",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(bool)):\n    a[0]=1\n",
+        "reason": "storing"
+      }
+    },
+    {
+      "file": "tests/data/boolean_parameter_fixtures.json",
+      "before": {
+        "name": "buffer",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Buffer(bool,(4,))):\n    a[0]=True\n",
+        "reason": "annotation"
+      },
+      "after": {
+        "name": "bufferstore_requires_bool",
+        "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Buffer(bool,(4,))):\n    a[0]=1\n",
+        "reason": "storing"
+      }
+    }
+  ],
+  "scope": "Exact old unsupported annotations become admitted byte storage; positive independent storage tests mandatory, no numerical expected value/tolerance change. Keep helper-array and bare-array-value rejections with their current semantic diagnostics; former storage rejection becomes exact Boolean store type rejection",
+  "results": [
+    {
+      "snapshot": "baseline",
+      "index": 0,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/baseline_0.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "baseline",
+      "index": 1,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/baseline_1.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "baseline",
+      "index": 2,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/baseline_2.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "baseline",
+      "index": 3,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/baseline_3.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "baseline",
+      "index": 4,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/baseline_4.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "baseline",
+      "index": 5,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/baseline_5.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "baseline",
+      "index": 6,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/baseline_6.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "baseline",
+      "index": 7,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/baseline_7.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "candidate",
+      "index": 0,
+      "diagnostic": "array 'value' used as a value (index it: value[i]) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/candidate_0.py, line 4)",
+      "rejected": true
+    },
+    {
+      "snapshot": "candidate",
+      "index": 1,
+      "diagnostic": "device helpers accept scalar parameters only (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/candidate_1.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "candidate",
+      "index": 2,
+      "diagnostic": "device helpers accept scalar parameters only (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/candidate_2.py, line 3)",
+      "rejected": true
+    },
+    {
+      "snapshot": "candidate",
+      "index": 3,
+      "diagnostic": "array 'flag' used as a value (index it: flag[i]) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/candidate_3.py, line 4)",
+      "rejected": true
+    },
+    {
+      "snapshot": "candidate",
+      "index": 4,
+      "diagnostic": "storing a s32 value into an Array of pred (write 1.0, not 1, for a float array; or convert with float()/int()) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/candidate_4.py, line 4)",
+      "rejected": true
+    },
+    {
+      "snapshot": "candidate",
+      "index": 5,
+      "diagnostic": "storing s32 into Buffer of pred requires an explicit conversion (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/candidate_5.py, line 4)",
+      "rejected": true
+    },
+    {
+      "snapshot": "candidate",
+      "index": 6,
+      "diagnostic": "storing a s32 value into an Array of pred (write 1.0, not 1, for a float array; or convert with float()/int()) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/candidate_6.py, line 4)",
+      "rejected": true
+    },
+    {
+      "snapshot": "candidate",
+      "index": 7,
+      "diagnostic": "storing s32 into Buffer of pred requires an explicit conversion (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-ch94hm7k/candidate_7.py, line 4)",
+      "rejected": true
+    }
+  ],
+  "script_sha256": "624a3e79c8406f57ac51c748df602313f41dabb364a62c3c62bde316bcd8a0d2"
+}

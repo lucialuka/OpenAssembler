@@ -154,3 +154,7 @@ Boolean Array/Buffer/shared storage remains separate work.
 The next [Boolean storage study](gaps-boolean-storage.md) retains three original
 Array/Buffer/shared rejections and defines independent canonical byte-storage,
 host-buffer/shape/safety and shared-convergence gates before implementation.
+
+- [Logical Boolean comparison research](gaps-boolean-comparisons.md): original scalar/storage/helper/chain boundaries and required evaluation/effect contract.
+
+- [FP32 Conv2d and CNN training](gaps-convolution.md): static NCHW convolution, input/weight/bias gradients and a runnable two-layer CNN.

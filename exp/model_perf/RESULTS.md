@@ -1,5 +1,145 @@
 # Exact model kernel performance improvements
 
+## November 26 kernel-research continuation
+
+The first completed changes from the attached agenda are bounded forward pack
+reuse and a cheaper allocator interval scan. The experiments started under
+`exp/model_perf/` and were repeated through production after integration.
+The checkout also contains concurrent Boolean-storage, documentation and
+Conv2d work. Each remote envelope retains the exact compiler source hashes it
+consumed. The final worker's production sources match the delivered sources.
+
+### Repeated projection operand packs
+
+The separate-pack runtime now retains a repeated row-major 128×128 FP16 pack
+within one forward call. Its key includes the logical source, layout and
+conversion signature. The runtime clears readiness on each forward, including
+captured graph construction. The resulting graph refreshes every retained
+pack on replay. The measured projection model shares its input across Q/K/V
+products, eliminating two conversion launches. Unique packs, other matrix
+shapes and backward/transposed layouts keep their existing execution paths.
+
+The staged [A100-SXM4-40GB experiment](evidence/pack-reuse-20261126T074320Z.json)
+measured 43.75→39.42 µs, with 14→12 launches. An independent
+[integrated A100-SXM4-80GB replay](evidence/pack-reuse-integrated-20261126T074559Z.json)
+measured 41.19→37.08 µs with storage views/reuse enabled. These workers retain
+their separate absolute timings.
+
+The final [A100-SXM4-40GB confirmation](evidence/pack-reuse-integrated-20261126T083532Z.json)
+uses Torch 2.7.1+cu128, Triton 3.3.1, CUDA toolkit 12.8 and driver 620.70.06.
+Each row below is the median of three round medians from randomized resident
+CUDA Graph samples, fifteen samples per round and four invocations per graph.
+All values are µs. Build, allocation, CPU capture, transfers and delivery are
+outside these GPU intervals. Speedup is incumbent OA time / production OA time.
+
+| Storage views | Buffer reuse | Incumbent OA | Production OA | Incumbent PTX + ptxas | Reuse schedule + ptxas | Triton | OA speedup |
+|---|---|---:|---:|---:|---:|---:|---:|
+| On | On | 44.18 | 39.90 | 40.76 | 36.65 | 19.34 | 1.107× |
+| On | Off | 44.11 | 39.72 | 40.87 | 36.58 | 19.35 | 1.111× |
+| Off | On | 44.01 | 39.74 | 40.58 | 36.48 | 19.38 | 1.108× |
+| Off | Off | 44.26 | 39.83 | 40.98 | 36.54 | 19.33 | 1.111× |
+
+The matched ptxas arm compiles the identical OA PTX and uses the same pack
+allocation/binding/launch schedule. Independent trace audits confirm twelve
+launches for both selected schedules. Production OA remains about 2.06× slower
+than direct Triton and 1.09× slower than matched-schedule ptxas on the first row.
+The dense MLP has no repeated forward operand pack to remove and its 32-launch
+training control remains near neutral. Workspace allocation bytes remain the
+same on these plans.
+
+Each final configuration passes six direct iterations and six actual captured
+replays across incumbent OA, production OA, incumbent ptxas, scheduled ptxas and
+Triton. Every replay changes inputs and targets. Inference also changes every
+weight in place after capture. OA workspaces are poisoned before subsequent
+checks. The gate compares complete predictions, losses, input/parameter
+gradients and updated training weights against CPUReference, with the original
+`rtol=0.002, atol=0.00002` policy, input immutability and allocation guards.
+Independent profiler names/counts match the runtime ledger before timing.
+
+A further [A100-SXM4-40GB replay](evidence/pack-reuse-integrated-20261126T084247Z.json)
+passes the same eight configurations with per-field hashes and error counts.
+Its [independent local audit](evidence/pack-reuse-complete-state-audit-20261126.json)
+checks all **2,880 field comparisons** and reloads complete snapshots covering
+**7,239,720 output elements** from one direct step and one captured replay per
+arm/configuration. It also verifies native modules/text/registers, paired
+sample order, all raw interval medians and profiler launch counts. The 64 MiB
+raw snapshot/build archive remains in the ignored run directory, with its hash
+retained in the audit and evidence index.
+
+### Allocator compile cost
+
+The interval scan traverses instructions in increasing order. A value's first
+visit sets its start, and every subsequent visit sets its latest endpoint.
+Streaming definitions, uses and CFG live-out values removes temporary lists,
+repeated dictionary lookups and min/max comparisons. The spill selection,
+pressure schedule and emitted native program retain their previous choices.
+
+The [staged scan experiment](evidence/kernel-study-allocator-intervals-experiment.json)
+preceded production changes. The [integrated warm-generation record](evidence/kernel-study-allocator-integrated.json)
+retains three randomized paired samples with parsed PTX and a warm encoder on
+the development Mac with Python 3.14.5. Concurrent host work limits throughput
+comparisons. These are seconds of code generation.
+
+| Fixture | Prior scan | Production scan |
+|---|---:|---:|
+| scalar96 | 2.360 | 1.574 |
+| pred24 | 0.227 | 0.178 |
+| group4_auto | 23.017 | 12.941 |
+| no_pressure | 0.000420 | 0.000391 |
+| impossible_groups | 0.000690 | 0.000594 |
+
+The [cold subprocess observations](evidence/kernel-study-allocator-cold.json)
+include fresh parsing/encoder creation, with one sample per arm. They measure
+3.48→2.58 seconds for scalar96 and 29.96→16.13 seconds for group4_auto.
+The [toolkit build worker](evidence/allocator-build-20261126T082620Z.json)
+also compares four complete builds including ptxas/container packaging. Its
+single baseline/current pairs measure 11.03→6.57 seconds for scalar96,
+0.94→0.72 for pred24, 93.77→47.22 for group4_auto and 1.96→1.45 for pressure_tight.
+All four complete cubins match byte-for-byte. These observations have separate
+measurement boundaries and provide no kernel-execution speedup claim.
+
+All [48 fixture/optimization-level comparisons](evidence/kernel-study-allocator-all-integrated.json)
+preserve complete code, controls, labels, exit offsets, encoded words,
+registers, local frame/spill resources and impossible-pressure diagnostics.
+The [policy continuity audit](evidence/allocator-continuity-20261126.json)
+additionally matches all 44 installed GEMM contracts and five rowwise policies
+against 98 retained executable sessions. Dispatch identities were rebound only
+after this audit, preserving measured policies and original timing evidence.
+
+### Negative controls and remaining uncertainty
+
+The [early pressure-scheduling experiment](evidence/kernel-study-allocator-experiment.json)
+accelerated recoverable-pressure fixtures but increased compile cost for
+spill-heavy controls. The streaming scan was selected independently of that
+candidate. The native FP16x2 conversion experiment passed exact packed-byte
+checks for signed zeros, subnormals, ties, infinities and signed canonical NaNs.
+Its completed dense-training row showed only about 0.5 µs improvement. Its
+overall envelopes failed before full campaign completion, so that conversion
+remains experimental.
+
+Retained failed attempts include a reserved PTX register name, a graph-capture
+stream mismatch and incomplete profiler launch traces. Fresh workload
+processes and explicit stream capture resolved those harness issues.
+One [later incumbent dense-control failure](evidence/pack-reuse-integrated-20261126T082620Z.json)
+reported a large prediction mismatch with views disabled and buffer reuse
+enabled. Its original log lacks the iteration/input dump needed for complete
+isolation. An [isolated replay](evidence/pack-reuse-debug-integrated-20261126T082958Z.json)
+with the same seed/configuration passed, followed by the expanded final
+six-direct/six-replay campaign. The earlier numerical failure remains
+unexplained and excluded from performance admission. It is retained as an
+open control issue alongside the successful final gates.
+
+The final local full suite passes **4,654 tests with 16 explicit skips**. The CUDA
+worker passes **118 focused tests**. Final schedule/runtime/dispatch checks pass
+**75 tests with one explicit skip**, including duplicate-input identity and the unique/unmeasured-shape
+boundaries. The [evidence index](evidence/kernel-study-20261126.json) preserves
+raw envelopes, partial results from failed runs, compile samples and archive
+hashes. Other agenda items, including tensor rescheduling, parallel embedding
+gradients and tiled attention, remain open research.
+The [final validation record](evidence/kernel-study-validation-20261126.json)
+binds these completed scopes to current sources, tests, hardware envelopes and
+the retained control limitation.
+
 November 19, 2026. The user review correctly identifies dense backward and
 reduction overhead. The frozen current-revision feature inventory now passes
 both tests unchanged; the reported stale retired-application rule is absent.

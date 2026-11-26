@@ -33,7 +33,7 @@ N_LIKE = {"n", "count", "size", "len", "num", "length"}
 SMALL_INT = 16
 DEFAULT_N = 1 << 20
 BLOCK = 256
-DTYPES = {"f32": "<f", "i32": "<i", "u32": "<I", "i64": "<q", "u64": "<Q", "f16": "<e", "bf16": "<H"}
+DTYPES = {"bool": "<B", "f32": "<f", "i32": "<i", "u32": "<I", "i64": "<q", "u64": "<Q", "f16": "<e", "bf16": "<H"}
 _PRICE_FALLBACK = {"A100-40GB": 0.000583, "A100": 0.000583, "A100-80GB": 0.000694, "A10": 0.000306,
                    "L4": 0.000222, "T4": 0.000164, "L40S": 0.000542, "H100": 0.001097}
 FAULT_HINT = ("if the auto-harness guessed this kernel's launch wrong (2-D grid, other buffer sizes, "
@@ -471,14 +471,17 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
             else:
                 r = random.Random(_seed("spec", name, bi))
                 init[name] = struct.pack(f"<{cnt}{DTYPES[dt][-1]}",
-                                         *(r.randrange(cnt) for _ in range(cnt)))
+                                         *(r.randrange(2 if dt == 'bool' else cnt) for _ in range(cnt)))
         elif isinstance(how, list):
             if len(how) > cnt:
                 raise RunError(f"spec: buffer {name!r} has {len(how)} init values but count {cnt}")
             try:
                 values = []
                 for value in how:
-                    if dt in ('f32', 'f16', 'bf16'):
+                    if dt == 'bool':
+                        if type(value) is not bool:raise ValueError('Boolean initialization values must be true or false')
+                        values.append(int(value))
+                    elif dt in ('f32', 'f16', 'bf16'):
                         if type(value) not in (int, float):
                             raise ValueError(f"{dt} initialization values must be numbers")
                         values.append(float(value))
@@ -579,7 +582,12 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
             raise RunError(f"spec: step {si} passes {len(args)} args to {t.label}, which takes {nparams} "
                            f"({', '.join(p[1] for p in t.kernel['params'])})")
         for index,((dtype,name),argument) in enumerate(zip(t.kernel['params'],args)):
-            is_boolean = logical_parameters.get(name,{}).get('dtype')=='bool'
+            logical = logical_parameters.get(name,{})
+            is_boolean = logical.get('kind')=='scalar' and logical.get('dtype')=='bool'
+            is_boolean_array = logical.get('kind')=='array' and logical.get('dtype')=='bool'
+            boolean_buffer = argument[0]=='buf' and spec['buffers'][argument[1]].get('dtype','f32')=='bool'
+            if is_boolean_array != boolean_buffer:
+                raise RunError(f'Boolean array {name} requires a Boolean buffer and a matching logical source contract')
             if is_boolean != (index in boolean_arguments):
                 raise RunError(f'Boolean parameter {name} requires a Boolean argument and a matching logical source contract')
             if dtype in ('b8','u8','s8','b16','u16','s16') and argument[0] != 'u'+dtype[1:]:

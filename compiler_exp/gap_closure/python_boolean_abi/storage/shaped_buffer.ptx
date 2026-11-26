@@ -1,0 +1,78 @@
+// openassembler-pyfront-source-graph-v1 {"boolean_values":{"source.py:shaped_buffer:16:20:BoolOp":{"category":"BoolOp","column":20,"function":"shaped_buffer","kernels":{"shaped_buffer":1},"line":16,"path":"source.py","result_kind":"pred","specialized_expression_sha256":"76c65cd3a7149ee1b5c60bab42889691b404b5d49b6b21f6dea70046eb431cf7"}},"entry":"source.py","files":[{"path":"source.py","sha256":"72ecb8746a3899c887a4be8c3b6b662d94af7daf40c04434b2128347f12ec7d8"}],"helpers":{},"schema":1,"strategy":"static-local-python-helper-source-graph"}
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-buffer-v1 {"buffers":[{"access":"read","alignment":1,"dtype":"bool","element_bytes":1,"name":"a","shape":[4,7],"storage_elements":28,"strides":[7,1]},{"access":"readwrite","alignment":1,"dtype":"bool","element_bytes":1,"name":"out","shape":[4,7],"storage_elements":28,"strides":[7,1]}],"kernel":"shaped_buffer","schema":1}
+// openassembler-pyfront-types-v1 {"kernel":"shaped_buffer","parameters":[{"dtype":"bool","kind":"array","name":"a"},{"dtype":"bool","kind":"array","name":"out"},{"dtype":"bool","kind":"scalar","name":"flag"}],"schema":1}
+.visible .entry shaped_buffer(.param .u64 a, .param .u64 out, .param .u8 flag)
+{
+ .reg .pred %p<12>;
+ .reg .b32 %r<20>;
+ .reg .b64 %rd<5>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u8 %r1, [flag];
+ setp.ne.u32 %p1, %r1, 0;
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ mov.s32 %r4, 7;
+ setp.lt.s32 %p2, %r3, %r4;
+ @!%p2 bra L_endif_1;
+ mov.s32 %r5, 0;
+ mov.u32 %r6, %r5;
+ mov.u32 %r7, %r3;
+ mov.s32 %r8, 0;
+ setp.eq.s32 %p4, %r8, 0;
+ not.pred %p5, %p4;
+ mov.pred %p3, %p5;
+ setp.lt.s32 %p6, %r6, 0;
+ @%p6 bra L_buffer_checked_2;
+ setp.ge.s32 %p6, %r6, 4;
+ @%p6 bra L_buffer_checked_2;
+ setp.lt.s32 %p7, %r7, 0;
+ @%p7 bra L_buffer_checked_2;
+ setp.ge.s32 %p7, %r7, 7;
+ @%p7 bra L_buffer_checked_2;
+ mov.s32 %r9, 0;
+ mul.lo.s32 %r10, %r6, 7;
+ add.s32 %r9, %r9, %r10;
+ mul.lo.s32 %r11, %r7, 1;
+ add.s32 %r9, %r9, %r11;
+ mul.wide.u32 %rd3, %r9, 1;
+ add.u64 %rd3, %rd1, %rd3;
+ ld.global.u8 %r12, [%rd3];
+ setp.ne.u32 %p8, %r12, 0;
+ mov.pred %p3, %p8;
+L_buffer_checked_2:
+ mov.pred %p9, %p3;
+ @%p9 bra L_booloperands_3;
+ mov.pred %p9, %p1;
+L_booloperands_3:
+ mov.s32 %r13, 0;
+ mov.u32 %r14, %r13;
+ mov.u32 %r15, %r3;
+ setp.lt.s32 %p10, %r14, 0;
+ @%p10 bra L_buffer_checked_4;
+ setp.ge.s32 %p10, %r14, 4;
+ @%p10 bra L_buffer_checked_4;
+ setp.lt.s32 %p11, %r15, 0;
+ @%p11 bra L_buffer_checked_4;
+ setp.ge.s32 %p11, %r15, 7;
+ @%p11 bra L_buffer_checked_4;
+ mov.s32 %r16, 0;
+ mul.lo.s32 %r17, %r14, 7;
+ add.s32 %r16, %r16, %r17;
+ mul.lo.s32 %r18, %r15, 1;
+ add.s32 %r16, %r16, %r18;
+ mul.wide.u32 %rd4, %r16, 1;
+ add.u64 %rd4, %rd2, %rd4;
+ selp.u32 %r19, 1, 0, %p9;
+ st.global.u8 [%rd4], %r19;
+L_buffer_checked_4:
+L_endif_1:
+L_exit:
+ ret;
+}

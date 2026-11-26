@@ -305,6 +305,13 @@ KV-cache half support, or a performance claim over NVIDIA/Triton.
 
 ## Exact model performance follow-up, November 19
 
+The subsequent November 26 [pack-reuse study](../../../exp/model_perf/RESULTS.md)
+reuses a repeated row-major 128×128 FP16 operand pack within one forward call.
+Identity includes the logical source, exact layout and conversion signature.
+Each forward refreshes pack readiness. The three-projection inference workload
+uses twelve launches after eliminating two repeated input packs. Other shapes
+and transposed/backward packs retain their measured selection boundaries.
+
 [The performance campaign](../../../exp/model_perf/RESULTS.md) admits small CTA
 tiles for four FP16 full-tile products, parallel bias gradients for 128x128 and
 128x256, and a warp-based 128x128 MSE. Precision and complete training gates are

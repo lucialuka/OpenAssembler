@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/check_contract_updates.py", line 14, in <module>
+    try:compile_file(source)
+        ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 1683, in compile_file
+    raise e.with_path(path) from None
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 1680, in compile_file
+    entries.append(_compile_entry(k, names, arch))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 1577, in _compile_entry
+    _Emitter(scope, names, fdef).body(fdef.body)
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 510, in body
+    self.stmt(st)
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 519, in stmt
+    fn(node)
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 526, in visit_Assign
+    self._store(target, *self._eval(node.value))
+                         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 961, in _eval
+    return self._call(node)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 1335, in _call
+    return self._integer_cast(_INT_TYPES[short], args[0], node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 1079, in _integer_cast
+    value, kind = self._eval(arg)
+                  ^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/candidate-pyfront.py", line 942, in _eval
+    raise NotSupported(f"array {node.id!r} used as a value (index it: {node.id}[i])", node)
+openassembler.pyfront.compile.NotSupported: array 'value' used as a value (index it: value[i]) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-t_tpk81g/candidate_0.py, line 4)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/storage/check_contract_updates.py", line 16, in <module>
+    assert re.search(value['reason'],str(error)),(prefix,value,str(error));results.append(dict(snapshot=prefix,index=index,diagnostic=str(error),rejected=True))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('candidate', {'name': 'bool_parameter_array', 'source': 'from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),value:Array(bool)):\n    a[0]=i32(value)\n', 'reason': 'unsupported value expression'}, "array 'value' used as a value (index it: value[i]) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-storage-contract-t_tpk81g/candidate_0.py, line 4)")

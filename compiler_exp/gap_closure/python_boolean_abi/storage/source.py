@@ -19,7 +19,7 @@ def shaped_buffer(a: Buffer(bool, (4, 7), access='read'), out: Buffer(bool, (4, 
 @kernel
 def shared_flags(a: Array(i32), out: Array(i32), flag: bool):
     i = tid_x()
-    shared = shared_array(128, bool)
+    shared = shared_array(bool, 128)
     shared[i] = bool(a[i]) and flag
     syncthreads()
     out[i] = i32(shared[127 - i])

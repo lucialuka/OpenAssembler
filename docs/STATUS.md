@@ -1,5 +1,41 @@
 # OpenAssembler architecture and status
 
+## November 26 practical CNN compilation
+
+[FP32 Conv2d](compiler/gaps-convolution.md) now supports NCHW/OIHW tensors,
+optional bias, groups=1 and static stride/padding/dilation. Capture, native
+forward, input/weight/bias gradients and SGD training/replay work through the
+normal model route. The [CNN example](../examples/native_cnn/model.py) combines
+two convolutions, ReLU, sigmoid, spatial mean and a linear head.
+
+Independent validation passes 144 complete offline tensor executions, 21 focused
+tests and 645 model regressions. A100 passes 80 full-tensor comparisons and ten
+profiler ownership checks. Public CLI compile and saved replay each pass 45
+training-state checks over three updates. The audit regenerates 142 exact native
+outputs across eleven bundles. [Validation](../compiler_exp/gap_closure/conv2d/validation.json)
+retains the hardware/archive/source identities. Grouped/depthwise convolution,
+pooling, BatchNorm, dynamic shapes and broader dtypes remain open.
+
+## November 26 Boolean array, buffer and shared storage
+
+[Boolean storage](compiler/gaps-boolean-storage.md) now maps logical predicates to
+one-byte global/shared elements, nonzero load decoding and canonical stores.
+Raw arrays and rank 1..4 checked Buffer views preserve exact byte spans/strides,
+false out-of-bounds loads, skipped stores and source/native ownership. Public
+Boolean buffers require true/false initialization and reject wrong numeric roles.
+
+Independent original-source gates pass **5,280 A100 launches** and **528 actual
+public buffer launches**, auditing **22,302,720 complete bytes** and **264 exact
+native outputs**. All **208 focused tests** and **12,672 independent offline
+executions** pass. Eight exact stale type rejection cases are updated without
+changing numerical references. Full suites pass **5,136 supported tests** and **4,651 compiler-only tests with
+fifteen skips**. All **4,214 preceding native outputs** remain exact. The 49
+measured policies/98 retained sessions, installed 132 identities/264 native outputs,
+public remote publication and docs pass. The
+[validation record](../compiler_exp/gap_closure/python_boolean_abi/storage/validation.json)
+binds exact final sources and evidence. The complete 51-gap program remains incomplete; direct predicate comparisons and broader Python,
+memory safety, ABI and performance milestones remain separate work.
+
 ## November 25 logical Boolean kernel parameters
 
 [Boolean kernel parameters](compiler/gaps-boolean-parameters.md) now carry a
@@ -15,10 +51,13 @@ bytes** and **240 exact native outputs**. All **164 new regressions** pass. Two
 existing rejection fixtures now exercise unsupported Boolean array annotations
 because scalar annotation rejection became stale. All 49 measured policies and
 98 sessions retain exact binaries/controls/resources before identity rebinding.
-Full suites, fresh prior-native replay, installed/public remote and final docs
-integration are running; the
+Fresh replay reproduces all **3,974 prior native outputs** exactly. Full suites
+pass **4,928 supported tests** and **4,443 compiler-only tests with fifteen skips**.
+Installed wheel/public remote builds and live/exported docs pass; the
 [validation record](../compiler_exp/gap_closure/python_boolean_abi/scalar/validation.json)
-will bind exact final gates. The full 51-gap program remains incomplete.
+binds final sources and evidence. The next [Boolean storage study](compiler/gaps-boolean-storage.md)
+retains original Array/Buffer/shared rejections and required storage semantics.
+The full 51-gap program remains incomplete.
 
 ## November 25 narrow scalar entry parameters
 
@@ -722,7 +761,7 @@ The November 14 BMM extension above supersedes that support boundary.
 
 | Area | Latest completed evidence | Interpretation |
 |---|---|---|
-| Repository regression | November 14 production snapshot: 975 passed, three optional Torch scopes skipped locally; pinned Torch worker: 75 passed; A100 FP16 BMM/attention evidence is archived under `exp/attention_half` | Separate interpreter scopes; 142 active Markdown files pass link/catalogue/CLI checks; replay/loss evidence remains under exp/review_response |
+| Repository regression | November 14 production snapshot: 975 passed and three optional Torch scopes skipped locally; pinned Torch worker: 75 passed; A100 FP16 BMM/attention evidence is archived under exp/attention_half | Separate interpreter scopes; the current documentation check passes for 247 Markdown files, local links, catalogue status and CLI options; replay/loss evidence remains under exp/review_response |
 | Whole transformer workflow | 10 configurations, two process-order rounds; nine pass both numerical gates | Gains use Inductor/Triton; BF16 training remains excluded |
 | Native cooperative reductions | 18 shape/operator cases, five patterns, 17,408,740 output elements pass, plus guards and graph replay; a 58-shape 1/2/4/8-warp A100 sweep and separate seven-case heldout recheck promote five exact rowwise policies | Explicit FP32 operators; selected CTA geometry improves five heldout OpenAssembler cases by at least 3% in all rounds; same-source ptxas remains faster on main shapes |
 | Native direct-pointer GEMM | Historical 486 full method/input checks across three runs; six MLP products improve about 1.03–1.12×; current exact selections are audited in the November 11 replay | Direct pointers are selected for measured contracts or explicitly requested; unknown contracts keep legacy pointers. Historical tall regressions remain valid for those tested plans |

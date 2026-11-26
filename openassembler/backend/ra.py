@@ -1212,16 +1212,18 @@ def _intervals(ops):
     """[first, last] op index where each V is defined, used, or live (CFG liveness),
     so values carried around a loop's back edge stay allocated for the whole loop."""
     start, end = {}, {}
-    lv = cfg_liveness(ops) if any(op.target for op in ops) else None
+    live_out = cfg_liveness(ops) if any(op.target for op in ops) else None
     for i, op in enumerate(ops):
-        here = list(_flat(op.defs)) + [u for u in _flat(op.uses) if isinstance(u, V)]
-        if lv is not None:
-            here += [v for v in lv[i] if isinstance(v, V)]
-        for v in here:
-            if isinstance(v, V):
-                start.setdefault(v, i)
-                start[v] = min(start[v], i)
-                end[v] = max(end.get(v, i), i)
+        for operands in (op.defs, op.uses):
+            for value in _flat(operands):
+                if isinstance(value, V):
+                    start.setdefault(value, i)
+                    end[value] = i
+        if live_out is not None:
+            for value in live_out[i]:
+                if isinstance(value, V):
+                    start.setdefault(value, i)
+                    end[value] = i
     return start, end
 
 

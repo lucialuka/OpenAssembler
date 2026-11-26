@@ -204,8 +204,7 @@ class Runtime:
         self._tensor_bindings = {}
         self._packed_ready = set()
         self._tensor_schedule = None
-        if any(stage.op in ('pack_dual_f16_rne', 'round_f16_f32')
-               for recipe in self.recipes.values() for stage in recipe.stages):
+        if self.recipes:
             from .tensor_schedule import workspace_plan
             self._tensor_schedule = workspace_plan(self.plan,self.steps,self.recipes)
 
@@ -400,9 +399,10 @@ class Runtime:
                     bindings = {f"a{i}":values[name] for i,name in enumerate(step["inputs"])}
                     bindings.update(self._tensor_bindings[step['output']] if self._tensor_schedule is not None else self._tensor_workspaces)
                     bindings["output"] = values[step["output"]]
+                    pack_slots = self._tensor_schedule['pack_slots'][step['output']] if self._tensor_schedule is not None else {}
                     for stage in recipe.stages:
-                        if stage.op == 'pack_dual_f16_rne':
-                            key=self._tensor_schedule['pack_slots'][step['output']][stage.output]
+                        key = pack_slots.get(stage.output)
+                        if key is not None:
                             if key in self._packed_ready:
                                 continue
                             self._packed_ready.add(key)

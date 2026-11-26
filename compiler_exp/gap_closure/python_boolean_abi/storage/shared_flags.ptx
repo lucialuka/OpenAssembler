@@ -1,0 +1,49 @@
+// openassembler-pyfront-source-graph-v1 {"boolean_values":{"source.py:shared_flags:23:16:BoolOp":{"category":"BoolOp","column":16,"function":"shared_flags","kernels":{"shared_flags":1},"line":23,"path":"source.py","result_kind":"pred","specialized_expression_sha256":"f4a333ecc27f0f11f6f2c35b7ca502b2af3729f47a0aadf0c6abdd555d906139"},"source.py:shared_flags:23:16:Call":{"category":"Call","column":16,"function":"shared_flags","kernels":{"shared_flags":1},"line":23,"path":"source.py","result_kind":"pred","specialized_expression_sha256":"7f8728cd1f5acaa9cce6a9909fe4b215a292db5bb8e6b51b6848be6db8ec5d66"}},"entry":"source.py","files":[{"path":"source.py","sha256":"72ecb8746a3899c887a4be8c3b6b662d94af7daf40c04434b2128347f12ec7d8"}],"helpers":{},"schema":1,"strategy":"static-local-python-helper-source-graph"}
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"shared_flags","parameters":[{"dtype":"s32","kind":"array","name":"a"},{"dtype":"s32","kind":"array","name":"out"},{"dtype":"bool","kind":"scalar","name":"flag"}],"schema":1}
+.visible .entry shared_flags(.param .u64 a, .param .u64 out, .param .u8 flag)
+{
+ .shared .align 1 .b8 __smem_shared[128];
+ .reg .pred %p<6>;
+ .reg .b32 %r<16>;
+ .reg .b64 %rd<5>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u8 %r1, [flag];
+ setp.ne.u32 %p1, %r1, 0;
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ mov.u32 %r4, __smem_shared;
+ mul.wide.u32 %rd3, %r3, 4;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.u32 %r5, [%rd3];
+ setp.eq.s32 %p2, %r5, 0;
+ not.pred %p3, %p2;
+ mov.pred %p4, %p3;
+ @!%p4 bra L_booloperands_1;
+ mov.pred %p4, %p1;
+L_booloperands_1:
+ shl.b32 %r6, %r3, 0;
+ add.s32 %r7, %r6, %r4;
+ selp.u32 %r8, 1, 0, %p4;
+ st.shared.u8 [%r7], %r8;
+ bar.sync 0;
+ mov.s32 %r9, 127;
+ sub.s32 %r10, %r9, %r3;
+ shl.b32 %r11, %r10, 0;
+ add.s32 %r12, %r11, %r4;
+ ld.shared.u8 %r13, [%r12];
+ setp.ne.u32 %p5, %r13, 0;
+ selp.s32 %r14, 1, 0, %p5;
+ cvt.s32.s32 %r15, %r14;
+ mul.wide.u32 %rd4, %r3, 4;
+ add.s64 %rd4, %rd2, %rd4;
+ st.global.u32 [%rd4], %r15;
+L_exit:
+ ret;
+}

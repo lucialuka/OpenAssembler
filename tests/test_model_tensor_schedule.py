@@ -49,6 +49,39 @@ def test_schedule_reuses_same_logical_operand_across_phases_and_shape_aliases():
     assert any(v['offset']>0 for v in second.values())
 
 
+def test_separate_projection_reuses_the_input_pack_without_sharing_weights():
+    matrix = spec(128, 128)
+    recipe = emit_tensor_recipe('linear', [matrix, matrix], matrix, {'math_mode': MATH_MODE})
+    plan = {'aliases': {'x_view': {'source': 'x', 'shape': [128, 128], 'phase': 'forward'}}}
+    steps = [{'tensor': True, 'entry': recipe.name, 'inputs': [x, weight],
+              'output': out, 'phase': 'forward'}
+             for x, weight, out in [('x', 'wq', 'q'), ('x_view', 'wk', 'k'), ('z', 'wv', 'v')]]
+    schedule = workspace_plan(plan, steps, {recipe.name: recipe})
+    packed_input, packed_weight = (stage.output for stage in recipe.stages[:2])
+    joined = schedule['pack_slots']['q'][packed_input]
+    assert schedule['pack_slots'] == {'q': {packed_input: joined}, 'k': {packed_input: joined}, 'v': {}}
+    assert schedule['bindings']['q'][packed_input] == schedule['bindings']['k'][packed_input]
+    assert schedule['bindings']['v'][packed_input]['allocation'] != joined
+    assert schedule['bindings']['q'][packed_weight]['allocation'] != joined
+
+
+def test_separate_unique_operands_keep_direct_workspace_bindings():
+    matrix = spec(128, 128)
+    recipe = emit_tensor_recipe('linear', [matrix, matrix], matrix, {'math_mode': MATH_MODE})
+    steps = [{'tensor': True, 'entry': recipe.name, 'inputs': ['x', 'weight'],
+              'output': 'y', 'phase': 'forward'}]
+    assert workspace_plan({}, steps, {recipe.name: recipe}) is None
+
+
+def test_separate_reuse_stays_within_measured_forward_shape():
+    matrix = spec(128, 256)
+    weight = spec(128, 256)
+    recipe = emit_tensor_recipe('linear', [matrix, weight], spec(128, 128), {'math_mode': MATH_MODE})
+    steps = [{'tensor': True, 'entry': recipe.name, 'inputs': ['x', name],
+              'output': name + '_out', 'phase': 'forward'} for name in ('wq', 'wk')]
+    assert workspace_plan({}, steps, {recipe.name: recipe}) is None
+
+
 @pytest.mark.parametrize('left,right,out',[
     ((17,65),(33,64),(17,33)),((17,33),(33,65),(17,65)),
     ((513,128),(128,128),(513,128))])

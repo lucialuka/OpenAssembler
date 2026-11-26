@@ -2,7 +2,7 @@
 
 The supplied 51-gap review remains the scope of this program. Validated additions cover typed helpers/wide integers/buffers/atomics, native memory and parameter contracts, tensor operators, optimizer/checkpoint state, recorded builds and measurement. **The complete 51-gap program is not finished.**
 
-November 25 integration passes 4,764 tests in Python 3.12.10/Torch 2.7.1 with 0 skips, and 4,279 tests with 15 skips in the separate Python 3.14.5 compiler-only environment. A100 evidence and exact source/native-code identities are retained in the linked dossiers and [validation record](../../compiler_exp/gap_closure/narrow_parameters/validation.json).
+November 26 integration passes 5,136 tests in Python 3.12.10/Torch 2.7.1 with 0 skips, and 4,651 tests with 15 skips in the separate Python 3.14.5 compiler-only environment. A100 evidence and exact source/native-code identities are retained in the linked dossiers and [validation record](../../compiler_exp/gap_closure/python_boolean_abi/storage/validation.json).
 
 The [machine-readable register](../../compiler_exp/gap_closure/gap-register.json) retains every original exit gate. The [supplied review](../../compiler_exp/gap_closure/input-gap-register.txt) is retained unchanged, including its dated evidence and limits. A row marked partial requires the remaining original gate; it is not counted as a completed broad capability.
 
@@ -28,7 +28,7 @@ The [machine-readable register](../../compiler_exp/gap_closure/gap-register.json
 | G18 | Tensor instruction and async-pipeline coverage is specialized | open |
 | G19 | Native GPU architecture coverage remains SM80/A100 | open |
 | G20 | Source-to-binary toolchain independence is incomplete | open |
-| G21 | Framework operator coverage is still a small whitelist | [partial](gaps-operators.md) |
+| G21 | Framework operator coverage is still a small whitelist | [partial](gaps-convolution.md) |
 | G22 | Model control flow and shapes are static specializations | open |
 | G23 | Model storage/dtype and AMP coverage remain restricted | open |
 | G24 | Arbitrary strides, aliases and mutation effects are unsupported | open |

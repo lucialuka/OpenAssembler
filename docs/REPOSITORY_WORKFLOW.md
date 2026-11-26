@@ -66,6 +66,9 @@ how an entire host application should allocate data or call those kernels.
 The [command reference](COMMANDS.md#run-saved-native-kernel-binaries-or-model-replay)
 documents the spec format and reference-comparison behavior.
 
+This guide describes the user-facing repository workflow. Start at the
+[documentation home](README.md) for task-based navigation.
+
 ## Automatic model discovery
 
 This is a complete configuration-free example:

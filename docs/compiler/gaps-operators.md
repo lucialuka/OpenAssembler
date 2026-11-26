@@ -110,3 +110,12 @@ The Modal command requests an A100 and a Python 3.12/CUDA 12.8.1 image with
 Torch 2.7.1. Actual device/runtime metadata in the record is authoritative.
 The fixed November 21 audit references the retained hardware record; a future
 replay produces a new dated record and does not replace its predecessor.
+
+
+## Convolution coverage
+
+The [Conv2d extension](gaps-convolution.md) adds FP32 NCHW/OIHW groups=1 forward,
+input/weight/bias gradients and ordinary CNN training/replay. Its independent
+A100 gate and public CLI example extend G21 into compact convolutional models.
+The operator reference lists the supported static attributes and remaining
+coverage. [Operation reference](../reference/supported-operators.md)

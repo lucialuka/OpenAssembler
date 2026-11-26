@@ -83,6 +83,11 @@ and maximum-frame recovery. Its explicit compiler-cost measurements remain
 separate from resident GPU gains. Tensor and occupancy policies retain their
 own admission gates.
 
+The November 26 [model kernel study](../../exp/model_perf/RESULTS.md) measures
+reuse of repeated 128×128 forward operand packs and allocator interval-scan
+cost. The [allocator dossier](ideas/scalar-register-allocation.md) records exact
+binary continuity and compile-time measurements alongside the workload results.
+
 The role/shape coverage audit is under
 [`exp/shape_coverage`](../../exp/shape_coverage/README.md). That study remains a
 contract and measurement matrix. The separate completed
@@ -92,6 +97,12 @@ retentions. Unknown or stale contracts keep the reference; the five rowwise
 entries have their own independent evidence.
 
 Catalogue reviewed **November 14, 2026**. There are **82 dossiers**: **40 implemented**, **9 validated but not integrated**, **22 tested but not selected**, and **11 open or hardware unavailable**. The earlier November 9 revalidation ledger is in [`exp/revalidation/`](../../exp/revalidation/README.md); the new role/tile evidence is inventoried in [`exp/shape_coverage/`](../../exp/shape_coverage/README.md).
+
+The [native convolution cycle](../compiler/gaps-convolution.md) adds FP32 NCHW
+Conv2d and input/weight/bias gradients for groups=1. Its two-layer CNN passes
+public CLI compilation and saved training replay on A100. The
+[experiment](../../compiler_exp/gap_closure/conv2d/README.md) retains the original
+rejection, independent CPU/native/hardware results and exact source identities.
 
 ## 1. Validated and implemented
 

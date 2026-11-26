@@ -27,4 +27,13 @@ f32 = Scalar("f32")
 
 
 def Array(elem: Scalar) -> ArrayType:
-    return ArrayType(elem)
+    return ArrayType(Scalar("pred") if elem is bool else elem)
+
+
+def element_bytes(kind: str) -> int:
+    """Physical element width for an admitted logical scalar register kind."""
+    return {"pred": 1, "f32": 4, "s32": 4, "u32": 4, "s64": 8, "u64": 8}[kind]
+
+
+def logical_dtype(kind: str) -> str:
+    return "bool" if kind == "pred" else kind

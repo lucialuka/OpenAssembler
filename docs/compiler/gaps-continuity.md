@@ -511,3 +511,12 @@ also refuses changes outside its narrow build-instrumentation scope or a compile
 identity change during the run. This is source/binary continuity under Python
 3.12.10; it is neither new hardware validation nor a new timing result. It
 preserves the original A100 measurement boundaries and device cohorts.
+
+
+The November 26 [Boolean storage cycle](gaps-boolean-storage.md) promotes five exact
+source/host modules after independent original-source/A100 gates. The continuity
+observer composes their frozen scalar-parameter baseline with exact candidate
+snapshots; all 49 executable policies and 98 retained selection/held-out sessions
+must still pass before identity rebinding. The historical frozen baseline is
+commit `4335157dcf30a9576718d2d008e16c8786548368`, retained in the preceding audit;
+the current HEAD is a later checkpoint and is not an interchangeable baseline.

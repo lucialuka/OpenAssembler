@@ -103,7 +103,7 @@ def flatten_outputs(plan, actual):
 def capture_model(model, example_inputs, *, math_mode="fp32"):
     """Capture a CPU ``nn.Module`` and emit a JSON-serializable native program.
 
-    Supported operations include Linear, ReLU, sigmoid, static sum/mean, tanh GELU, last-axis softmax and
+    Supported operations include Linear, FP32 Conv2d with groups=1, ReLU, sigmoid, static sum/mean, tanh GELU, last-axis softmax and
     affine LayerNorm, rank-two through rank-four batch-broadcast matmul, reshape,
     rank-two through rank-four permutation and concatenation, broadcast arithmetic,
     dense int64 embeddings and Boolean/causal SDPA. Linear accepts
@@ -166,11 +166,12 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         torch.flatten: "reshape", torch.reshape: "reshape", torch.transpose: "transpose",
         operator.matmul: "matmul", torch.matmul: "matmul", torch.mm: "matmul", torch.bmm: "bmm",
         torch.softmax: "softmax", functional.softmax: "softmax", functional.gelu: "gelu",
+        functional.conv2d: "conv2d",
         functional.layer_norm: "layernorm",
         functional.embedding: "embedding", functional.scaled_dot_product_attention: "sdpa",
         torch.cat: "concat", torch.concat: "concat",
     }
-    module_ops = (torch.nn.Linear, torch.nn.ReLU, torch.nn.Sigmoid, torch.nn.Identity, torch.nn.Flatten, torch.nn.Softmax, torch.nn.GELU, torch.nn.LayerNorm, torch.nn.Embedding)
+    module_ops = (torch.nn.Linear, torch.nn.Conv2d, torch.nn.ReLU, torch.nn.Sigmoid, torch.nn.Identity, torch.nn.Flatten, torch.nn.Softmax, torch.nn.GELU, torch.nn.LayerNorm, torch.nn.Embedding)
     methods = {"relu", "sigmoid", "sum", "mean", "add", "mul", "view", "reshape", "flatten", "transpose", "t", "permute", "contiguous", "clone", "size", "dim", "matmul", "bmm", "softmax"}
     shape_ops = {operator.getitem, getattr}
     for node in traced.graph.nodes:
@@ -357,6 +358,7 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
         module = traced.get_submodule(node.target) if node.op == "call_module" else None
         op = ("embedding" if isinstance(module, torch.nn.Embedding) else
               "linear" if isinstance(module, torch.nn.Linear) else
+              "conv2d" if isinstance(module, torch.nn.Conv2d) else
               "relu" if isinstance(module, torch.nn.ReLU) else
               "sigmoid" if isinstance(module, torch.nn.Sigmoid) else
               "softmax" if isinstance(module, torch.nn.Softmax) else
@@ -377,6 +379,52 @@ def capture_model(model, example_inputs, *, math_mode="fp32"):
             continue
         dims = shape(node)
         name = buffer(node.name, dims)
+        if op == "conv2d":
+            get_arg = lambda index, key, default=None: node.args[index] if len(node.args) > index else node.kwargs.get(key, default)
+            x = tensor(node.args[0] if node.args else node.kwargs.get("input"), node)
+            if module is not None:
+                weight = parameter(node.target + ".weight", node)
+                bias = parameter(node.target + ".bias", node) if module.bias is not None else None
+                raw_stride, raw_padding, raw_dilation = module.stride, module.padding, module.dilation
+                groups, padding_mode = module.groups, module.padding_mode
+            else:
+                weight = tensor(get_arg(1, "weight"), node)
+                raw_bias = get_arg(2, "bias")
+                bias = tensor(raw_bias, node) if raw_bias is not None else None
+                raw_stride = resolve(get_arg(3, "stride", 1))
+                raw_padding = resolve(get_arg(4, "padding", 0))
+                raw_dilation = resolve(get_arg(5, "dilation", 1))
+                groups = resolve(get_arg(6, "groups", 1))
+                padding_mode = "zeros"
+            def pair(value, label, allow_zero=False):
+                if type(value) is int:
+                    value = (value, value)
+                if (not isinstance(value, (tuple, list)) or len(value) != 2
+                        or any(type(part) is not int or part < (0 if allow_zero else 1) for part in value)):
+                    fail(node, f"Conv2d {label} must be a static pair of supported integers")
+                return tuple(value)
+            stride = pair(resolve(raw_stride), "stride")
+            padding = pair(resolve(raw_padding), "padding", allow_zero=True)
+            dilation = pair(resolve(raw_dilation), "dilation")
+            if type(groups) is not int or groups != 1 or padding_mode != "zeros":
+                fail(node, "native Conv2d requires groups=1 and zero padding mode")
+            xshape, wshape = plan["buffers"][x]["shape"], plan["buffers"][weight]["shape"]
+            if len(xshape) != 4 or len(wshape) != 4 or any(
+                    plan["buffers"][value]["dtype"] != "f32" for value in (x, weight, *([] if bias is None else [bias]))):
+                fail(node, "native Conv2d requires contiguous FP32 NCHW/OIHW tensors")
+            if xshape[1] != wshape[1]:
+                fail(node, "native Conv2d input and weight channels disagree")
+            expected = (xshape[0], wshape[0],
+                        (xshape[2] + 2 * padding[0] - dilation[0] * (wshape[2] - 1) - 1) // stride[0] + 1,
+                        (xshape[3] + 2 * padding[1] - dilation[1] * (wshape[3] - 1) - 1) // stride[1] + 1)
+            if min(expected[-2:]) <= 0 or dims != list(expected):
+                fail(node, "native Conv2d output shape disagrees with static stride, padding and dilation")
+            if bias is not None and plan["buffers"][bias]["shape"] != [wshape[0]]:
+                fail(node, "native Conv2d bias must have one value per output channel")
+            emit("conv2d", [x, weight] + ([] if bias is None else [bias]), name,
+                 {"stride": list(stride), "padding": list(padding), "dilation": list(dilation)})
+            values[node] = name
+            continue
         if op in ("sum", "mean"):
             x = tensor(node.args[0] if node.args else node.kwargs.get("input"), node)
             xs = plan["buffers"][x]["shape"]
@@ -675,6 +723,14 @@ def _differentiate(plan, trainable):
         elif op == "bmm":
             accumulate(args[0], emit("bmm_dx", [dy, args[1]], shapes[0]))
             accumulate(args[1], emit("bmm_dw", [dy, args[0]], shapes[1]))
+        elif op == "conv2d":
+            accumulate(args[0], emit("conv2d_dx", [dy, args[1]], shapes[0], attrs))
+            accumulate(args[1], emit("conv2d_dw", [dy, args[0]], shapes[1], attrs))
+            if len(args) == 3:
+                reduced = emit("sum_to", [dy], [1, shapes[1][0], 1, 1])
+                bias_gradient = emit("copy", [reduced], shapes[2])
+                steps[-1]["view"] = True
+                accumulate(args[2], bias_gradient)
         elif op == "relu":
             accumulate(args[0], emit("relu_backward", [dy, args[0]], shapes[0]))
         elif op == "copy":

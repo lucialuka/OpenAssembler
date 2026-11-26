@@ -30,6 +30,10 @@ def main(phase:str='probe'):
     files['exp/weaknesses/bf16_verification.py']=Path('exp/weaknesses/bf16_verification.py').read_bytes()
     files['pyproject.toml']=Path('pyproject.toml').read_bytes()
     for p in Path('tests').glob('*.py'):files['tests/'+p.name]=p.read_bytes()
+    if phase=='allocator-build':
+        for p in Path('tests/data').rglob('*'):
+            if p.is_file() and p.suffix in ('.json','.ptx','.py','.cu','.h'):
+                files[p.as_posix()]=p.read_bytes()
     for p in Path('exp/ml_suite').glob('*.py'):files['exp/ml_suite/'+p.name]=p.read_bytes()
     for name in ['native_model','native_tensor_model','native_attention_model']:
         files['examples/'+name+'/model.py']=Path('examples',name,'model.py').read_bytes()

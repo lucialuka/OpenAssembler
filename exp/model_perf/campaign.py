@@ -123,6 +123,14 @@ def environment():
 
 def main(phase):
     Path('results').mkdir(exist_ok=True)
+    if phase in ('native-pack', 'pack-reuse', 'pack-reuse-integrated', 'pack-reuse-debug-integrated'):
+        from exp.model_perf.native_pack_gate import run
+        run(phase)
+        return
+    if phase=='allocator-build':
+        from exp.model_perf.allocator_build_gate import run
+        run()
+        return
     if phase=='cache':
         from exp.model_perf.cache_gate import main as cache_gate
         cache_gate();return

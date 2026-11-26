@@ -1,6 +1,6 @@
 # Logical Boolean scalar launch contract
 
-Status: promoted after independent original-source/A100 validation; final integration running.
+Status: promoted; full integration, installed/public remote and documentation gates pass.
 
 The [physical narrow-entry cycle](../../narrow_parameters/README.md) establishes
 u8 parameter storage and host argument width. This subcycle adds the logical
@@ -61,9 +61,10 @@ behavior; no reference bit, tolerance or numerical class is weakened.
 
 The [policy audit](../../foundations_20261121/audit-20261125T074730Z.json) keeps all
 49 measured binaries/controls/resources and 98 original sessions exact before
-identity rebinding. A fresh full previous-native replay, full supported/compiler
-suites, installed/public remote and live/exported documentation gates are running.
-The final [validation record](validation.json) will bind their exact identities.
+identity rebinding. A fresh replay reproduces all 3,974 previous native outputs
+exactly. Full suites pass 4,928 supported tests and 4,443 compiler-only tests with
+fifteen skips. Installed/public remote and live/exported documentation gates pass.
+The final [validation record](validation.json) binds their exact identities.
 
 ## Retained observer failures
 

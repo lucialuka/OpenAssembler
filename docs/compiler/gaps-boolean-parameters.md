@@ -1,6 +1,6 @@
 # Logical Boolean kernel parameters
 
-Status: implemented after independent original-source/A100 validation; final integration running.
+Status: implemented; full integration, installed/public remote and documentation gates pass.
 
 ## Gap and contract
 
@@ -70,8 +70,11 @@ outputs** with original source/type/native identities and complete output/input/
 counter/guard/tail state. Two exact [existing fixture updates](../../compiler_exp/gap_closure/python_boolean_abi/scalar/test-contract-updates.json)
 replace the newly stale scalar annotation rejection with genuinely unsupported
 Boolean array annotations, without changing numerical reference bits or tolerances.
-Fresh previous-native replay, measured-policy continuity, full dependency suites,
-installed/remote builds and live/exported documentation remain complete integration gates; the [validation record](../../compiler_exp/gap_closure/python_boolean_abi/scalar/validation.json)
+Fresh replay reproduces all **3,974 previous native outputs** exactly. All 49 measured
+policies and 98 original sessions retain exact binaries, controls and resources.
+Full suites pass **4,928 supported tests** and **4,443 compiler-only tests with
+fifteen skips**. Installed/remote builds and live/exported documentation pass;
+the [validation record](../../compiler_exp/gap_closure/python_boolean_abi/scalar/validation.json)
 binds their final identities.
 No timing or general Python/storage/ABI claim follows from this candidate.
 

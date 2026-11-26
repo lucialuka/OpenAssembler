@@ -140,7 +140,7 @@ import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from openassembler.pyfront.types import ArrayType, Scalar
+from openassembler.pyfront.types import ArrayType, Scalar, element_bytes as _element_bytes, logical_dtype
 
 HEADER = ".version 8.7\n.target {arch}\n.address_size 64\n\n"
 
@@ -291,7 +291,7 @@ def _resolve_type(ann: ast.expr, names: _Names, *, allow_boolean: bool = False) 
     if isinstance(ann, ast.Call) and r == "pf.Array":
         if len(ann.args) != 1 or ann.keywords:
             raise NotSupported("Array(...) takes exactly one element type", ann)
-        elem = _resolve_type(ann.args[0], names)
+        elem = _resolve_type(ann.args[0], names, allow_boolean=True)
         if not isinstance(elem, Scalar):
             raise NotSupported("Array element type must be f32, i32, u32, i64 or u64", ann)
         return T.Array(elem)
@@ -778,13 +778,13 @@ class _Emitter:
             raise NotSupported(f"{name!r} is already defined; a shared_array needs its own name", node)
         if len(call.args) != 2 or call.keywords:
             raise NotSupported("shared_array(type, count) takes exactly two arguments", node)
-        elem = _resolve_type(call.args[0], self.names)
+        elem = _resolve_type(call.args[0], self.names, allow_boolean=True)
         count = _const_value(call.args[1])
         if not isinstance(elem, Scalar):
             raise NotSupported("shared_array element type must be f32, i32, u32, i64 or u64", node)
         if type(count) is not int or count <= 0:
             raise NotSupported("shared_array count must be a positive integer literal", node)
-        element_bytes = 8 if elem.ptx in ("s64", "u64") else 4
+        element_bytes = _element_bytes(elem.ptx)
         # Match declaration order and natural alignment, including inter-array
         # padding, when enforcing the existing per-block static storage limit.
         self.s.smem_bytes = ((self.s.smem_bytes + element_bytes - 1)
@@ -1435,7 +1435,7 @@ class _Emitter:
         if not isinstance(sub.value, ast.Name) or sub.value.id not in self.s.arrays:
             raise NotSupported("subscript target must be a declared array", sub)
         arr = self.s.arrays[sub.value.id]
-        element_bytes = 8 if arr.elem in ("s64", "u64") else 4
+        element_bytes = _element_bytes(arr.elem)
         ci = _const_value(sub.slice)
         if isinstance(ci, int):
             if ci < 0:
@@ -1451,7 +1451,7 @@ class _Emitter:
             raise NotSupported(f"array index must be an int32 expression, not {idx_kind}", sub)
         if arr.space == "shared":
             off, addr = self.s.new_reg("u32"), self.s.new_reg("u32")
-            self.s.emit(f" shl.b32 {off.name}, {idx.name}, {3 if element_bytes == 8 else 2};")
+            self.s.emit(f" shl.b32 {off.name}, {idx.name}, {element_bytes.bit_length() - 1};")
             self.s.emit(f" add.s32 {addr.name}, {off.name}, {arr.base.name};")
             return arr, f"[{addr.name}]"
         addr = self.s.new_reg("ptr")
@@ -1465,7 +1465,12 @@ class _Emitter:
 
     def _load(self, arr: _Arr, addr: str) -> _Reg:
         dst = self.s.new_reg(arr.elem)
-        self.s.emit(f" ld.{arr.space}.{arr.elem if arr.elem in ('f32','s64','u64') else 'u32'} {dst.name}, {addr};")
+        if arr.elem == "pred":
+            byte = self.s.new_reg("u32")
+            self.s.emit(f" ld.{arr.space}.u8 {byte.name}, {addr};")
+            self.s.emit(f" setp.ne.u32 {dst.name}, {byte.name}, 0;")
+        else:
+            self.s.emit(f" ld.{arr.space}.{arr.elem if arr.elem in ('f32','s64','u64') else 'u32'} {dst.name}, {addr};")
         return dst
 
     def _store(self, target: ast.Subscript, val: _Reg, kind: str) -> None:
@@ -1482,7 +1487,12 @@ class _Emitter:
             # not 1.0) and --verify can't see it: interpreter and SASS agree on the wrong value.
             raise NotSupported(f"storing a {kind} value into an Array of {arr.elem} "
                                "(write 1.0, not 1, for a float array; or convert with float()/int())", node)
-        self.s.emit(f" st.{arr.space}.{arr.elem if arr.elem in ('f32','s64','u64') else 'u32'} {addr}, {val.name};")
+        if arr.elem == "pred":
+            byte = self.s.new_reg("u32")
+            self.s.emit(f" selp.u32 {byte.name}, 1, 0, {val.name};")
+            self.s.emit(f" st.{arr.space}.u8 {addr}, {byte.name};")
+        else:
+            self.s.emit(f" st.{arr.space}.{arr.elem if arr.elem in ('f32','s64','u64') else 'u32'} {addr}, {val.name};")
 
 
 # ---- entry points ----------------------------------------------------------------------------
@@ -1571,10 +1581,10 @@ def _compile_entry(fdef: ast.FunctionDef, names: _Names, arch: str) -> str:
 def _render(name: str, s: _Scope) -> str:
     param_list = ", ".join(f".param .{t} {n}" for t, n in s.params)
     out = [f".visible .entry {name}({param_list})\n{{"]
-    if s.boolean_inputs or s.wide_integer or any(a.view is not None for a in s.arrays.values()):
+    if s.boolean_inputs or s.wide_integer or any(a.elem == "pred" or a.view is not None for a in s.arrays.values()):
         contract = {"schema": 1, "kernel": name, "parameters": [
             {"name": pname, "kind": "array" if pname in s.arrays else "scalar",
-             "dtype": s.arrays[pname].elem if pname in s.arrays else "bool" if pname in s.boolean_inputs else ptx_t}
+             "dtype": logical_dtype(s.arrays[pname].elem) if pname in s.arrays else "bool" if pname in s.boolean_inputs else ptx_t}
             for ptx_t, pname in s.params]}
         out.insert(0, "// openassembler-pyfront-types-v1 " + json.dumps(contract, sort_keys=True, separators=(",", ":")))
     views=[(pname,s.arrays[pname].view) for _,pname in s.params if pname in s.arrays and s.arrays[pname].view is not None]
@@ -1582,8 +1592,8 @@ def _render(name: str, s: _Scope) -> str:
         from openassembler.pyfront.buffers import metadata
         out.insert(0,"// openassembler-pyfront-buffer-v1 "+json.dumps({"schema":1,"kernel":name,"buffers":[metadata(pname,view) for pname,view in views]},sort_keys=True,separators=(",",":")))
     for sym, ty, count in s.shared:
-        element_bytes = 8 if ty in ("s64", "u64") else 4
-        storage_type = "b64" if element_bytes == 8 else "f32" if ty == "f32" else "b32"
+        element_bytes = _element_bytes(ty)
+        storage_type = "b8" if element_bytes == 1 else "b64" if element_bytes == 8 else "f32" if ty == "f32" else "b32"
         out.append(f" .shared .align {element_bytes} .{storage_type} {sym}[{count}];")
     if s.n_p:
         out.append(f" .reg .pred %p<{s.n_p + 1}>;")

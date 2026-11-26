@@ -108,16 +108,35 @@ def main():
     assert logical_report['passed']and logical_audit['passed']and logical_previous['passed']
     assert logical_audit['launches']==9600 and logical_audit['explicit_launches']==960 and logical_audit['bytes_checked']==69746688
     assert len(logical_audit['native_comparisons'])==240 and logical_audit['report_sha256']==sha(logical_report_path.read_bytes())
+    storage_stage=HERE.parent/'python_boolean_abi/storage'
+    storage_sources={}
+    if (storage_stage/'promotion.json').is_file():
+        storage_promotion=json.loads((storage_stage/'promotion.json').read_text())
+        assert storage_promotion['passed']
+        storage_previous=json.loads((logical_stage/'validation.json').read_text());assert storage_previous['passed']
+        for report_name,proof_name,launches,explicit,byte_count,native_count in (
+            ('candidate-a100-20261126T065029Z.json','candidate-audit.json',4320,432,18247680,216),
+            ('shapes-a100-20261126T065356Z.json','shapes-audit.json',960,96,4055040,48)):
+            report_path=storage_stage/report_name;report=json.loads(report_path.read_text());proof_path=storage_stage/proof_name;proof=json.loads(proof_path.read_text())
+            assert report['passed']and proof['passed']and proof['report_sha256']==sha(report_path.read_bytes())
+            assert proof['launches']==launches and proof['explicit_launches']==explicit and proof['bytes_checked']==byte_count and len(proof['native_comparisons'])==native_count
+            assert storage_promotion['evidence_sha256'][proof_name]==sha(proof_path.read_bytes())
+        for suffix,name in json.loads((storage_stage/'inputs.json').read_text()).items():
+            candidate=storage_stage/('candidate-'+suffix+'.py')
+            assert sha((storage_stage/('baseline-'+suffix+'.py')).read_bytes())==storage_previous['source_hashes'][name]
+            assert candidate.read_bytes()==(ROOT/name).read_bytes()and sha(candidate.read_bytes())==report['source_hashes'][name]
+            storage_sources[name]=candidate
     logical_inputs=json.loads((logical_stage/'inputs.json').read_text())
     logical_sources={name:logical_stage/('candidate-'+suffix+'.py')for suffix,name in logical_inputs.items()}
     for suffix,name in logical_inputs.items():
         assert sha((logical_stage/('baseline-'+suffix+'.py')).read_bytes())==logical_previous['source_hashes'][name]
-        assert (ROOT/name).read_bytes()==logical_sources[name].read_bytes()
-        assert sha((ROOT/name).read_bytes())==logical_report['source_hashes'][name]
+        assert logical_sources[name].read_bytes()==(storage_stage/('baseline-'+suffix+'.py')).read_bytes()if name in storage_sources else (ROOT/name).read_bytes()==logical_sources[name].read_bytes()
+        assert sha(logical_sources[name].read_bytes())==logical_report['source_hashes'][name]
+        assert (ROOT/name).read_bytes()==storage_sources.get(name,logical_sources[name]).read_bytes()
     narrow_inputs=json.loads((narrow_stage/'inputs.json').read_text())
     for suffix,name in narrow_inputs.items():
         assert sha((narrow_stage/('baseline-'+suffix+'.py')).read_bytes())==narrow_previous['source_hashes'][name]
-        expected=logical_sources.get(name,narrow_stage/('candidate-'+suffix+'.py'))
+        expected=storage_sources.get(name,logical_sources.get(name,narrow_stage/('candidate-'+suffix+'.py')))
         assert (ROOT/name).read_bytes()==expected.read_bytes()
         if name not in logical_sources:assert sha((ROOT/name).read_bytes())==narrow_report['source_hashes'][name]
     assert all(set(names) <= {'openassembler/build.py','openassembler/backend/ra.py','openassembler/backend/contracts.py',

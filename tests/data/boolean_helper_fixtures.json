@@ -197,27 +197,27 @@
     {
       "name": "bool_array_argument",
       "source": "from openassembler.pyfront import *\n@device\ndef h(x:Array(bool))->bool:\n    return True\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
-      "reason": "unsupported type annotation"
+      "reason": "scalar"
     },
     {
       "name": "bool_array_return",
       "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->Array(bool):\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
-      "reason": "unsupported type annotation"
+      "reason": "scalar"
     },
     {
       "name": "kernel_parameter_array",
       "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:Array(bool)):\n    a[0]=i32(flag)\n",
-      "reason": "unsupported type annotation"
+      "reason": "used as a value"
     },
     {
-      "name": "array_parameter",
-      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(bool)):\n    a[0]=True\n",
-      "reason": "unsupported type annotation"
+      "name": "array_parameterstore_requires_bool",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(bool)):\n    a[0]=1\n",
+      "reason": "storing"
     },
     {
-      "name": "buffer_parameter",
-      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Buffer(bool,(4,))):\n    a[0]=True\n",
-      "reason": "unsupported type annotation"
+      "name": "buffer_parameterstore_requires_bool",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Buffer(bool,(4,))):\n    a[0]=1\n",
+      "reason": "storing"
     },
     {
       "name": "shared_storage",

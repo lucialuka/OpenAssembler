@@ -2,7 +2,7 @@
 from __future__ import annotations
 import ast,math
 from dataclasses import dataclass
-from openassembler.pyfront.types import ArrayType,Scalar
+from openassembler.pyfront.types import ArrayType,Scalar,element_bytes,logical_dtype
 
 @dataclass(frozen=True)
 class BufferType(ArrayType):
@@ -16,10 +16,11 @@ class BufferType(ArrayType):
 
 
 def Buffer(elem,shape,*,strides=None,alignment=None,access='readwrite'):
-    if not isinstance(elem,Scalar) or elem.ptx not in ('s32','u32','f32','s64','u64'):raise ValueError('Buffer requires a supported scalar element type')
+    if elem is bool:elem=Scalar('pred')
+    if not isinstance(elem,Scalar) or elem.ptx not in ('pred','s32','u32','f32','s64','u64'):raise ValueError('Buffer requires a supported scalar element type')
     if isinstance(shape,int):shape=(shape,)
     if not isinstance(shape,(tuple,list)) or not 1<=len(shape)<=4 or any(type(n)is not int or not 1<=n<=2**31-1 for n in shape):raise ValueError('Buffer shape needs one to four positive int32 dimensions')
-    shape=tuple(shape);size=8 if elem.ptx.endswith('64') else 4
+    shape=tuple(shape);size=element_bytes(elem.ptx)
     if strides is None:strides=tuple(math.prod(shape[i+1:]) for i in range(len(shape)))
     if not isinstance(strides,(tuple,list)) or len(strides)!=len(shape) or any(type(s)is not int or not 0<=s<=2**31-1 for s in strides):raise ValueError('Buffer strides need matching nonnegative integer element strides')
     strides=tuple(strides);alignment=size if alignment is None else alignment
@@ -39,7 +40,7 @@ def Buffer(elem,shape,*,strides=None,alignment=None,access='readwrite'):
 def resolve_annotation(ann,names):
     from openassembler.pyfront import compile as c
     if len(ann.args)!=2:raise c.NotSupported('Buffer(dtype, shape) takes two positional arguments',ann)
-    elem=c._resolve_type(ann.args[0],names)
+    elem=c._resolve_type(ann.args[0],names,allow_boolean=True)
     def literal(node):
         if isinstance(node,(ast.Tuple,ast.List)):return tuple(literal(x) for x in node.elts)
         if isinstance(node,ast.Constant) and type(node.value)in (int,str):return node.value
@@ -53,8 +54,8 @@ def resolve_annotation(ann,names):
 
 
 def metadata(name,view):
-    return {'name':name,'dtype':view.elem.ptx,'shape':list(view.shape),'strides':list(view.strides),'alignment':view.alignment,
-            'access':view.access,'element_bytes':8 if view.elem.ptx.endswith('64') else 4,'storage_elements':view.storage_elements}
+    return {'name':name,'dtype':logical_dtype(view.elem.ptx),'shape':list(view.shape),'strides':list(view.strides),'alignment':view.alignment,
+            'access':view.access,'element_bytes':element_bytes(view.elem.ptx),'storage_elements':view.storage_elements}
 
 
 def access(emitter,sub,value=None,kind=None,atomic=None,index_values=None):
@@ -71,7 +72,8 @@ def access(emitter,sub,value=None,kind=None,atomic=None,index_values=None):
     result=None
     if value is None:
         result=emitter.s.new_reg(array.elem)
-        zero,_=emitter._lit_as(0.0 if array.elem=='f32' else 0,array.elem,sub)
+        zero,zero_kind=emitter._lit_as(0.0 if array.elem=='f32' else 0,'s32'if array.elem=='pred'else array.elem,sub)
+        if array.elem=='pred':zero=emitter._boolean_value(zero,zero_kind)
         emitter._mov(result,zero,array.elem)
     elif kind!=array.elem:raise c.NotSupported(f'storing {kind} into Buffer of {array.elem} requires an explicit conversion',sub)
     finish=emitter.s.new_label('buffer_checked')
@@ -86,7 +88,7 @@ def access(emitter,sub,value=None,kind=None,atomic=None,index_values=None):
         product=emitter.s.new_reg('s32')
         emitter.s.emit(f' mul.lo.s32 {product.name}, {index.name}, {stride};')
         emitter.s.emit(f' add.s32 {offset.name}, {offset.name}, {product.name};')
-    address=emitter.s.new_reg('ptr');size=8 if array.elem.endswith('64') else 4
+    address=emitter.s.new_reg('ptr');size=element_bytes(array.elem)
     emitter.s.emit(f' mul.wide.u32 {address.name}, {offset.name}, {size};')
     emitter.s.emit(f' add.u64 {address.name}, {array.base.name}, {address.name};')
     if value is None:
@@ -118,9 +120,9 @@ def contract_from_ptx(source,kernel):
         keys={'name','dtype','shape','strides','alignment','access','element_bytes','storage_elements'}
         if not isinstance(row,dict) or set(row)!=keys or not isinstance(row['name'],str) or row['name'] in seen or params.get(row['name'])!='u64':raise ValueError('checked Buffer does not match PTX pointer ABI')
         seen.add(row['name'])
-        if type(row['element_bytes'])is not int or row['element_bytes'] not in (4,8):raise ValueError('invalid checked Buffer element width')
-        if row['dtype'] not in ('f32','s32','u32','s64','u64') or (8 if row['dtype'].endswith('64') else 4)!=row['element_bytes']:raise ValueError('checked Buffer dtype and width mismatch')
-        view=Buffer(Scalar(row['dtype']),row['shape'],strides=row['strides'],alignment=row['alignment'],access=row['access'])
+        if type(row['element_bytes'])is not int or row['element_bytes'] not in (1,4,8):raise ValueError('invalid checked Buffer element width')
+        if row['dtype'] not in ('bool','f32','s32','u32','s64','u64') or element_bytes('pred'if row['dtype']=='bool'else row['dtype'])!=row['element_bytes']:raise ValueError('checked Buffer dtype and width mismatch')
+        view=Buffer(Scalar('pred'if row['dtype']=='bool'else row['dtype']),row['shape'],strides=row['strides'],alignment=row['alignment'],access=row['access'])
         if type(row['storage_elements'])is not int or row['storage_elements']!=view.storage_elements:raise ValueError('checked Buffer storage span mismatch')
     if not seen:raise ValueError('checked Buffer metadata has no buffers')
     return result

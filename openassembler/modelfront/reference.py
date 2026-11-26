@@ -56,6 +56,16 @@ class CPUReference:
                 result = self._matrix(xs[0], xs[1].transpose(-2, -1))
             elif op == "bmm_dw":
                 result = self._matrix(xs[1].transpose(-2, -1), xs[0])
+            elif op == "conv2d":
+                result = torch.nn.functional.conv2d(xs[0], xs[1], xs[2] if len(xs) == 3 else None,
+                                                    stride=attrs["stride"], padding=attrs["padding"],
+                                                    dilation=attrs["dilation"], groups=1)
+            elif op == "conv2d_dx":
+                result = torch.nn.grad.conv2d_input(dims, xs[1], xs[0], stride=attrs["stride"],
+                                                    padding=attrs["padding"], dilation=attrs["dilation"], groups=1)
+            elif op == "conv2d_dw":
+                result = torch.nn.grad.conv2d_weight(xs[1], dims, xs[0], stride=attrs["stride"],
+                                                     padding=attrs["padding"], dilation=attrs["dilation"], groups=1)
             elif op == "bias_grad":
                 result = xs[0].sum(dim=0)
             elif op == "relu":

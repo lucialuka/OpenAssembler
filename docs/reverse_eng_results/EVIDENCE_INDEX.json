@@ -39,7 +39,22 @@
       ],
       "evidence": [
         "docs/evidence/a100-latency/latency-summary.json",
-        "docs/evidence/a100-latency/gpu_a100_40gb_latsweep_corrected.json"
+        "docs/evidence/a100-latency/gpu_a100_40gb_latsweep_corrected.json",
+        "exp/model_perf/evidence/allocator-continuity-20261126.json",
+        "exp/model_perf/evidence/kernel-study-allocator-all-integrated.json"
+      ]
+    },
+    {
+      "id": "model-forward-pack-reuse",
+      "document": "../research/ideas/native-model-bridge.md",
+      "production": [
+        "openassembler/modelfront/tensor_schedule.py",
+        "openassembler/modelfront/runtime.py"
+      ],
+      "evidence": [
+        "exp/model_perf/RESULTS.md",
+        "exp/model_perf/evidence/kernel-study-20261126.json",
+        "exp/model_perf/evidence/pack-reuse-integrated-20261126T083532Z.json"
       ]
     },
     {
@@ -729,9 +744,10 @@
       ]
     },
     {
-      "id": "boolean-storage-boundary",
+      "id": "logical-boolean-storage",
       "document": "../compiler/gaps-boolean-storage.md",
       "production": [
+        "openassembler/pyfront/types.py",
         "openassembler/pyfront/compile.py",
         "openassembler/pyfront/buffers.py",
         "openassembler/verify.py",
@@ -740,7 +756,52 @@
       "evidence": [
         "compiler_exp/gap_closure/python_boolean_abi/storage/README.md",
         "compiler_exp/gap_closure/python_boolean_abi/storage/baseline.json",
-        "compiler_exp/gap_closure/python_boolean_abi/storage/source.py"
+        "compiler_exp/gap_closure/python_boolean_abi/storage/source.py",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/baseline-replay.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/candidate-offline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/shapes-offline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/candidate-a100-20261126T065029Z.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/shapes-a100-20261126T065356Z.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/promotion-audit.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/promotion-shapes-audit.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/promotion.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/test-contract-updates.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/validation.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/application-continuity.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/wheel-audit.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/wheel-shapes-audit.json"
+      ]
+    },
+    {
+      "id": "logical-boolean-comparison-research",
+      "document": "../compiler/gaps-boolean-comparisons.md",
+      "production": [
+        "openassembler/pyfront/compile.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/python_boolean_abi/comparisons/README.md",
+        "compiler_exp/gap_closure/python_boolean_abi/comparisons/baseline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/comparisons/source.py",
+        "compiler_exp/gap_closure/python_boolean_abi/comparisons/candidate-offline.json"
+      ]
+    },
+    {
+      "id": "native-fp32-conv2d",
+      "document": "../compiler/gaps-convolution.md",
+      "production": [
+        "openassembler/modelfront/graph.py",
+        "openassembler/modelfront/kernels.py",
+        "openassembler/modelfront/kernels_conv.py",
+        "openassembler/modelfront/reference.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/conv2d/README.md",
+        "compiler_exp/gap_closure/conv2d/baseline.json",
+        "compiler_exp/gap_closure/conv2d/offline.json",
+        "compiler_exp/gap_closure/conv2d/hardware-20261126T082735Z.json",
+        "compiler_exp/gap_closure/conv2d/validation.json"
       ]
     }
   ]

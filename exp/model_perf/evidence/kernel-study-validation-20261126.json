@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "recorded_utc": "2026-11-26T08:51:30.833923+00:00",
+  "base_commit": "0ca89bdc1148474df75891f0d60f7b268fd8b395",
+  "workspace_had_preexisting_changes": true,
+  "completed_scopes": [
+    "Repeated row-major 128x128 forward FP16 operand packs within a single invocation",
+    "Streaming register-allocation interval scan with identical generated programs"
+  ],
+  "production_sources": {
+    "openassembler/backend/ra.py": "17ba70d1ba40e76851083dc81d1e1aa240c35aaa3f9dc4f7f11d0141fe916c17",
+    "openassembler/modelfront/runtime.py": "40582fd94054fd49ff6bbbbbdaf0172118357369bfa0df76d5a7c0162e589f92",
+    "openassembler/modelfront/tensor_schedule.py": "5291aff3d7c88414183981547cc4af5256492f6b2b713b1ba00d58cb4556ff5d",
+    "openassembler/kernels/sm80_gemm_dispatch.json": "02ffd25414b2ffc50e91d6f2d03199300c9fe75884a42f6a9172676964870e93",
+    "openassembler/kernels/sm80_rowwise_dispatch.json": "05c3b3a2e0187e0e0c0621ddf3a24f2c8f867368e85f74680e5fcc26bc62e731",
+    "tests/test_model_tensor_schedule.py": "d5db6561c0cc0ad45f835461f08606f0ea9a6741954ca4748eeb2149df3ede13"
+  },
+  "primary_performance": {
+    "record": "exp/model_perf/evidence/pack-reuse-integrated-20261126T083532Z.json",
+    "sha256": "3a190d1363edee1c66ce22ff35ab0814c238beb81b19e19395cfee0085636a67",
+    "environment": {
+      "gpu": "NVIDIA A100-SXM4-40GB, GPU-51d38544-8f38-8593-381d-f0dcc3577634, 620.70.06\n",
+      "cuda": "12.8",
+      "tools": {
+        "ptxas": "ptxas: NVIDIA (R) Ptx optimizing assembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Fri_Feb_21_20:21:21_PST_2025\nCuda compilation tools, release 12.8, V12.8.93\nBuild cuda_12.8.r12.8/compiler.35583870_0\n",
+        "nvdisasm": "nvdisasm: NVIDIA (R) CUDA disassembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Thu_Feb_13_02:14:45_PST_2025\nCuda compilation tools, release 12.8, V12.8.90\nBuild cuda_12.8.r12.8/compiler.35538042_0\n"
+      }
+    },
+    "projection_median_us": {
+      "incumbent": 44.18399930000305,
+      "candidate": 39.89600017666817,
+      "incumbent_ptxas": 40.75999930500984,
+      "triton": 19.336000084877014,
+      "candidate_ptxas": 36.64800152182579
+    },
+    "speedup_over_incumbent": 1.1074794241113568,
+    "oa_time_over_triton": 2.063301613650253,
+    "launches_before": 14,
+    "launches_after": 12
+  },
+  "independent_output_audit": {
+    "record": "exp/model_perf/evidence/pack-reuse-complete-state-audit-20261126.json",
+    "sha256": "193903637bbd2e7e9f81236622495eb88b84068555bcd79d78c8de1b2570a4df",
+    "field_checks": 2880,
+    "snapshot_elements": 7239720
+  },
+  "validation": {
+    "local_suite": {
+      "passed": 4654,
+      "skipped": 16,
+      "seconds": 550.3,
+      "log": "evidence/kernel-study-final-suite.log"
+    },
+    "cuda_worker_tests": {
+      "passed": 118,
+      "record": "evidence/allocator-build-20261126T082620Z.json"
+    },
+    "targeted_final_tests": {
+      "passed": 75,
+      "skipped": 1,
+      "log": "evidence/kernel-study-targeted.log"
+    },
+    "fixture_binary_resource_diagnostic_comparisons": 48,
+    "installed_policy_contracts": 49,
+    "retained_policy_sessions": 98,
+    "identical_complete_toolkit_builds": 4
+  },
+  "retained_control_issue": {
+    "record": "evidence/pack-reuse-integrated-20261126T082620Z.json",
+    "description": "One earlier incumbent dense-training prediction mismatch with views off and buffer reuse on remains unexplained. Its log lacks complete failure inputs. Isolated and expanded later replays passed. The failed campaign is excluded from performance admission."
+  },
+  "unpromoted_candidates": [
+    "Early pressure scheduling before spill search",
+    "Native FP16x2 pack conversion"
+  ],
+  "remaining_goal": "Triton remains faster on the measured projection and dense training workloads. The other attached kernel-research projects remain open."
+}

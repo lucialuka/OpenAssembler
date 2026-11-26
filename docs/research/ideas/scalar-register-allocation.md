@@ -36,6 +36,23 @@ Independent A100 controls retain full bytes and paired resident intervals;
 host code-generation cost is measured separately and can increase even when
 the old executable is retained. General occupancy policy remains open.
 
+The November 26 interval scan streams definitions, uses and CFG live-out values
+in increasing instruction order. The first visit establishes the start and each
+visit establishes the latest endpoint. This removes temporary lists and repeated
+endpoint comparisons. The [allocator experiment](../../../exp/model_perf/allocator_gate.py)
+compares exact code, controls, labels, exit offsets, registers, frame resources
+and refusal messages. All 48 fixture/optimization-level comparisons match.
+The [installed-policy audit](../../../exp/model_perf/evidence/allocator-continuity-20261126.json)
+also preserves all 49 policies across 98 retained executable sessions.
+
+Three paired warm-generation samples on the development Mac measured
+scalar96 at 2.360→1.574 seconds, pred24 at 0.227→0.178 seconds and group4_auto
+at 23.017→12.941 seconds. Concurrent host work limits throughput comparisons.
+Fresh-process and complete-build observations have their own scope in the
+[kernel study](../../../exp/model_perf/RESULTS.md). The separate early
+pressure-scheduling candidate accelerated recoverable fixtures but added cost
+to spill-heavy controls, so production retains its existing spill selection.
+
 ## Method and validity checks
 
 Compare the PTX interpreter and poisoned-register SASS execution on branching/loop fixtures, validate consecutive pairs/quads, inspect declared counts and run selected kernels on A100. A lower count alone does not select the fastest kernel: spills, lifetime, occupancy and operand collection interact.
