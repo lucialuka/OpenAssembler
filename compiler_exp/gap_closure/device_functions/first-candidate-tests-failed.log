@@ -1,0 +1,352 @@
+.F.......F.........F..........F...                                       [100%]
+=================================== FAILURES ===================================
+___ test_direct_function_complete_bytes_and_call_inventory[safe-nvcc_scalar] ___
+
+case = {'entry': 'probe', 'expected_hex': 'e9f6ccd1000000007e0116810000000054ec8322ffffffffe9f6ccd10000008054ec8322ffffff7f54...07bc18e35369f34edfcba4b4447ab4a7aee6c54f9f1f50c34059ff26d649f626b135190f5b3472a250f40bdc12d3247a', 'mode': 'nvcc', ...}
+level = 'safe'
+
+    @pytest.mark.parametrize('case',CASES,ids=lambda c:c['name'])
+    @pytest.mark.parametrize('level',['safe','opt'])
+    def test_direct_function_complete_bytes_and_call_inventory(case,level):
+        module=parse_module(case['source']);kernel=module.kernels[case['entry']]
+        assert module.inlined_calls[case['entry']]and all(i.op!='call'for i in kernel.body)
+        code,labels,words,_,_=build.generate(kernel,'sm_80',level);assert words
+        before=bytes.fromhex(case['input_hex']);wanted=bytes.fromhex(case['expected_hex']);guard=b'\xa5'*64;inp,out=0x100010000,0x100000000
+        for engine in('ptx','normal','poisoned'):
+            memory=Memory();memory.write_bytes(inp-64,guard+before+guard);memory.write_bytes(out-64,guard+struct.pack('<Q',0x13579bdf2468ace0)*128+guard)
+>           if engine=='ptx':Interp(module,case['entry'],PTXLaunch(block=(128,1,1),params={'out':out,'input':inp,'n':91}),memory).run()
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/ptx/interp.py:205: in run
+    nxt = S.execute(self, ins, lanes, pc)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+openassembler/ptx/semantics.py:62: in execute
+    LANE_OPS[ins.op](it, ln, ins)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+it = <openassembler.ptx.interp.Interp object at 0x10350d730>
+ln = Lane(tid=(0, 0, 0), lane=0, regs={}, local=Memory(data={}), done=False, undefined=False, warp=0, flat=0)
+ins = Instr(op='ld', mods=('param', 'u64'), args=[Var(name='%__oa_inline_14_rd1'), Addr(base='probe_param_0', off=0)], guard=None, line=34)
+
+    @lane("ld")
+    def _ld(it, ln, ins):
+        d, a = ins.args
+        t = ty(ins)
+        if "param" in ins.mods:
+>           it.put(ln, d, it.L.params[a.base], bits(t))
+                          ^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'probe_param_0'
+
+openassembler/ptx/semantics.py:138: KeyError
+___ test_direct_function_complete_bytes_and_call_inventory[opt-nvcc_scalar] ____
+
+case = {'entry': 'probe', 'expected_hex': 'e9f6ccd1000000007e0116810000000054ec8322ffffffffe9f6ccd10000008054ec8322ffffff7f54...07bc18e35369f34edfcba4b4447ab4a7aee6c54f9f1f50c34059ff26d649f626b135190f5b3472a250f40bdc12d3247a', 'mode': 'nvcc', ...}
+level = 'opt'
+
+    @pytest.mark.parametrize('case',CASES,ids=lambda c:c['name'])
+    @pytest.mark.parametrize('level',['safe','opt'])
+    def test_direct_function_complete_bytes_and_call_inventory(case,level):
+        module=parse_module(case['source']);kernel=module.kernels[case['entry']]
+        assert module.inlined_calls[case['entry']]and all(i.op!='call'for i in kernel.body)
+        code,labels,words,_,_=build.generate(kernel,'sm_80',level);assert words
+        before=bytes.fromhex(case['input_hex']);wanted=bytes.fromhex(case['expected_hex']);guard=b'\xa5'*64;inp,out=0x100010000,0x100000000
+        for engine in('ptx','normal','poisoned'):
+            memory=Memory();memory.write_bytes(inp-64,guard+before+guard);memory.write_bytes(out-64,guard+struct.pack('<Q',0x13579bdf2468ace0)*128+guard)
+>           if engine=='ptx':Interp(module,case['entry'],PTXLaunch(block=(128,1,1),params={'out':out,'input':inp,'n':91}),memory).run()
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/ptx/interp.py:205: in run
+    nxt = S.execute(self, ins, lanes, pc)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+openassembler/ptx/semantics.py:62: in execute
+    LANE_OPS[ins.op](it, ln, ins)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+it = <openassembler.ptx.interp.Interp object at 0x1034d2f90>
+ln = Lane(tid=(0, 0, 0), lane=0, regs={}, local=Memory(data={}), done=False, undefined=False, warp=0, flat=0)
+ins = Instr(op='ld', mods=('param', 'u64'), args=[Var(name='%__oa_inline_14_rd1'), Addr(base='probe_param_0', off=0)], guard=None, line=34)
+
+    @lane("ld")
+    def _ld(it, ln, ins):
+        d, a = ins.args
+        t = ty(ins)
+        if "param" in ins.mods:
+>           it.put(ln, d, it.L.params[a.base], bits(t))
+                          ^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'probe_param_0'
+
+openassembler/ptx/semantics.py:138: KeyError
+_ test_unresolved_recursive_abi_slot_return_and_escape_domains_reject[.func (.param .b32 r) f(.param .b32 a){.reg .u32 %x;ld.param.u32 %x,[a];st.param.b32 [r],%x;ret;}\n-.entry k(){.reg .u32 %x;{.param .b64 a;.param .b32 r;st.param.b32 [a],7;call.uni (r),f,(a);ld.param.b32 %x,[r];}ret;}-matching-width] _
+
+helper = '.func (.param .b32 r) f(.param .b32 a){.reg .u32 %x;ld.param.u32 %x,[a];st.param.b32 [r],%x;ret;}\n'
+caller = '.entry k(){.reg .u32 %x;{.param .b64 a;.param .b32 r;st.param.b32 [a],7;call.uni (r),f,(a);ld.param.b32 %x,[r];}ret;}'
+reason = 'matching-width'
+
+    @pytest.mark.parametrize('helper,caller,reason',[
+        (HELPER,CALLER.replace('f,(a)','missing,(a)'),'unresolved device function'),
+        (HELPER.replace('ret;','call.uni (r),f,(a);ret;'),CALLER,'recursive device call'),
+        (HELPER,CALLER.replace('f,(a)','f,()'),'arity mismatch'),
+        (HELPER,CALLER.replace('.param .b32 a;','.param .b64 a;'),'matching-width'),
+        (HELPER,CALLER.replace('st.param.b32 [a],7;',''),'before definite initialization'),
+        (HELPER.replace('st.param.b32 [r],%x;',''),CALLER,'not definitely initialized'),
+        (HELPER.replace('ret;',''),CALLER,'falls through'),
+        (HELPER.replace('st.param.b32 [r],%x;','st.param.b32 [a],%x;'),CALLER,'read-only'),
+        (HELPER.replace('[a]','[a+4]'),CALLER,'unknown device parameter'),
+        (HELPER,CALLER.replace('ld.param.b32 %x,[r]','ld.param.b32 %x,[r+4]'),'parameter slot used outside'),
+        (HELPER.replace('.param .b32 r','.param .align 16 .b8 r[16]'),CALLER,'parameter ABI'),
+        (HELPER.replace('.param .b32 r)', '.param .b32 r,.param .b32 s)'),CALLER,'at most one'),
+        (HELPER.replace('ret;','exit;'),CALLER,'must return'),
+        (HELPER,CALLER.replace('f,(a)','%x,(a)'),'unresolved device function'),
+        (HELPER,CALLER.replace('call.uni','call.uni.tail'),'direct scalar'),
+    ])
+    def test_unresolved_recursive_abi_slot_return_and_escape_domains_reject(helper,caller,reason):
+        with pytest.raises(SyntaxError,match=reason):
+>           parse_module(HEADER+helper+caller)
+
+compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/gap_closure/device_functions/candidate-parse.py:443: in parse_module
+    src, functions, calls = inline_module(src, sys.modules[__name__])
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/device_functions/inlining.py:247: in inline_module
+    lines=lower(body,{},set(),(),stripped.count('\n',0,end-len(body)-1)+1,True)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+body = '.reg .u32 %x;{.param .b64 a;.param .b32 r;st.param.b32 [a],7;call.uni (r),f,(a);ld.param.b32 %x,[r];}ret;'
+formal = {}, output_names = set(), stack = (), line_offset = 5, is_entry = True
+
+    def lower(body, formal, output_names, stack, line_offset, is_entry=False):
+        nonlocal budget
+        env=[dict(formal)];lines=[];returns=[];end_label=fresh()+'return';invocation=fresh()
+        # Labels are function-scoped, distinct from lexical call argument blocks.
+        labels={m[1]:invocation+m[1].replace('.','_')for m in re.finditer(r'(?m)(?:^|[;{}])\s*([A-Za-z_$][\w$.]*):',body)}
+        def lookup(name):
+            for scope in reversed(env):
+                if name in scope:return scope[name]
+            return None
+        def rename(text):
+            def sub(match):
+                name=match[0];binding=lookup(name)
+                return binding.name if isinstance(binding,Slot)else binding if binding is not None else labels.get(name,name)
+            return re.sub(_SYMBOL,sub,text)
+        def emit(text,line):
+            nonlocal budget
+            budget+=1
+            if budget>100000:raise SyntaxError('device inlining exceeds 100000 statements')
+            lines.append((text,line))
+        for statement,relative in tokens(body):
+            line=line_offset+relative-1
+            if statement=='{':env.append({});continue
+            if statement=='}':
+                if len(env)==1:raise SyntaxError('unbalanced function lexical scope')
+                env.pop();continue
+            while label:=re.match(r'^([A-Za-z_$][\w$.]*):\s*(.*)$',statement,re.S):
+                emit(labels[label[1]]+':',line);statement=label[2]
+            if not statement:continue
+            if statement.startswith('.reg '):
+                dtype=re.search(r'\.(pred|[busf](?:8|16|32|64))\b',statement)
+                if not dtype:raise SyntaxError('unsupported device register declaration')
+                names=statement[dtype.end():].strip().split(',')
+                for name in names:
+                    name=name.strip();ranged=re.fullmatch(r'('+_SYMBOL+r')<(\d+)>',name)
+                    expanded=[ranged[1]+str(i)for i in range(int(ranged[2]))]if ranged else[name]
+                    if len(expanded)>65536:raise SyntaxError('device register declaration too large')
+                    for symbol in expanded:
+                        if not re.fullmatch(_SYMBOL,symbol):raise SyntaxError('invalid device register name')
+                        if symbol in env[-1]:raise SyntaxError('duplicate lexical symbol '+symbol)
+                        env[-1][symbol]='%'+fresh()+symbol.lstrip('%').replace('.','_')
+                continue
+            if statement.startswith('.param '):
+                values=params(statement,'call scope')
+                if len(values)!=1:raise SyntaxError('scalar call slot declaration required')
+                dtype,name=values[0]
+                if name in env[-1]:raise SyntaxError('duplicate call parameter slot '+name)
+                env[-1][name]=Slot('%'+fresh()+'slot',dtype)
+                all_slots.add(env[-1][name].name)
+                continue
+            storage=re.match(r'\.(local|shared|global|const)\b',statement)
+            if storage:
+                if storage[1]!='local'and not is_entry:raise SyntaxError('inlined device storage requires per-call static local objects')
+                declaration=parser._VAR_DECL.fullmatch(statement)
+                if not declaration:raise SyntaxError('unsupported device storage declaration')
+                name=declaration[4]
+                if name in env[-1]:raise SyntaxError('duplicate storage symbol '+name)
+                env[-1][name]=fresh()+name;emit(rename(statement),line);continue
+            if statement.startswith('.'):
+                if statement.split()[0]not in('.loc','.pragma','.file'):raise SyntaxError('unsupported device body directive '+statement.split()[0])
+                continue
+            guard='';core=statement
+            if core.startswith('@'):guard,core=core.split(None,1)
+            call=re.match(r'call(?:\.(uni))?\s+(.+)$',core,re.S)
+            if call:
+                operands=parser._split_top(call[2]);out=[]
+                if operands and operands[0].startswith('('):out=parser._split_top(operands.pop(0)[1:-1])
+                if len(operands)not in(1,2)or not re.fullmatch(_SYMBOL,operands[0]):raise SyntaxError('only direct scalar device calls are supported')
+                target=operands[0];inputs=parser._split_top(operands[1][1:-1])if len(operands)==2 and operands[1].startswith('(')and operands[1].endswith(')')else[]
+                if len(operands)==2 and not(operands[1].startswith('(')and operands[1].endswith(')')):raise SyntaxError('call arguments require a parameter tuple')
+                if target in stack:raise SyntaxError('recursive device call: '+' -> '.join((*stack,target)))
+                if len(stack)>=32:raise SyntaxError('device call expansion exceeds depth 32')
+                if target not in functions or functions[target]['body']is None:raise SyntaxError('unresolved device function '+target)
+                definition=functions[target];arguments=params(definition['params'],target);results=params(definition['returns'],target)
+                if len(results)>1:raise SyntaxError('device function ABI permits at most one scalar return slot')
+                if len(inputs)!=len(arguments)or len(out)!=len(results):raise SyntaxError('device call arity mismatch for '+target)
+                bindings={};skip=fresh()+'call_end'
+                if guard:emit(rename('@'+guard[2:]if guard.startswith('@!')else'@!'+guard[1:])+' bra '+skip,line)
+                outputs=[]
+                for names,signature,result in((inputs,arguments,False),(out,results,True)):
+                    for actual,(dtype,name)in zip(names,signature):
+                        slot=lookup(actual)
+                        if not isinstance(slot,Slot)or slot.dtype[-2:]!=dtype[-2:]:raise SyntaxError('device call requires matching-width scalar parameter slots: '+actual)
+                        local=Slot('%'+fresh()+'formal',dtype,not result);bindings[name]=local
+                        all_slots.add(local.name)
+                        if result:outputs.append((slot,local))
+                        else:emit('mov.'+dtype+' '+local.name+', '+slot.name,line)
+                expanded=lower(definition['body'],bindings,{name for _,name in results},(*stack,target),definition['line'])
+                for text,origin in expanded:emit(text,origin)
+                for destination,local in outputs:emit('mov.'+local.dtype+' '+destination.name+', '+local.name,line)
+                if guard:emit(skip+':',line)
+                calls[target]=calls.get(target,0)+1
+                continue
+            if core.split()[0].split('.')[0]=='call':raise SyntaxError('only direct scalar call or call.uni forms are supported')
+            memory=re.match(r'(ld|st)\.param\.(b32|u32|s32|f32|b64|u64|s64|f64)\s+(.+)$',core,re.S)
+            if memory:
+                operands=parser._split_top(memory[3]);address=parser.parse_operand(operands[1 if memory[1]=='ld'else 0])if len(operands)==2 else None
+                slot=lookup(address.base)if isinstance(address,parser.Addr)and address.off==0 else None
+                if slot is not None:
+>                   if not isinstance(slot,Slot)or slot.dtype[-2:]!=memory[2][-2:]:raise SyntaxError('device parameter access requires matching scalar width and zero offset')
+                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E                   SyntaxError: device parameter access requires matching scalar width and zero offset
+
+compiler_exp/gap_closure/device_functions/inlining.py:179: SyntaxError
+
+During handling of the above exception, another exception occurred:
+
+helper = '.func (.param .b32 r) f(.param .b32 a){.reg .u32 %x;ld.param.u32 %x,[a];st.param.b32 [r],%x;ret;}\n'
+caller = '.entry k(){.reg .u32 %x;{.param .b64 a;.param .b32 r;st.param.b32 [a],7;call.uni (r),f,(a);ld.param.b32 %x,[r];}ret;}'
+reason = 'matching-width'
+
+    @pytest.mark.parametrize('helper,caller,reason',[
+        (HELPER,CALLER.replace('f,(a)','missing,(a)'),'unresolved device function'),
+        (HELPER.replace('ret;','call.uni (r),f,(a);ret;'),CALLER,'recursive device call'),
+        (HELPER,CALLER.replace('f,(a)','f,()'),'arity mismatch'),
+        (HELPER,CALLER.replace('.param .b32 a;','.param .b64 a;'),'matching-width'),
+        (HELPER,CALLER.replace('st.param.b32 [a],7;',''),'before definite initialization'),
+        (HELPER.replace('st.param.b32 [r],%x;',''),CALLER,'not definitely initialized'),
+        (HELPER.replace('ret;',''),CALLER,'falls through'),
+        (HELPER.replace('st.param.b32 [r],%x;','st.param.b32 [a],%x;'),CALLER,'read-only'),
+        (HELPER.replace('[a]','[a+4]'),CALLER,'unknown device parameter'),
+        (HELPER,CALLER.replace('ld.param.b32 %x,[r]','ld.param.b32 %x,[r+4]'),'parameter slot used outside'),
+        (HELPER.replace('.param .b32 r','.param .align 16 .b8 r[16]'),CALLER,'parameter ABI'),
+        (HELPER.replace('.param .b32 r)', '.param .b32 r,.param .b32 s)'),CALLER,'at most one'),
+        (HELPER.replace('ret;','exit;'),CALLER,'must return'),
+        (HELPER,CALLER.replace('f,(a)','%x,(a)'),'unresolved device function'),
+        (HELPER,CALLER.replace('call.uni','call.uni.tail'),'direct scalar'),
+    ])
+    def test_unresolved_recursive_abi_slot_return_and_escape_domains_reject(helper,caller,reason):
+>       with pytest.raises(SyntaxError,match=reason):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'matching-width'
+E        Input: 'device parameter access requires matching scalar width and zero offset'
+
+compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py:49: AssertionError
+_ test_unresolved_recursive_abi_slot_return_and_escape_domains_reject[.func (.param .b32 r) f(.param .b32 a){.reg .u32 %x;ld.param.u32 %x,[a];st.param.b32 [r],%x;ret;}\n-.entry k(){.reg .u32 %x;{.param .b32 a;.param .b32 r;st.param.b32 [a],7;call.uni.tail (r),f,(a);ld.param.b32 %x,[r];}ret;}-direct scalar] _
+
+helper = '.func (.param .b32 r) f(.param .b32 a){.reg .u32 %x;ld.param.u32 %x,[a];st.param.b32 [r],%x;ret;}\n'
+caller = '.entry k(){.reg .u32 %x;{.param .b32 a;.param .b32 r;st.param.b32 [a],7;call.uni.tail (r),f,(a);ld.param.b32 %x,[r];}ret;}'
+reason = 'direct scalar'
+
+    @pytest.mark.parametrize('helper,caller,reason',[
+        (HELPER,CALLER.replace('f,(a)','missing,(a)'),'unresolved device function'),
+        (HELPER.replace('ret;','call.uni (r),f,(a);ret;'),CALLER,'recursive device call'),
+        (HELPER,CALLER.replace('f,(a)','f,()'),'arity mismatch'),
+        (HELPER,CALLER.replace('.param .b32 a;','.param .b64 a;'),'matching-width'),
+        (HELPER,CALLER.replace('st.param.b32 [a],7;',''),'before definite initialization'),
+        (HELPER.replace('st.param.b32 [r],%x;',''),CALLER,'not definitely initialized'),
+        (HELPER.replace('ret;',''),CALLER,'falls through'),
+        (HELPER.replace('st.param.b32 [r],%x;','st.param.b32 [a],%x;'),CALLER,'read-only'),
+        (HELPER.replace('[a]','[a+4]'),CALLER,'unknown device parameter'),
+        (HELPER,CALLER.replace('ld.param.b32 %x,[r]','ld.param.b32 %x,[r+4]'),'parameter slot used outside'),
+        (HELPER.replace('.param .b32 r','.param .align 16 .b8 r[16]'),CALLER,'parameter ABI'),
+        (HELPER.replace('.param .b32 r)', '.param .b32 r,.param .b32 s)'),CALLER,'at most one'),
+        (HELPER.replace('ret;','exit;'),CALLER,'must return'),
+        (HELPER,CALLER.replace('f,(a)','%x,(a)'),'unresolved device function'),
+        (HELPER,CALLER.replace('call.uni','call.uni.tail'),'direct scalar'),
+    ])
+    def test_unresolved_recursive_abi_slot_return_and_escape_domains_reject(helper,caller,reason):
+        with pytest.raises(SyntaxError,match=reason):
+>           parse_module(HEADER+helper+caller)
+
+compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/gap_closure/device_functions/candidate-parse.py:455: in parse_module
+    kernel = _parse_body(name, _parameters(raw_params, name,attributes), body,
+compiler_exp/gap_closure/device_functions/candidate-parse.py:494: in _parse_body
+    k.body.append(parse_instr(stmt, line))
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/device_functions/candidate-parse.py:427: in parse_instr
+    args = [parse_operand(a) for a in _split_top(rest)] if rest.strip() else []
+            ^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/device_functions/candidate-parse.py:401: in parse_operand
+    return _constant_expression(t)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '(r)'
+
+    def _constant_expression(text):
+        """Pratt parser over s64/u64/f64 values; no host language evaluation."""
+        if re.fullmatch(r'0[fF][0-9a-fA-F]{8}',text):return ImmF(int(text[2:],16),32)
+        if re.search(r'%[0-9A-Za-z_$]',text):raise SyntaxError('PTX remainder must be separated from a following register-like token')
+        tokens=[];position=0;mask=(1<<64)-1
+        while position<len(text):
+            match=_CONSTANT_TOKEN.match(text,position)
+            if match is None:
+>               if text[position:].strip():raise SyntaxError(f'invalid PTX constant expression: {text}')
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               SyntaxError: invalid PTX constant expression: (r)
+
+compiler_exp/gap_closure/device_functions/candidate-parse.py:275: SyntaxError
+
+During handling of the above exception, another exception occurred:
+
+helper = '.func (.param .b32 r) f(.param .b32 a){.reg .u32 %x;ld.param.u32 %x,[a];st.param.b32 [r],%x;ret;}\n'
+caller = '.entry k(){.reg .u32 %x;{.param .b32 a;.param .b32 r;st.param.b32 [a],7;call.uni.tail (r),f,(a);ld.param.b32 %x,[r];}ret;}'
+reason = 'direct scalar'
+
+    @pytest.mark.parametrize('helper,caller,reason',[
+        (HELPER,CALLER.replace('f,(a)','missing,(a)'),'unresolved device function'),
+        (HELPER.replace('ret;','call.uni (r),f,(a);ret;'),CALLER,'recursive device call'),
+        (HELPER,CALLER.replace('f,(a)','f,()'),'arity mismatch'),
+        (HELPER,CALLER.replace('.param .b32 a;','.param .b64 a;'),'matching-width'),
+        (HELPER,CALLER.replace('st.param.b32 [a],7;',''),'before definite initialization'),
+        (HELPER.replace('st.param.b32 [r],%x;',''),CALLER,'not definitely initialized'),
+        (HELPER.replace('ret;',''),CALLER,'falls through'),
+        (HELPER.replace('st.param.b32 [r],%x;','st.param.b32 [a],%x;'),CALLER,'read-only'),
+        (HELPER.replace('[a]','[a+4]'),CALLER,'unknown device parameter'),
+        (HELPER,CALLER.replace('ld.param.b32 %x,[r]','ld.param.b32 %x,[r+4]'),'parameter slot used outside'),
+        (HELPER.replace('.param .b32 r','.param .align 16 .b8 r[16]'),CALLER,'parameter ABI'),
+        (HELPER.replace('.param .b32 r)', '.param .b32 r,.param .b32 s)'),CALLER,'at most one'),
+        (HELPER.replace('ret;','exit;'),CALLER,'must return'),
+        (HELPER,CALLER.replace('f,(a)','%x,(a)'),'unresolved device function'),
+        (HELPER,CALLER.replace('call.uni','call.uni.tail'),'direct scalar'),
+    ])
+    def test_unresolved_recursive_abi_slot_return_and_escape_domains_reject(helper,caller,reason):
+>       with pytest.raises(SyntaxError,match=reason):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'direct scalar'
+E        Input: 'invalid PTX constant expression: (r)'
+
+compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py:49: AssertionError
+=========================== short test summary info ============================
+FAILED compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py::test_direct_function_complete_bytes_and_call_inventory[safe-nvcc_scalar]
+FAILED compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py::test_direct_function_complete_bytes_and_call_inventory[opt-nvcc_scalar]
+FAILED compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py::test_unresolved_recursive_abi_slot_return_and_escape_domains_reject[.func (.param .b32 r) f(.param .b32 a){.reg .u32 %x;ld.param.u32 %x,[a];st.param.b32 [r],%x;ret;}\n-.entry k(){.reg .u32 %x;{.param .b64 a;.param .b32 r;st.param.b32 [a],7;call.uni (r),f,(a);ld.param.b32 %x,[r];}ret;}-matching-width]
+FAILED compiler_exp/gap_closure/device_functions/test_ptx_device_functions.py::test_unresolved_recursive_abi_slot_return_and_escape_domains_reject[.func (.param .b32 r) f(.param .b32 a){.reg .u32 %x;ld.param.u32 %x,[a];st.param.b32 [r],%x;ret;}\n-.entry k(){.reg .u32 %x;{.param .b32 a;.param .b32 r;st.param.b32 [a],7;call.uni.tail (r),f,(a);ld.param.b32 %x,[r];}ret;}-direct scalar]
+4 failed, 30 passed in 1.50s

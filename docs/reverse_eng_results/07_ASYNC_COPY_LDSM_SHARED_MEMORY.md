@@ -18,6 +18,34 @@ scoreboards. LDSM consumes a shared-memory address asynchronously, so rewriting
 that address register too early creates a read-WAR hazard even when the PTX
 source appears sequential.
 
+## Scalar shared widths and barrier issue gap
+
+The [scalar shared-width dossier](../compiler/gaps-memory.md#scalar-shared-byte-halfword-and-64-bit-memory)
+adds exact byte/halfword/64-bit loads/stores with four oracle-derived narrow-store
+templates and 12,096 varied-word disassembly checks. The first executable A100
+gate failed 90 optimized OA 64-bit exchanges while safe OA and same-PTX controls
+passed; complete later snapshots showed the expected stored bytes. Retaining
+a six-cycle barrier issue gap in ordinary code containing LDS/STS.64 repairs
+the tested exchange. This also covers the existing vector-two 32-bit route.
+The expanded final gate passes 1,216 launches with guards, raw wide bits and
+cross-warp exchanges. It does not establish a universal barrier latency, race
+proof or permission to change async-copy/LDSM dependencies.
+
+## Conditional writers and native convergence
+
+The [Python shared-wide cycle](../compiler/gaps-python-types.md#wide-shared-arrays-and-native-cta-reconvergence)
+found a distinct failure at every scheduler level. Mixed declarations failed
+64 of 768 OA launches while same-PTX controls passed. Full scoreboard draining
+and a zero-base layout did not repair it. Predicating the conditional writers
+and a BSSY/BSYNC ablation each passed. The maintained scalar pass now inserts
+one existing B0 pair for forward regions proven to reach the same next CTA BAR.
+It preserves outstanding waits, six-cycle convergence issue gaps, label targets
+and matched token lifetime. A final expanded 1,280-launch A100 gate passes
+nested branches, repeated phases, 32/64-bit elements and 48 KiB boundaries.
+The functional model's implicit joins do not independently prove native SIMT
+convergence. Cyclic/irreducible flow, memory races and async-copy/LDSM contracts
+remain separate.
+
 ## Shared layouts
 
 The selected GEMM uses a symmetric XOR shared-memory swizzle. It preserves the

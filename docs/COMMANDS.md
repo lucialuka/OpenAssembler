@@ -214,6 +214,8 @@ These options are also accepted by `cnr`.
 | `-I DIR`, `--include DIR` | None | Additional CUDA include directory; repeatable. The source file's directory is included; directory builds also add the discovered repository root. |
 | `--nvcc-flag FLAG` | None | Additional CUDA compiler flag; repeatable. Use `--nvcc-flag=-DNAME=VALUE` when a value begins with `-`. |
 | `--compile-commands FILE` | Source-root `compile_commands.json` when present | Consume recorded NVCC translation-unit flags/working directories, including generated source discovery. Host/link stages are not executed. |
+| `--python-source-root DIR` | Enclosing package root, or the entry directory | Resolve local Python device-helper imports statically within this root; hash exact entry/helper/package sources and preserve imported diagnostics. See [the contract](compiler/gaps-python.md#static-local-package-device-helpers). |
+| `--device-library SOURCE` | None | Link scalar device functions from explicit PTX or CUDA source libraries; repeatable. Preserves per-unit compile/dependency identities. Object/archive/native-stack linking remains unsupported; see [the contract](compiler/gaps-device-functions.md#explicit-ptx-and-cuda-source-libraries). |
 | `--dump-ptx` | Off | Print generated/input PTX. |
 | `--no-sass` | Off | Omit the readable `nvdisasm` listing; still produce cubins and metadata. |
 | `--backend MODE` | `auto` | Shared build/run destination: `local`, `modal`, `user@host`, or `ssh` with `--host`. Native auto builds locally; models use configuration. |
@@ -527,7 +529,14 @@ prefix of the buffer; remaining elements stay zero. It does not repeat.
 `grid` and `block` may be positive integers or lists of
 one to three dimensions. Shared bytes are given by `smem`. Each step may also
 specify `source` to disambiguate an entry. Arguments use `buf` plus optional
-byte `offset`, or one scalar key: `i32`, `u32`, `i64`, `u64`, `f32`. Offsets must be
+byte `offset`, or one scalar key: `i8`, `u8`, `i16`, `u16`, `i32`, `u32`,
+`i64`, `u64`, `f32`, or `bool`. A `bool` key requires a JSON `true`/`false` and
+a matching [logical Boolean source parameter contract](compiler/gaps-boolean-parameters.md);
+integer zero/one and raw byte keys do not acquire that role. Byte/halfword scalar
+arguments must match the actual PTX
+parameter width and fit their signed/unsigned ranges; Boolean JSON values do not
+stand in for integer arguments. The [narrow-entry contract](compiler/gaps-narrow-parameters.md)
+retains the original-source and actual explicit-launch hardware gates. Offsets must be
 aligned and inside their buffer. Multiple steps describe a pipeline; `compare`
 defaults to all buffers. Spec-level `reps` overrides the CLI repetition count.
 

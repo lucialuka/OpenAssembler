@@ -1,0 +1,13 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.visible .entry add_rn_f32_0(.param .u64 output,.param .u64 input){
+.reg .u64 %out,%input;
+.reg .u32 %bits;
+.reg .f32 %a,%b,%value;
+.reg .pred %p;
+ld.param.u64 %out,[output];ld.param.u64 %input,[input];
+ld.global.f32 %a,[%input];mov.f32 %b,0f40000000;setp.lt.f32 %p,%a,%b;
+add.rn.f32 %value,1.5,%a;st.global.f32 [%out],%value;
+ret;
+}

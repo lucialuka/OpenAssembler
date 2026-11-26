@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "passed": true,
+  "files": [
+    {
+      "file": "tests/data/boolean_value_fixtures.json",
+      "baseline_sha256": "1ea3116c6a0b12a2fd08d416c90179f7a84ab8945ff2980f489fcfba615397a5",
+      "current_sha256": "37cb8c5a365aecb0426a2907a1b6cb3e26d7c5fff29f701eb53a03004c4af37e",
+      "changes": [
+        {
+          "before": {
+            "name": "bool_parameter",
+            "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),value:bool):\n    a[0]=i32(value)\n",
+            "reason": "annotation"
+          },
+          "after": {
+            "name": "bool_parameter_array",
+            "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),value:Array(bool)):\n    a[0]=i32(value)\n",
+            "reason": "annotation"
+          },
+          "reason": "Scalar bool kernel parameters now supported; preserve original annotation rejection with genuinely unsupported Boolean array parameter. New original-source numerical/host/ownership controls validate scalar behavior; no numerical expectation or tolerance changes."
+        }
+      ]
+    },
+    {
+      "file": "tests/data/boolean_helper_fixtures.json",
+      "baseline_sha256": "92b551ebf59b524730854c63a443eb5177595e70b7306f65e9a47273c92e80ba",
+      "current_sha256": "ea9eed6b5bb3c18ad493bd0ac705a580ae71c8fd8e07d1b5a5aa1d2148c26b2a",
+      "changes": [
+        {
+          "before": {
+            "name": "kernel_parameter",
+            "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    a[0]=i32(flag)\n",
+            "reason": "unsupported type annotation"
+          },
+          "after": {
+            "name": "kernel_parameter_array",
+            "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:Array(bool)):\n    a[0]=i32(flag)\n",
+            "reason": "unsupported type annotation"
+          },
+          "reason": "Scalar bool kernel parameters now supported; preserve original annotation rejection with genuinely unsupported Boolean array parameter. New original-source numerical/host/ownership controls validate scalar behavior; no numerical expectation or tolerance changes."
+        }
+      ]
+    }
+  ]
+}

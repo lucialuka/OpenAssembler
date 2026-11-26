@@ -1,0 +1,149 @@
+........................................................................ [ 26%]
+........................................................................ [ 52%]
+........................................................................ [ 79%]
+....................F....................................                [100%]
+=================================== FAILURES ===================================
+_ test_helpers_fail_closed_with_source_diagnostics[def h(x: i32) -> i32:\n    return g(x)\n@device\ndef g(x: i32) -> i32:\n    return h(x)-h(1)-h -> g -> h] _
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9')
+helper = 'def h(x: i32) -> i32:\n    return g(x)\n@device\ndef g(x: i32) -> i32:\n    return h(x)'
+call = 'h(1)', diagnostic = 'h -> g -> h'
+
+    @pytest.mark.parametrize('helper,call,diagnostic', [
+        ('def h(x) -> i32:\n    return x', 'h(1)', 'scalar annotation'),
+        ('def h(x: i32):\n    return x', 'h(1)', 'return annotation'),
+        ('def h(x: Array(i32)) -> i32:\n    return 0', 'h(1)', 'scalar parameters'),
+        ('def h(x: i32) -> Array(i32):\n    return x', 'h(1)', 'return scalars'),
+        ('def h(x: i32 = 1) -> i32:\n    return x', 'h(1)', 'without defaults'),
+        ('def h(*, x: i32) -> i32:\n    return x', 'h(1)', 'plain positional'),
+        ('def h(x: i32) -> i32:\n    x += 1', 'h(1)', 'terminal return'),
+        ('def h(x: i32) -> i32:\n    if x:\n        return 1\n    return 0', 'h(1)', 'scalar assignments'),
+        ('def h(x: i32) -> i32:\n    return h(x)', 'h(1)', 'recursive device helper'),
+        ('def h(x: i32) -> i32:\n    return g(x)\n@device\ndef g(x: i32) -> i32:\n    return h(x)', 'h(1)', 'h -> g -> h'),
+        ('def h(x: i32) -> i32:\n    return x', 'h(1.0)', 'expected s32, got f32'),
+        ('def h(x: i32) -> f32:\n    return x', 'h(1)', 'returns s32, annotated f32'),
+        ('def h(x: i32) -> i32:\n    return x', 'h(1, 2)', 'expects 1 arguments'),
+        ('def h(x: i32) -> i32:\n    return x', 'h(x=1)', 'keyword arguments'),
+        ('def h(x: i32) -> i32:\n    return x + hidden', 'h(1)', 'uninitialized or captured'),
+        ('def h(x: i32) -> i32:\n    return source[0]', 'h(1)', 'cannot access memory'),
+        ('def h(x: i32) -> i32:\n    return tid_x() + x', 'h(1)', 'pure scalar calls'),
+        ('def h(x: i32) -> i32:\n    return arbitrary(x)', 'h(1)', 'not supported'),
+        ('def h(x: i32) -> i32:\n    abs = 1\n    return abs(x)', 'h(1)', 'local value'),
+        ('async def h(x: i32) -> i32:\n    return x', 'h(1)', 'async device helpers'),
+    ])
+    def test_helpers_fail_closed_with_source_diagnostics(tmp_path, helper, call, diagnostic):
+        path = source_file(tmp_path, f'''
+    @device
+    {helper}
+    @kernel
+    def evaluate(out: Array(i32)):
+        out[0] = {call}
+    ''')
+        with pytest.raises(NotSupported, match=diagnostic) as exc:
+>           compile_file(path)
+
+tests/test_pyfront_helpers.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:1459: in compile_file
+    raise e.with_path(path) from None
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:1456: in compile_file
+    entries.append(_compile_entry(k, names, arch))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:1358: in _compile_entry
+    _Emitter(scope, names, fdef).body(fdef.body)
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:497: in body
+    self.stmt(st)
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:506: in stmt
+    fn(node)
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:513: in visit_Assign
+    self._store(target, *self._eval(node.value))
+                         ^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:772: in _eval
+    return self._call(node)
+           ^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:1106: in _call
+    return self.names.devices.inline(self, node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-helpers.py:211: in inline
+    value, kind = child._eval(body[-1].value)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:772: in _eval
+    return self._call(node)
+           ^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:1106: in _call
+    return self.names.devices.inline(self, node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-helpers.py:211: in inline
+    value, kind = child._eval(body[-1].value)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:772: in _eval
+    return self._call(node)
+           ^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-pyfront.py:1106: in _call
+    return self.names.devices.inline(self, node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.helpers.DeviceFunctions object at 0x1054930b0>
+emitter = <openassembler.pyfront.compile._Emitter object at 0x105490dd0>
+call = <ast.Call object at 0x1055d6210>, name = 'h'
+
+    def inline(self, emitter, call, name=None):
+        name = name or call.func.id
+        graph = getattr(self.names, "graph", None)
+        active = graph.active if graph is not None else self.active
+        key = str(self.names.module_path)+":"+name if graph is not None else name
+        if call.keywords:
+            raise c.NotSupported('device helper keyword arguments are not supported', call)
+        if key in active:
+>           raise c.NotSupported('recursive device helper call: ' + ' -> '.join([*active, key]), call)
+E           openassembler.pyfront.compile.NotSupported: recursive device helper call: /private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9/helpers.py:h -> /private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9/helpers.py:g -> /private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9/helpers.py:h (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9/helpers.py, line 8)
+
+compiler_exp/gap_closure/python_module_helpers/promotion/candidate-helpers.py:178: NotSupported
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9')
+helper = 'def h(x: i32) -> i32:\n    return g(x)\n@device\ndef g(x: i32) -> i32:\n    return h(x)'
+call = 'h(1)', diagnostic = 'h -> g -> h'
+
+    @pytest.mark.parametrize('helper,call,diagnostic', [
+        ('def h(x) -> i32:\n    return x', 'h(1)', 'scalar annotation'),
+        ('def h(x: i32):\n    return x', 'h(1)', 'return annotation'),
+        ('def h(x: Array(i32)) -> i32:\n    return 0', 'h(1)', 'scalar parameters'),
+        ('def h(x: i32) -> Array(i32):\n    return x', 'h(1)', 'return scalars'),
+        ('def h(x: i32 = 1) -> i32:\n    return x', 'h(1)', 'without defaults'),
+        ('def h(*, x: i32) -> i32:\n    return x', 'h(1)', 'plain positional'),
+        ('def h(x: i32) -> i32:\n    x += 1', 'h(1)', 'terminal return'),
+        ('def h(x: i32) -> i32:\n    if x:\n        return 1\n    return 0', 'h(1)', 'scalar assignments'),
+        ('def h(x: i32) -> i32:\n    return h(x)', 'h(1)', 'recursive device helper'),
+        ('def h(x: i32) -> i32:\n    return g(x)\n@device\ndef g(x: i32) -> i32:\n    return h(x)', 'h(1)', 'h -> g -> h'),
+        ('def h(x: i32) -> i32:\n    return x', 'h(1.0)', 'expected s32, got f32'),
+        ('def h(x: i32) -> f32:\n    return x', 'h(1)', 'returns s32, annotated f32'),
+        ('def h(x: i32) -> i32:\n    return x', 'h(1, 2)', 'expects 1 arguments'),
+        ('def h(x: i32) -> i32:\n    return x', 'h(x=1)', 'keyword arguments'),
+        ('def h(x: i32) -> i32:\n    return x + hidden', 'h(1)', 'uninitialized or captured'),
+        ('def h(x: i32) -> i32:\n    return source[0]', 'h(1)', 'cannot access memory'),
+        ('def h(x: i32) -> i32:\n    return tid_x() + x', 'h(1)', 'pure scalar calls'),
+        ('def h(x: i32) -> i32:\n    return arbitrary(x)', 'h(1)', 'not supported'),
+        ('def h(x: i32) -> i32:\n    abs = 1\n    return abs(x)', 'h(1)', 'local value'),
+        ('async def h(x: i32) -> i32:\n    return x', 'h(1)', 'async device helpers'),
+    ])
+    def test_helpers_fail_closed_with_source_diagnostics(tmp_path, helper, call, diagnostic):
+        path = source_file(tmp_path, f'''
+    @device
+    {helper}
+    @kernel
+    def evaluate(out: Array(i32)):
+        out[0] = {call}
+    ''')
+>       with pytest.raises(NotSupported, match=diagnostic) as exc:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'h -> g -> h'
+E        Input: 'recursive device helper call: /private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9/helpers.py:h -> /private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9/helpers.py:g -> /private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9/helpers.py:h (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-610/test_helpers_fail_closed_with_9/helpers.py, line 8)'
+
+tests/test_pyfront_helpers.py:123: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_pyfront_helpers.py::test_helpers_fail_closed_with_source_diagnostics[def h(x: i32) -> i32:\n    return g(x)\n@device\ndef g(x: i32) -> i32:\n    return h(x)-h(1)-h -> g -> h]
+1 failed, 272 passed in 5.82s

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "missing_return",
+      "source": "@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return -x\n",
+      "rejected": true,
+      "reason": "prototype requires a terminal fallback; missing returns cannot become zero"
+    },
+    {
+      "name": "branch_complete",
+      "source": "@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return -x\n    else:\n        return x+i64(3)\n",
+      "rejected": true,
+      "reason": "prototype requires a terminal fallback; missing returns cannot become zero"
+    },
+    {
+      "name": "loop_else",
+      "source": "@device\ndef h(x:i64)->i64:\n    for c in (1,2):\n        if x<i64(c):\n            return x\n    else:\n        return x+i64(3)\n    return x\n",
+      "rejected": true,
+      "reason": "prototype loop else return binding is unvalidated"
+    },
+    {
+      "name": "continue",
+      "source": "@device\ndef h(x:i64)->i64:\n    for c in (1,2):\n        if x<i64(c):\n            continue\n        return x\n    return x+i64(3)\n",
+      "rejected": true,
+      "reason": "prototype original break/continue is unvalidated"
+    },
+    {
+      "name": "bare_return",
+      "source": "@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return\n    return x\n",
+      "rejected": true,
+      "reason": "prototype scalar return requires a value"
+    }
+  ],
+  "script_sha256": "d0e46b941f5adcb8a6107472a4d42865016da6b0957ce0a1ef9af76200e22e9f",
+  "normalizer_sha256": "0c2fda627573ba386fee82831fba543187a36a4c33b3b2267cc7a08cb61de56b",
+  "scope": "Five explicit boundaries of isolated terminal-fallback early-return normalization. Missing scalar returns reject; complete branch-only returns, loop else, original continue and bare returns remain unimplemented, not silently lowered or defaulted"
+}

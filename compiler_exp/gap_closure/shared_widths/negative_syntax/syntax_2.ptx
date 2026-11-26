@@ -1,0 +1,39 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.visible .entry negative_s16(.param .u64 output,.param .u64 input,.param .u32 n){
+.shared .align 16 .b8 arena[2048];
+.reg .u64 %out,%input,%offset,%src,%dst;
+.reg .b64 %wide,%loadedwide;
+.reg .u32 %t,%ct,%i,%n,%peer,%addr,%other,%base,%tmp,%lo,%hi,%loaded,%iter,%j,%byte;
+.reg .b32 %s0,%s1,%s2,%s3;
+.reg .pred %writer,%active,%loop;
+ld.param.u64 %out,[output];ld.param.u64 %input,[input];ld.param.u32 %n,[n];
+mov.u32 %t,%tid.x;mov.u32 %ct,%ctaid.x;mad.lo.u32 %i,%ct,128,%t;
+mul.wide.u32 %offset,%i,8;add.u64 %src,%input,%offset;
+mul.wide.u32 %offset,%i,64;add.u64 %dst,%out,%offset;
+ld.global.v2.u32 {%lo,%hi},[%src];mov.b64 %wide,{%lo,%hi};
+mul.lo.u32 %addr,%t,16;xor.b32 %peer,%t,64;mul.lo.u32 %other,%peer,16;
+mov.u32 %base,arena;add.u32 %addr,%addr,%base;add.u32 %other,%other,%base;
+and.b32 %tmp,%t,1;setp.eq.u32 %writer,%tmp,0;
+setp.lt.u32 %active,%i,%n;
+mov.u32 %s0,0x10203040;mov.u32 %s1,0x50607080;
+mov.u32 %s2,0x90a0b0c0;mov.u32 %s3,0xd0e0f000;
+st.shared.v4.u32 [%addr],{%s0,%s1,%s2,%s3};
+bar.sync 0;
+add.u32 %addr,%addr,16;add.u32 %other,%other,16;
+@%writer st.shared.s16 [%addr+ -10],%lo;
+bar.sync 0;
+mov.u32 %loaded,0x2468ace0;mov.b64 %loadedwide,{%lo,%hi};
+@%active ld.shared.s16 %loaded,[%other+ -10];
+@%active st.global.u32 [%dst],%loaded;
+bar.sync 0;
+// Retain every byte including neighbors around the narrow overwrite. All lanes
+// reach barriers, even when output length masks their observable stores.
+sub.u32 %other,%other,16;mov.u32 %j,0;
+SNAP:ld.shared.u8 %byte,[%other];
+@%active st.global.u8 [%dst+16],%byte;
+add.u32 %other,%other,1;add.u64 %dst,%dst,1;add.u32 %j,%j,1;
+setp.lt.u32 %loop,%j,16;@%loop bra SNAP;
+ret;
+}

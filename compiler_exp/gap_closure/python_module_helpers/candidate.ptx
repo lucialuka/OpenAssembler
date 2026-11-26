@@ -1,0 +1,126 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"signed","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"b"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry signed(.param .u64 a, .param .u64 b, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<15>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [b];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u64 %rd3, [out];
+ cvta.to.global.u64 %rd3, %rd3;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd4, %r3, 8;
+ add.s64 %rd4, %rd1, %rd4;
+ ld.global.s64 %rd5, [%rd4];
+ mov.b64 %rd6, %rd5;
+ mul.wide.u32 %rd7, %r3, 8;
+ add.s64 %rd7, %rd2, %rd7;
+ ld.global.s64 %rd8, [%rd7];
+ mov.b64 %rd9, %rd8;
+ mov.b64 %rd10, %rd6;
+ mov.s32 %r4, 0;
+ mov.s32 %r5, 3;
+ mov.u32 %r6, %r4;
+ mov.u32 %r7, %r5;
+L_loop_2:
+ setp.ge.s32 %p2, %r6, %r7;
+ @%p2 bra L_loopend_4;
+ mov.b64 %rd11, %rd10;
+ mov.b64 %rd12, %rd9;
+ mul.lo.s64 %rd13, %rd11, %rd12;
+ mov.b64 %rd10, %rd13;
+L_next_3:
+ add.s32 %r6, %r6, 1;
+ bra L_loop_2;
+L_loopend_4:
+ mul.wide.u32 %rd14, %r3, 8;
+ add.s64 %rd14, %rd3, %rd14;
+ st.global.s64 [%rd14], %rd10;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"unsigned","parameters":[{"dtype":"u64","kind":"array","name":"a"},{"dtype":"u64","kind":"array","name":"b"},{"dtype":"u64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry unsigned(.param .u64 a, .param .u64 b, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<4>;
+ .reg .b64 %rd<15>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [b];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u64 %rd3, [out];
+ cvta.to.global.u64 %rd3, %rd3;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd4, %r3, 8;
+ add.s64 %rd4, %rd1, %rd4;
+ ld.global.u64 %rd5, [%rd4];
+ mov.b64 %rd6, %rd5;
+ mul.wide.u32 %rd7, %r3, 8;
+ add.s64 %rd7, %rd2, %rd7;
+ ld.global.u64 %rd8, [%rd7];
+ mov.b64 %rd9, %rd8;
+ mov.b64 %rd10, %rd6;
+ mov.b64 %rd11, %rd9;
+ mul.lo.u64 %rd12, %rd10, %rd11;
+ add.u64 %rd13, %rd12, %rd6;
+ mul.wide.u32 %rd14, %r3, 8;
+ add.s64 %rd14, %rd3, %rd14;
+ st.global.u64 [%rd14], %rd13;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+.visible .entry floating(.param .u64 a, .param .u64 b, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<4>;
+ .reg .f32 %f<9>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [b];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u64 %rd3, [out];
+ cvta.to.global.u64 %rd3, %rd3;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd4, %r3, 4;
+ add.s64 %rd4, %rd1, %rd4;
+ ld.global.f32 %f1, [%rd4];
+ mov.f32 %f2, %f1;
+ mov.f32 %f3, 0f40000000;
+ mov.f32 %f4, %f3;
+ mul.wide.u32 %rd5, %r3, 4;
+ add.s64 %rd5, %rd2, %rd5;
+ ld.global.f32 %f5, [%rd5];
+ mov.f32 %f6, %f5;
+ mul.f32 %f7, %f2, %f4;
+ add.f32 %f8, %f7, %f6;
+ mul.wide.u32 %rd6, %r3, 4;
+ add.s64 %rd6, %rd3, %rd6;
+ st.global.f32 [%rd6], %f8;
+L_endif_1:
+L_exit:
+ ret;
+}

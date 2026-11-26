@@ -64,3 +64,12 @@ modal run compiler_exp/gap_closure/parameter_abi/run_modal.py
 G10 remains open beyond this contract: parameter aggregates, new scalar ABI
 widths, general function/prototype/linkage grammar, symbols, relocations and
 cross-module linking each require their own source/container/runtime evidence.
+
+## Scalar byte and halfword entry slots
+
+The subsequent [narrow-entry cycle](gaps-narrow-parameters.md) adds scalar b/u/s8
+and b/u/s16 slots with natural byte layout and signed/zero extension. Its parser,
+selectors, interpreter, verifier and explicit runner/batch-driver paths share the
+validated physical contract; all original 32/64 offsets and pointer attributes
+remain required. Aggregates, FP16/predicate/vector/device slots remain separate.
+The original-source gate passes 14,400 A100 plus 240 explicit run-spec launches.

@@ -1,0 +1,93 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"k","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"b"},{"dtype":"s64","kind":"array","name":"left"},{"dtype":"s64","kind":"array","name":"right"},{"dtype":"s32","kind":"array","name":"flags"}],"schema":1}
+.visible .entry k(.param .u64 a, .param .u64 b, .param .u64 left, .param .u64 right, .param .u64 flags)
+{
+ .reg .pred %p<14>;
+ .reg .b32 %r<16>;
+ .reg .b64 %rd<28>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [b];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u64 %rd3, [left];
+ cvta.to.global.u64 %rd3, %rd3;
+ ld.param.u64 %rd4, [right];
+ cvta.to.global.u64 %rd4, %rd4;
+ ld.param.u64 %rd5, [flags];
+ cvta.to.global.u64 %rd5, %rd5;
+ mov.u32 %r1, %tid.x;
+ mov.u32 %r2, %r1;
+ mul.wide.u32 %rd6, %r2, 8;
+ add.s64 %rd6, %rd1, %rd6;
+ ld.global.s64 %rd7, [%rd6];
+ mov.b64 %rd8, %rd7;
+ mov.s64 %rd9, 0;
+ setp.eq.s64 %p1, %rd8, %rd9;
+ not.pred %p2, %p1;
+ @!%p2 bra L_booloperands_1;
+ mul.wide.u32 %rd10, %r2, 8;
+ add.s64 %rd10, %rd2, %rd10;
+ ld.global.s64 %rd11, [%rd10];
+ mov.b64 %rd8, %rd11;
+L_booloperands_1:
+ mov.b64 %rd12, %rd8;
+ mul.wide.u32 %rd13, %r2, 8;
+ add.s64 %rd13, %rd1, %rd13;
+ ld.global.s64 %rd14, [%rd13];
+ mov.b64 %rd15, %rd14;
+ mov.s64 %rd16, 0;
+ setp.eq.s64 %p3, %rd15, %rd16;
+ not.pred %p4, %p3;
+ @%p4 bra L_booloperands_2;
+ mul.wide.u32 %rd17, %r2, 8;
+ add.s64 %rd17, %rd2, %rd17;
+ ld.global.s64 %rd18, [%rd17];
+ mov.b64 %rd15, %rd18;
+L_booloperands_2:
+ mov.b64 %rd19, %rd15;
+ mov.s32 %r3, 0;
+ mul.wide.u32 %rd20, %r2, 8;
+ add.s64 %rd20, %rd1, %rd20;
+ ld.global.s64 %rd21, [%rd20];
+ mov.s64 %rd22, 0;
+ setp.eq.s64 %p5, %rd21, %rd22;
+ not.pred %p6, %p5;
+ @%p6 bra L_boolean_3;
+ mov.s32 %r3, 1;
+L_boolean_3:
+ setp.eq.s32 %p7, %r3, 0;
+ not.pred %p8, %p7;
+ mov.pred %p9, %p8;
+ mul.wide.u32 %rd23, %r2, 8;
+ add.s64 %rd23, %rd3, %rd23;
+ st.global.s64 [%rd23], %rd12;
+ mul.wide.u32 %rd24, %r2, 8;
+ add.s64 %rd24, %rd4, %rd24;
+ st.global.s64 [%rd24], %rd19;
+ selp.s32 %r4, 1, 0, %p9;
+ cvt.s32.s32 %r5, %r4;
+ mov.s64 %rd25, 0;
+ setp.eq.s64 %p10, %rd12, %rd25;
+ not.pred %p11, %p10;
+ selp.s32 %r6, 1, 0, %p11;
+ cvt.s32.s32 %r7, %r6;
+ mov.s32 %r8, 2;
+ mul.lo.s32 %r9, %r7, %r8;
+ add.s32 %r10, %r5, %r9;
+ mov.s64 %rd26, 0;
+ setp.eq.s64 %p12, %rd19, %rd26;
+ not.pred %p13, %p12;
+ selp.s32 %r11, 1, 0, %p13;
+ cvt.s32.s32 %r12, %r11;
+ mov.s32 %r13, 4;
+ mul.lo.s32 %r14, %r12, %r13;
+ add.s32 %r15, %r10, %r14;
+ mul.wide.u32 %rd27, %r2, 4;
+ add.s64 %rd27, %rd5, %rd27;
+ st.global.u32 [%rd27], %r15;
+L_exit:
+ ret;
+}

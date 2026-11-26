@@ -209,6 +209,9 @@ def auto_case(t: Target, out_dir: Path, n: int, reps: int, plan: Plan) -> None:
         plan.cases.append(Case(t.label, str(t.source), -1, None, [],
                                skip='checked Buffer kernels require --spec with their actual storage extents and bindings'))
         return
+    if t.kernel.get('logical_parameter_contract') is not None:
+        plan.cases.append(Case(t.label,str(t.source),-1,None,[],skip='logical Boolean parameters require --spec with actual Boolean values'))
+        return
     """The verify.py-style harness for one kernel: see this module's docstring."""
     k = t.kernel
     if k.get("gemm") is not None:
@@ -235,7 +238,12 @@ def auto_case(t: Target, out_dir: Path, n: int, reps: int, plan: Plan) -> None:
             desc.append(f"{pname}=f32[{n}]")
         elif ty in ("u32", "s32", "b32", "u16", "s16", "b16", "u8", "s8", "b8"):
             v = n if pname.lower() in N_LIKE else SMALL_INT
-            args.append(("u32", v & 0xFFFFFFFF))
+            width = int(ty[1:])
+            maximum = (1 << (width-int(ty.startswith('s'))))-1
+            if width < 32 and not 0 <= v <= maximum:
+                plan.cases.append(Case(k['name'],t.entry['source'],-1,-1,[],skip=f'auto-harness value for {pname} does not fit .{ty}; use --spec'))
+                return
+            args.append(("u"+str(width), v & ((1 << width)-1)))
             desc.append(f"{pname}={v}")
         elif ty in ("u64", "s64", "b64"):
             args.append(("u64", n))
@@ -376,6 +384,23 @@ def load_spec(path: Path) -> dict:
     return spec
 
 
+def _logical_parameters(target,out_dir):
+    contract = target.kernel.get('logical_parameter_contract')
+    if contract is None:return {}
+    import hashlib
+    from openassembler.verify import parameter_contract_from_ptx
+    from openassembler.ptx.parse import parse_module
+    try:
+        raw = P.artifact_path(out_dir,target.entry['ptx']).read_bytes()
+        if hashlib.sha256(raw).hexdigest()!=target.entry['native_ownership']['ptx_sha256']:
+            raise ValueError('logical parameter PTX identity differs from native build')
+        current = parameter_contract_from_ptx(raw.decode(),parse_module(raw.decode()).kernels[target.label],allow_buffers=True)
+        if current != contract:raise ValueError('logical parameter manifest differs from validated PTX contract')
+    except (OSError,ValueError,KeyError,TypeError) as error:
+        raise RunError(f'logical parameter launch contract unavailable or invalid: {error}') from None
+    return {row['name']:row for row in contract['parameters']}
+
+
 def _checked_buffer_bindings(target, out_dir, arguments, buffers, buffer_specs=None):
     for index,(_dtype,name) in enumerate(target.kernel['params']):
         attributes=target.kernel.get('parameter_attributes',{}).get(name)
@@ -501,7 +526,9 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
         smem = st.get("smem", 0)
         if type(smem) is not int or not 0 <= smem <= 163 * 1024:
             raise RunError(f"spec: step {si} smem must be a non-negative int")
+        logical_parameters = _logical_parameters(t,out_dir)
         args = []
+        boolean_arguments = set()
         for a in st.get("args", []):
             if not isinstance(a, dict) or len(a) not in (1, 2):
                 raise RunError(f"spec: step {si} arg {a!r}: use {{\"buf\": name}}, {{\"i32\": v}}, "
@@ -515,6 +542,18 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
                         or not 0 <= off < buffers[a["buf"]] or off % element_size):
                     raise RunError(f"spec: step {si} buffer offset must be aligned and inside the buffer")
                 args.append(("buf", a["buf"], off))
+            elif "bool" in a:
+                if len(a)!=1 or type(a['bool']) is not bool:
+                    raise RunError(f'spec: step {si} Boolean argument requires a true or false JSON value')
+                boolean_arguments.add(len(args))
+                args.append(('u8',int(a['bool'])))
+            elif any(kind in a for kind in ('i8','u8','i16','u16')):
+                kind = next(kind for kind in ('i8','u8','i16','u16') if kind in a)
+                width = int(kind[1:]);v = a[kind]
+                low, high = (-(1 << (width-1)), 1 << (width-1)) if kind.startswith('i') else (0, 1 << width)
+                if len(a) != 1 or type(v) is not int or not low <= v < high:
+                    raise RunError(f"spec: step {si} invalid {kind} argument")
+                args.append(("u"+str(width), v & ((1 << width)-1)))
             elif "i32" in a or "u32" in a:
                 kind = "i32" if "i32" in a else "u32"
                 v = a[kind]
@@ -539,6 +578,14 @@ def spec_case(spec: dict, m: dict, out_dir: Path, reps: int, plan: Plan, label: 
         if len(args) != nparams:
             raise RunError(f"spec: step {si} passes {len(args)} args to {t.label}, which takes {nparams} "
                            f"({', '.join(p[1] for p in t.kernel['params'])})")
+        for index,((dtype,name),argument) in enumerate(zip(t.kernel['params'],args)):
+            is_boolean = logical_parameters.get(name,{}).get('dtype')=='bool'
+            if is_boolean != (index in boolean_arguments):
+                raise RunError(f'Boolean parameter {name} requires a Boolean argument and a matching logical source contract')
+            if dtype in ('b8','u8','s8','b16','u16','s16') and argument[0] != 'u'+dtype[1:]:
+                raise RunError(f'narrow scalar parameter {name} requires an exact {dtype[1:]}-bit scalar argument')
+            if argument[0] in ('u8','u16') and dtype not in ('b'+argument[0][1:],'s'+argument[0][1:],argument[0]):
+                raise RunError(f'narrow scalar argument for {name} does not match PTX parameter width')
         _checked_buffer_bindings(t,out_dir,args,buffers,spec['buffers'])
         steps_ours.append((mod, t.label, grid, block, smem, args))
         steps_ref.append((mod, t.label, grid, block, smem, args))

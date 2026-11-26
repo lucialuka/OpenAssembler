@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "passed": true,
+  "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    value=11\n    if -3<a[i]<7:\n        value+=1\n    if not (0<=a[i]<=3):\n        value+=2\n    if a[i]<0<atomic_add(count,i,1):\n        value+=4\n    if -1<atomic_add(count,i,1)<1:\n        value+=8\n    out[i]=value\n",
+  "inputs": [
+    -19,
+    -3,
+    -1,
+    0,
+    1,
+    3,
+    7,
+    19
+  ],
+  "expected_outputs": [
+    13,
+    13,
+    14,
+    20,
+    20,
+    20,
+    21,
+    21
+  ],
+  "expected_atomic_counters": [
+    2,
+    2,
+    2,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "results": [
+    {
+      "level": "safe",
+      "engine": "ptx",
+      "passed": true
+    },
+    {
+      "level": "safe",
+      "engine": "normal",
+      "passed": true
+    },
+    {
+      "level": "safe",
+      "engine": "poisoned",
+      "passed": true
+    },
+    {
+      "level": "mined",
+      "engine": "ptx",
+      "passed": true
+    },
+    {
+      "level": "mined",
+      "engine": "normal",
+      "passed": true
+    },
+    {
+      "level": "mined",
+      "engine": "poisoned",
+      "passed": true
+    },
+    {
+      "level": "sched",
+      "engine": "ptx",
+      "passed": true
+    },
+    {
+      "level": "sched",
+      "engine": "normal",
+      "passed": true
+    },
+    {
+      "level": "sched",
+      "engine": "poisoned",
+      "passed": true
+    },
+    {
+      "level": "opt",
+      "engine": "ptx",
+      "passed": true
+    },
+    {
+      "level": "opt",
+      "engine": "normal",
+      "passed": true
+    },
+    {
+      "level": "opt",
+      "engine": "poisoned",
+      "passed": true
+    }
+  ],
+  "executions": 12,
+  "source_hashes": {
+    "candidate-pyfront.py": "3fa414b618c0e28d3043729622feef966bcb3f486efb5f41141c4413b2345f76",
+    "candidate.py": "6122d2323fb7ce9ba5353192ae78c5225edbb6d5fc3d59c807aa1b582dd9e227",
+    "probe.py": "e821d705126d566ec091f91ad0b2c5d3f03fbafca4a33107a6d4b976939ccee1"
+  },
+  "scope": "Isolated original scalar comparison chains in conditions, complete independent output/guard/input/atomic effect bytes, four PTX/normal/poisoned levels. No production, first-class Boolean, full mixed-type/NaN/helper/source-ownership/hardware claim"
+}

@@ -1,0 +1,96 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"i64_mixed","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s64","kind":"scalar","name":"delta"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry i64_mixed(.param .u64 a, .param .u64 out, .param .s64 delta, .param .s32 n)
+{
+ .shared .align 4 .b32 __smem_prefix[1];
+ .shared .align 8 .b64 __smem_shared[128];
+ .shared .align 4 .b32 __smem_suffix[3];
+ .reg .pred %p<4>;
+ .reg .b32 %r<41>;
+ .reg .b64 %rd<15>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.s64 %rd3, [delta];
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, __smem_prefix;
+ mov.u32 %r3, __smem_shared;
+ mov.u32 %r4, __smem_suffix;
+ mov.u32 %r5, %tid.x;
+ mov.u32 %r6, %r5;
+ mov.u32 %r7, %ctaid.x;
+ mov.s32 %r8, 128;
+ mul.lo.s32 %r9, %r7, %r8;
+ add.s32 %r10, %r9, %r6;
+ mov.u32 %r11, %r10;
+ mov.s32 %r12, 0;
+ setp.eq.s32 %p1, %r6, %r12;
+ @!%p1 bra L_endif_1;
+ mov.s32 %r13, 305419896;
+ st.shared.u32 [__smem_prefix+0], %r13;
+L_endif_1:
+ mov.s32 %r14, 0;
+ setp.eq.s32 %p2, %r6, %r14;
+ @!%p2 bra L_endif_2;
+ mov.s32 %r15, 1985229328;
+ st.shared.u32 [__smem_suffix+0], %r15;
+ mov.s32 %r16, -1;
+ st.shared.u32 [__smem_suffix+4], %r16;
+ mov.s32 %r17, -2147483648;
+ st.shared.u32 [__smem_suffix+8], %r17;
+L_endif_2:
+ mul.wide.u32 %rd4, %r11, 8;
+ add.s64 %rd4, %rd1, %rd4;
+ ld.global.s64 %rd5, [%rd4];
+ shl.b32 %r18, %r6, 3;
+ add.s32 %r19, %r18, %r3;
+ st.shared.s64 [%r19], %rd5;
+ bar.sync 0;
+ mov.s32 %r20, 64;
+ xor.b32 %r21, %r6, %r20;
+ shl.b32 %r22, %r21, 3;
+ add.s32 %r23, %r22, %r3;
+ ld.shared.s64 %rd6, [%r23];
+ mov.b64 %rd7, %rd6;
+ setp.lt.s32 %p3, %r11, %r1;
+ @!%p3 bra L_endif_3;
+ mov.s32 %r24, 4;
+ mul.lo.s32 %r25, %r11, %r24;
+ mul.wide.u32 %rd8, %r25, 8;
+ add.s64 %rd8, %rd2, %rd8;
+ st.global.s64 [%rd8], %rd7;
+ ld.shared.u32 %r26, [__smem_prefix+0];
+ cvt.s64.s32 %rd9, %r26;
+ mov.s32 %r27, 4;
+ mul.lo.s32 %r28, %r11, %r27;
+ mov.s32 %r29, 1;
+ add.s32 %r30, %r28, %r29;
+ mul.wide.u32 %rd10, %r30, 8;
+ add.s64 %rd10, %rd2, %rd10;
+ st.global.s64 [%rd10], %rd9;
+ ld.shared.u32 %r31, [__smem_suffix+0];
+ cvt.s64.s32 %rd11, %r31;
+ mov.s32 %r32, 4;
+ mul.lo.s32 %r33, %r11, %r32;
+ mov.s32 %r34, 2;
+ add.s32 %r35, %r33, %r34;
+ mul.wide.u32 %rd12, %r35, 8;
+ add.s64 %rd12, %rd2, %rd12;
+ st.global.s64 [%rd12], %rd11;
+ ld.shared.u32 %r36, [__smem_suffix+8];
+ cvt.s64.s32 %rd13, %r36;
+ mov.s32 %r37, 4;
+ mul.lo.s32 %r38, %r11, %r37;
+ mov.s32 %r39, 3;
+ add.s32 %r40, %r38, %r39;
+ mul.wide.u32 %rd14, %r40, 8;
+ add.s64 %rd14, %rd2, %rd14;
+ st.global.s64 [%rd14], %rd13;
+L_endif_3:
+L_exit:
+ ret;
+}

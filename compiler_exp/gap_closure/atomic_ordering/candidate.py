@@ -15,6 +15,19 @@ def once(text,old,new):
 
 def generate():
     ra=(HERE/'baseline-ra.py').read_text()
+    ra=once(ra,'''        v = self.pair_value(self.val64(name))
+        self.env[name] = v
+        return v''','''        original = self.val64(name)
+        v = self.pair_value(original)
+        # A lazily materialized parameter/wide multiply may be first used in
+        # only one branch. Keep the symbolic value across CFG paths so a later
+        # use cannot trust registers whose definition it skipped.
+        if not (getattr(self, "has_cfg", False) and isinstance(original, tuple)
+                and original[0] in ("cpair", "widemul")):
+            self.env[name] = v
+        return v''')
+    ra=once(ra,'''            self.bind(a[0].name, ("widemul", self.reg32(a[1]), self.val32(a[2]), t == "u32"))''','''            left, right = self.snapshot_parts((self.reg32(a[1]), self.val32(a[2])))
+            self.bind(a[0].name, ("widemul", left, right, t == "u32"))''')
     ra=once(ra,'''        returning = ins.op == "atom"
         address = ins.args[1] if returning else ins.args[0]
         base, offset = self._addr(address)''','''        returning = ins.op == "atom"

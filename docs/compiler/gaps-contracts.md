@@ -116,6 +116,15 @@ fixture/compiler hashes and stage dependencies. Re-running with process hash
 seeds 1 and 777 produced byte-identical ledger JSON. The raw ledger and fixture
 artifact are deterministic and may be regenerated without CUDA tools or a GPU.
 
+The subsequent [shared-width matrix](../../compiler_exp/gap_closure/shared_widths/width-matrix.json)
+retains 336 register/parameter-backed memory rows across fourteen types and
+scalar/v2/v4 forms in global/shared spaces. Its 172 admitted representatives
+all encode; 164 unsupported rows reject. Source and fixture hashes bind this
+new snapshot, without overwriting older ledgers. Independent numerical/toolkit/
+hardware stages remain explicitly not run for these generated rows. The
+[shared-width dossier](gaps-memory.md#scalar-shared-byte-halfword-and-64-bit-memory)
+has a separate source-exact nineteen-fixture A100 execution gate.
+
 The retained inventory addresses the evidence-separation part of G02. Full operand
 combinations, modifier-order legality, independent numerical references,
 packaged modules, toolkit controls, hardware edge cases and performance remain
@@ -124,3 +133,26 @@ mismatches and `mov.pred` route; those results do not retroactively change this
 snapshot's rejection rows. Tensor
 instructions retain their separate contract checker and are outside this scalar
 ledger.
+
+## Scalar wide-selection admission extension
+
+The [wide-selection cycle](gaps-wide.md#scalar-64-bit-conditional-selection)
+adds four exact scalar forms: `selp.b64/u64/s64/f64`. Its 36 typed operand/guard/
+alias fixtures cover parser, original ptxas, selector/allocator/scheduler/encoder,
+PTX and ordinary/poisoned SASS interpretation, native packaging/ownership and
+independent A100 execution. The original CUDA noinline source is an additional
+frontend/inlining control. All 1,480 hardware launches pass. This source-exact
+corpus extends the named earlier ledger; it does not rewrite that ledger or
+establish semantic coverage for other types/modifiers/operands.
+
+## Low64 multiplication admission extension
+
+The [low64 product cycle](gaps-wide.md#low-64-bit-integer-multiplication) adds
+`mul.lo.u64/s64` and the corresponding typed Python `*`/`*=` route. Eighteen PTX,
+one original unsigned CUDA and twenty typed Python configurations pass original
+or same-emitted-PTX ptxas controls plus all four OA levels on A100: 1,560 launches,
+15,974,400 independent bytes and 156 native outputs. Shared operands, aliases,
+false/negated guards, literals/parameters, helpers, loops and casts have explicit
+complete-bit fixtures. Invalid high/wide/float/modifier/mixed-type domains retain
+negative controls. This extends named admission coverage; it does not rewrite
+historical ledgers or establish general G02/G11 conformance.

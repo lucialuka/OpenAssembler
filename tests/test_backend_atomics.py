@@ -95,11 +95,11 @@ def test_atomic_state_return_values_predication_and_tails(case, mode, level):
             assert [memory.read(addresses['state'] + 4 * (i + 1), 4) for i in range(N, LANES)] == initial[N + 1:]
 
 
-@pytest.mark.parametrize('operation', ['atom.acquire.gpu.global.add.u32 %old,[%address],%value;',
-    'atom.release.gpu.global.add.u32 %old,[%address],%value;',
+@pytest.mark.parametrize('operation', ['atom.acquire.sys.global.add.u32 %old,[%address],%value;',
+    'atom.release.cta.global.add.u32 %old,[%address],%value;',
     'atom.relaxed.sys.global.add.u32 %old,[%address],%value;',
     'atom.relaxed.cta.global.add.u32 %old,[%address],%value;',
-    'atom.shared.add.u32 %old,[%address],%value;',
+    'atom.acquire.cta.shared.add.u32 %old,[%address],%value;',
     'atom.global.add.u64 %old,[%address],%value;',
     'atom.global.add.f32 %old,[%address],%value;',
     'atom.global.cas.b32 %old,[%address],%value;',

@@ -1,0 +1,8 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.visible .func (.param .b32 result) helper(.param .b32 input){
+.reg .b32 %x,%v;ld.param.b32 %x,[input];.local .align 16 .b8 scratch[32];.reg .u32 %addr;
+mov.u32 %addr,scratch;st.local.u32 [%addr],%x;add.u32 %v,%x,7;st.local.u32 [%addr+4],%v;
+and.b32 %x,%x,1;shl.b32 %x,%x,2;add.u32 %addr,%addr,%x;ld.local.u32 %v,[%addr];st.param.b32 [result],%v;ret;
+}

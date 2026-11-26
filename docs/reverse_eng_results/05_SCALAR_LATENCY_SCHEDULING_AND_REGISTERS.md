@@ -1,5 +1,27 @@
 # Scalar latency, scheduling and registers
 
+## Forward CTA convergence phases
+
+The [Python shared-array finding](../compiler/gaps-collectives.md#cta-phase-reconvergence)
+is distinct from barrier issue latency. Scoreboard/layout ablations failed;
+conditional-writer predication or an explicit BSSY/BSYNC pair passed. The
+ordinary scalar scheduler now inserts one B0 pair only where forward paths all
+reach the same next CTA BAR without an exit, barrier or backedge. It preserves
+outstanding waits and six-cycle convergence issue gaps. A final 1,280-launch
+A100 gate covers nested/if-else writers, repeated phases and 32/64-bit elements.
+The functional model's implicit reconvergence cannot establish native execution
+dependencies; cyclic/irreducible flow remains separate.
+
+## Shared 64-bit barrier dependency
+
+The [shared-width hardware gate](../compiler/gaps-memory.md#scalar-shared-byte-halfword-and-64-bit-memory)
+exposed wrong optimized 64-bit exchanges when the scalar model reduced BAR to
+one cycle. Safe OA and same-PTX ptxas controls passed. The validated production
+repair retains at least six cycles for barriers in ordinary LDS/STS.64 code,
+including existing vector-two 32-bit exchanges. A final 1,216-launch A100 gate
+and 76 exact production-native comparisons pass. This is a bounded correctness
+repair, with no minimum-latency or performance claim.
+
 ## Corrected A100 latency sweep
 
 The corrected 42-case sweep separates fixed-pipe RAW dependencies from
@@ -33,6 +55,25 @@ keeps conservative source order. The experiment scheduler under
 production replacement.
 
 ## Production decision
+
+The [bounded scalar spill route](../compiler/gaps-spilling.md) adds explicit
+reload/store dependencies and final local-frame resource propagation after
+ordinary allocation fails. It preserves existing latency/scoreboard rules and
+all retained measured policy executables. Independent A100 and byte/state
+checks precede promotion. One matched pressure-kernel resource study finds
+tighter spilling slower; it does not select a global register/occupancy policy.
+The subsequent aligned pair/quad and predicate extension passes another 320
+A100 launches with self-guarded/negated loop state and complete private/output
+checks. Slot reuse, cross-region scheduling and occupancy policy remain open.
+
+The subsequent [virtual pressure pass](../compiler/gaps-spilling.md#pressure-aware-virtual-scheduling)
+changes operation order before physical allocation under explicit dependency,
+guard, fixed-boundary and memory-order constraints. Its selection requires
+strictly fewer spill slots, no larger frame and non-increased local transfers
+in every corresponding basic block. Paired A100 resident intervals improve on
+the six new pressure fixtures; ptxas remains faster in those nominal controls.
+An independent host code-generation study exposes added compile work. This
+adds a bounded scheduling route, with no global occupancy or application claim.
 
 The measured scalar classes are used in the scalar backend with conservative
 fallbacks. A mined-latency scheduler promotion was rejected after full

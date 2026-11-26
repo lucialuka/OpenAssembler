@@ -1,0 +1,291 @@
+native build: 1 source(s), 3.6 KiB bundle on modal
+✓ Initialized. View run at 
+https://modal.com/apps/qingyang-lucas-fang/main/ap-ZaDU2OVpInxRoCT2etCQbE
+✓ Created objects.
+├── ✓ Uploaded 
+│   /Users/lucasfang/Desktop/OpenAssembler/openassembler/build_modal.py
+└── ✓ Created Function build.
+[modal-client] 2026-11-25T15:47:45+0800 Loop attempt for _run_app.<locals>.heartbeat failed
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 174, in send_request
+    protocol = await self._channel.__connect__()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/grpc_utils.py", line 136, in __connect__
+    return await super().__connect__()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 744, in __connect__
+    async with self._connect_lock:
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/locks.py", line 14, in __aenter__
+    await self.acquire()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/locks.py", line 114, in acquire
+    await fut
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/grpc_utils.py", line 656, in _retry_transient_errors
+    return await fn_callable(req, metadata=attempt_metadata, timeout=timeout)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_grpc_client.py", line 164, in direct
+    return await self.client._call_unary(self.wrapped_method, req, timeout=timeout, metadata=metadata)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/client.py", line 533, in _call_unary
+    return await self._call_safely(coro, grpclib_method.name)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/client.py", line 489, in _call_safely
+    return await request_task
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 912, in __call__
+    await stream.send_message(message, end=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 242, in send_message
+    await self.send_request()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 173, in send_request
+    with self._wrapper:
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/utils.py", line 70, in __exit__
+    raise self._error
+asyncio.exceptions.TimeoutError: Deadline exceeded
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/async_utils.py", line 590, in loop_coro
+    await asyncio.wait_for(async_f(), timeout=timeout)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/tasks.py", line 445, in wait_for
+    return fut.result()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/runner.py", line 66, in _heartbeat
+    await client._stub.AppHeartbeat(request, retry=Retry(attempt_timeout=HEARTBEAT_TIMEOUT))
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_grpc_client.py", line 134, in __call__
+    return await _retry_transient_errors(
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/grpc_utils.py", line 731, in _retry_transient_errors
+    process_exception_before_retry(
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/grpc_utils.py", line 573, in process_exception_before_retry
+    raise ConnectionError(str(exc))
+modal.exception.ConnectionError: Deadline exceeded
+[modal-client] 2026-11-25T15:48:00+0800 Loop attempt for _run_app.<locals>.heartbeat failed
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/async_utils.py", line 590, in loop_coro
+    await asyncio.wait_for(async_f(), timeout=timeout)
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/tasks.py", line 445, in wait_for
+    return fut.result()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/runner.py", line 66, in _heartbeat
+    await client._stub.AppHeartbeat(request, retry=Retry(attempt_timeout=HEARTBEAT_TIMEOUT))
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_grpc_client.py", line 133, in __call__
+    with grpc_error_converter():
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_grpc_client.py", line 68, in __exit__
+    raise modal_exc from None  # from None to skip the grpc-internal cause
+modal.exception.ConflictError: App state is APP_STATE_STOPPED
+Task exception was never retrieved
+future: <Task finished name='Task-18' coro=<get_app_logs_loop() done, defined at /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_output/pty.py:91> exception=ConnectionResetError(54, 'Connection reset by peer')>
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_output/pty.py", line 223, in get_app_logs_loop
+    app_done = await _get_logs()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_output/pty.py", line 180, in _get_logs
+    async for log_batch in client._stub.AppGetLogs.unary_stream(request):
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_grpc_client.py", line 196, in unary_stream
+    async for response in self.client._call_stream(self.wrapped_method, request, metadata=metadata):
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/client.py", line 546, in _call_stream
+    await self._call_safely(stream.send_message(request, end=True), f"{grpclib_method.name}.send_message")
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/client.py", line 489, in _call_safely
+    return await request_task
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 242, in send_message
+    await self.send_request()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 174, in send_request
+    protocol = await self._channel.__connect__()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/grpc_utils.py", line 136, in __connect__
+    return await super().__connect__()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 748, in __connect__
+    self._protocol = await self._create_connection()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/grpc_utils.py", line 146, in _create_connection
+    protocol = await self._open_connection()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/modal/_utils/grpc_utils.py", line 168, in _open_connection
+    return await super()._create_connection()
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/grpclib/client.py", line 725, in _create_connection
+    _, protocol = await self._loop.create_connection(
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/base_events.py", line 1103, in create_connection
+    transport, protocol = await self._create_connection_transport(
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/base_events.py", line 1133, in _create_connection_transport
+    await waiter
+  File "/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/selector_events.py", line 862, in _read_ready__data_received
+    data = self._sock.recv(self.max_size)
+ConnectionResetError: [Errno 54] Connection reset by peer
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/grpclib/client.py:174 in send_request                                    │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/grpc_utils.py:136 in __connect__                            │
+│                                                                              │
+│   135 │   │   │   raise ClientClosed(self._closed_error_message)             │
+│ ❱ 136 │   │   return await super().__connect__()                             │
+│   137                                                                        │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/grpclib/client.py:744 in __connect__                                     │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/lo │
+│ cks.py:14 in __aenter__                                                      │
+│                                                                              │
+│    13 │   async def __aenter__(self):                                        │
+│ ❱  14 │   │   await self.acquire()                                           │
+│    15 │   │   # We have no use for the "as ..."  clause in the with          │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/asyncio/lo │
+│ cks.py:114 in acquire                                                        │
+│                                                                              │
+│   113 │   │   │   try:                                                       │
+│ ❱ 114 │   │   │   │   await fut                                              │
+│   115 │   │   │   finally:                                                   │
+╰──────────────────────────────────────────────────────────────────────────────╯
+CancelledError
+
+During handling of the above exception, another exception occurred:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/grpc_utils.py:656 in _retry_transient_errors                │
+│                                                                              │
+│   655 │   │   │   with suppress_tb_frame():                                  │
+│ ❱ 656 │   │   │   │   return await fn_callable(req, metadata=attempt_metadat │
+│   657 │   │   except (                                                       │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_grpc_client.py:164 in direct                                      │
+│                                                                              │
+│   163 │   │   self.wrapped_method.channel = await self.client._get_channel(s │
+│ ❱ 164 │   │   return await self.client._call_unary(self.wrapped_method, req, │
+│   165                                                                        │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/client.py:533 in _call_unary                                       │
+│                                                                              │
+│   532 │   │   coro = grpclib_method(request, timeout=timeout, metadata=metad │
+│ ❱ 533 │   │   return await self._call_safely(coro, grpclib_method.name)      │
+│   534                                                                        │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/client.py:489 in _call_safely                                      │
+│                                                                              │
+│   488 │   │   │   │   request_task.set_name(readable_method)                 │
+│ ❱ 489 │   │   │   │   return await request_task                              │
+│   490 │   │   │   except asyncio.CancelledError:                             │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/grpclib/client.py:912 in __call__                                        │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/grpclib/client.py:242 in send_message                                    │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/grpclib/client.py:173 in send_request                                    │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/grpclib/utils.py:70 in __exit__                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+TimeoutError: Deadline exceeded
+
+The above exception was the direct cause of the following exception:
+
+╭───────────────────── Traceback (most recent call last) ──────────────────────╮
+│ /Users/lucasfang/Desktop/OpenAssembler/openassembler/build_modal.py:39 in    │
+│ main                                                                         │
+│                                                                              │
+│   38 │   from openassembler.transport import runtime_files                   │
+│ ❱ 39 │   response = build.with_options(timeout=math.ceil(budget) + 60).remot │
+│   40 │   │   Path(request).read_text(), runtime_files(native=True))          │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_object.py:49 in wrapped                                           │
+│                                                                              │
+│    48 │   │   await self.hydrate()                                           │
+│ ❱  49 │   │   return await method(self, *args, **kwargs)                     │
+│    50                                                                        │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:2081 in remote                                       │
+│                                                                              │
+│   2080 │   │                                                                 │
+│ ❱ 2081 │   │   return await self._call_function(args, kwargs)                │
+│   2082                                                                       │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:2000 in _call_function                               │
+│                                                                              │
+│   1999 │   │   if self._input_plane_url:                                     │
+│ ❱ 2000 │   │   │   invocation = await _InputPlaneInvocation.create(          │
+│   2001 │   │   │   │   self,                                                 │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_functions.py:465 in create                                        │
+│                                                                              │
+│    464 │   │                                                                 │
+│ ❱  465 │   │   metadata = await client.get_input_plane_metadata(input_plane_ │
+│    466 │   │   response = await stub.AttemptStart(request, metadata=metadata │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/client.py:464 in get_input_plane_metadata                          │
+│                                                                              │
+│   463 │   │   assert self._auth_token_manager, "Client must have an instance │
+│ ❱ 464 │   │   token = await self._auth_token_manager.get_token()             │
+│   465 │   │   return [                                                       │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/auth_token_manager.py:71 in get_token                       │
+│                                                                              │
+│    70 │   │   │   # We either have no token or it is expired - block everyon │
+│ ❱  71 │   │   │   await self._try_refresh_token()                            │
+│    72 │   │   elif self._should_refresh():                                   │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/auth_token_manager.py:85 in _try_refresh_token              │
+│                                                                              │
+│    84 │   │   try:                                                           │
+│ ❱  85 │   │   │   await self._refresh_token()                                │
+│    86 │   │   except AUTH_DENIED_EXCEPTIONS:                                 │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/auth_token_manager.py:108 in _refresh_token                 │
+│                                                                              │
+│   107 │   │   # Shielded so a cancelled caller doesn't cancel the refresh fo │
+│ ❱ 108 │   │   await asyncio.shield(self._refresh_task)                       │
+│   109                                                                        │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/auth_token_manager.py:131 in _fetch_token                   │
+│                                                                              │
+│   130 │   │   │   )                                                          │
+│ ❱ 131 │   │   │   token = await self._fetch(retry)                           │
+│   132 │   │   │   if not token:                                              │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/auth_token_manager.py:118 in _fetch_auth_token              │
+│                                                                              │
+│   117 │   async def _fetch_auth_token(self, retry: Retry) -> str:            │
+│ ❱ 118 │   │   resp: api_pb2.AuthTokenGetResponse = await self._stub.AuthToke │
+│   119 │   │   return resp.token                                              │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_grpc_client.py:134 in __call__                                    │
+│                                                                              │
+│   133 │   │   │   with grpc_error_converter():                               │
+│ ❱ 134 │   │   │   │   return await _retry_transient_errors(                  │
+│   135 │   │   │   │   │   self,  # type: ignore                              │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/grpc_utils.py:731 in _retry_transient_errors                │
+│                                                                              │
+│   730 │   │   │   with suppress_tb_frame():                                  │
+│ ❱ 731 │   │   │   │   process_exception_before_retry(                        │
+│   732 │   │   │   │   │   exc,                                               │
+│                                                                              │
+│ /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packa │
+│ ges/modal/_utils/grpc_utils.py:569 in process_exception_before_retry         │
+│                                                                              │
+│   568 │   │   │   │   │   exc = modal._grpc_client.grpc_error_to_modal_excep │
+│ ❱ 569 │   │   │   │   raise RetryTimeoutError(exc) from exc                  │
+│   570 │   │   │   if isinstance(exc, OSError):                               │
+╰──────────────────────────────────────────────────────────────────────────────╯
+RetryTimeoutError: The operation timed out after repeated failures (last error: 
+TimeoutError: Deadline exceeded). Please try again, and contact Modal support if
+the problem persists.
+error: Modal native build failed (exit 1)
+build diagnostic: /Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/scalar/normal-remote-build/compile-error.json
+Traceback (most recent call last):
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_boolean_abi/scalar/normal_remote_check.py", line 9, in <module>
+    result=subprocess.run(args,cwd=ROOT);assert result.returncode==0,result.returncode
+                                                ^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1

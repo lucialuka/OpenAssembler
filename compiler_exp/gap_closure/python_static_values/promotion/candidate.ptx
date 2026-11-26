@@ -1,0 +1,95 @@
+// openassembler-pyfront-source-graph-v1 {"entry":"entry.py","files":[{"path":"entry.py","sha256":"882b3abb9987fdb8b3f9de95617933420e28ceb2835168273ea2f51e3a508a15"},{"path":"helpers.py","sha256":"6c75a9170e6bae648e51a6b3a94a64f71bd24a0be9d7551951cd959f83d6bfe2"}],"helpers":{"helpers.py:float_scale":{"body_sha256":"8ee46da9318baa4783e11ca1691086350cb25381a2f6c4d33fb591824c42aa8a","function":"float_scale","inputs":["f32"],"kernels":{"floating":1},"line":19,"output":"f32","path":"helpers.py"},"helpers.py:signed_affine":{"body_sha256":"a5cff35c8b9633226088505efa8e47d1b537ad1afa74a01f46380e5cbd1b3f77","function":"signed_affine","inputs":["s64"],"kernels":{"signed":1},"line":11,"output":"s64","path":"helpers.py"},"helpers.py:unsigned_table":{"body_sha256":"54f55a0c369522a77048465f914889dfc10a24692073c28f536c4d6ef132fe34","function":"unsigned_table","inputs":["u64"],"kernels":{"unsigned":1},"line":15,"output":"u64","path":"helpers.py"}},"schema":1,"static_values":{"helpers.py:BIAS":{"kernels":{"signed":2},"line":6,"name":"BIAS","path":"helpers.py","value":{"type":"int","value":"-4294967289"}},"helpers.py:COEFFICIENTS":{"kernels":{"unsigned":2},"line":7,"name":"COEFFICIENTS","path":"helpers.py","value":{"items":[{"type":"int","value":"3"},{"type":"int","value":"5"},{"type":"int","value":"7"}],"type":"tuple"}},"helpers.py:FLOAT_SCALE":{"kernels":{"floating":2},"line":8,"name":"FLOAT_SCALE","path":"helpers.py","value":{"bits":"3fe0000000000000","type":"float"}},"helpers.py:GAIN":{"kernels":{"signed":3},"line":5,"name":"GAIN","path":"helpers.py","value":{"type":"int","value":"3"}}},"strategy":"static-local-python-helper-source-graph"}
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"signed","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry signed(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<4>;
+ .reg .b64 %rd<11>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r3, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.s64 %rd6, 3;
+ mul.lo.s64 %rd7, %rd5, %rd6;
+ mov.s64 %rd8, -4294967289;
+ add.s64 %rd9, %rd7, %rd8;
+ mul.wide.u32 %rd10, %r3, 8;
+ add.s64 %rd10, %rd2, %rd10;
+ st.global.s64 [%rd10], %rd9;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"unsigned","parameters":[{"dtype":"u64","kind":"array","name":"a"},{"dtype":"u64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry unsigned(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<4>;
+ .reg .b64 %rd<11>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r3, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.u64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.u64 %rd6, 5;
+ mul.lo.u64 %rd7, %rd5, %rd6;
+ mov.u64 %rd8, 7;
+ add.u64 %rd9, %rd7, %rd8;
+ mul.wide.u32 %rd10, %r3, 8;
+ add.s64 %rd10, %rd2, %rd10;
+ st.global.u64 [%rd10], %rd9;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+.visible .entry floating(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<4>;
+ .reg .f32 %f<5>;
+ .reg .b64 %rd<5>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r3, 4;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.f32 %f1, [%rd3];
+ mov.f32 %f2, %f1;
+ mov.f32 %f3, 0f3F000000;
+ mul.f32 %f4, %f2, %f3;
+ mul.wide.u32 %rd4, %r3, 4;
+ add.s64 %rd4, %rd2, %rd4;
+ st.global.f32 [%rd4], %f4;
+L_endif_1:
+L_exit:
+ ret;
+}

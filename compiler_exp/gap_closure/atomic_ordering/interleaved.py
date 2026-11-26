@@ -50,5 +50,5 @@ if __name__=='__main__':
         rows.append(status)
     report={'schema':1,'scope':'single prescribed instruction interleaving with bounded global addresses, no hardware/cache/ordering semantics',
             'passed':all(r['passed'] for r in rows),'results':rows}
-    output=Path(__file__).with_name('interleaved-diagnostic-20261121.json');output.write_text(json.dumps(report,indent=2)+'\n')
+    output=Path(__file__).with_name('interleaved-after-20261123.json');output.write_text(json.dumps(report,indent=2)+'\n')
     print(output,report['passed'],[{k:v for k,v in r.items() if k!='source'} for r in rows])

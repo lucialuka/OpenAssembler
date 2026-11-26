@@ -135,7 +135,10 @@ def _ld(it, ln, ins):
     d, a = ins.args
     t = ty(ins)
     if "param" in ins.mods:
-        it.put(ln, d, it.L.params[a.base], bits(t))
+        from openassembler.ptx.parse import parameter_load
+        parameter_load(it.k, a, t)
+        value = (it.L.params[a.base] >> (8*a.off)) & M(bits(t))
+        it.put(ln, d, sext(value, bits(t)) if signed(t) else value, max(32, bits(t)))
         return
     mem = it.space_mem(ins, ln)
     base = it.addr(ln, a)

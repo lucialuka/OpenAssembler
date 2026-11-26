@@ -1,0 +1,2639 @@
+{
+  "schema": 1,
+  "passed": true,
+  "seed": 79123,
+  "inputs": [
+    "-9223372036854775808",
+    "-19",
+    "-1",
+    "0",
+    "1",
+    "3",
+    "7",
+    "9223372036854775807"
+  ],
+  "results": [
+    {
+      "index": 0,
+      "start": 2147483647,
+      "stop": 11,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 1,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 2,
+      "start": 21,
+      "stop": 11,
+      "step": -3,
+      "range_values": [
+        21,
+        18,
+        15,
+        12
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=21\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854776619",
+        "18446744073709550888",
+        "730",
+        "811",
+        "892",
+        "1054",
+        "1378",
+        "9223372036854776538"
+      ],
+      "passed": true
+    },
+    {
+      "index": 3,
+      "start": -2147483641,
+      "stop": -2147483644,
+      "step": 2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483641\n    stop=-2147483644\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 4,
+      "start": 3,
+      "stop": 11,
+      "step": 7,
+      "range_values": [
+        3,
+        10
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=3\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==3:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775839",
+        "18446744073709551476",
+        "22",
+        "31",
+        "40",
+        "58",
+        "94",
+        "9223372036854775830"
+      ],
+      "passed": true
+    },
+    {
+      "index": 5,
+      "start": -2147483648,
+      "stop": -2147483639,
+      "step": 2147483647,
+      "range_values": [
+        -2147483648
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483639\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372034707292180",
+        "18446744071562067969",
+        "18446744071562067987",
+        "18446744071562067988",
+        "18446744071562067989",
+        "18446744071562067991",
+        "18446744071562067995",
+        "9223372034707292179"
+      ],
+      "passed": true
+    },
+    {
+      "index": 6,
+      "start": 2147483645,
+      "stop": -2147483648,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483645\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 7,
+      "start": 6,
+      "stop": 11,
+      "step": 3,
+      "range_values": [
+        6,
+        9
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=6\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775846",
+        "18446744073709551603",
+        "5",
+        "38",
+        "7",
+        "9",
+        "13",
+        "9223372036854775813"
+      ],
+      "passed": true
+    },
+    {
+      "index": 8,
+      "start": 2147483643,
+      "stop": 2147483647,
+      "step": 1,
+      "range_values": [
+        2147483643,
+        2147483644,
+        2147483645,
+        2147483646
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483643\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372122754121575",
+        "85899344228",
+        "85899345686",
+        "85899345767",
+        "85899345848",
+        "85899346010",
+        "85899346334",
+        "9223372122754121494"
+      ],
+      "passed": true
+    },
+    {
+      "index": 9,
+      "start": 0,
+      "stop": 0,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=0\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==3:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 10,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 11,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": -2147483648,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 12,
+      "start": -5,
+      "stop": 0,
+      "step": 2,
+      "range_values": [
+        -5,
+        -3,
+        -1
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-5\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775817",
+        "18446744073709551454",
+        "0",
+        "9",
+        "18",
+        "36",
+        "72",
+        "9223372036854775808"
+      ],
+      "passed": true
+    },
+    {
+      "index": 13,
+      "start": -2147483640,
+      "stop": -2147483648,
+      "step": -3,
+      "range_values": [
+        -2147483640,
+        -2147483643,
+        -2147483646
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483640\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372008937488486",
+        "18446744045792263781",
+        "18446744045792264267",
+        "18446744045792264294",
+        "18446744045792264321",
+        "18446744045792264375",
+        "18446744045792264483",
+        "9223372008937488459"
+      ],
+      "passed": true
+    },
+    {
+      "index": 14,
+      "start": 20,
+      "stop": 11,
+      "step": -9,
+      "range_values": [
+        20
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=20\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775852",
+        "18446744073709551603",
+        "41",
+        "44",
+        "47",
+        "53",
+        "65",
+        "9223372036854775849"
+      ],
+      "passed": true
+    },
+    {
+      "index": 15,
+      "start": 2147483636,
+      "stop": 2147483638,
+      "step": -3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483636\n    stop=2147483638\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 16,
+      "start": 2147483645,
+      "stop": 2147483647,
+      "step": -1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483645\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-1):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 17,
+      "start": 2147483647,
+      "stop": 2147483643,
+      "step": -1,
+      "range_values": [
+        2147483647,
+        2147483646,
+        2147483645,
+        2147483644
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483643\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-1):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372122754121701",
+        "4294967237",
+        "4294967291",
+        "85899345893",
+        "4294967297",
+        "4294967303",
+        "4294967315",
+        "9223372041149743099"
+      ],
+      "passed": true
+    },
+    {
+      "index": 18,
+      "start": 2147483647,
+      "stop": -2147483648,
+      "step": -2147483647,
+      "range_values": [
+        2147483647,
+        0,
+        -2147483647
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372054034645002",
+        "17179868681",
+        "17179869167",
+        "17179869194",
+        "17179869221",
+        "17179869275",
+        "17179869383",
+        "9223372054034644975"
+      ],
+      "passed": true
+    },
+    {
+      "index": 19,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 20,
+      "start": 2147483647,
+      "stop": 2147483644,
+      "step": -9,
+      "range_values": [
+        2147483647
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483644\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=1\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259476",
+        "2147483611",
+        "2147483665",
+        "2147483668",
+        "2147483671",
+        "2147483677",
+        "2147483689",
+        "9223372039002259473"
+      ],
+      "passed": true
+    },
+    {
+      "index": 21,
+      "start": 19,
+      "stop": 11,
+      "step": -9,
+      "range_values": [
+        19
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=19\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "0",
+        "18",
+        "36",
+        "20",
+        "22",
+        "26",
+        "9223372036854775826"
+      ],
+      "passed": true
+    },
+    {
+      "index": 22,
+      "start": -12,
+      "stop": -11,
+      "step": -1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-12\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-1):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=0\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 23,
+      "start": 2147483647,
+      "stop": -2147483643,
+      "step": -2147483647,
+      "range_values": [
+        2147483647,
+        0
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=-2147483643\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372043297226774",
+        "6442450795",
+        "6442450957",
+        "6442450966",
+        "6442450975",
+        "6442450993",
+        "6442451029",
+        "9223372043297226765"
+      ],
+      "passed": true
+    },
+    {
+      "index": 24,
+      "start": 2147483647,
+      "stop": 2147483639,
+      "step": -2147483648,
+      "range_values": [
+        2147483647
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483639\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259475",
+        "2147483648",
+        "2147483666",
+        "2147483667",
+        "2147483668",
+        "2147483670",
+        "2147483674",
+        "9223372039002259474"
+      ],
+      "passed": true
+    },
+    {
+      "index": 25,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 7,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 26,
+      "start": 2147483647,
+      "stop": -11,
+      "step": -2147483647,
+      "range_values": [
+        2147483647,
+        0
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372043297226768",
+        "6442450789",
+        "6442450951",
+        "6442450960",
+        "6442450969",
+        "6442450987",
+        "6442451023",
+        "9223372043297226759"
+      ],
+      "passed": true
+    },
+    {
+      "index": 27,
+      "start": 0,
+      "stop": 0,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=0\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=0\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 28,
+      "start": -2147483648,
+      "stop": 11,
+      "step": 2147483647,
+      "range_values": [
+        -2147483648,
+        -1
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372030412324879",
+        "18446744071562067911",
+        "18446744071562067965",
+        "18446744067267100687",
+        "18446744071562067971",
+        "18446744071562067977",
+        "18446744071562067989",
+        "9223372034707292157"
+      ],
+      "passed": true
+    },
+    {
+      "index": 29,
+      "start": 2147483641,
+      "stop": 2147483645,
+      "step": 1,
+      "range_values": [
+        2147483641,
+        2147483642,
+        2147483643,
+        2147483644
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483641\n    stop=2147483645\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372066919546813",
+        "30064770492",
+        "30064770978",
+        "30064771005",
+        "30064771032",
+        "30064771086",
+        "30064771194",
+        "9223372066919546786"
+      ],
+      "passed": true
+    },
+    {
+      "index": 30,
+      "start": 2147483645,
+      "stop": 2147483639,
+      "step": 7,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483645\n    stop=2147483639\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 31,
+      "start": -9,
+      "stop": -11,
+      "step": 7,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-9\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-1\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 32,
+      "start": 2147483647,
+      "stop": -11,
+      "step": -2147483648,
+      "range_values": [
+        2147483647,
+        -1
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775837",
+        "18446744073709551588",
+        "26",
+        "29",
+        "32",
+        "38",
+        "50",
+        "9223372036854775834"
+      ],
+      "passed": true
+    },
+    {
+      "index": 33,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -2147483648,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 34,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": 2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 35,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 36,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 37,
+      "start": -2147483644,
+      "stop": -2147483641,
+      "step": 1,
+      "range_values": [
+        -2147483644,
+        -2147483643,
+        -2147483642
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483644\n    stop=-2147483641\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372028264841263",
+        "18446744065119616900",
+        "18446744065119617062",
+        "18446744065119617071",
+        "18446744065119617080",
+        "18446744065119617098",
+        "18446744065119617134",
+        "9223372028264841254"
+      ],
+      "passed": true
+    },
+    {
+      "index": 38,
+      "start": 2147483647,
+      "stop": -2147483642,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=-2147483642\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 39,
+      "start": 8,
+      "stop": 11,
+      "step": -1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=8\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-1):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 40,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -2147483648,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=0\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 41,
+      "start": 2147483629,
+      "stop": 2147483647,
+      "step": -9,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483629\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 42,
+      "start": -2147483648,
+      "stop": -2147483645,
+      "step": 2147483647,
+      "range_values": [
+        -2147483648
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483645\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372034707292171",
+        "18446744071562067922",
+        "18446744071562067976",
+        "18446744071562067979",
+        "18446744071562067982",
+        "18446744071562067988",
+        "18446744071562068000",
+        "9223372034707292168"
+      ],
+      "passed": true
+    },
+    {
+      "index": 43,
+      "start": 2147483639,
+      "stop": 2147483646,
+      "step": 3,
+      "range_values": [
+        2147483639,
+        2147483642,
+        2147483645
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483639\n    stop=2147483646\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==3:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372047592194034",
+        "10737418055",
+        "10737418217",
+        "10737418226",
+        "10737418235",
+        "10737418253",
+        "10737418289",
+        "9223372047592194025"
+      ],
+      "passed": true
+    },
+    {
+      "index": 44,
+      "start": -2147483644,
+      "stop": -2147483648,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483644\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 45,
+      "start": -15,
+      "stop": -11,
+      "step": -2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-15\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 46,
+      "start": 9,
+      "stop": 11,
+      "step": -3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=9\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 47,
+      "start": 2147483646,
+      "stop": 2147483647,
+      "step": -3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483646\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 48,
+      "start": -2147483619,
+      "stop": -2147483646,
+      "step": -9,
+      "range_values": [
+        -2147483619,
+        -2147483628,
+        -2147483637
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483619\n    stop=-2147483646\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372008937488744",
+        "18446744045792264039",
+        "18446744045792264525",
+        "18446744045792264552",
+        "18446744045792264579",
+        "18446744045792264633",
+        "18446744045792264741",
+        "9223372008937488717"
+      ],
+      "passed": true
+    },
+    {
+      "index": 49,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": -1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-1):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 50,
+      "start": -2147483648,
+      "stop": 2147483647,
+      "step": -2147483648,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-1\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 51,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": -2147483648,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 52,
+      "start": -7,
+      "stop": -11,
+      "step": 3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-7\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 53,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 54,
+      "start": -2147483648,
+      "stop": 2147483638,
+      "step": 2147483647,
+      "range_values": [
+        -2147483648,
+        -1
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=2147483638\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372030412324880",
+        "18446744071562067949",
+        "18446744071562067967",
+        "18446744067267100688",
+        "18446744071562067969",
+        "18446744071562067971",
+        "18446744071562067975",
+        "9223372034707292159"
+      ],
+      "passed": true
+    },
+    {
+      "index": 55,
+      "start": 2,
+      "stop": 0,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 56,
+      "start": 2147483635,
+      "stop": 2147483640,
+      "step": 3,
+      "range_values": [
+        2147483635,
+        2147483638
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483635\n    stop=2147483640\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==3:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372045444710365",
+        "4294967217",
+        "4294967271",
+        "8589934557",
+        "4294967277",
+        "4294967283",
+        "4294967295",
+        "9223372041149743079"
+      ],
+      "passed": true
+    },
+    {
+      "index": 57,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -9,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 58,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=1\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 59,
+      "start": -11,
+      "stop": 11,
+      "step": 7,
+      "range_values": [
+        -11,
+        -4,
+        3,
+        10
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-11\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775525",
+        "18446744073709549794",
+        "18446744073709551252",
+        "18446744073709551333",
+        "18446744073709551414",
+        "18446744073709551576",
+        "284",
+        "9223372036854775444"
+      ],
+      "passed": true
+    },
+    {
+      "index": 60,
+      "start": -2147483614,
+      "stop": -2147483648,
+      "step": -9,
+      "range_values": [
+        -2147483614,
+        -2147483623,
+        -2147483632,
+        -2147483641
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483614\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372008937488762",
+        "18446744069414584323",
+        "18446744069414584377",
+        "18446744045792264570",
+        "18446744069414584383",
+        "18446744069414584389",
+        "18446744069414584401",
+        "9223372032559808569"
+      ],
+      "passed": true
+    },
+    {
+      "index": 61,
+      "start": 2147483647,
+      "stop": -2147483640,
+      "step": -2147483647,
+      "range_values": [
+        2147483647,
+        0
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=-2147483640\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259476",
+        "2147483611",
+        "2147483665",
+        "2147483668",
+        "2147483671",
+        "2147483677",
+        "2147483689",
+        "9223372039002259473"
+      ],
+      "passed": true
+    },
+    {
+      "index": 62,
+      "start": -2147483648,
+      "stop": -2147483644,
+      "step": 7,
+      "range_values": [
+        -2147483648
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483644\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372034707292185",
+        "18446744071562067936",
+        "18446744071562067990",
+        "18446744071562067993",
+        "18446744071562067996",
+        "18446744071562068002",
+        "18446744071562068014",
+        "9223372034707292182"
+      ],
+      "passed": true
+    },
+    {
+      "index": 63,
+      "start": 2147483636,
+      "stop": -11,
+      "step": -2147483647,
+      "range_values": [
+        2147483636
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483636\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==3:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259456",
+        "2147483591",
+        "2147483645",
+        "2147483648",
+        "2147483651",
+        "2147483657",
+        "2147483669",
+        "9223372039002259453"
+      ],
+      "passed": true
+    },
+    {
+      "index": 64,
+      "start": 2147483647,
+      "stop": 2147483641,
+      "step": -2147483648,
+      "range_values": [
+        2147483647
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483641\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259467",
+        "2147483602",
+        "2147483656",
+        "2147483659",
+        "2147483662",
+        "2147483668",
+        "2147483680",
+        "9223372039002259464"
+      ],
+      "passed": true
+    },
+    {
+      "index": 65,
+      "start": 2147483635,
+      "stop": 2147483647,
+      "step": 7,
+      "range_values": [
+        2147483635,
+        2147483642
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483635\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372045444710372",
+        "8589934393",
+        "8589934555",
+        "8589934564",
+        "8589934573",
+        "8589934591",
+        "8589934627",
+        "9223372045444710363"
+      ],
+      "passed": true
+    },
+    {
+      "index": 66,
+      "start": 0,
+      "stop": 0,
+      "step": 2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=0\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 67,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 7,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 68,
+      "start": -8,
+      "stop": 0,
+      "step": -3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-8\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 69,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -2147483648,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 70,
+      "start": 2147483647,
+      "stop": 2147483639,
+      "step": -3,
+      "range_values": [
+        2147483647,
+        2147483644,
+        2147483641
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483639\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372045444710418",
+        "4294967235",
+        "4294967289",
+        "8589934610",
+        "4294967295",
+        "4294967301",
+        "4294967313",
+        "9223372041149743097"
+      ],
+      "passed": true
+    },
+    {
+      "index": 71,
+      "start": 2147483617,
+      "stop": 2147483647,
+      "step": 7,
+      "range_values": [
+        2147483617,
+        2147483624,
+        2147483631,
+        2147483638,
+        2147483645
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483617\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=0\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372122754120729",
+        "85899343382",
+        "85899344840",
+        "85899344921",
+        "85899345002",
+        "85899345164",
+        "85899345488",
+        "9223372122754120648"
+      ],
+      "passed": true
+    },
+    {
+      "index": 72,
+      "start": 10,
+      "stop": 11,
+      "step": -2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=10\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 73,
+      "start": 2147483647,
+      "stop": 2147483643,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483643\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 74,
+      "start": -9,
+      "stop": -11,
+      "step": -2147483648,
+      "range_values": [
+        -9
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-9\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775821",
+        "18446744073709551572",
+        "10",
+        "13",
+        "16",
+        "22",
+        "34",
+        "9223372036854775818"
+      ],
+      "passed": true
+    },
+    {
+      "index": 75,
+      "start": 2147483641,
+      "stop": 2147483647,
+      "step": 3,
+      "range_values": [
+        2147483641,
+        2147483644
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483641\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372045444710391",
+        "8589934412",
+        "8589934574",
+        "8589934583",
+        "8589934592",
+        "8589934610",
+        "8589934646",
+        "9223372045444710382"
+      ],
+      "passed": true
+    },
+    {
+      "index": 76,
+      "start": -2147483648,
+      "stop": 0,
+      "step": 2147483647,
+      "range_values": [
+        -2147483648,
+        -1
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372030412324890",
+        "18446744067267100527",
+        "18446744067267100689",
+        "18446744067267100698",
+        "18446744067267100707",
+        "18446744067267100725",
+        "18446744067267100761",
+        "9223372030412324881"
+      ],
+      "passed": true
+    },
+    {
+      "index": 77,
+      "start": 2147483624,
+      "stop": 2147483644,
+      "step": -9,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483624\n    stop=2147483644\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 78,
+      "start": -13,
+      "stop": -11,
+      "step": 1,
+      "range_values": [
+        -13,
+        -12
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-13\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775774",
+        "18446744073709551411",
+        "18446744073709551573",
+        "18446744073709551582",
+        "18446744073709551591",
+        "18446744073709551609",
+        "29",
+        "9223372036854775765"
+      ],
+      "passed": true
+    },
+    {
+      "index": 79,
+      "start": 3,
+      "stop": 0,
+      "step": -2,
+      "range_values": [
+        3,
+        1
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=3\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775833",
+        "18446744073709551584",
+        "22",
+        "25",
+        "28",
+        "34",
+        "46",
+        "9223372036854775830"
+      ],
+      "passed": true
+    },
+    {
+      "index": 80,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 7,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 81,
+      "start": 2147483647,
+      "stop": -11,
+      "step": -2147483647,
+      "range_values": [
+        2147483647,
+        0
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=0\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259476",
+        "2147483611",
+        "2147483665",
+        "2147483668",
+        "2147483671",
+        "2147483677",
+        "2147483689",
+        "9223372039002259473"
+      ],
+      "passed": true
+    },
+    {
+      "index": 82,
+      "start": -2147483648,
+      "stop": -2147483645,
+      "step": -2147483648,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483645\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 83,
+      "start": -16,
+      "stop": 11,
+      "step": 7,
+      "range_values": [
+        -16,
+        -9,
+        -2,
+        5
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-16\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-1\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775316",
+        "18446744073709549585",
+        "18446744073709551043",
+        "18446744073709551124",
+        "18446744073709551205",
+        "18446744073709551367",
+        "75",
+        "9223372036854775235"
+      ],
+      "passed": true
+    },
+    {
+      "index": 84,
+      "start": 2147483647,
+      "stop": 2147483643,
+      "step": -9,
+      "range_values": [
+        2147483647
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483643\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259479",
+        "2147483614",
+        "2147483668",
+        "2147483671",
+        "2147483674",
+        "2147483680",
+        "2147483692",
+        "9223372039002259476"
+      ],
+      "passed": true
+    },
+    {
+      "index": 85,
+      "start": -2147483648,
+      "stop": -2147483646,
+      "step": 2,
+      "range_values": [
+        -2147483648
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483646\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-6\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372034707292180",
+        "18446744071562067949",
+        "18446744071562067967",
+        "18446744071562067988",
+        "18446744071562067969",
+        "18446744071562067971",
+        "18446744071562067975",
+        "9223372034707292159"
+      ],
+      "passed": true
+    },
+    {
+      "index": 86,
+      "start": 2147483643,
+      "stop": 2147483647,
+      "step": 2,
+      "range_values": [
+        2147483643,
+        2147483645
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483643\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259479",
+        "2147483614",
+        "2147483668",
+        "2147483671",
+        "2147483674",
+        "2147483680",
+        "2147483692",
+        "9223372039002259476"
+      ],
+      "passed": true
+    },
+    {
+      "index": 87,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": 2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 88,
+      "start": 8,
+      "stop": 0,
+      "step": -2,
+      "range_values": [
+        8,
+        6,
+        4,
+        2
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=8\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775922",
+        "18446744073709551478",
+        "24",
+        "114",
+        "42",
+        "60",
+        "96",
+        "9223372036854775832"
+      ],
+      "passed": true
+    },
+    {
+      "index": 89,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=1\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 90,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 91,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 92,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": -2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 93,
+      "start": -2147483648,
+      "stop": 0,
+      "step": 2147483647,
+      "range_values": [
+        -2147483648,
+        -1
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372034707292180",
+        "18446744071562067931",
+        "18446744071562067985",
+        "18446744071562067988",
+        "18446744071562067991",
+        "18446744071562067997",
+        "18446744071562068009",
+        "9223372034707292177"
+      ],
+      "passed": true
+    },
+    {
+      "index": 94,
+      "start": 3,
+      "stop": 0,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=3\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 95,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 96,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 97,
+      "start": -30,
+      "stop": -11,
+      "step": 7,
+      "range_values": [
+        -30,
+        -23,
+        -16
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-30\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-1\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775474",
+        "18446744073709550769",
+        "18446744073709551255",
+        "18446744073709551282",
+        "18446744073709551309",
+        "18446744073709551363",
+        "18446744073709551471",
+        "9223372036854775447"
+      ],
+      "passed": true
+    },
+    {
+      "index": 98,
+      "start": -3,
+      "stop": 0,
+      "step": -2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-3\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==3:\n            continue\n        value=value*i64(3)+i64(target)\n        target=1\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 99,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 100,
+      "start": 11,
+      "stop": 11,
+      "step": 2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=11\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 101,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": 7,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,7):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 102,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=2\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 103,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 104,
+      "start": 6,
+      "stop": 11,
+      "step": -3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=6\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 105,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 106,
+      "start": -2147483647,
+      "stop": -2147483648,
+      "step": 1,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483647\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,1):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 107,
+      "start": 2147483646,
+      "stop": 2147483646,
+      "step": 2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483646\n    stop=2147483646\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==3:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 108,
+      "start": 2147483640,
+      "stop": 2147483641,
+      "step": -2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483640\n    stop=2147483641\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 109,
+      "start": 14,
+      "stop": 11,
+      "step": -3,
+      "range_values": [
+        14
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=14\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775842",
+        "15",
+        "33",
+        "34",
+        "35",
+        "37",
+        "41",
+        "9223372036854775841"
+      ],
+      "passed": true
+    },
+    {
+      "index": 110,
+      "start": 2147483647,
+      "stop": 2147483640,
+      "step": -9,
+      "range_values": [
+        2147483647
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483640\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==2 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259471",
+        "2147483606",
+        "2147483660",
+        "2147483663",
+        "2147483666",
+        "2147483672",
+        "2147483684",
+        "9223372039002259468"
+      ],
+      "passed": true
+    },
+    {
+      "index": 111,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=8\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 112,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 113,
+      "start": 13,
+      "stop": 11,
+      "step": -2,
+      "range_values": [
+        13
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=13\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==6 and x&i64(1):\n            break\n        count+=1\n        if count==1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775841",
+        "14",
+        "32",
+        "33",
+        "34",
+        "36",
+        "40",
+        "9223372036854775840"
+      ],
+      "passed": true
+    },
+    {
+      "index": 114,
+      "start": -2147483648,
+      "stop": -11,
+      "step": -2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-5\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 115,
+      "start": -2147483645,
+      "stop": -2147483641,
+      "step": 2,
+      "range_values": [
+        -2147483645,
+        -2147483643
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483645\n    stop=-2147483641\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=0\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372032559808541",
+        "18446744071562067952",
+        "18446744071562067970",
+        "18446744069414584349",
+        "18446744071562067972",
+        "18446744071562067974",
+        "18446744071562067978",
+        "9223372034707292162"
+      ],
+      "passed": true
+    },
+    {
+      "index": 116,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": 2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2147483647):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==3:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 117,
+      "start": 2,
+      "stop": 0,
+      "step": 3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 118,
+      "start": 0,
+      "stop": 11,
+      "step": 3,
+      "range_values": [
+        0,
+        3,
+        6,
+        9
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=0\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775892",
+        "18446744073709550161",
+        "3",
+        "84",
+        "165",
+        "327",
+        "651",
+        "9223372036854775811"
+      ],
+      "passed": true
+    },
+    {
+      "index": 119,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": -2147483648,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483648):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 120,
+      "start": -17,
+      "stop": -11,
+      "step": 2,
+      "range_values": [
+        -17,
+        -15,
+        -13
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-17\n    stop=-11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,2):\n        if count==5 and x&i64(1):\n            break\n        count+=1\n        if count==0:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-9\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775610",
+        "18446744073709550905",
+        "18446744073709551391",
+        "18446744073709551418",
+        "18446744073709551445",
+        "18446744073709551499",
+        "18446744073709551607",
+        "9223372036854775583"
+      ],
+      "passed": true
+    },
+    {
+      "index": 121,
+      "start": -12,
+      "stop": 0,
+      "step": 3,
+      "range_values": [
+        -12,
+        -9,
+        -6,
+        -3
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-12\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,3):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==2:\n            continue\n        value=value*i64(3)+i64(target)\n        target=0\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775702",
+        "18446744073709551585",
+        "18446744073709551603",
+        "18446744073709551510",
+        "18446744073709551605",
+        "18446744073709551607",
+        "18446744073709551611",
+        "9223372036854775795"
+      ],
+      "passed": true
+    },
+    {
+      "index": 122,
+      "start": 14,
+      "stop": 11,
+      "step": -1,
+      "range_values": [
+        14,
+        13,
+        12
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=14\n    stop=11\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-1):\n        if count==1 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854776004",
+        "18446744073709551587",
+        "25",
+        "196",
+        "31",
+        "37",
+        "49",
+        "9223372036854775833"
+      ],
+      "passed": true
+    },
+    {
+      "index": 123,
+      "start": 2147483647,
+      "stop": 2147483645,
+      "step": -2,
+      "range_values": [
+        2147483647
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483645\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==0 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372039002259472",
+        "2147483628",
+        "2147483646",
+        "2147483664",
+        "2147483648",
+        "2147483650",
+        "2147483654",
+        "9223372039002259454"
+      ],
+      "passed": true
+    },
+    {
+      "index": 124,
+      "start": -2147483648,
+      "stop": -2147483648,
+      "step": -2,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2147483648\n    stop=-2147483648\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==5:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-7\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 125,
+      "start": -2,
+      "stop": 0,
+      "step": -9,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-2\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-9):\n        if count==3 and x&i64(1):\n            break\n        count+=1\n        if count==6:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 126,
+      "start": -8,
+      "stop": 0,
+      "step": -3,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=-8\n    stop=0\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-3):\n        if count==-1 and x&i64(1):\n            break\n        count+=1\n        if count==-1:\n            continue\n        value=value*i64(3)+i64(target)\n        target=-4\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    },
+    {
+      "index": 127,
+      "start": 2147483647,
+      "stop": 2147483647,
+      "step": -2147483647,
+      "range_values": [],
+      "source": "from openassembler.pyfront import *\n@device\ndef helper(x:i64)->i64:\n    start=2147483647\n    stop=2147483647\n    target=17\n    value=x\n    count=0\n    for target in range(start,stop,-2147483647):\n        if count==4 and x&i64(1):\n            break\n        count+=1\n        if count==4:\n            continue\n        value=value*i64(3)+i64(target)\n        target=3\n        start=0\n        stop=0\n    else:\n        value+=i64(19)\n    return value+i64(target)+i64(count)\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    i=tid_x()\n    out[i]=helper(a[i])\n",
+      "expected_modulo64": [
+        "9223372036854775844",
+        "17",
+        "35",
+        "36",
+        "37",
+        "39",
+        "43",
+        "9223372036854775843"
+      ],
+      "passed": true
+    }
+  ],
+  "executions": 1536,
+  "source_hashes": {
+    "candidate-pyfront.py": "d53f93fa23499845527cf1379e41b00d41ad04c6427af9b3d178bffc5a82b690",
+    "candidate-return_flow.py": "a96532f392428a51a778ee88f7ae498f3fca44a076292eacdde6c2b613251a00",
+    "control_properties.py": "3de9d6af61a25b49e2686cc9c3aaf07eb6b0a56110ef80de10b856592ad17c01"
+  },
+  "script_sha256": "3de9d6af61a25b49e2686cc9c3aaf07eb6b0a56110ef80de10b856592ad17c01",
+  "scope": "128 finite independent generated boundary/step/runtime-bound snapshot/target mutation/skip/break/exhaustion combinations, full output/input/guard bytes, all four PTX/normal/poisoned levels; no additional GPU or universal loop proof"
+}

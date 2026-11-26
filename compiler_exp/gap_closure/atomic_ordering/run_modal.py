@@ -22,6 +22,8 @@ def execute(files):
         (root/'env/cuda.sh').chmod(0o700);os.chdir(root)
         sys.path[:0]=[str(root),str(root/'compiler_exp/gap_closure/atomic_ordering'),str(root/'compiler_exp/gap_closure/atomics')]
         from probes import HEADER,EPOCHS,WORDS,publication_source,shared_source
+        from pointer_probe import SOURCE as pointer_source
+        from wide_snapshot_probe import SOURCE as wide_snapshot_source
         from cases import exchange_chain
         from openassembler import build
         from openassembler.gpu.cuda_driver import Driver
@@ -30,6 +32,13 @@ def execute(files):
         fixtures += [(name,shared_source(name,operation=operation,explicit=explicit))
                      for name,operation,explicit in [('shared_add','add',False),('shared_add_explicit','add',True),
                                                      ('shared_exch','exch',False),('shared_exch_explicit','exch',True)]]
+        fixtures += [('shared_add_s32', shared_source('shared_add_s32').replace(
+            'atom.shared.add.u32', 'atom.shared.add.s32').replace(
+            'st.shared.u32 [%address],0;', 'st.shared.u32 [%address],0xffffffff;'))]
+        fixtures += [(name, shared_source(name, operation=operation).replace(
+            '%old,[%address],', '%old,[slot+4],'))
+            for name,operation in [('shared_add_symbol','add'),('shared_exch_symbol','exch')]]
+        fixtures += [('pointer_branch', pointer_source),('wide_snapshot', wide_snapshot_source)]
         combined=HEADER+'\n'.join(text[len(HEADER):] for _,text in fixtures)
         source=root/'probes.ptx';source.write_text(combined)
         records=[];blob=io.BytesIO();guard=b'\xa5'*256
@@ -57,14 +66,17 @@ def execute(files):
                             for name,_ in fixtures:
                                 fn=driver.function(module,name)
                                 shared=name.startswith('shared')
-                                shapes={'output':(2048+4*17*4)} if shared else {'output':12,'payload':WORDS*4,'flag':4,'ack':4}
+                                simple=name in ('pointer_branch','wide_snapshot')
+                                shapes=({'output':128,'input':128} if name=='pointer_branch' else {'output':256}) if simple else (
+                                    {'output':(2048+4*17*4)} if shared else {'output':12,'payload':WORDS*4,'flag':4,'ack':4})
                                 pointers={key:driver.alloc(size+512) for key,size in shapes.items()}
                                 try:
-                                    for repeat in range(3 if shared else 16):
-                                        for key,size in shapes.items():driver.htod(pointers[key],guard+b'\x00'*size+guard)
+                                    for repeat in range(3 if shared or simple else 16):
+                                        expected_input=struct.pack('<32I',*[(0x12340000+i+repeat*37)&0xffffffff for i in range(32)])
+                                        for key,size in shapes.items():driver.htod(pointers[key],guard+(expected_input if key=='input' else b'\x00'*size)+guard)
                                         args=[C.c_uint64(pointers[key]+256) for key in shapes]
                                         try:
-                                            driver.launch(fn,(4,1,1) if shared else (2,1,1),(128,1,1) if shared else (32,1,1),args)
+                                            driver.launch(fn,(1,1,1) if simple else (4,1,1) if shared else (2,1,1),(128,1,1) if shared else (32,1,1),args)
                                         except Exception as exc:
                                             failed_launch=True
                                             failure={'name':name,'level':level,'compiler':compiler,'repeat':repeat,
@@ -74,17 +86,22 @@ def execute(files):
                                         raw={key:driver.dtoh(pointers[key],size+512) for key,size in shapes.items()}
                                         actual={key:data[256:-256] for key,data in raw.items()}
                                         failures=[];guards=all(data[:256]==data[-256:]==guard for data in raw.values())
-                                        if shared:
+                                        if simple:
+                                            expected=expected_input if name=='pointer_branch' else struct.pack('<32Q',*[i*7 for i in range(32)])
+                                            if actual['output']!=expected:failures.append('independent branch/snapshot exact values')
+                                            if 'input' in actual and actual['input']!=expected_input:failures.append('input mutated')
+                                        elif shared:
                                             output=struct.unpack('<'+'I'*(len(actual['output'])//4),actual['output'])
                                             for cta in range(4):
                                                 for tid in range(128):
                                                     if tid%2 and output[cta*128+tid]!=0x13579bdf:failures.append('false shared predicate modified result')
                                                 for bin_index in range(17):
-                                                    lanes=[tid for tid in range(bin_index,128,17) if tid%2==0]
+                                                    lanes=([tid for tid in range(128) if tid%2==0] if bin_index==1 else []) if name.endswith('_symbol') else [tid for tid in range(bin_index,128,17) if tid%2==0]
                                                     returns=[output[cta*128+tid] for tid in lanes]
                                                     final=output[512+cta*17+bin_index]
                                                     if 'add' in name:
-                                                        if final!=len(lanes) or Counter(returns)!=Counter(range(len(lanes))):failures.append('shared old-value add tickets')
+                                                        initial=0xffffffff if name=='shared_add_s32' else 0
+                                                        if final!=(initial+len(lanes))&0xffffffff or Counter(returns)!=Counter((initial+i)&0xffffffff for i in range(len(lanes))):failures.append('shared old-value add tickets')
                                                     elif not exchange_chain(0,final,[cta*128+tid+1 for tid in lanes],returns):failures.append('shared exchange linearization')
                                         else:
                                             status=struct.unpack('<3I',actual['output'])
@@ -120,6 +137,8 @@ def main():
     for name in ('ra.py','contracts.py','compile.py','sched.py'):
         files['openassembler/backend/'+name]=(HERE/('candidate-'+name)).read_bytes()
     files['compiler_exp/gap_closure/atomic_ordering/probes.py']=(HERE/'probes.py').read_bytes()
+    for name in ('pointer_probe.py','wide_snapshot_probe.py'):
+        files['compiler_exp/gap_closure/atomic_ordering/'+name]=(HERE/name).read_bytes()
     files['compiler_exp/gap_closure/atomics/cases.py']=(HERE.parent/'atomics/cases.py').read_bytes()
     stamp=datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
     report,payload=execute.remote(files)

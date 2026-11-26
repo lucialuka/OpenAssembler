@@ -1,0 +1,50 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"evaluate","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry evaluate(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<18>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r3, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.s64 %rd6, 0;
+ mov.b64 %rd7, %rd6;
+ mov.s32 %r4, 3;
+ mov.u32 %r5, %r4;
+ mul.lo.s64 %rd8, %rd7, %rd5;
+ cvt.s64.s32 %rd9, %r5;
+ add.s64 %rd10, %rd8, %rd9;
+ mov.b64 %rd7, %rd10;
+ mov.s32 %r6, -5;
+ mov.u32 %r5, %r6;
+ mul.lo.s64 %rd11, %rd7, %rd5;
+ cvt.s64.s32 %rd12, %r5;
+ add.s64 %rd13, %rd11, %rd12;
+ mov.b64 %rd7, %rd13;
+ mov.s32 %r7, 7;
+ mov.u32 %r5, %r7;
+ mul.lo.s64 %rd14, %rd7, %rd5;
+ cvt.s64.s32 %rd15, %r5;
+ add.s64 %rd16, %rd14, %rd15;
+ mov.b64 %rd7, %rd16;
+ mul.wide.u32 %rd17, %r3, 8;
+ add.s64 %rd17, %rd2, %rd17;
+ st.global.s64 [%rd17], %rd7;
+L_endif_1:
+L_exit:
+ ret;
+}

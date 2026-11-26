@@ -1,0 +1,28 @@
+................................F..                                      [100%]
+=================================== FAILURES ===================================
+_____ test_cuda_library_compilation_database_dependency_and_changed_header _____
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-595/test_cuda_library_compilation_0')
+
+    @pytest.mark.oracle
+    def test_cuda_library_compilation_database_dependency_and_changed_header(tmp_path):
+        if not oracle.available('nvcc'):pytest.skip('needs CUDA toolkit')
+        entry=tmp_path/'entry.cu';lib=tmp_path/'library.cu';header=tmp_path/'value.cuh';header.write_text('#define OFFSET 9u\n')
+        entry.write_text('extern "C" __device__ unsigned helper(unsigned);\nextern "C" __global__ void probe(unsigned*out){out[0]=helper(3u);}\n')
+        lib.write_text('#include "value.cuh"\nextern "C" __device__ __noinline__ unsigned helper(unsigned x){return x*MUL+OFFSET;}\n')
+        db=tmp_path/'compile_commands.json';db.write_text(json.dumps([dict(directory=str(tmp_path),file=str(path),arguments=['nvcc','-c','-DMUL=17',str(path)])for path in(entry,lib)]))
+        target=tmp_path/'build';options=build.Options(no_sass=True,device_libraries=[lib],compile_commands=db)
+>       assert build.compile_paths(entry,target,options).rc==0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = CompileResult(rc=1, out_dir=PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/py...olima VM mounts.\n  Move the repo under /Users/lucasfang (or run colima with a mount for this path).', 'kernels': []}]).rc
+E        +    where CompileResult(rc=1, out_dir=PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/py...olima VM mounts.\n  Move the repo under /Users/lucasfang (or run colima with a mount for this path).', 'kernels': []}]) = <function compile_paths at 0x1015405e0>(PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-595/test_cuda_library_compilation_0/entry.cu'), PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-595/test_cuda_library_compilation_0/build'), Options(arch='sm_80', opt_level='opt', kernel=None, verify=False, trials=6, fallback=None, no_sass=True, include_dirs=...k8gcmh0000gn/T/pytest-of-lucasfang/pytest-595/test_cuda_library_compilation_0/library.cu')], device_library_options=[]))
+E        +      where <function compile_paths at 0x1015405e0> = build.compile_paths
+
+compiler_exp/gap_closure/device_linkage/promotion/test_ptx_device_linkage.py:89: AssertionError
+----------------------------- Captured stderr call -----------------------------
+error: CppFrontendError: nvcc failed on /private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-595/test_cuda_library_compilation_0/entry.cu:
+env/cuda.sh: /private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-595/test_cuda_library_compilation_0 is outside $HOME, which is all the colima VM mounts.
+  Move the repo under /Users/lucasfang (or run colima with a mount for this path).
+=========================== short test summary info ============================
+FAILED compiler_exp/gap_closure/device_linkage/promotion/test_ptx_device_linkage.py::test_cuda_library_compilation_database_dependency_and_changed_header
+1 failed, 34 passed in 2.41s

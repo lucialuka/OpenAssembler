@@ -15,7 +15,7 @@ from __future__ import annotations
 from openassembler.backend.compile import PRED_TO_GUARD, _opname, _pdefs, _puses, hw_latency
 
 ORDERED = ("LDG", "STG", "LDS", "STS", "LDL", "STL", "ATOMG", "ATOMS", "RED", "BAR", "LDGSTS", "LDSM",
-           "MEMBAR", "DEPBAR", "S2R", "CS2R", "WARPSYNC", "SHFL")
+           "MEMBAR", "ERRBAR", "CCTL", "DEPBAR", "S2R", "CS2R", "WARPSYNC", "SHFL")
 VAR_LAT = {"LDG": 30, "LDS": 24, "LDL": 30, "S2R": 20, "LDC": 12, "MUFU": 14, "I2F": 12, "F2I": 12}
 TERMINATORS = ("BRA", "EXIT", "RET", "BRX", "JMP", "CALL")
 

@@ -1,0 +1,380 @@
+..............................................FFFF....                   [100%]
+=================================== FAILURES ===================================
+_ test_wide_shared_resource_index_initialization_and_barrier_limits[s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()-divergen-i64] _
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde22')
+dtype = 'i64'
+body = 's = shared_array(i64, 2)\nif tid_x() == 0:\n    s[0] = i64(1)\n    syncthreads()'
+diagnostic = 'divergen'
+
+    @pytest.mark.parametrize('dtype',['i64','u64'])
+    @pytest.mark.parametrize('body,diagnostic',[
+        ('s = shared_array(TYPE, 6145)','49160'),
+        ('p = shared_array(i32, 1)\ns = shared_array(TYPE, 6144)','49160'),
+        ('s = shared_array(TYPE, True)','positive integer literal'),
+        ('s = shared_array(TYPE, 0)','positive integer literal'),
+        ('s = shared_array(TYPE, -1)','positive integer literal'),
+        ('s = shared_array(TYPE, 2.0)','positive integer literal'),
+        ('s = shared_array(TYPE, n)','positive integer literal'),
+        ('s = shared_array(TYPE, 2)\ns[-1] = TYPE(3)','negative index'),
+        ('s = shared_array(TYPE, 2)\ns[2] = TYPE(3)','out of range'),
+        ('s = shared_array(TYPE, 2)\no[0] = s[0]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\ns[0] = TYPE(1)\no[0] = s[1]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()','divergen'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()','divergen'),
+    ])
+    def test_wide_shared_resource_index_initialization_and_barrier_limits(tmp_path,dtype,body,diagnostic):
+        body=body.replace('TYPE',dtype)
+        source='from openassembler.pyfront import *\n@kernel\ndef bad(o: Array('+dtype+'), n: i32):\n'+''.join('    '+line+'\n'for line in body.splitlines())
+        path=tmp_path/'bad.py';path.write_text(source)
+>       with pytest.raises(NotSupported,match=diagnostic)as error:compile_file(path)
+                                                                  ^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/pyfront/compile.py:1443: in compile_file
+    raise e.with_path(path) from None
+openassembler/pyfront/compile.py:1441: in compile_file
+    entries = [_compile_entry(k, names, arch) for k in kernels]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_shared_wide/candidate-compile.py:1351: in _compile_entry
+    _BarrierCheck(fdef, names).run()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.compile._BarrierCheck object at 0x1051c70b0>
+
+    def run(self) -> None:
+        while True:
+            before = set(self.varying)
+            self.errors: list[ast.AST] = []
+            self._block(self.fdef.body, False)
+            if self.varying == before:
+                break
+        if self.errors:
+>           raise NotSupported("syncthreads() is reached under thread-dependent control flow "
+                               "(an if/while/for bound or early return/break that depends on "
+                               "tid_x()); every thread of the block must reach the barrier, "
+                               "otherwise it deadlocks or is undefined", self.errors[0])
+E           openassembler.pyfront.compile.NotSupported: syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde22/bad.py, line 7)
+
+compiler_exp/gap_closure/python_shared_wide/candidate-compile.py:316: NotSupported
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde22')
+dtype = 'i64'
+body = 's = shared_array(i64, 2)\nif tid_x() == 0:\n    s[0] = i64(1)\n    syncthreads()'
+diagnostic = 'divergen'
+
+    @pytest.mark.parametrize('dtype',['i64','u64'])
+    @pytest.mark.parametrize('body,diagnostic',[
+        ('s = shared_array(TYPE, 6145)','49160'),
+        ('p = shared_array(i32, 1)\ns = shared_array(TYPE, 6144)','49160'),
+        ('s = shared_array(TYPE, True)','positive integer literal'),
+        ('s = shared_array(TYPE, 0)','positive integer literal'),
+        ('s = shared_array(TYPE, -1)','positive integer literal'),
+        ('s = shared_array(TYPE, 2.0)','positive integer literal'),
+        ('s = shared_array(TYPE, n)','positive integer literal'),
+        ('s = shared_array(TYPE, 2)\ns[-1] = TYPE(3)','negative index'),
+        ('s = shared_array(TYPE, 2)\ns[2] = TYPE(3)','out of range'),
+        ('s = shared_array(TYPE, 2)\no[0] = s[0]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\ns[0] = TYPE(1)\no[0] = s[1]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()','divergen'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()','divergen'),
+    ])
+    def test_wide_shared_resource_index_initialization_and_barrier_limits(tmp_path,dtype,body,diagnostic):
+        body=body.replace('TYPE',dtype)
+        source='from openassembler.pyfront import *\n@kernel\ndef bad(o: Array('+dtype+'), n: i32):\n'+''.join('    '+line+'\n'for line in body.splitlines())
+        path=tmp_path/'bad.py';path.write_text(source)
+>       with pytest.raises(NotSupported,match=diagnostic)as error:compile_file(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'divergen'
+E        Input: 'syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde22/bad.py, line 7)'
+
+compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py:56: AssertionError
+_ test_wide_shared_resource_index_initialization_and_barrier_limits[s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()-divergen-u64] _
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde23')
+dtype = 'u64'
+body = 's = shared_array(u64, 2)\nif tid_x() == 0:\n    s[0] = u64(1)\n    syncthreads()'
+diagnostic = 'divergen'
+
+    @pytest.mark.parametrize('dtype',['i64','u64'])
+    @pytest.mark.parametrize('body,diagnostic',[
+        ('s = shared_array(TYPE, 6145)','49160'),
+        ('p = shared_array(i32, 1)\ns = shared_array(TYPE, 6144)','49160'),
+        ('s = shared_array(TYPE, True)','positive integer literal'),
+        ('s = shared_array(TYPE, 0)','positive integer literal'),
+        ('s = shared_array(TYPE, -1)','positive integer literal'),
+        ('s = shared_array(TYPE, 2.0)','positive integer literal'),
+        ('s = shared_array(TYPE, n)','positive integer literal'),
+        ('s = shared_array(TYPE, 2)\ns[-1] = TYPE(3)','negative index'),
+        ('s = shared_array(TYPE, 2)\ns[2] = TYPE(3)','out of range'),
+        ('s = shared_array(TYPE, 2)\no[0] = s[0]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\ns[0] = TYPE(1)\no[0] = s[1]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()','divergen'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()','divergen'),
+    ])
+    def test_wide_shared_resource_index_initialization_and_barrier_limits(tmp_path,dtype,body,diagnostic):
+        body=body.replace('TYPE',dtype)
+        source='from openassembler.pyfront import *\n@kernel\ndef bad(o: Array('+dtype+'), n: i32):\n'+''.join('    '+line+'\n'for line in body.splitlines())
+        path=tmp_path/'bad.py';path.write_text(source)
+>       with pytest.raises(NotSupported,match=diagnostic)as error:compile_file(path)
+                                                                  ^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/pyfront/compile.py:1443: in compile_file
+    raise e.with_path(path) from None
+openassembler/pyfront/compile.py:1441: in compile_file
+    entries = [_compile_entry(k, names, arch) for k in kernels]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_shared_wide/candidate-compile.py:1351: in _compile_entry
+    _BarrierCheck(fdef, names).run()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.compile._BarrierCheck object at 0x1051c7590>
+
+    def run(self) -> None:
+        while True:
+            before = set(self.varying)
+            self.errors: list[ast.AST] = []
+            self._block(self.fdef.body, False)
+            if self.varying == before:
+                break
+        if self.errors:
+>           raise NotSupported("syncthreads() is reached under thread-dependent control flow "
+                               "(an if/while/for bound or early return/break that depends on "
+                               "tid_x()); every thread of the block must reach the barrier, "
+                               "otherwise it deadlocks or is undefined", self.errors[0])
+E           openassembler.pyfront.compile.NotSupported: syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde23/bad.py, line 7)
+
+compiler_exp/gap_closure/python_shared_wide/candidate-compile.py:316: NotSupported
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde23')
+dtype = 'u64'
+body = 's = shared_array(u64, 2)\nif tid_x() == 0:\n    s[0] = u64(1)\n    syncthreads()'
+diagnostic = 'divergen'
+
+    @pytest.mark.parametrize('dtype',['i64','u64'])
+    @pytest.mark.parametrize('body,diagnostic',[
+        ('s = shared_array(TYPE, 6145)','49160'),
+        ('p = shared_array(i32, 1)\ns = shared_array(TYPE, 6144)','49160'),
+        ('s = shared_array(TYPE, True)','positive integer literal'),
+        ('s = shared_array(TYPE, 0)','positive integer literal'),
+        ('s = shared_array(TYPE, -1)','positive integer literal'),
+        ('s = shared_array(TYPE, 2.0)','positive integer literal'),
+        ('s = shared_array(TYPE, n)','positive integer literal'),
+        ('s = shared_array(TYPE, 2)\ns[-1] = TYPE(3)','negative index'),
+        ('s = shared_array(TYPE, 2)\ns[2] = TYPE(3)','out of range'),
+        ('s = shared_array(TYPE, 2)\no[0] = s[0]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\ns[0] = TYPE(1)\no[0] = s[1]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()','divergen'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()','divergen'),
+    ])
+    def test_wide_shared_resource_index_initialization_and_barrier_limits(tmp_path,dtype,body,diagnostic):
+        body=body.replace('TYPE',dtype)
+        source='from openassembler.pyfront import *\n@kernel\ndef bad(o: Array('+dtype+'), n: i32):\n'+''.join('    '+line+'\n'for line in body.splitlines())
+        path=tmp_path/'bad.py';path.write_text(source)
+>       with pytest.raises(NotSupported,match=diagnostic)as error:compile_file(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'divergen'
+E        Input: 'syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde23/bad.py, line 7)'
+
+compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py:56: AssertionError
+_ test_wide_shared_resource_index_initialization_and_barrier_limits[s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()-divergen-i64] _
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde24')
+dtype = 'i64'
+body = 's = shared_array(i64, 2)\nif tid_x() != 0:\n    return\ns[0] = i64(1)\nsyncthreads()'
+diagnostic = 'divergen'
+
+    @pytest.mark.parametrize('dtype',['i64','u64'])
+    @pytest.mark.parametrize('body,diagnostic',[
+        ('s = shared_array(TYPE, 6145)','49160'),
+        ('p = shared_array(i32, 1)\ns = shared_array(TYPE, 6144)','49160'),
+        ('s = shared_array(TYPE, True)','positive integer literal'),
+        ('s = shared_array(TYPE, 0)','positive integer literal'),
+        ('s = shared_array(TYPE, -1)','positive integer literal'),
+        ('s = shared_array(TYPE, 2.0)','positive integer literal'),
+        ('s = shared_array(TYPE, n)','positive integer literal'),
+        ('s = shared_array(TYPE, 2)\ns[-1] = TYPE(3)','negative index'),
+        ('s = shared_array(TYPE, 2)\ns[2] = TYPE(3)','out of range'),
+        ('s = shared_array(TYPE, 2)\no[0] = s[0]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\ns[0] = TYPE(1)\no[0] = s[1]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()','divergen'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()','divergen'),
+    ])
+    def test_wide_shared_resource_index_initialization_and_barrier_limits(tmp_path,dtype,body,diagnostic):
+        body=body.replace('TYPE',dtype)
+        source='from openassembler.pyfront import *\n@kernel\ndef bad(o: Array('+dtype+'), n: i32):\n'+''.join('    '+line+'\n'for line in body.splitlines())
+        path=tmp_path/'bad.py';path.write_text(source)
+>       with pytest.raises(NotSupported,match=diagnostic)as error:compile_file(path)
+                                                                  ^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/pyfront/compile.py:1443: in compile_file
+    raise e.with_path(path) from None
+openassembler/pyfront/compile.py:1441: in compile_file
+    entries = [_compile_entry(k, names, arch) for k in kernels]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_shared_wide/candidate-compile.py:1351: in _compile_entry
+    _BarrierCheck(fdef, names).run()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.compile._BarrierCheck object at 0x1050e2930>
+
+    def run(self) -> None:
+        while True:
+            before = set(self.varying)
+            self.errors: list[ast.AST] = []
+            self._block(self.fdef.body, False)
+            if self.varying == before:
+                break
+        if self.errors:
+>           raise NotSupported("syncthreads() is reached under thread-dependent control flow "
+                               "(an if/while/for bound or early return/break that depends on "
+                               "tid_x()); every thread of the block must reach the barrier, "
+                               "otherwise it deadlocks or is undefined", self.errors[0])
+E           openassembler.pyfront.compile.NotSupported: syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde24/bad.py, line 8)
+
+compiler_exp/gap_closure/python_shared_wide/candidate-compile.py:316: NotSupported
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde24')
+dtype = 'i64'
+body = 's = shared_array(i64, 2)\nif tid_x() != 0:\n    return\ns[0] = i64(1)\nsyncthreads()'
+diagnostic = 'divergen'
+
+    @pytest.mark.parametrize('dtype',['i64','u64'])
+    @pytest.mark.parametrize('body,diagnostic',[
+        ('s = shared_array(TYPE, 6145)','49160'),
+        ('p = shared_array(i32, 1)\ns = shared_array(TYPE, 6144)','49160'),
+        ('s = shared_array(TYPE, True)','positive integer literal'),
+        ('s = shared_array(TYPE, 0)','positive integer literal'),
+        ('s = shared_array(TYPE, -1)','positive integer literal'),
+        ('s = shared_array(TYPE, 2.0)','positive integer literal'),
+        ('s = shared_array(TYPE, n)','positive integer literal'),
+        ('s = shared_array(TYPE, 2)\ns[-1] = TYPE(3)','negative index'),
+        ('s = shared_array(TYPE, 2)\ns[2] = TYPE(3)','out of range'),
+        ('s = shared_array(TYPE, 2)\no[0] = s[0]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\ns[0] = TYPE(1)\no[0] = s[1]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()','divergen'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()','divergen'),
+    ])
+    def test_wide_shared_resource_index_initialization_and_barrier_limits(tmp_path,dtype,body,diagnostic):
+        body=body.replace('TYPE',dtype)
+        source='from openassembler.pyfront import *\n@kernel\ndef bad(o: Array('+dtype+'), n: i32):\n'+''.join('    '+line+'\n'for line in body.splitlines())
+        path=tmp_path/'bad.py';path.write_text(source)
+>       with pytest.raises(NotSupported,match=diagnostic)as error:compile_file(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'divergen'
+E        Input: 'syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde24/bad.py, line 8)'
+
+compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py:56: AssertionError
+_ test_wide_shared_resource_index_initialization_and_barrier_limits[s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()-divergen-u64] _
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde25')
+dtype = 'u64'
+body = 's = shared_array(u64, 2)\nif tid_x() != 0:\n    return\ns[0] = u64(1)\nsyncthreads()'
+diagnostic = 'divergen'
+
+    @pytest.mark.parametrize('dtype',['i64','u64'])
+    @pytest.mark.parametrize('body,diagnostic',[
+        ('s = shared_array(TYPE, 6145)','49160'),
+        ('p = shared_array(i32, 1)\ns = shared_array(TYPE, 6144)','49160'),
+        ('s = shared_array(TYPE, True)','positive integer literal'),
+        ('s = shared_array(TYPE, 0)','positive integer literal'),
+        ('s = shared_array(TYPE, -1)','positive integer literal'),
+        ('s = shared_array(TYPE, 2.0)','positive integer literal'),
+        ('s = shared_array(TYPE, n)','positive integer literal'),
+        ('s = shared_array(TYPE, 2)\ns[-1] = TYPE(3)','negative index'),
+        ('s = shared_array(TYPE, 2)\ns[2] = TYPE(3)','out of range'),
+        ('s = shared_array(TYPE, 2)\no[0] = s[0]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\ns[0] = TYPE(1)\no[0] = s[1]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()','divergen'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()','divergen'),
+    ])
+    def test_wide_shared_resource_index_initialization_and_barrier_limits(tmp_path,dtype,body,diagnostic):
+        body=body.replace('TYPE',dtype)
+        source='from openassembler.pyfront import *\n@kernel\ndef bad(o: Array('+dtype+'), n: i32):\n'+''.join('    '+line+'\n'for line in body.splitlines())
+        path=tmp_path/'bad.py';path.write_text(source)
+>       with pytest.raises(NotSupported,match=diagnostic)as error:compile_file(path)
+                                                                  ^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/pyfront/compile.py:1443: in compile_file
+    raise e.with_path(path) from None
+openassembler/pyfront/compile.py:1441: in compile_file
+    entries = [_compile_entry(k, names, arch) for k in kernels]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_shared_wide/candidate-compile.py:1351: in _compile_entry
+    _BarrierCheck(fdef, names).run()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.compile._BarrierCheck object at 0x1051c5d60>
+
+    def run(self) -> None:
+        while True:
+            before = set(self.varying)
+            self.errors: list[ast.AST] = []
+            self._block(self.fdef.body, False)
+            if self.varying == before:
+                break
+        if self.errors:
+>           raise NotSupported("syncthreads() is reached under thread-dependent control flow "
+                               "(an if/while/for bound or early return/break that depends on "
+                               "tid_x()); every thread of the block must reach the barrier, "
+                               "otherwise it deadlocks or is undefined", self.errors[0])
+E           openassembler.pyfront.compile.NotSupported: syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde25/bad.py, line 8)
+
+compiler_exp/gap_closure/python_shared_wide/candidate-compile.py:316: NotSupported
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde25')
+dtype = 'u64'
+body = 's = shared_array(u64, 2)\nif tid_x() != 0:\n    return\ns[0] = u64(1)\nsyncthreads()'
+diagnostic = 'divergen'
+
+    @pytest.mark.parametrize('dtype',['i64','u64'])
+    @pytest.mark.parametrize('body,diagnostic',[
+        ('s = shared_array(TYPE, 6145)','49160'),
+        ('p = shared_array(i32, 1)\ns = shared_array(TYPE, 6144)','49160'),
+        ('s = shared_array(TYPE, True)','positive integer literal'),
+        ('s = shared_array(TYPE, 0)','positive integer literal'),
+        ('s = shared_array(TYPE, -1)','positive integer literal'),
+        ('s = shared_array(TYPE, 2.0)','positive integer literal'),
+        ('s = shared_array(TYPE, n)','positive integer literal'),
+        ('s = shared_array(TYPE, 2)\ns[-1] = TYPE(3)','negative index'),
+        ('s = shared_array(TYPE, 2)\ns[2] = TYPE(3)','out of range'),
+        ('s = shared_array(TYPE, 2)\no[0] = s[0]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\ns[0] = TYPE(1)\no[0] = s[1]','no possible writer'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()','divergen'),
+        ('s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()','divergen'),
+    ])
+    def test_wide_shared_resource_index_initialization_and_barrier_limits(tmp_path,dtype,body,diagnostic):
+        body=body.replace('TYPE',dtype)
+        source='from openassembler.pyfront import *\n@kernel\ndef bad(o: Array('+dtype+'), n: i32):\n'+''.join('    '+line+'\n'for line in body.splitlines())
+        path=tmp_path/'bad.py';path.write_text(source)
+>       with pytest.raises(NotSupported,match=diagnostic)as error:compile_file(path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'divergen'
+E        Input: 'syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-578/test_wide_shared_resource_inde25/bad.py, line 8)'
+
+compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py:56: AssertionError
+=========================== short test summary info ============================
+FAILED compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py::test_wide_shared_resource_index_initialization_and_barrier_limits[s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()-divergen-i64]
+FAILED compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py::test_wide_shared_resource_index_initialization_and_barrier_limits[s = shared_array(TYPE, 2)\nif tid_x() == 0:\n    s[0] = TYPE(1)\n    syncthreads()-divergen-u64]
+FAILED compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py::test_wide_shared_resource_index_initialization_and_barrier_limits[s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()-divergen-i64]
+FAILED compiler_exp/gap_closure/python_shared_wide/test_pyfront_shared_wide.py::test_wide_shared_resource_index_initialization_and_barrier_limits[s = shared_array(TYPE, 2)\nif tid_x() != 0:\n    return\ns[0] = TYPE(1)\nsyncthreads()-divergen-u64]
+4 failed, 50 passed in 2.26s

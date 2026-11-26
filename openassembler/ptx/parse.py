@@ -9,6 +9,8 @@ predicate pairs, and immediates (hex, decimal, 0f/0d float bits).
 from __future__ import annotations
 
 import re
+import math
+import struct
 from dataclasses import dataclass, field
 
 
@@ -84,6 +86,8 @@ class Kernel:
 class Module:
     kernels: dict[str, Kernel]
     decls: list[VarDecl]
+    functions: dict = field(default_factory=dict)
+    inlined_calls: dict = field(default_factory=dict)
 
 
 _TYPE_SIZE = {"b8": 1, "u8": 1, "s8": 1, "b16": 2, "u16": 2, "s16": 2, "f16": 2,
@@ -138,10 +142,38 @@ def entry_names(src: str) -> list[str]:
     return [definition[0] for definition in entry_definitions(src)]
 
 
-def _parameters(text: str, name: str, attributes=None) -> list[tuple[str, str]]:
+
+def parameter_layout(parameters):
+    """Natural scalar entry slots, in bytes from the start of the parameter bank."""
+    result = {}
+    offset = 0
+    for dtype, name in parameters:
+        if dtype not in _TYPE_SIZE or dtype == 'f16' or name in result:
+            raise ValueError('unsupported or duplicate scalar parameter: '+str(name))
+        size = _TYPE_SIZE[dtype]
+        offset = (offset+size-1)//size*size
+        result[name] = (offset, size)
+        offset += size
+    return result
+
+
+def parameter_load(kernel, address, dtype):
+    """Validate a scalar load within its declared entry parameter slot."""
+    slots = parameter_layout(kernel.params)
+    if not isinstance(address, Addr) or address.base not in slots or dtype not in _TYPE_SIZE:
+        raise ValueError('parameter load requires a declared scalar parameter and supported width')
+    offset, size = slots[address.base]
+    width = _TYPE_SIZE[dtype]
+    if address.off < 0 or address.off+width > size or (offset+address.off) % width:
+        raise ValueError('parameter load must be naturally aligned and within its declared scalar slot')
+    return offset+address.off, width
+
+
+def _parameters(text: str, name: str, attributes=None, *, allow_narrow=False) -> list[tuple[str, str]]:
     params = []
+    scalar_types = 'b8|u8|s8|b16|u16|s16|' if allow_narrow else ''
     for part in _split_top(text):
-        match = re.fullmatch(r'\s*\.param\s+\.(b32|u32|s32|f32|b64|u64|s64|f64)\s+'
+        match = re.fullmatch(r'\s*\.param\s+\.('+scalar_types+r'b32|u32|s32|f32|b64|u64|s64|f64)\s+'
                              r'(?:(\.ptr)(?:\s*\.(global))?(?:\s*\.align\s+([0-9]+))?\s+)?([\w$]+)\s*', part)
         if match is None:
             raise SyntaxError(f"entry {name}: unsupported parameter ABI {part!r}; scalar 32/64-bit parameters required")
@@ -210,6 +242,178 @@ def _split_top(s: str, sep: str = ",") -> list[str]:
     return out
 
 
+_DECIMAL_FLOAT = re.compile(r'[+-]?(?:(?:[0-9]+\.[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+)')
+
+
+def _decimal_float(text):
+    value=float(text)
+    # CUDA 12.8 ptxas reports constant overflow for nonzero binary64
+    # subnormals/underflow and infinities. Zero coefficients keep their sign.
+    nonzero=bool(re.search(r'[1-9]',re.split('[eE]',text)[0]))
+    if not math.isfinite(value)or(nonzero and abs(value)<float.fromhex('0x1p-1022')):
+        raise SyntaxError(f'decimal floating literal outside supported binary64 range: {text}')
+    return ImmF(struct.unpack('<Q',struct.pack('<d',value))[0],64)
+
+
+def _literal_f32(bits):
+    sign=(bits>>63)<<31;exponent=(bits>>52)&2047;fraction=bits&((1<<52)-1)
+    if exponent==2047:
+        # The oracle preserves sign/high payload and quiets converted NaNs.
+        return sign|0x7f800000|((fraction>>29)|0x400000 if fraction else 0)
+    value=struct.unpack('<d',struct.pack('<Q',bits))[0]
+    try:return struct.unpack('<I',struct.pack('<f',value))[0]
+    except OverflowError:return sign|0x7f800000
+
+
+def _literal_operands(op,mods,args,line):
+    types=[mod for mod in mods if re.fullmatch(r'[busf](?:8|16|32|64)',mod)]
+    dtype=types[-1]if types else None
+    def convert(value,index,context):
+        if isinstance(value,Vec):
+            # Pack/unpack .b64 contains two .b32 source components.
+            component='b32'if op=='mov'and context=='b64'else context
+            return Vec(tuple(convert(part,index,component)for part in value.elems))
+        if isinstance(value,ImmI)and context in('f32','f64')and index>0 and not(op=='selp'and index==3):
+            raise SyntaxError(f'PTX line {line}: {op}.{context} requires a floating literal, not an integer literal')
+        if not isinstance(value,ImmF):return value
+        if (index==0 or op=='selp'and index==3 or op in('shl','shr')and index==2):
+            raise SyntaxError(f'PTX line {line}: floating literal is invalid at operand {index} of {op}')
+        if context=='f32':return ImmF(_literal_f32(value.bits),32)if value.width==64 else value
+        if context=='f64':
+            # A raw 0f literal retains its exact 32 bits for mov.f64: the
+            # observed wider move zero-extends them rather than converting.
+            return ImmF(value.bits,64)if op in('mov','st')and value.width==32 else value
+        if context in('b32','b64')and value.width==int(context[1:]):return value
+        raise SyntaxError(f'PTX line {line}: floating literal width {value.width} is invalid for {op}.{context or "untyped"}')
+    return[convert(value,index,dtype)for index,value in enumerate(args)]
+
+
+_CONSTANT_TOKEN = re.compile(r'\s*(0[dD][0-9a-fA-F]{16}|0[fF][0-9a-fA-F]{8}|(?:[0-9]+\.[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?|[0-9]+[eE][+-]?[0-9]+|0[xX][0-9a-fA-F]+U?|0[bB][01]+U?|[0-9]+U?|\.[su]64|<<|>>|<=|>=|==|!=|&&|\|\||[()+*/%<>&|^!~?:-])')
+_CONSTANT_PRECEDENCE={'||':1,'&&':2,'|':3,'^':4,'&':5,'==':6,'!=':6,'<':7,'<=':7,'>':7,'>=':7,'<<':8,'>>':8,'+':9,'-':9,'*':10,'/':10,'%':10}
+
+
+def _constant_expression(text):
+    """Pratt parser over s64/u64/f64 values; no host language evaluation."""
+    if re.fullmatch(r'0[fF][0-9a-fA-F]{8}',text):return ImmF(int(text[2:],16),32)
+    if re.search(r'%[0-9A-Za-z_$]',text):raise SyntaxError('PTX remainder must be separated from a following register-like token')
+    tokens=[];position=0;mask=(1<<64)-1
+    while position<len(text):
+        match=_CONSTANT_TOKEN.match(text,position)
+        if match is None:
+            if text[position:].strip():raise SyntaxError(f'invalid PTX constant expression: {text}')
+            break
+        tokens.append(match[1]);position=match.end()
+    if not tokens:raise SyntaxError('empty PTX constant expression')
+    if len(tokens)>4096:raise SyntaxError('PTX constant expression exceeds 4096 tokens')
+    cursor=0;depth=0;expression_depth=0
+    def peek():return tokens[cursor]if cursor<len(tokens)else None
+    def take():
+        nonlocal cursor
+        token=peek();cursor+=1;return token
+    def integer(value):
+        kind,bits=value
+        return bits-(1<<64)if kind=='s'and bits>>63 else bits
+    def float_value(value):return struct.unpack('<d',struct.pack('<Q',value[1]))[0]
+    def floating(number):
+        if math.isnan(number):raise SyntaxError('invalid NaN-producing PTX constant arithmetic requires reconciled payload semantics')
+        return'f',struct.unpack('<Q',struct.pack('<d',number))[0]
+    def require_int(value):
+        if value[0]=='f':raise SyntaxError('PTX constant expression requires an integer operand')
+    def binary(op,left,right):
+        if'r'in(left[0],right[0]):raise SyntaxError('PTX remainder result requires an explicit signed or unsigned cast before further arithmetic')
+        if left[0]=='f'or right[0]=='f':
+            if left[0]!='f'or right[0]!='f':raise SyntaxError('PTX constant expression mixes integer and floating operands')
+            a,b=float_value(left),float_value(right)
+            if op=='/'and b==0:raise SyntaxError('division by zero in PTX constant expression')
+            if op in('+','-','*','/'):
+                if math.isnan(a):return'f',left[1]|(1<<51)
+                if math.isnan(b):return'f',right[1]|(1<<51)
+            if op=='+':return floating(a+b)
+            if op=='-':return floating(a-b)
+            if op=='*':return floating(a*b)
+            if op=='/':
+                if b==0:raise SyntaxError('division by zero in PTX constant expression')
+                return floating(a/b)
+            if op in('<','<=','>','>=','==','!='):
+                return's',int({'<':a<b,'<=':a<=b,'>':a>b,'>=':a>=b,'==':a==b,'!=':a!=b}[op])
+            raise SyntaxError(f'floating PTX constant expression does not support {op}')
+        kind='u'if'u'in(left[0],right[0])else's'
+        a,b=(left[1],right[1])if kind=='u'else(integer(left),integer(right))
+        if op=='+':value=a+b
+        elif op=='-':value=a-b
+        elif op=='*':value=a*b
+        elif op=='/':
+            if b==0:raise SyntaxError('division by zero in PTX constant expression')
+            value=abs(a)//abs(b);value=-value if(a<0)!=(b<0)else value
+        elif op=='%':
+            if right[1]==0:raise SyntaxError('remainder by zero in PTX constant expression')
+            return'r',left[1]%right[1]
+        elif op in('<<','>>'):
+            a=integer(left);count=right[1]&63
+            value=a<<count if op=='<<'else a>>count
+            return left[0],value&mask
+        elif op in('&','|','^'):
+            return kind,{'&':left[1]&right[1],'|':left[1]|right[1],'^':left[1]^right[1]}[op]
+        elif op in('<','<=','>','>=','==','!='):
+            return's',int({'<':a<b,'<=':a<=b,'>':a>b,'>=':a>=b,'==':a==b,'!=':a!=b}[op])
+        elif op in('&&','||'):return's',int(bool(a)and bool(b)if op=='&&'else bool(a)or bool(b))
+        else:raise SyntaxError(f'unknown PTX constant operator {op}')
+        return kind,value&mask
+    def primary():
+        nonlocal depth
+        depth+=1
+        if depth>128:raise SyntaxError('PTX constant expression exceeds 128 nested operands')
+        token=take()
+        if token in('+','-','!','~'):
+            value=primary()
+            if value[0]=='r':raise SyntaxError('PTX remainder result requires an explicit signed or unsigned cast before unary arithmetic')
+            if token=='+':result=value
+            elif token=='-':result=('f',value[1]^(1<<63))if value[0]=='f'else(value[0],(-value[1])&mask)
+            elif token=='!':require_int(value);result='s',int(value[1]==0)
+            else:require_int(value);result='u',value[1]^mask
+        elif token=='(':
+            if peek()in('.s64','.u64'):
+                cast=take()
+                if take()!=')':raise SyntaxError('malformed PTX constant cast')
+                value=primary();require_int(value);result=cast[1],value[1]
+            else:
+                result=expression(0)
+                if take()!=')':raise SyntaxError('unbalanced PTX constant expression')
+        elif token is None:raise SyntaxError('missing PTX constant operand')
+        elif re.fullmatch(r'0[dD][0-9a-fA-F]{16}',token):result='f',int(token[2:],16)
+        elif re.fullmatch(r'0[fF][0-9a-fA-F]{8}',token):raise SyntaxError('raw32 floating literals cannot enter PTX constant expressions')
+        elif _DECIMAL_FLOAT.fullmatch(token):result='f',_decimal_float(token).bits
+        elif re.fullmatch(r'(?:0[xX][0-9a-fA-F]+|0[bB][01]+|[0-9]+)U?',token):
+            spelling=token.rstrip('U')
+            base=16 if spelling.lower().startswith('0x')else 2 if spelling.lower().startswith('0b')else 8 if len(spelling)>1 and spelling.startswith('0')else 10
+            try:bits=int(spelling,base)
+            except ValueError:raise SyntaxError(f'invalid PTX integer literal: {token}')from None
+            result=('u'if token.endswith('U')or bits>>63 else's'),bits&mask
+        else:raise SyntaxError(f'invalid PTX constant operand: {token}')
+        depth-=1;return result
+    def expression(minimum):
+        nonlocal expression_depth
+        expression_depth+=1
+        if expression_depth>128:raise SyntaxError('PTX constant expression exceeds 128 nested expression levels')
+        left=primary()
+        while peek()in _CONSTANT_PRECEDENCE and _CONSTANT_PRECEDENCE[peek()]>=minimum:
+            op=take();right=expression(_CONSTANT_PRECEDENCE[op]+1);left=binary(op,left,right)
+        if minimum==0 and peek()=='?':
+            take();require_int(left);yes=expression(0)
+            if take()!=':':raise SyntaxError('missing colon in PTX constant conditional')
+            no=expression(0)
+            if'r'in(yes[0],no[0]):raise SyntaxError('PTX remainder result requires an explicit cast before a conditional')
+            if(yes[0]=='f')!=(no[0]=='f'):raise SyntaxError('PTX constant conditional has incompatible types')
+            if yes[0]=='f':raise SyntaxError('floating branches of PTX constant conditionals are unsupported by the validated toolkit')
+            if yes[0]!=no[0]:raise SyntaxError('mixed signed/unsigned PTX conditional branches require reconciled type semantics')
+            chosen=yes if left[1]else no
+            left=chosen if chosen[0]=='f'else('u'if'u'in(yes[0],no[0])else's',chosen[1])
+        expression_depth-=1;return left
+    result=expression(0)
+    if cursor!=len(tokens):raise SyntaxError(f'trailing PTX constant expression token: {peek()}')
+    return ImmF(result[1],64)if result[0]=='f'else ImmI(integer(result))
+
+
 def parse_operand(t: str) -> Operand:
     t = t.strip().replace("+-", "-")
     if t.startswith("{"):
@@ -221,6 +425,8 @@ def parse_operand(t: str) -> Operand:
             raise SyntaxError(f"address {t}")
         off = int(m[3], 0) if m[3] else 0
         return Addr(m[1], -off if m[2] == "-" else off)
+    if re.match(r'(?:[0-9(]|\.[0-9]|[~!+-]\s*(?:[0-9(]|\.[0-9]|[~!+-]))',t):
+        return _constant_expression(t)
     if "|" in t:
         a, b = t.split("|")
         return PairDst(Var(a.strip()), Var(b.strip()))
@@ -230,6 +436,8 @@ def parse_operand(t: str) -> Operand:
         return ImmF(int(t[2:], 16), 64)
     if re.fullmatch(r"-?(0[xX][0-9a-fA-F]+|\d+)U?", t):
         return ImmI(int(t.rstrip("U"), 0))
+    if _DECIMAL_FLOAT.fullmatch(t):
+        return _decimal_float(t)
     return Var(t)
 
 
@@ -245,6 +453,7 @@ def parse_instr(stmt: str, line: int) -> Instr:
         rest = r2 + " " + rest
     op, *mods = head.split(".")
     args = [parse_operand(a) for a in _split_top(rest)] if rest.strip() else []
+    args = _literal_operands(op,mods,args,line)
     return Instr(op, tuple(mods), args, guard, line)
 
 
@@ -255,6 +464,11 @@ def _decl(m: re.Match) -> VarDecl:
 
 
 def parse_module(src: str) -> Module:
+    functions, calls, origins = {}, {}, {}
+    if re.search(r'(?<![\w$.])\.func\b', _mask_strings(_strip_comments(src))):
+        from openassembler.ptx.inlining import inline_module
+        import sys
+        src, functions, calls, origins = inline_module(src, sys.modules[__name__])
     src = _strip_comments(src)
     kernels: dict[str, Kernel] = {}
     module_decls: list[VarDecl] = []
@@ -266,13 +480,16 @@ def parse_module(src: str) -> Module:
             raise SyntaxError(f"duplicate entry definition {name}")
         body_start = end - len(body) - 1
         attributes={}
-        kernel = _parse_body(name, _parameters(raw_params, name,attributes), body,
+        kernel = _parse_body(name, _parameters(raw_params, name,attributes,allow_narrow=True), body,
                              first_line=src.count('\n', 0, body_start) + 1)
+        if name in origins:
+            assert len(kernel.body)==len(origins[name])
+            for instruction,line in zip(kernel.body,origins[name]):instruction.line=line
         kernel.parameter_attributes=attributes
         kernel.directives = _directives(header, name)
         kernels[name] = kernel
         pos = end
-    return Module(kernels, module_decls)
+    return Module(kernels, module_decls, functions, calls)
 
 
 def _parse_body(name: str, params, body: str, *, first_line: int = 1) -> Kernel:

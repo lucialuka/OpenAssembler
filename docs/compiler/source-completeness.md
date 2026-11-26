@@ -26,10 +26,17 @@ than silently removing the entry. Before/after outcomes are retained in
 and [after](../../compiler_exp/repository_coverage/parser-candidates-after.json).
 
 The supported parameter ABI is explicit scalar 32/64-bit integer/bit/FP
-parameters. Aggregate arrays, pointer annotations and other parameter grammar
-outside this subset reject before code generation. Duplicate definitions and
+parameters. [Pointer annotations](gaps-parameter-abi.md) add the separately
+validated global/generic storage metadata. Aggregate arrays and other parameter
+grammar outside these contracts reject before code generation. Duplicate definitions and
 parameter names reject. Frontend/parsed entry sets must agree before lowering;
 the existing executable ownership check covers every emitted function.
+
+The later [direct scalar function route](gaps-device-functions.md) resolves
+module-local calls by static specialization, retains function/body/call
+inventories and validates their executable ownership. Original PTX still goes
+to same-source controls. This is not a general native call ABI or cross-module
+linker; those original exit gates remain open.
 
 ## Retained directives and runtime checks
 
@@ -46,7 +53,9 @@ directives keep their existing identity representation.
 - `.maxntid` limits the product of block dimensions, as defined by PTX. It does
   not impose an independent limit on each axis. Automatic launches obey it.
 - `.maxnreg` is checked against the final OA register declaration. Kernels
-  needing more registers reject; this does not implement spills.
+  may use the [bounded scalar/group/predicate spill route](gaps-spilling.md) to satisfy
+  the limit. Pressure beyond that bounded domain and impossible limits reject;
+  the final declared count is still enforced before packaging.
 - CTA residency directives remain recorded tuning hints. They do not promise
   OA achieves ptxas's register allocation, occupancy or speed. No new schedule,
   shared-memory staging policy or asynchronous dependency is introduced here.

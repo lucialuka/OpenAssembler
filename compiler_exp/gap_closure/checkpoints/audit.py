@@ -23,7 +23,8 @@ def successful(pattern):
     raise ValueError('no successful hardware gate '+pattern)
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--report',type=Path);parser.add_argument('--maximum-report',type=Path);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--report',type=Path);parser.add_argument('--maximum-report',type=Path)
+    parser.add_argument('--output',type=Path,default=HERE/'audit.json');args=parser.parse_args()
     path=(args.report or successful('hardware-*.json')).resolve();max_path=(args.maximum_report or successful('maximum-20*.json')).resolve()
     result={'schema':1,'passed':False,'hardware':'not run; source/archive/native text custody only','reports':[],
             'auditor_sha256':sha(Path(__file__).read_bytes()),'kernel_comparisons':0,'checkpoint_pairs':0}
@@ -32,6 +33,9 @@ if __name__=='__main__':
     cache={}
     for report_path,kind in ((path,'full-state'),(max_path,'maximum-ieee')):
         r=json.loads(report_path.read_text());q=r['report'];assert r['returncode']==0 and q['passed']
+        backend={f'openassembler/backend/{name}.py':sha((ROOT/f'openassembler/backend/{name}.py').read_bytes())
+                 for name in ('ra','contracts','compile','sched')}
+        assert all(r['compiler_hashes'][name]==digest for name,digest in backend.items())
         archive=report_path.parent/r['archive']['path'];assert sha(archive.read_bytes())==r['archive']['sha256']
         for name in SOURCES:
             local=ROOT/'openassembler/modelfront'/name;digest=sha(local.read_bytes())
@@ -84,5 +88,5 @@ if __name__=='__main__':
         result['reports'].append({'kind':kind,'path':report_path.relative_to(ROOT).as_posix(),'sha256':sha(report_path.read_bytes()),
           'archive':archive.relative_to(ROOT).as_posix(),'archive_sha256':r['archive']['sha256'],'bundles':len(rows),
           'full_comparisons':len(q['comparisons']),'elements':sum(x['elements'] for x in q['comparisons']),'device':q['device']})
-    result.update(passed=True,unique_generated_kernels=len(cache),source_identities_checked=list(SOURCES))
-    (HERE/'audit.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))
+    result.update(passed=True,unique_generated_kernels=len(cache),source_identities_checked=list(SOURCES),backend_hashes=backend)
+    args.output.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))

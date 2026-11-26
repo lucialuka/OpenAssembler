@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "aggregate",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .align 8 .b8 v[8]) {ret;}",
+      "rejected": true,
+      "diagnostic": "entry k: unsupported parameter ABI '.param .align 8 .b8 v[8]'; scalar 32/64-bit parameters required",
+      "exception": "SyntaxError"
+    },
+    {
+      "name": "float16",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .f16 v) {ret;}",
+      "rejected": true,
+      "diagnostic": "entry k: unsupported parameter ABI '.param .f16 v'; scalar 32/64-bit parameters required",
+      "exception": "SyntaxError"
+    },
+    {
+      "name": "predicate_slot",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .pred v) {ret;}",
+      "rejected": true,
+      "diagnostic": "entry k: unsupported parameter ABI '.param .pred v'; scalar 32/64-bit parameters required",
+      "exception": "SyntaxError"
+    },
+    {
+      "name": "narrow_pointer",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .u8 .ptr v) {ret;}",
+      "rejected": true,
+      "diagnostic": "entry k: pointer parameter ABI requires u64/b64 under address_size 64",
+      "exception": "SyntaxError"
+    },
+    {
+      "name": "array",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .b8 v[4]) {ret;}",
+      "rejected": true,
+      "diagnostic": "entry k: unsupported parameter ABI '.param .b8 v[4]'; scalar 32/64-bit parameters required",
+      "exception": "SyntaxError"
+    },
+    {
+      "name": "scalar_alignment_override",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .align 16 .u16 v) {ret;}",
+      "rejected": true,
+      "diagnostic": "entry k: unsupported parameter ABI '.param .align 16 .u16 v'; scalar 32/64-bit parameters required",
+      "exception": "SyntaxError"
+    },
+    {
+      "name": "cross_slot",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .u8 v,.param .u8 other){.reg .u32 %r;ld.param.u16 %r,[v];ret;}",
+      "rejected": true,
+      "diagnostic": "PTX line 4 (ld.param.u16): parameter load must be naturally aligned and within its declared scalar slot",
+      "exception": "NotSupported"
+    },
+    {
+      "name": "negative_offset",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .u16 v){.reg .u32 %r;ld.param.u8 %r,[v-1];ret;}",
+      "rejected": true,
+      "diagnostic": "PTX line 4 (ld.param.u8): parameter load must be naturally aligned and within its declared scalar slot",
+      "exception": "NotSupported"
+    },
+    {
+      "name": "out_of_slot",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .u16 v){.reg .u32 %r;ld.param.u8 %r,[v+2];ret;}",
+      "rejected": true,
+      "diagnostic": "PTX line 4 (ld.param.u8): parameter load must be naturally aligned and within its declared scalar slot",
+      "exception": "NotSupported"
+    },
+    {
+      "name": "unaligned_halfword",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .b32 v){.reg .u32 %r;ld.param.u16 %r,[v+1];ret;}",
+      "rejected": true,
+      "diagnostic": "PTX line 4 (ld.param.u16): parameter load must be naturally aligned and within its declared scalar slot",
+      "exception": "NotSupported"
+    },
+    {
+      "name": "undeclared",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .u8 v){.reg .u32 %r;ld.param.u8 %r,[other];ret;}",
+      "rejected": true,
+      "diagnostic": "PTX line 4 (ld.param.u8): parameter load requires a declared scalar parameter and supported width",
+      "exception": "NotSupported"
+    },
+    {
+      "name": "parameter_vector",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .b32 v){.reg .u32 %r<3>;ld.param.v2.u8 {%r1,%r2},[v];ret;}",
+      "rejected": true,
+      "diagnostic": "PTX line 4: unsupported PTX contract ld.param.v2.u8: modifiers/types have no faithful scalar lowering",
+      "exception": "NotSupported"
+    },
+    {
+      "name": "parameter_store",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.entry k(.param .u8 v){.reg .u32 %r;mov.u32 %r,0;st.param.u8 [v],%r;ret;}",
+      "rejected": true,
+      "diagnostic": "PTX line 4: unsupported PTX contract st.param.u8: modifiers/types have no faithful scalar lowering",
+      "exception": "NotSupported"
+    },
+    {
+      "name": "narrow_device_slots",
+      "source": ".version 8.0\n.target sm_80\n.address_size 64\n.func (.param .u8 result) h(.param .u8 flag){ret;} .entry k(){ret;}",
+      "rejected": true,
+      "diagnostic": "entry device h: unsupported parameter ABI '.param .u8 flag'; scalar 32/64-bit parameters required",
+      "exception": "SyntaxError"
+    }
+  ],
+  "source_hashes": {
+    "candidate-parse.py": "e49d36ca6a0940d9185f19673134cda9c1ae7b4d204afbba05b1a56dc92ce101",
+    "candidate-contracts.py": "cd984f0b99d6db3f0b34ffc6ffdb4843fbdc337de951b545759cec1a58cf196f",
+    "candidate-ra.py": "4ad337bfa20dce58f932ca976baa1311386aefdca22a26def3e364633f9fa551",
+    "candidate-backend.py": "30810920b1d563e81bd647f27011e737af1326c26b95664d67908a4332d39698",
+    "candidate-semantics.py": "cdb4eec804911a548c6bd36411023026b488c4b2210d2f8bcf38861b73d57369",
+    "candidate-verify.py": "0709eec404ae1a760a038c2727d82c587024518e8ceba2309e34870b806750df",
+    "candidate-runner.py": "d75c0cee40085fe464b833c353ae985293aec8c03f5911c7924a2cb011195c32",
+    "candidate-driver.py": "71cfc9aff1254aae45e664663ab139b925f592c4f37fcc47996fdf92d87c7eab",
+    "boundaries.py": "4c186665ff4f220791fed85bf3184901efa62adfd12836029f9935240a7f9270",
+    "inputs.json": "580007e3f5f40bc651601e9e01b103f02b7d77650a36e428538e2e2821e146ce"
+  },
+  "scope": "Fourteen exact original aggregate/float/predicate/pointer/offset/alignment/load/store/vector/device-call ABI rejection boundaries; no numerical/GPU claim"
+}

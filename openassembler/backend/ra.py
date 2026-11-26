@@ -101,13 +101,11 @@ class Selector:
                 self.sym_shared[d_.name] = soff
                 soff += d_.size
         self.smem_bytes = soff
-        self.param_off = {}
-        off = 0
-        for ty, name in k.params:
-            sz = 8 if ty.endswith("64") else 4
-            off = (off + sz - 1) // sz * sz
-            self.param_off[name] = PARAM_BASE + off
-            off += sz
+        from openassembler.backend.storage import local_frame
+        try:self.local_frame=local_frame(k)
+        except ValueError as error:raise NotSupported(str(error)) from None
+        from openassembler.ptx.parse import parameter_layout
+        self.param_off = {name: PARAM_BASE+offset for name, (offset, size) in parameter_layout(k.params).items()}
 
     def new(self) -> V:
         self.nv += 1
@@ -257,8 +255,14 @@ class Selector:
         raise NotSupported(f"64-bit value {v}")
 
     def pair(self, name: str) -> tuple[V, V]:
-        v = self.pair_value(self.val64(name))
-        self.env[name] = v
+        original = self.val64(name)
+        v = self.pair_value(original)
+        # A lazily materialized parameter/wide multiply may be first used in
+        # only one branch. Keep the symbolic value across CFG paths so a later
+        # use cannot trust registers whose definition it skipped.
+        if not (getattr(self, "has_cfg", False) and isinstance(original, tuple)
+                and original[0] in ("cpair", "widemul")):
+            self.env[name] = v
         return v
 
     def operand64(self, operand):
@@ -288,6 +292,8 @@ class Selector:
         r1 = self.new()
         self.emit("MOV {d0}, c[0x0][0x28]", [r1], [], side=True)       # stack pointer (R1 by ABI)
         self.r1 = r1
+        if self.local_frame.bytes:
+            self.emit(f"IADD3 {{d0}}, {{s0}}, -{self.local_frame.bytes:#x}, RZ",[r1],[r1],side=True)
         self.emit("ULDC.64 UR4, c[0x0][0x118]", [], [], side=True)     # global memory descriptor
         # A guarded write is a partial definition (the old value survives when the guard
         # is false), so it needs the same fixed home as a write inside a loop. Missing this
@@ -341,8 +347,41 @@ class Selector:
         op, m, a = ins.op, ins.mods, ins.args
         t = next((x for x in m if x[:1] in ("s", "u", "b", "f") and x[1:].isdigit()), None)
         if op == "ld" and "param" in m:
-            off = self.param_off[a[1].base] + a[1].off
-            self.bind(a[0].name, ("cpair", off) if t and t.endswith("64") else C(off))
+            from openassembler.ptx.parse import parameter_load
+            try: relative, width = parameter_load(self.k, a[1], t)
+            except ValueError as error: raise NotSupported(str(error)) from None
+            off = PARAM_BASE+relative
+            if width < 4:
+                value = self.new()
+                self.emit("MOV {d0}, {s0}", [value], [C(off & ~3)])
+                shift, bits = (off & 3)*8, width*8
+                if t.startswith('s'):
+                    left = 32-bits-shift
+                    if left:
+                        moved = self.new()
+                        self.emit(f"SHF.L.U32 {{d0}}, {{s0}}, {left:#x}, RZ", [moved], [value])
+                        value = moved
+                    result = self.new()
+                    self.emit(f"SHF.R.S32.HI {{d0}}, RZ, {32-bits:#x}, {{s0}}", [result], [value])
+                else:
+                    if shift:
+                        moved = self.new()
+                        self.emit(f"SHF.R.U32.HI {{d0}}, RZ, {shift:#x}, {{s0}}", [moved], [value])
+                        value = moved
+                    result = self.new()
+                    self.emit(f"LOP3.LUT {{d0}}, {{s0}}, {(1 << bits)-1:#x}, RZ, 0xc0, !PT", [result], [value])
+                self.bind(a[0].name, result)
+            else:
+                self.bind(a[0].name, ("cpair", off) if t and t.endswith("64") else C(off))
+            return
+        if op in ("ld","st") and "local" in m:
+            return self.local(ins,t)
+        if op=="mov" and isinstance(a[1],Var) and a[1].name in self.local_frame.offsets:
+            if t not in("u32","b32"):
+                raise NotSupported("local symbols require explicit 32-bit local addresses")
+            destination=self.new()
+            self.emit(f"IADD3 {{d0}}, {{s0}}, {self.local_frame.offsets[a[1].name]:#x}, RZ",[destination],[self.r1])
+            self.bind(a[0].name,destination)
             return
         if op == "cvta":                                   # global generic == global
             self.bind(a[0].name, self.val64(a[1].name))
@@ -404,8 +443,18 @@ class Selector:
                     v = snap
                 self.bind(a[0].name, v)
             return
+        if op == "mul" and m == ("lo", t) and t in ("u64", "s64"):
+            (xl, xh), (yl, yh) = self.operand64(a[1]), self.operand64(a[2])
+            low, carry, cross, high = self.new(), self.new(), self.new(), self.new()
+            self.emit("IMAD {d0}, {s0}, {s1}, RZ", [low], [xl, yl])
+            self.emit("IMAD.HI.U32 {d0}, {s0}, {s1}, RZ", [carry], [xl, yl])
+            self.emit("IMAD {d0}, {s0}, {s1}, {s2}", [cross], [xh, yl, carry])
+            self.emit("IMAD {d0}, {s0}, {s1}, {s2}", [high], [xl, yh, cross])
+            self.bind(a[0].name, (low, high))
+            return
         if op == "mul" and "wide" in m and t in ("u32", "s32"):
-            self.bind(a[0].name, ("widemul", self.reg32(a[1]), self.val32(a[2]), t == "u32"))
+            left, right = self.snapshot_parts((self.reg32(a[1]), self.val32(a[2])))
+            self.bind(a[0].name, ("widemul", left, right, t == "u32"))
             return
         if op in ("add", "sub") and t in ("s64", "u64"):
             if op == "add" and all(isinstance(x, Var) for x in a[1:]):
@@ -479,6 +528,14 @@ class Selector:
             return
         if op == "setp":
             return self.setp(ins, t)
+        if op == "selp" and t in ("b64", "u64", "s64", "f64"):
+            predicate = self.pred(a[3])
+            left, right = self.operand64(a[1]), self.operand64(a[2])
+            low, high = self.new(), self.new()
+            self.emit("SEL {d0}, {s0}, {s1}, {p0}", [low], [left[0], right[0], predicate])
+            self.emit("SEL {d0}, {s0}, {s1}, {p0}", [high], [left[1], right[1], predicate])
+            self.bind(a[0].name, (low, high))
+            return
         if op == "selp" and t in ("b32", "u32", "s32", "f32"):
             p = self.pred(a[3])
             d = self.new()
@@ -489,6 +546,32 @@ class Selector:
             return self.shared(ins, t)
         if op == "bar" and ("sync" in m or not m) and len(a) == 1 and isinstance(a[0], ImmI) and a[0].value == 0:
             self.emit("BAR.SYNC.DEFER_BLOCKING 0x0", side=True)
+            return
+        if op == "shfl" and m[1] != "bfly":
+            mode=m[1]
+            clamp=0 if mode=="up" else 31
+            if (len(a)!=5 or not isinstance(a[0],Var) or ins.guard is not None
+                    or not isinstance(a[3],ImmI) or a[3].value!=clamp
+                    or not isinstance(a[4],ImmI) or a[4].value!=0xffffffff):
+                raise NotSupported("shuffle requires an unpredicated full warp, full mask, and clamp 0 for up / 31 otherwise")
+            source,delta=self.reg32(a[1]),self.reg32(a[2])
+            mask=self.reg32(ImmI(0xffffffff))
+            self.emit("WARPSYNC {s0}",[],[mask],side=True)
+            if mode=="up":
+                # PTX b uses only its low five bits. For an invalid source,
+                # select our own lane before the full-warp indexed shuffle.
+                lane,bits,index,selected=self.new(),self.new(),self.new(),self.new()
+                valid=self.newp()
+                self.emit("S2R {d0}, SR_LANEID",[lane],[],var_lat=True)
+                self.emit("LOP3.LUT {d0}, {s0}, 0x1f, RZ, 0xc0, !PT",[bits],[delta])
+                self.emit("IADD3 {d0}, {s0}, -{s1}, RZ",[index],[lane,bits])
+                self.emit("ISETP.GE.U32.AND {p0}, PT, {s0}, {s1}, PT",[valid],[lane,bits])
+                self.emit("SEL {d0}, {s0}, {s1}, {q0}",[selected],[index,lane,(valid,False)])
+                delta=selected
+            result=self.new()
+            opcode="IDX" if mode=="up" else mode.upper()
+            self.emit(f"SHFL.{opcode} PT, {{d0}}, {{s0}}, {{s1}}, 0x1f",[result],[source,delta],var_lat=True)
+            self.bind(a[0].name,result)
             return
         if op == "shfl":
             if (m != ("sync", "bfly", "b32") or len(a) != 5
@@ -671,6 +754,31 @@ class Selector:
 
     # shared memory -------------------------------------------------------------------
 
+    def local(self,ins,t):
+        address=ins.args[1] if ins.op=="ld" else ins.args[0]
+        if not self.local_frame.bytes:
+            raise NotSupported("local access requires a declared native frame")
+        if t not in("b32","u32","s32","f32") or address.off%4:
+            raise NotSupported("local accesses require aligned scalar 32-bit elements")
+        if address.base in self.local_frame.offsets:
+            if address.off<0 or address.off+4>self.local_frame.sizes[address.base]:
+                raise NotSupported("literal local symbol access is outside its declaration")
+            base=self.r1;offset=self.local_frame.offsets[address.base]+address.off
+        else:
+            base=self.reg32(Var(address.base));offset=address.off
+        if offset%4:
+            raise NotSupported("local symbol layout is not aligned for a 32-bit access")
+        if abs(offset)>65535:
+            raise NotSupported("local literal address offset exceeds the admitted range")
+        suffix=("+" if offset>0 else "-")+hex(abs(offset)) if offset else ""
+        if ins.op=="ld":
+            result=self.new()
+            self.emit(f"LDL {{d0}}, [{{s0}}{suffix}]",[result],[base],var_lat=True)
+            self.bind(ins.args[0].name,result)
+        else:
+            value=self.reg32(ins.args[1])
+            self.emit(f"STL [{{s0}}{suffix}], {{s1}}",[],[base,value],side=True)
+
     def shared(self, ins, t):
         op, a, m = ins.op, ins.args, ins.mods
         ad = a[1] if op == "ld" else a[0]
@@ -678,11 +786,29 @@ class Selector:
             base, off = None, self.sym_shared[ad.base] + ad.off
         else:
             base, off = self.reg32(Var(ad.base)), ad.off
-        addr = f"[{{s0}}{'+' + hex(off) if off else ''}]" if base is not None else f"[RZ+{off:#x}]"
+        offset=("+" if off>0 else "-")+hex(abs(off)) if off else ""
+        addr = f"[{{s0}}{offset}]" if base is not None else f"[RZ+{off:#x}]"
         uses0 = [base] if base is not None else []
         si = 1 if base is not None else 0
         nvec = 4 if "v4" in m else 2 if "v2" in m else 1
         wide = {1: "", 2: ".64", 4: ".128"}[nvec]
+        if t in ("b8","u8","s8","b16","u16","s16","b64","u64","s64","f64"):
+            if nvec!=1:raise NotSupported("new shared widths require scalar memory operands")
+            width=8 if t.endswith("64")else 2 if t.endswith("16")else 1
+            if off%width:raise NotSupported("shared literal offset requires natural alignment")
+            if ad.base in self.sym_shared:
+                declaration=next(d for d in self.k.decls if d.space=="shared"and d.name==ad.base)
+                if ad.off<0 or ad.off+width>declaration.size or declaration.align<width:
+                    raise NotSupported("shared symbol access exceeds its declared size/alignment")
+            suffix={"b8":".U8","u8":".U8","s8":".S8","b16":".U16","u16":".U16","s16":".S16"}.get(t,".64")
+            if op=="ld":
+                destination=tuple(self.new()for _ in range(2))if width==8 else self.new()
+                self.emit(f"LDS{suffix} {{d0}}, {addr}",[destination],uses0,var_lat=True)
+                self.bind(a[0].name,destination)
+            else:
+                value=self.wide(self.operand64(a[1]))if width==8 else self.reg32(a[1])
+                self.emit(f"STS{suffix} {addr}, {{s{si}}}",[],uses0+[value],side=True)
+            return
         if t not in ("b32", "u32", "s32", "f32"):
             raise NotSupported(f"{op}.shared.{t}")
         if op == "ld":
@@ -743,19 +869,36 @@ class Selector:
         """Only admitted GPU-scope relaxed 32-bit integer RMW/reduction forms."""
         returning = ins.op == "atom"
         address = ins.args[1] if returning else ins.args[0]
-        base, offset = self._addr(address)
+        shared = "shared" in ins.mods
+        if shared:
+            if address.base in self.sym_shared:
+                base = self.reg32(ImmI(self.sym_shared[address.base]))
+            else:
+                base = self.reg32(Var(address.base))
+            offset = (("+" if address.off>0 else "-")+hex(abs(address.off))) if address.off else ""
+        else:
+            base, offset = self._addr(address)
+        semantics = ins.mods[0]
+        if semantics in ("release","acq_rel"):
+            self.emit("MEMBAR.ALL.GPU", [], [], side=True)
+            self.emit("ERRBAR", [], [], side=True)
         operation = ins.mods[-2]
         sources = ins.args[2:] if returning else ins.args[1:]
         values = [self.reg32(value) for value in sources]
         if returning:
             result = self.new()
-            if operation == "cas":
+            if shared:
+                self.emit(f"ATOMS.{operation.upper()} {{d0}}, [{{s0}}{offset}], {{s1}}",
+                          [result], [base,*values], var_lat=True, side=True)
+            elif operation == "cas":
                 self.emit(f"ATOMG.E.CAS.STRONG.GPU PT, {{d0}}, [{{s0}}{offset}], {{s1}}, {{s2}}",
                           [result], [base, *values], var_lat=True, side=True)
             else:
                 self.emit(f"ATOMG.E.{operation.upper()}.STRONG.GPU PT, {{d0}}, [{{s0}}.64{offset}], {{s1}}",
                           [result], [base, *values], var_lat=True, side=True)
             self.bind(ins.args[0].name, result)
+            if semantics in ("acquire","acq_rel"):
+                self.emit("CCTL.IVALL", [], [], side=True)
         else:
             self.emit(f"RED.E.ADD.STRONG.GPU [{{s0}}.64{offset}], {{s1}}", [], [base, *values], side=True)
 
@@ -1216,7 +1359,8 @@ def compile_kernel(k: Kernel):
 
     s = Selector(k)
     ops = coalesce(dce(s.run()))
-    phys = allocate(ops, s.r1)
+    from openassembler.backend.spill import allocate_kernel
+    ops,phys,resources=allocate_kernel(s,ops)
     lowered = lower(ops, phys)
     # Labels: record which instruction index each label precedes, then drop markers.
     labels, body = {}, []
@@ -1227,7 +1371,7 @@ def compile_kernel(k: Kernel):
             body.append((t, vl, r, w))
     code = schedule([Out(t, vl, r, w) for t, vl, r, w in body], labels=labels)
     return code, {"ir_ops": len(ops), "regs": max(phys.values()) + 1, "labels": labels,
-                  "smem": s.smem_bytes}
+                  "smem": s.smem_bytes, **resources}
 
 
 def encode_code(enc, code, labels) -> list[int]:
@@ -1237,7 +1381,7 @@ def encode_code(enc, code, labels) -> list[int]:
     words = []
     for i, (t, ctl) in enumerate(code):
         m = _re.search(r"`\((\S+?)\)", t)
-        if m and "BRA" in t.split():
+        if m and any(op in t.split() for op in ("BRA", "BSSY")):
             words.append(enc.encode_branch(t, 16 * i, 16 * labels[m[1]], ctl))
         elif m and t.split()[1:2] == ["BRA"]:
             words.append(enc.encode_branch(t, 16 * i, 16 * labels[m[1]], ctl))

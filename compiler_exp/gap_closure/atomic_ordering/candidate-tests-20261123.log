@@ -1,0 +1,57 @@
+........................................................................ [  8%]
+........................................................................ [ 17%]
+........................................................................ [ 26%]
+...........................FF........................................... [ 35%]
+........................................................................ [ 44%]
+........................................................................ [ 53%]
+........................................................................ [ 62%]
+........................................................................ [ 71%]
+........................................................................ [ 80%]
+........................................................................ [ 89%]
+........................................................................ [ 98%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__ test_publication_fences_retain_order_and_wait_for_async_operations[sched] ___
+
+level = 'sched'
+
+    @pytest.mark.parametrize('level', LEVELS)
+    def test_publication_fences_retain_order_and_wait_for_async_operations(level):
+        code, _, words, _, _ = generate(parse_module(FIXTURES['publication']).kernels['publication'], 'sm_80', level)
+        assert words
+        instructions = [text for text, _ in code]
+        release = [i for i, text in enumerate(instructions) if text.startswith('MEMBAR.ALL.GPU')]
+        acquire = [i for i, text in enumerate(instructions) if text.startswith('CCTL.IVALL')]
+        assert len(release) == len(acquire) == 2
+        for i in release:
+>           assert instructions[i + 1] == 'ERRBAR'
+E           AssertionError: assert 'MOV R6, c[0x0][0x170]' == 'ERRBAR'
+E             
+E             - ERRBAR
+E             + MOV R6, c[0x0][0x170]
+
+tests/test_backend_atomic_ordering.py:81: AssertionError
+___ test_publication_fences_retain_order_and_wait_for_async_operations[opt] ____
+
+level = 'opt'
+
+    @pytest.mark.parametrize('level', LEVELS)
+    def test_publication_fences_retain_order_and_wait_for_async_operations(level):
+        code, _, words, _, _ = generate(parse_module(FIXTURES['publication']).kernels['publication'], 'sm_80', level)
+        assert words
+        instructions = [text for text, _ in code]
+        release = [i for i, text in enumerate(instructions) if text.startswith('MEMBAR.ALL.GPU')]
+        acquire = [i for i, text in enumerate(instructions) if text.startswith('CCTL.IVALL')]
+        assert len(release) == len(acquire) == 2
+        for i in release:
+>           assert instructions[i + 1] == 'ERRBAR'
+E           AssertionError: assert 'MOV R6, c[0x0][0x170]' == 'ERRBAR'
+E             
+E             - ERRBAR
+E             + MOV R6, c[0x0][0x170]
+
+tests/test_backend_atomic_ordering.py:81: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_backend_atomic_ordering.py::test_publication_fences_retain_order_and_wait_for_async_operations[sched]
+FAILED tests/test_backend_atomic_ordering.py::test_publication_fences_retain_order_and_wait_for_async_operations[opt]
+2 failed, 801 passed in 44.20s

@@ -22,6 +22,8 @@ def scalar_forms():
     for t in ('b32','u32','s32','f32','b64','u64','s64','f64'):
         add('mov',t,2)
         add('ld','param.'+t,2)
+    for t in ('b8','u8','s8','b16','u16','s16'):
+        add('ld','param.'+t,2)
     for t in ('s32','u32','s64','u64'):
         for op in ('add','sub'): add(op,t,3)
     for op in ('add','sub'): add(op,'sat.s32',3)
@@ -37,10 +39,11 @@ def scalar_forms():
         add('neg',t,2)
     for t in ('b32','b64'): add('shl',t,3)
     for t in ('b32','u32','s32','b64','u64','s64'): add('shr',t,3)
+    for t in ('u64','s64'): add('mul','lo.'+t,3)
     for dst,src in product(('s32','u32','s64','u64'), repeat=2): add('cvt',dst+'.'+src,2)
     for mode in ('global','to.global'):
         for t in ('u64','u32'): add('cvta',mode+'.'+t,2)
-    for t in ('u32','s32','b32','f32'): add('selp',t,4)
+    for t in ('u32','s32','b32','f32','b64','u64','s64','f64'): add('selp',t,4)
     for op in ('add','sub','mul','mad','fma'):
         for rounding in ('','rn.'):
             add(op,rounding+'f32',4 if op in ('mad','fma') else 3)
@@ -60,6 +63,8 @@ def scalar_forms():
         for cache in ('','wb.','cg.','cs.','wt.'):
             for width in ('','v2.','v4.'): add('st','global.'+cache+width+t,2)
     for t in ('b8','u8','s8','b16','u16','s16','b64','u64','s64','f64'):
+        for op in ('ld','st'):add(op,'shared.'+t,2)
+    for t in ('b8','u8','s8','b16','u16','s16','b64','u64','s64','f64'):
         for cache in ('','wb.','cg.','cs.','wt.'): add('st','global.'+cache+t,2)
     for t in ('u8','s8','u16','s16','b32','u32','s32','f32','b64','u64','s64','f64'):
         for cache in ('','nc.','cg.','cs.','lu.','ca.'):
@@ -72,11 +77,21 @@ def scalar_forms():
             add('red',prefix+'add.'+dtype,2)
         add('atom',prefix+'exch.b32',3)
         add('atom',prefix+'cas.b32',4)
+    for semantics in ('acquire','release','acq_rel'):
+        prefix=semantics+'.gpu.global.'
+        for dtype in ('u32','s32'):add('atom',prefix+'add.'+dtype,3)
+        add('atom',prefix+'exch.b32',3)
+        add('atom',prefix+'cas.b32',4)
+    for prefix in ('shared.','relaxed.cta.shared.'):
+        for dtype in ('u32','s32'):add('atom',prefix+'add.'+dtype,3)
+        add('atom',prefix+'exch.b32',3)
+    for dtype in ('b32','u32','s32','f32'):
+        for op in ('ld','st'):add(op,'local.'+dtype,2)
     for op in ('ret','bra'):
         for m in ('','uni'): add(op,m,0 if op=='ret' else 1)
     add('bar','sync',1)
     add('bar','',1)
-    add('shfl','sync.bfly.b32',5)
+    for mode in ('bfly','idx','up','down'):add('shfl','sync.'+mode+'.b32',5)
     from .fragments import library
     for key in library():
         op, *mods = key.split('.')

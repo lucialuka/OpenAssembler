@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "zero_step",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    for i in range(0,3,0):\n        out[0]=i\n",
+      "reason": "must not be 0",
+      "rejected": true,
+      "error": "range() step must not be 0 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/zero_step.py, line 4)"
+    },
+    {
+      "name": "wide_step",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    for i in range(0,3,2147483648):\n        out[0]=i\n",
+      "reason": "fit in i32",
+      "rejected": true,
+      "error": "range() step does not fit in i32 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/wide_step.py, line 4)"
+    },
+    {
+      "name": "runtime_step",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32),step:i32):\n    for i in range(0,3,step):\n        out[0]=i\n",
+      "reason": "constant int",
+      "rejected": true,
+      "error": "range() step must be a constant int (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/runtime_step.py, line 4)"
+    },
+    {
+      "name": "float_step",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    for i in range(0,3,0.5):\n        out[0]=i\n",
+      "reason": "constant int",
+      "rejected": true,
+      "error": "range() step must be a constant int (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/float_step.py, line 4)"
+    },
+    {
+      "name": "wide_bounds",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32),n:i64):\n    for i in range(n):\n        out[0]=i\n",
+      "reason": "int32",
+      "rejected": true,
+      "error": "range() bounds must be int32 expressions (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/wide_bounds.py, line 4)"
+    },
+    {
+      "name": "float_bounds",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32),n:f32):\n    for i in range(n):\n        out[0]=i\n",
+      "reason": "int32",
+      "rejected": true,
+      "error": "range() bounds must be int32 expressions (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/float_bounds.py, line 4)"
+    },
+    {
+      "name": "range_else_missing",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i32)->i32:\n    for i in range(x):\n        if x:\n            break\n    else:\n        return x\n@kernel\ndef k(out:Array(i32)):\n    out[0]=h(3)\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/range_else_missing.py, line 3)"
+    },
+    {
+      "name": "while_else_missing",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i32)->i32:\n    while x:\n        break\n    else:\n        return x\n@kernel\ndef k(out:Array(i32)):\n    out[0]=h(3)\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/while_else_missing.py, line 3)"
+    },
+    {
+      "name": "else_bypassed_init",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i32)->i32:\n    for i in range(x):\n        break\n    else:\n        value=x\n    return value\n@kernel\ndef k(out:Array(i32)):\n    out[0]=h(3)\n",
+      "reason": "uninitialized",
+      "rejected": true,
+      "error": "device helper local 'value' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/else_bypassed_init.py, line 8)"
+    },
+    {
+      "name": "body_only_init",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i32)->i32:\n    while x:\n        value=x\n        x-=1\n    else:\n        return value\n@kernel\ndef k(out:Array(i32)):\n    out[0]=h(3)\n",
+      "reason": "uninitialized",
+      "rejected": true,
+      "error": "device helper local 'value' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/body_only_init.py, line 8)"
+    },
+    {
+      "name": "else_break_no_outer",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    for i in range(3):\n        pass\n    else:\n        break\n",
+      "reason": "outside a loop",
+      "rejected": true,
+      "error": "'break' outside a loop (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/else_break_no_outer.py, line 7)"
+    },
+    {
+      "name": "else_continue_no_outer",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    while False:\n        pass\n    else:\n        continue\n",
+      "reason": "outside a loop",
+      "rejected": true,
+      "error": "'continue' outside a loop (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/else_continue_no_outer.py, line 7)"
+    },
+    {
+      "name": "for_break_barrier",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    for i in range(3):\n        if tid_x()==i:\n            break\n    else:\n        syncthreads()\n",
+      "reason": "thread-dependent",
+      "rejected": true,
+      "error": "syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/for_break_barrier.py, line 8)"
+    },
+    {
+      "name": "while_break_barrier",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    i=0\n    while i<3:\n        if tid_x()==i:\n            break\n        i+=1\n    else:\n        syncthreads()\n",
+      "reason": "thread-dependent",
+      "rejected": true,
+      "error": "syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/while_break_barrier.py, line 10)"
+    },
+    {
+      "name": "for_return_barrier",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    for i in range(3):\n        if tid_x()==i:\n            return\n    else:\n        syncthreads()\n",
+      "reason": "thread-dependent",
+      "rejected": true,
+      "error": "syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/for_return_barrier.py, line 8)"
+    },
+    {
+      "name": "varying_while_else",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(out:Array(i32)):\n    i=tid_x()\n    while i<3:\n        i+=1\n    else:\n        syncthreads()\n",
+      "reason": "thread-dependent",
+      "rejected": true,
+      "error": "syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-loop-control-negative-rs5kx3br/varying_while_else.py, line 8)"
+    }
+  ],
+  "source_hashes": {
+    "candidate-pyfront.py": "d53f93fa23499845527cf1379e41b00d41ad04c6427af9b3d178bffc5a82b690",
+    "candidate-return_flow.py": "a96532f392428a51a778ee88f7ae498f3fca44a076292eacdde6c2b613251a00"
+  },
+  "script_sha256": "fa8d94016354aa49bbf22b071054dae5c8a355e3ee775c1e33414657036a9e2d",
+  "scope": "16 original unsupported range/else flow/initialization/convergence rejection controls with original diagnostics; no hardware claim"
+}

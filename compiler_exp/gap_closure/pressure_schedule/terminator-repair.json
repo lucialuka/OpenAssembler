@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "scope": "Final admission splits all control-flow terminators when checking local transfers; scheduled operation choices are unchanged. Historical hardware allocator bytes remain separate.",
+  "frozen_allocator_sha256": "e686843950982f85edee41396e4e33e99cda2737277906d25e82ad1c5d844434",
+  "final_allocator_sha256": "1c7c66b544398638e110e9962d675cda8fbd73dfd6c955d06790f8a5801194f3",
+  "change": {
+    "old": "if op.target:block+=1",
+    "new": "if op.target or opcode in('EXIT','RET','BRA','BRX','JMP','CALL'):block+=1"
+  },
+  "reason": "A guarded EXIT has no branch target. Aggregating transfers across it cannot establish the claimed bound for each basic block."
+}

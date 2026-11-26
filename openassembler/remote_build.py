@@ -21,6 +21,11 @@ from openassembler.transport import TransportError, runtime_files, ssh_request
 
 def _sources(source: Path, output: Path, options: Options) -> tuple[Path, dict[str, bytes], list[str]]:
     root = source if source.is_dir() else source.parent
+    from openassembler.pyfront.modules import source_root
+    if options.python_source_root is not None:
+        root = source_root(source if source.is_file() else source/'__entry__.py', options.python_source_root)
+    elif source.is_file() and source.suffix == '.py':
+        root = source_root(source)
     files, _ = project.walk(root, output)
     # A git-ignored file explicitly named on the command line still participates.
     if source.is_file() and source not in files:
@@ -43,10 +48,37 @@ def _sources(source: Path, output: Path, options: Options) -> tuple[Path, dict[s
             raise project.ProjectError('remote source bundle exceeds 256 MiB')
         payload[name] = data
 
+    library_paths={Path(p).resolve()for p in options.device_libraries}
     for path in files:
-        add('source/' + path.relative_to(root).as_posix(), path)
+        if path.resolve()not in library_paths:add('source/' + path.relative_to(root).as_posix(), path)
+    python_graphs = {}
+    from openassembler.pyfront.compile import compile_file, NotSupported
+    from openassembler.pyfront.modules import contract_from_ptx
+    for path in files:
+        if path.suffix != '.py' or not project.classify(path,path.name).language:
+            continue
+        try:
+            ptx, _ = compile_file(path, source_root=options.python_source_root)
+        except NotSupported:
+            # Ordinary worker builds retain per-source failure/partial-output behavior.
+            continue
+        graph = contract_from_ptx(ptx)
+        if graph is None:
+            continue
+        graph_root = source_root(path, options.python_source_root)
+        for row in graph['files']:
+            dependency = graph_root/row['path']
+            if not dependency.is_relative_to(root):
+                raise project.ProjectError('Python helper dependency is outside the bundled source root')
+            add('source/'+dependency.relative_to(root).as_posix(),dependency)
+            if project.sha256_file(dependency) != row['sha256']:
+                raise project.ProjectError('Python helper dependency changed while bundling')
+        python_graphs[path.relative_to(root).as_posix()] = graph
+    if python_graphs:
+        payload['.oa-python-graphs.json'] = json.dumps(python_graphs).encode()
     from .compilation_database import discover as discover_commands
     database, commands = discover_commands(source, options.compile_commands)
+    commands={path:command for path,command in commands.items()if path not in library_paths}
     if commands:
         def map_path(path):
             path = Path(path).resolve()
@@ -122,6 +154,30 @@ def _sources(source: Path, output: Path, options: Options) -> tuple[Path, dict[s
             paths, _ = project.walk(directory, output)
             for path in paths:
                 add(f'{prefix}/{path.relative_to(directory).as_posix()}', path)
+    if options.device_libraries:
+        from dataclasses import replace
+        from .compilation_database import load
+        records=[]
+        for index, library in enumerate(options.device_libraries):
+            library=Path(library).resolve()
+            if not library.is_file():raise project.ProjectError('device library missing: '+str(library))
+            selected=load(options.compile_commands).get(library)if options.compile_commands else None
+            database=options.compile_commands if selected else None
+            library_options=replace(options,device_libraries=[],device_library_options=[],compile_commands=database)
+            _library_root,library_files,library_includes=_sources(library,output,library_options)
+            _,library_commands=discover_commands(library,database)
+            if not library_commands:
+                library_files.pop('source/compile_commands.json',None)
+            prefix=f'device-libraries/{index}/'
+            for relative,data in library_files.items():
+                if len(payload)>=MAX_FILES or total+len(data)>MAX_BYTES:
+                    raise project.ProjectError('device library source bundle exceeds 256 MiB / 20000 files')
+                payload[prefix+relative]=data;total+=len(data)
+            records.append({'path':prefix+'source/'+library.name,
+                'source_origin':str(library),'source_sha256':project.sha256_file(library),
+                'include_dirs':[prefix+name for name in library_includes],
+                'compile_commands':prefix+'source/compile_commands.json'if library_commands else None})
+        payload['.oa-device-libraries.json']=json.dumps(records).encode()
     return root, payload, includes
 
 
@@ -150,7 +206,8 @@ def compile_native(source: Path, output: Path, options: Options, name: str | Non
         from .compilation_database import discover as discover_commands
         _, commands=discover_commands(source,options.compile_commands)
         files = project.walk(source, output)[0] if source.is_dir() else [source]
-        count = len({path for path in files if project.classify(path,path.name).language} | set(commands))
+        library_paths={Path(p).resolve()for p in options.device_libraries}
+        count = len(({path for path in files if project.classify(path,path.name).language} | set(commands))-library_paths)
         if not count:
             raise project.ProjectError('nothing to compile: add supported GPU kernels or configure a PyTorch application')
         print(f'native build: {count} source(s) on local; would write {output}/cubin/ and {output}/sass/')
@@ -161,8 +218,10 @@ def compile_native(source: Path, output: Path, options: Options, name: str | Non
     _, commands = discover_commands(source,options.compile_commands)
     candidates = [rel.removeprefix('source/') for rel in files if rel.startswith('source/')
                   and (source.is_file() and root / rel.removeprefix('source/') == source
-                       or source.is_dir() and (root / rel.removeprefix('source/') in commands
+                       or source.is_dir() and (root / rel.removeprefix('source/')).is_relative_to(source) and (root / rel.removeprefix('source/') in commands
                            or project.classify(root / rel.removeprefix('source/'), rel.removeprefix('source/')).language))]
+    library_paths={Path(p).resolve()for p in options.device_libraries}
+    candidates=[rel for rel in candidates if (root/rel).resolve()not in library_paths]
     if not candidates:
         raise project.ProjectError('nothing to compile: add supported GPU kernels, or configure '
                                    '[application] frontend="torch" in openassembler.toml for a PyTorch repository')
@@ -174,17 +233,22 @@ def compile_native(source: Path, output: Path, options: Options, name: str | Non
         return 0, set()
     with project.output_lock(output):
         return _compile_locked(source, output, options, name, backend, host, budget,
-                               root, payload, includes, candidates)
+                    root, payload, includes, candidates,
+                    json.loads(files.get('.oa-device-libraries.json',b'[]')))
 
 
 def _compile_locked(source, output, options, name, backend, host, budget,
-                    root, payload, includes, candidates):
+                    root, payload, includes, candidates, libraries=None):
     from dataclasses import asdict
+    libraries=libraries or []
     request = {'source': base64.b64encode(payload).decode(),
-               'path': 'source' if source.is_dir() else 'source/' + source.name,
+               'path': 'source' if source == root else 'source/'+source.relative_to(root).as_posix(),
                'options': {**asdict(options), 'include_dirs': includes,
                            'compile_commands':'source/compile_commands.json' if options.compile_commands else None,
-                           'compile_command':None}, 'name': name}
+                           'compile_command':None,
+                           'python_source_root':'source'if options.python_source_root is not None else None,
+                           'device_libraries':[row['path']for row in libraries],
+                           'device_library_options':[{k:v for k,v in row.items()if k!='path'}for row in libraries]}, 'name': name}
     with tempfile.TemporaryDirectory(prefix='oa-native-request-') as d:
         request_file, result_file = Path(d) / 'request.json', Path(d) / 'result.json'
         request_file.write_text(json.dumps(request))
@@ -295,11 +359,34 @@ def process(request: dict) -> dict:
             options['include_dirs'] = [project.artifact_path(staging, rel) for rel in options['include_dirs']]
             if options.get('compile_commands'):
                 options['compile_commands']=project.artifact_path(staging,options['compile_commands'])
+            if options.get('python_source_root') is not None:
+                options['python_source_root']=project.artifact_path(staging,options['python_source_root'])
+            options['device_libraries']=[project.artifact_path(staging,rel)for rel in options.get('device_libraries',[])]
+            for library in options.get('device_library_options',[]):
+                library['include_dirs']=[project.artifact_path(staging,rel)for rel in library['include_dirs']]
+                if library.get('compile_commands'):
+                    library['compile_commands']=project.artifact_path(staging,library['compile_commands'])
             result = compile_paths(source, output, Options(**options), request.get('name'))
-            # The archive stores relative source records; local publication rebases them.
+            # Rebase package entry paths to the submitted root, including single
+            # files whose containing package lives above the entry directory.
+            manifest = project.load_manifest(output)
+            source_root = staging/'source'
+            graph_path = staging/'.oa-python-graphs.json'
+            expected_graphs = json.loads(graph_path.read_text()) if graph_path.exists() else {}
+            if manifest is not None:
+                for entry in manifest['entries']:
+                    original = project.entry_source_abs(manifest,entry)
+                    relative = original.relative_to(source_root).as_posix()
+                    expected = expected_graphs.get(relative)
+                    if expected is not None:
+                        for kernel in entry['kernels']:
+                            if kernel.get('python_source_graph') != expected:
+                                raise ValueError('remote Python helper graph differs from submitted source graph')
+                    entry['source'] = relative
+                manifest['root'] = str(source_root)
+                (output/'manifest.json').write_text(json.dumps(manifest))
             files = {p.relative_to(output).as_posix(): p.read_bytes() for p in output.rglob('*')
                      if p.is_file() and p.name != 'writer.lock'}
-            source_root = source if source.is_dir() else source.parent
             return {'rc': result.rc, 'artifacts': base64.b64encode(pack(files)).decode(),
                     'errors': result.errors,
                     'failed_sources': [p.relative_to(source_root).as_posix() for p in result.failed_sources]}

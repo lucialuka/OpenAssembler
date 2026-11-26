@@ -100,3 +100,41 @@ complete package/environment reproduction remain open. A source may compile
 correctly yet still need explicit host launch bindings or a model custom-op
 contract. This work does not execute arbitrary host orchestration or establish
 whole-application equivalence/performance.
+
+## Explicit scalar device source libraries
+
+The [source-library route](gaps-device-functions.md#explicit-ptx-and-cuda-source-libraries)
+adds repeatable `--device-library` PTX/CUDA inputs. Each CUDA translation unit
+keeps its selected compilation-database flags, source spelling/working directory
+and before/after tool-environment dependency hashes. Remote transport bundles
+external library roots and their selected command/include inputs. Root entries
+and selected helpers resolve through exact signature/visibility rules before
+static OA inlining; kernel ownership records the link contract. This is not an
+original host build/link executor or a native object/archive linker.
+
+Original separately compiled PTX/CUDA objects are linked independently with
+nvlink for the **576-launch A100 control gate**. Normal CLI and remote-worker
+builds pass complete buffers/resources; an additional ordinary Modal CLI run
+checks client publication of an external library. General library/package/build
+resolution and native relocations remain open under the original G42 gate.
+
+## Static Python helper source graphs
+
+The [local-package helper route](gaps-python.md#static-local-package-device-helpers)
+adds a concrete Python source/dependency build graph. Entry/helper/package source
+hashes, defining-module annotations, body/signature/call records and original
+diagnostics flow through ordinary local/Modal/SSH builds. Reachable ignored
+helpers are included in remote bundles; explicit or inferred package roots and
+returned entry paths stay consistent. Changes during compilation prevent artifact
+publication. Native ownership snapshots the graph, with source-exact A100, worker,
+public CLI and standalone regression evidence in the
+[promotion cycle](../../compiler_exp/gap_closure/python_module_helpers/promotion/README.md).
+General host build orchestration, installed/runtime import hooks, generated Python
+sources and mutable captures remain separate G42/G04 boundaries.
+
+The [explicit static-value extension](gaps-static-values.md) resolves Final
+numeric/tuple declarations through that same original graph. Dependency hashes
+remain original-source hashes, and exact used values/type bits/per-kernel uses
+are included in ownership. Constant-only kernels also retain source identity.
+The compiler does not replace an original graph with a normalized-file identity
+or infer arbitrary mutable host bindings as static values.

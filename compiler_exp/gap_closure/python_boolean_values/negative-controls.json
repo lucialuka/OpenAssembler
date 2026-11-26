@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "mixed_value",
+      "source": "@kernel\ndef k(a:Array(i32),x:f32):\n    value=a[0]or x\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "and/or operands require one fixed scalar kind (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/mixed_value.py, line 4)"
+    },
+    {
+      "name": "bool_numeric_union",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=True or a[0]\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "and/or operands require one fixed scalar kind (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/bool_numeric_union.py, line 4)"
+    },
+    {
+      "name": "literal_context",
+      "source": "@kernel\ndef k(a:Array(i64)):\n    value=0 or a[0]\n    a[0]=value\n",
+      "rejected": true,
+      "diagnostic": "and/or operands require one fixed scalar kind (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/literal_context.py, line 4)"
+    },
+    {
+      "name": "bool_arity",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=bool()\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "bool() takes exactly one scalar argument (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/bool_arity.py, line 4)"
+    },
+    {
+      "name": "bool_keywords",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=bool(x=a[0])\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "bool() keyword arguments are not supported (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/bool_keywords.py, line 4)"
+    },
+    {
+      "name": "bool_arrays",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=bool(a)\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "array 'a' used as a value (index it: a[i]) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/bool_arrays.py, line 4)"
+    },
+    {
+      "name": "bool_parameter",
+      "source": "@kernel\ndef k(a:Array(i32),value:bool):\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/bool_parameter.py, line 3)"
+    },
+    {
+      "name": "helper_memory",
+      "source": "@device\ndef h(x:i32)->i32:\n    return i32(bool(a[0]))\n@kernel\ndef k(a:Array(i32)):\n    a[0]=h(3)\n",
+      "rejected": true,
+      "diagnostic": "device helpers cannot access memory (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/helper_memory.py, line 4)"
+    },
+    {
+      "name": "uninitialized",
+      "source": "@device\ndef h(x:i32)->i32:\n    if x:\n        flag=True\n    return i32(flag)\n@kernel\ndef k(a:Array(i32)):\n    a[0]=h(3)\n",
+      "rejected": true,
+      "diagnostic": "device helper local 'flag' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/uninitialized.py, line 6)"
+    },
+    {
+      "name": "varying_barrier",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    flag=bool(tid_x())\n    if flag:\n        syncthreads()\n",
+      "rejected": true,
+      "diagnostic": "syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-h5h2_sj7/varying_barrier.py, line 6)"
+    }
+  ],
+  "source_hashes": {
+    "candidate-pyfront.py": "56049a289a28ffd47560b05d22a3058f5860cb30bf8bc0d178721691ee8ec559",
+    "negative_controls.py": "916135a4658e69935e6f0b1d2205cc9bf2e897d5ace8861c93a1b6e9ea06d30f"
+  },
+  "scope": "Ten isolated mixed-kind/literal-context/Boolean ABI/array/arity/keyword/helper-memory/initialization/convergence boundaries; original diagnostic shape and promotion/hardware remain separate work"
+}

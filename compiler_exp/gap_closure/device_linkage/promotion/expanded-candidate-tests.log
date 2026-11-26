@@ -1,0 +1,83 @@
+.......................................F.....                            [100%]
+=================================== FAILURES ===================================
+____________ test_private_dotted_and_underscored_names_are_distinct ____________
+
+    def test_private_dotted_and_underscored_names_are_distinct():
+        private=DEF.replace('.visible ','').replace('helper','internal.x')+DEF.replace('.visible ','').replace('helper','internal_x')
+        exported=DEF.replace('st.param.b32 [r],%x;', '.param .b32 a;.param .b32 b;st.param.b32 [a],%x;call.uni (b),internal.x,(a);ld.param.b32 %x,[b];st.param.b32 [a],%x;call.uni (b),internal_x,(a);ld.param.b32 %x,[b];st.param.b32 [r],%x;')
+        source,contract=resolve([('entry',ROOT),('library',HEADER+private+exported)])
+>       module=parse_module(source)
+               ^^^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/device_linkage/promotion/test_ptx_device_linkage.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/ptx/parse.py:443: in parse_module
+    src, functions, calls, origins = inline_module(src, sys.modules[__name__])
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/device_linkage/promotion/candidate-inlining.py:252: in inline_module
+    lines=lower(body,{},set(),(),stripped.count('\n',0,end-len(body)-1)+1,True)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/device_linkage/promotion/candidate-inlining.py:172: in lower
+    expanded=lower(definition['body'],bindings,{name for _,name in results},(*stack,target),definition['line'])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+body = '.reg .u32 %x;ld.param.u32 %x,[a];.param .b32 a;.param .b32 b;st.param.b32 [a],%x;call.uni (b),__oa_link_1_0,(a);ld.param.b32 %x,[b];st.param.b32 [a],%x;call.uni (b),__oa_link_1_1,(a);ld.param.b32 %x,[b];st.param.b32 [r],%x;ret;'
+formal = {'a': Slot(name='%__oa_inline_7_formal', dtype='b32', formal=True), 'r': Slot(name='%__oa_inline_8_formal', dtype='b32', formal=False)}
+output_names = {'r'}, stack = ('helper',), line_offset = 7, is_entry = False
+
+    def lower(body, formal, output_names, stack, line_offset, is_entry=False):
+        nonlocal budget
+        body=re.sub(r'(?<![\w$.])\.loc[ \t]+[0-9]+[ \t]+[0-9]+[ \t]+[0-9]+',lambda m:' '*len(m[0]),body)
+        env=[dict(formal)];lines=[];returns=[];end_label=fresh()+'return';invocation=fresh()
+        # Labels are function-scoped, distinct from lexical call argument blocks.
+        labels={m[1]:invocation+m[1].replace('.','_')for m in re.finditer(r'(?m)(?:^|[;{}])\s*([A-Za-z_$][\w$.]*):',body)}
+        def lookup(name):
+            for scope in reversed(env):
+                if name in scope:return scope[name]
+            return None
+        def rename(text):
+            def sub(match):
+                name=match[0];binding=lookup(name)
+                return binding.name if isinstance(binding,Slot)else binding if binding is not None else labels.get(name,name)
+            return re.sub(_SYMBOL,sub,text)
+        def emit(text,line):
+            nonlocal budget
+            budget+=1
+            if budget>100000:raise SyntaxError('device inlining exceeds 100000 statements')
+            lines.append((text,line))
+        for statement,relative in tokens(body):
+            line=line_offset+relative-1
+            if statement=='{':env.append({});continue
+            if statement=='}':
+                if len(env)==1:raise SyntaxError('unbalanced function lexical scope')
+                env.pop();continue
+            while label:=re.match(r'^([A-Za-z_$][\w$.]*):\s*(.*)$',statement,re.S):
+                emit(labels[label[1]]+':',line);statement=label[2]
+            if not statement:continue
+            if statement.startswith('.reg '):
+                dtype=re.search(r'\.(pred|[busf](?:8|16|32|64))\b',statement)
+                if not dtype:raise SyntaxError('unsupported device register declaration')
+                names=statement[dtype.end():].strip().split(',')
+                for name in names:
+                    name=name.strip();ranged=re.fullmatch(r'('+_SYMBOL+r')<(\d+)>',name)
+                    if ranged and int(ranged[2])>65536:raise SyntaxError('device register declaration too large')
+                    expanded=[ranged[1]+str(i)for i in range(int(ranged[2]))]if ranged else[name]
+                    if len(expanded)>65536:raise SyntaxError('device register declaration too large')
+                    for symbol in expanded:
+                        if not re.fullmatch(_SYMBOL,symbol):raise SyntaxError('invalid device register name')
+                        if symbol in env[-1]:raise SyntaxError('duplicate lexical symbol '+symbol)
+                        env[-1][symbol]='%'+fresh()+symbol.lstrip('%').replace('.','_')
+                continue
+            if statement.startswith('.param '):
+                values=params(statement,'call scope')
+                if len(values)!=1:raise SyntaxError('scalar call slot declaration required')
+                dtype,name=values[0]
+>               if name in env[-1]:raise SyntaxError('duplicate call parameter slot '+name)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               SyntaxError: duplicate call parameter slot a
+
+compiler_exp/gap_closure/device_linkage/promotion/candidate-inlining.py:131: SyntaxError
+=========================== short test summary info ============================
+FAILED compiler_exp/gap_closure/device_linkage/promotion/test_ptx_device_linkage.py::test_private_dotted_and_underscored_names_are_distinct
+1 failed, 44 passed in 18.37s

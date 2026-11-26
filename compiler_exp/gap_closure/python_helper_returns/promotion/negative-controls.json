@@ -1,0 +1,182 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "missing",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    x+=i64(1)\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/missing.py, line 3)"
+    },
+    {
+      "name": "one_branch",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/one_branch.py, line 3)"
+    },
+    {
+      "name": "bare",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "requires a value",
+      "rejected": true,
+      "error": "scalar helper return requires a value (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/bare.py, line 5)"
+    },
+    {
+      "name": "wrong_type",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return 1.0\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "annotated",
+      "rejected": true,
+      "error": "device helper returns f32, annotated s64 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/wrong_type.py, line 5)"
+    },
+    {
+      "name": "wrong_width",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return 1\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "annotated",
+      "rejected": true,
+      "error": "device helper returns s32, annotated s64 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/wrong_width.py, line 5)"
+    },
+    {
+      "name": "zero_trip",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    for i in range(0):\n        return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/zero_trip.py, line 3)"
+    },
+    {
+      "name": "empty",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    for i in ():\n        return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/empty.py, line 3)"
+    },
+    {
+      "name": "while_only",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    while x<i64(0):\n        return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/while_only.py, line 3)"
+    },
+    {
+      "name": "break_fallthrough",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    for i in (1,2):\n        if x<i64(0):\n            break\n        return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/break_fallthrough.py, line 3)"
+    },
+    {
+      "name": "continue_fallthrough",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    for i in (1,2):\n        if x<i64(0):\n            continue\n        return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "every path",
+      "rejected": true,
+      "error": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/continue_fallthrough.py, line 3)"
+    },
+    {
+      "name": "capture",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return hidden\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "uninitialized or captured",
+      "rejected": true,
+      "error": "device helper local 'hidden' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/capture.py, line 5)"
+    },
+    {
+      "name": "read_memory",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return source[0]\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "cannot access memory",
+      "rejected": true,
+      "error": "device helpers cannot access memory (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/read_memory.py, line 5)"
+    },
+    {
+      "name": "barrier",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        syncthreads()\n        return x\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "pure scalar calls",
+      "rejected": true,
+      "error": "device helpers allow only pure scalar calls (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/barrier.py, line 5)"
+    },
+    {
+      "name": "atomic",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return atomic_add(x,0,1)\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "pure scalar calls",
+      "rejected": true,
+      "error": "device helpers allow only pure scalar calls (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/atomic.py, line 5)"
+    },
+    {
+      "name": "thread_id",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return i64(tid_x())\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "pure scalar calls",
+      "rejected": true,
+      "error": "device helpers allow only pure scalar calls (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/thread_id.py, line 5)"
+    },
+    {
+      "name": "recursion",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        return h(x)\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "recursive device helper",
+      "rejected": true,
+      "error": "recursive device helper call: h -> h (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/recursion.py, line 5)"
+    },
+    {
+      "name": "uninitialized_branch",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    if x<i64(0):\n        value=x\n    else:\n        pass\n    return value\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "uninitialized",
+      "rejected": true,
+      "error": "device helper local 'value' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/uninitialized_branch.py, line 8)"
+    },
+    {
+      "name": "uninitialized_loop",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    for i in range(3):\n        value=x\n        if x<i64(0):\n            return x\n    return value\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "uninitialized",
+      "rejected": true,
+      "error": "device helper local 'value' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/uninitialized_loop.py, line 8)"
+    },
+    {
+      "name": "uninitialized_empty_target",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    for i in ():\n        return x\n    return i64(i)\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "uninitialized",
+      "rejected": true,
+      "error": "device helper local 'i' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/uninitialized_empty_target.py, line 6)"
+    },
+    {
+      "name": "uninitialized_break",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    for i in (1,2):\n        if x<i64(0):\n            break\n        value=x\n    else:\n        value=x\n    return value\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "uninitialized",
+      "rejected": true,
+      "error": "device helper local 'value' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/uninitialized_break.py, line 10)"
+    },
+    {
+      "name": "range_else",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    for i in range(3):\n        if x<i64(0):\n            return x\n    else:\n        return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "loop else",
+      "rejected": true,
+      "error": "device helper loop else clauses are not supported (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/range_else.py, line 8)"
+    },
+    {
+      "name": "while_else",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    while x<i64(0):\n        return x\n    else:\n        return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "loop else",
+      "rejected": true,
+      "error": "device helper loop else clauses are not supported (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/while_else.py, line 7)"
+    },
+    {
+      "name": "break_outside",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    break\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "outside a loop",
+      "rejected": true,
+      "error": "helper break outside a loop (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/break_outside.py, line 4)"
+    },
+    {
+      "name": "continue_outside",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i64)->i64:\n    continue\n    return x\n@kernel\ndef k(a:Array(i64)):\n    a[0]=h(a[0])\n",
+      "reason": "outside a loop",
+      "rejected": true,
+      "error": "helper continue outside a loop (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-return-negative-ce0kw094/continue_outside.py, line 4)"
+    }
+  ],
+  "script_sha256": "54b79ccb29affa369d1594a6798e2d23b1a2d1f8193610de10054efa20e4eedf",
+  "source_hashes": {
+    "return_flow.py": "cd81a9bb865c2f791fe960bd358fcbd07d3087ddec9b8d96e3d44b303f0f88f9",
+    "candidate-pyfront.py": "f86d8b93234a76f4357cd38921244711d3e4eefcdafede3f66e67e79b8cd95a2",
+    "candidate-helpers.py": "44b4b6b3906dfe5553720c8ee17937a51e7ec842173445f6524f25781e07406d",
+    "candidate-modules.py": "bd3bbac0324550cfeeca72bfa4dfcca0aaecc608602c304616948225998e9b4b"
+  },
+  "scope": "24 original missing/type/empty/zero-trip/break/continue/initialization/capture/memory/convergence/recursion rejections, with original file and line diagnostics; no hardware claim"
+}

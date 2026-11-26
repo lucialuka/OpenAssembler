@@ -1,0 +1,20 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.visible .entry local_probe(.param .u64 output) {
+.local .align 16 .b8 slots[48];
+.reg .u64 %out,%offset,%dst;
+.reg .u32 %t,%base,%address,%index,%value,%result;
+ld.param.u64 %out,[output];mov.u32 %t,%tid.x;
+mov.u32 %base,slots;
+mad.lo.u32 %value,%t,17,0;st.local.u32 [slots+0],%value;
+mad.lo.u32 %value,%t,17,1;st.local.u32 [slots+4],%value;
+mad.lo.u32 %value,%t,17,2;st.local.u32 [slots+8],%value;
+mad.lo.u32 %value,%t,17,3;st.local.u32 [slots+12],%value;
+mad.lo.u32 %value,%t,17,4;st.local.u32 [slots+16],%value;
+mad.lo.u32 %value,%t,17,5;st.local.u32 [slots+20],%value;
+mad.lo.u32 %value,%t,17,6;st.local.u32 [slots+24],%value;
+mad.lo.u32 %value,%t,17,7;st.local.u32 [slots+28],%value;
+and.b32 %index,%t,7;shl.b32 %index,%index,2;add.u32 %address,%base,%index;
+ld.local.u32 %result,[%address];
+mul.wide.u32 %offset,%t,4;add.u64 %dst,%out,%offset;st.global.u32 [%dst],%result;ret;}

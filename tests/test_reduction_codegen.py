@@ -190,7 +190,7 @@ def test_generated_warpsync_register_template_covers_the_recorded_sweep():
 
 @pytest.mark.parametrize("instruction", [
     "shfl.bfly.b32 %r1,%r0,1,31;",
-    "shfl.sync.idx.b32 %r1,%r0,1,31,0xffffffff;",
+    "shfl.sync.idx.b32 %r1,%r0,1,31,0xffff;",
     "shfl.sync.bfly.b32 %r1,%r0,1,15,0xffffffff;",
     "shfl.sync.bfly.b32 %r1,%r0,1,31,0xffff;",
     "@%p shfl.sync.bfly.b32 %r1,%r0,1,31,0xffffffff;",

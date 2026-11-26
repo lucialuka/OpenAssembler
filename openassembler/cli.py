@@ -47,7 +47,9 @@ def _compile_opts(a: argparse.Namespace):
     return Options(arch=a.arch, opt_level=a.opt_level, kernel=a.kernel, verify=a.verify, trials=a.trials,
                    fallback=a.fallback, no_sass=a.no_sass, include_dirs=[Path(d) for d in a.include],
                    nvcc_flags=list(a.nvcc_flag), dump_ptx=a.dump_ptx,
-                   compile_commands=Path(a.compile_commands) if a.compile_commands else None)
+                   compile_commands=Path(a.compile_commands) if a.compile_commands else None,
+                   device_libraries=[Path(p)for p in getattr(a,'device_library',[])],
+                   python_source_root=Path(a.python_source_root)if getattr(a,'python_source_root',None)else None)
 
 
 def _frontend_choice(src: Path, out_dir: Path | None, requested: str, *, entrypoint=None, input_shapes=None):
@@ -60,7 +62,7 @@ def _model_compile_opts(a: argparse.Namespace) -> dict:
     from openassembler.modelfront.frontend import ModelError
     if a.arch != 'sm_80' or a.fallback:
         raise ModelError('native models require sm_80 and OA code generation without vendor fallback')
-    if a.kernel or a.include or a.nvcc_flag or a.dump_ptx or a.out or a.opt_level != 'opt' or a.trials != 6 or a.compile_commands:
+    if a.kernel or a.include or a.nvcc_flag or a.dump_ptx or a.out or a.opt_level != 'opt' or a.trials != 6 or a.compile_commands or getattr(a,'device_library',[]) or getattr(a,'python_source_root',None):
         raise ModelError('kernel selection, naming, frontend flags and nondefault '
                          '--opt-level/--trials apply to standalone native kernels')
     if a.job_timeout is not None:
@@ -594,6 +596,10 @@ def _add_compile_args(pc: argparse.ArgumentParser) -> None:
                     help="extra nvcc flag, e.g. --nvcc-flag=-DTILE=32 (repeatable)")
     pc.add_argument('--compile-commands', metavar='FILE', default=None,
                     help='NVCC compilation database (default: compile_commands.json in the source root)')
+    pc.add_argument('--python-source-root',metavar='DIR',
+                    help='root for static local Python device-helper imports (default: enclosing package)')
+    pc.add_argument('--device-library',action='append',default=[],metavar='SOURCE',
+                    help='link scalar device functions from PTX or CUDA source (repeatable)')
     pc.add_argument("--dump-ptx", action="store_true", help="print the PTX each source compiled to")
     pc.add_argument("--no-sass", action="store_true", help="write only the cubins; skip the nvdisasm listing")
     pc.add_argument("--frontend", choices=("auto", "native", "model", "torch", "triton", "inductor"), default="auto",

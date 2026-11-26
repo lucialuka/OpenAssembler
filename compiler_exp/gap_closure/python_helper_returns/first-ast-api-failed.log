@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_helper_returns/probe.py", line 34, in <module>
+    normalized=normalize(original.read_text());(HERE/'normalized.py').write_text(normalized);rows=[]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_helper_returns/normalize.py", line 35, in normalize
+    return ast.unparse(ast.fix_missing_locations(Rewrite().visit(copy.deepcopy(tree))))+'\n'
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.py", line 407, in visit
+    return visitor(node)
+           ^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.py", line 483, in generic_visit
+    value = self.visit(value)
+            ^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.py", line 407, in visit
+    return visitor(node)
+           ^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_helper_returns/normalize.py", line 33, in visit_FunctionDef
+    fn.body=[ast.Assign([ast.Name(done,ast.Store())],ast.Constant(0)),ast.Assign([ast.Name(result,ast.Store())],result_init)]+block(fn.body)+[ast.Return(ast.Name(result,ast.Load()))]
+                                                                                                                              ^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_helper_returns/normalize.py", line 25, in block
+    new.body.append(ast.If(test=ast.Compare(left=ast.Name(done,ast.Load()),ops=[ast.Ne()],comparators=[ast.Constant(0)]),body=[ast.Break()],orelse=[]))
+                                                                                ^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/ast.py", line 1812, in __getattr__
+    raise AttributeError(f"module 'ast' has no attribute '{name}'")
+AttributeError: module 'ast' has no attribute 'Ne'. Did you mean: 're'?

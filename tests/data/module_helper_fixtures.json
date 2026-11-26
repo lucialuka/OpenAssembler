@@ -1,0 +1,270 @@
+{
+  "configurations": [
+    {
+      "name": "direct",
+      "files": {
+        "arithmetic/__init__.py": "raise RuntimeError('static compiler must never execute a package initializer')\n",
+        "arithmetic/base.py": "from openassembler.pyfront import device, i64, u64, f32\nraise RuntimeError('static compiler must never execute helper module code')\n\n@device\ndef signed_product(x: i64, y: i64) -> i64:\n    return x * y\n\n@device\ndef unsigned_product(x: u64, y: u64) -> u64:\n    return x * y\n\n@device\ndef affine(x: f32, a: f32, b: f32) -> f32:\n    return x * a + b\n",
+        "arithmetic/transforms.py": "from openassembler.pyfront import device as pure, i64, u64\nfrom .base import signed_product as product\nfrom . import base as numeric\nraise RuntimeError('static compiler must never execute transitive helpers')\n\n@pure\ndef signed_step(x: i64, y: i64) -> i64:\n    result = x\n    for step in range(3):\n        result = product(result, y)\n    return result\n\n@pure\ndef unsigned_step(x: u64, y: u64) -> u64:\n    return numeric.unsigned_product(x, y) + x\n",
+        "entry.py": "from openassembler.pyfront import Array, i64, u64, f32, i32, kernel, tid_x, ctaid_x\nfrom arithmetic.transforms import signed_step as repeated_product\nimport arithmetic.transforms as transforms\nfrom arithmetic.base import affine\nraise RuntimeError('static compilation must not execute the entry module')\n\n@kernel\ndef signed(a: Array(i64), b: Array(i64), out: Array(i64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = repeated_product(a[i], b[i])\n\n@kernel\ndef unsigned(a: Array(u64), b: Array(u64), out: Array(u64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = transforms.unsigned_step(a[i], b[i])\n\n@kernel\ndef floating(a: Array(f32), b: Array(f32), out: Array(f32), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = affine(a[i], 2.0, b[i])\n"
+      },
+      "entry": "entry.py",
+      "explicit": false,
+      "remote": false
+    },
+    {
+      "name": "reexport",
+      "files": {
+        "arithmetic/__init__.py": "raise RuntimeError('static compiler must never execute a package initializer')\n\nfrom .transforms import signed_step\nfrom .base import affine\n",
+        "arithmetic/base.py": "from openassembler.pyfront import device, i64, u64, f32\nraise RuntimeError('static compiler must never execute helper module code')\n\n@device\ndef signed_product(x: i64, y: i64) -> i64:\n    return x * y\n\n@device\ndef unsigned_product(x: u64, y: u64) -> u64:\n    return x * y\n\n@device\ndef affine(x: f32, a: f32, b: f32) -> f32:\n    return x * a + b\n",
+        "arithmetic/transforms.py": "from openassembler.pyfront import device as pure, i64, u64\nfrom .base import signed_product as product\nfrom . import base as numeric\nraise RuntimeError('static compiler must never execute transitive helpers')\n\n@pure\ndef signed_step(x: i64, y: i64) -> i64:\n    result = x\n    for step in range(3):\n        result = product(result, y)\n    return result\n\n@pure\ndef unsigned_step(x: u64, y: u64) -> u64:\n    return numeric.unsigned_product(x, y) + x\n",
+        "entry.py": "from openassembler.pyfront import Array, i64, u64, f32, i32, kernel, tid_x, ctaid_x\nfrom arithmetic import signed_step as repeated_product\nimport arithmetic.transforms as transforms\nfrom arithmetic import affine\nraise RuntimeError('static compilation must not execute the entry module')\n\n@kernel\ndef signed(a: Array(i64), b: Array(i64), out: Array(i64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = repeated_product(a[i], b[i])\n\n@kernel\ndef unsigned(a: Array(u64), b: Array(u64), out: Array(u64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = transforms.unsigned_step(a[i], b[i])\n\n@kernel\ndef floating(a: Array(f32), b: Array(f32), out: Array(f32), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = affine(a[i], 2.0, b[i])\n"
+      },
+      "entry": "entry.py",
+      "explicit": false,
+      "remote": false
+    },
+    {
+      "name": "package_entry",
+      "files": {
+        "arithmetic/__init__.py": "raise RuntimeError('static compiler must never execute a package initializer')\n",
+        "arithmetic/base.py": "from openassembler.pyfront import device, i64, u64, f32\nraise RuntimeError('static compiler must never execute helper module code')\n\n@device\ndef signed_product(x: i64, y: i64) -> i64:\n    return x * y\n\n@device\ndef unsigned_product(x: u64, y: u64) -> u64:\n    return x * y\n\n@device\ndef affine(x: f32, a: f32, b: f32) -> f32:\n    return x * a + b\n",
+        "arithmetic/transforms.py": "from openassembler.pyfront import device as pure, i64, u64\nfrom .base import signed_product as product\nfrom . import base as numeric\nraise RuntimeError('static compiler must never execute transitive helpers')\n\n@pure\ndef signed_step(x: i64, y: i64) -> i64:\n    result = x\n    for step in range(3):\n        result = product(result, y)\n    return result\n\n@pure\ndef unsigned_step(x: u64, y: u64) -> u64:\n    return numeric.unsigned_product(x, y) + x\n",
+        "application/__init__.py": "raise RuntimeError('must not execute entry package')\n",
+        "application/entry.py": "from openassembler.pyfront import Array, i64, u64, f32, i32, kernel, tid_x, ctaid_x\nfrom arithmetic.transforms import signed_step as repeated_product\nimport arithmetic.transforms as transforms\nfrom arithmetic.base import affine\nraise RuntimeError('static compilation must not execute the entry module')\n\n@kernel\ndef signed(a: Array(i64), b: Array(i64), out: Array(i64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = repeated_product(a[i], b[i])\n\n@kernel\ndef unsigned(a: Array(u64), b: Array(u64), out: Array(u64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = transforms.unsigned_step(a[i], b[i])\n\n@kernel\ndef floating(a: Array(f32), b: Array(f32), out: Array(f32), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = affine(a[i], 2.0, b[i])\n"
+      },
+      "entry": "application/entry.py",
+      "explicit": false,
+      "remote": false
+    },
+    {
+      "name": "explicit_root",
+      "files": {
+        "arithmetic/__init__.py": "raise RuntimeError('static compiler must never execute a package initializer')\n",
+        "arithmetic/base.py": "from openassembler.pyfront import device, i64, u64, f32\nraise RuntimeError('static compiler must never execute helper module code')\n\n@device\ndef signed_product(x: i64, y: i64) -> i64:\n    return x * y\n\n@device\ndef unsigned_product(x: u64, y: u64) -> u64:\n    return x * y\n\n@device\ndef affine(x: f32, a: f32, b: f32) -> f32:\n    return x * a + b\n",
+        "arithmetic/transforms.py": "from openassembler.pyfront import device as pure, i64, u64\nfrom .base import signed_product as product\nfrom . import base as numeric\nraise RuntimeError('static compiler must never execute transitive helpers')\n\n@pure\ndef signed_step(x: i64, y: i64) -> i64:\n    result = x\n    for step in range(3):\n        result = product(result, y)\n    return result\n\n@pure\ndef unsigned_step(x: u64, y: u64) -> u64:\n    return numeric.unsigned_product(x, y) + x\n",
+        "kernels/entry.py": "from openassembler.pyfront import Array, i64, u64, f32, i32, kernel, tid_x, ctaid_x\nfrom arithmetic.transforms import signed_step as repeated_product\nimport arithmetic.transforms as transforms\nfrom arithmetic.base import affine\nraise RuntimeError('static compilation must not execute the entry module')\n\n@kernel\ndef signed(a: Array(i64), b: Array(i64), out: Array(i64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = repeated_product(a[i], b[i])\n\n@kernel\ndef unsigned(a: Array(u64), b: Array(u64), out: Array(u64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = transforms.unsigned_step(a[i], b[i])\n\n@kernel\ndef floating(a: Array(f32), b: Array(f32), out: Array(f32), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = affine(a[i], 2.0, b[i])\n"
+      },
+      "entry": "kernels/entry.py",
+      "explicit": true,
+      "remote": false
+    },
+    {
+      "name": "remote_package",
+      "files": {
+        "arithmetic/__init__.py": "raise RuntimeError('static compiler must never execute a package initializer')\n",
+        "arithmetic/base.py": "from openassembler.pyfront import device, i64, u64, f32\nraise RuntimeError('static compiler must never execute helper module code')\n\n@device\ndef signed_product(x: i64, y: i64) -> i64:\n    return x * y\n\n@device\ndef unsigned_product(x: u64, y: u64) -> u64:\n    return x * y\n\n@device\ndef affine(x: f32, a: f32, b: f32) -> f32:\n    return x * a + b\n",
+        "arithmetic/transforms.py": "from openassembler.pyfront import device as pure, i64, u64\nfrom .base import signed_product as product\nfrom . import base as numeric\nraise RuntimeError('static compiler must never execute transitive helpers')\n\n@pure\ndef signed_step(x: i64, y: i64) -> i64:\n    result = x\n    for step in range(3):\n        result = product(result, y)\n    return result\n\n@pure\ndef unsigned_step(x: u64, y: u64) -> u64:\n    return numeric.unsigned_product(x, y) + x\n",
+        "application/__init__.py": "raise RuntimeError('must not execute entry package')\n",
+        "application/entry.py": "from openassembler.pyfront import Array, i64, u64, f32, i32, kernel, tid_x, ctaid_x\nfrom arithmetic.transforms import signed_step as repeated_product\nimport arithmetic.transforms as transforms\nfrom arithmetic.base import affine\nraise RuntimeError('static compilation must not execute the entry module')\n\n@kernel\ndef signed(a: Array(i64), b: Array(i64), out: Array(i64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = repeated_product(a[i], b[i])\n\n@kernel\ndef unsigned(a: Array(u64), b: Array(u64), out: Array(u64), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = transforms.unsigned_step(a[i], b[i])\n\n@kernel\ndef floating(a: Array(f32), b: Array(f32), out: Array(f32), n: i32):\n    i = ctaid_x()*128 + tid_x()\n    if i < n:\n        out[i] = affine(a[i], 2.0, b[i])\n"
+      },
+      "entry": "application/entry.py",
+      "explicit": false,
+      "remote": true
+    }
+  ],
+  "values": {
+    "signed": {
+      "a": "0000000000000000ffffffffffffffff0000000000000080ffffffffffffff7fffffffff000000000000000001000000f0debc9a785634121032547698badcfea63af405763f85cff232e4734fb2e9aa2d124f5df1b1cc45026e01067a7478b56946c42642de8f449273949ffbf7ef059934fa8e8ec8ff3d94815f2fb89bcb3aaa587dca41203d6a4679229607d8947d3b212b44dd5dbd75b59d009c8de3f02150717dede1122a314931b1dc4a111befe4fa21b8595243a657cf4739e6159c8951ac44504f592c0a67c266e2d3c272115cb3ff26a9b84d7724f0168d4956ad732e8800e66e913e6793ebf710fcf47854414b93987de7480e49b58ca40eb353ccc0da5e510a806e67d407c4948893c328a23a9a71b005af8630ff3b217448e189a0de58891d294d026636fd020a5bc60e9fc5760766284a1f1a5ae086e212d3258da8a1f3a1688617752558e4955cd15e0d2f3336b2edb269369efc55b1be2a8238ec05bf114b75714a52b1e3f7742e7baed84b477b3c39ba3b764f9119a29767a38bda408a3192dc14c453dd22c6aefeff6dadc4cf9240babee85e3563acc132170c2a137a27db71b0d7e1351cf46434f38c9ed9f7822f9c741ca1b4a84f19501b9c103351e1509bb494217d58a6fd4115327fbb2b81e00ba8c328c97296ddc3d1d22f74fd6fcb599ada24f03a4ac68852306b619c511222b3abeb9dac561f8d84f519900cf95bbac0a5e7bde58a9c700cbbe0101685419888443570cd95b02fc02b0055300502eb51a98808ff4a41f4af72a6bce7afb82f621ce3c4417b516328353baf1707631806098c622585f694c97ae76ab179021221bc95919280a710da7713317414846e71ca8eea1fa5448de2b21fa6f7d73d4bd88f712650802e8eb8416b3b7d94e6137352250c469e34aaed62d2ad6367fca92bfcb869f519613fb1a175c1c825eb97cb821b39c05e23678095d148598fab71bd9d942c6e25c888e6cb067578df6f7484d2ae8759722cf6da0f297b42c9eb93f6427e023b985de02355ccb69a7484dbb7ad39dde6f89d9f9d9f4fb8f8398ae5ad5bd1ec5652f9af9a5be9380956fded605cd9d2e258f8e59ba676c1bf18c48a2ea17a39ba6b7d29c2f4e6ab2ac26ed3d91fe3d96b5bdb12b23e4faccec7b5f2ff00cb75784276d8ec94d4549c727e6f997fda34d9165544301406acdd0ec6fef12718d47efada803f98bfb4f96d8a7168c91b1cf70e7f03e07514fc9259acfd380cc53d441941b3ba4a5e76143207e73e3b462e53e9414a505b315f32c78d61610559222be966ad242f00015c1204f8df6b4e50037ee2e55ff7d721582f46474144c81cee1cb040f9dc63ce1dee90da5019f45503888013bbef68ae94fa2bfb993c21c4d40969d146ef67144cf53a3f32800c6f866cb657eaba7a3b7a6d22a3a1a6fc57d20e41bf",
+      "b": "ffffffffffffffffffffffffffffffffffffffffffffffff0200000000000000ffffffff0000000001000000000000800000000000000000010000000000000039a2d8ff778902c86bca19961e39df658c05d40f5e5d06b9a2315c0107607ce248e9de97de48122cafe28ed70020d0a44418c7b53577690a343de6c44181058dd6cbe8040633b4928ac694cc2be3c02508c2d0566c241783dd0df8f6e22516dd1868b23849e3d505499949fe99ced6a0e33aac16761ad0b3cd3b2a55a5a2890d592aec62fd125ad5d5bf7b14882b3451c963ff766cc669263868ed074d63ce48c8a3d6ac9836043b95f81431d67fabecdccdbad186bcac740530bda76d6066e3361ff88feeb0415a5a506bb4c4f15e489ed7b1b1e21d695055b3126b543c407ff5846793eb4dbb0f9b6ed6b1f610a924118d60f8e2168f22254e5a91b4e8651fe8f6b0a9ab58544dabdde9fd09d380f3bdf209669fd65d8568404e94e06a3b9caf4dfdb6bd766408d6c57321feb419ed50261e4ce44163a632198a5582c1a32c1c40b75d083aa105bc8a403c6a405af4b26aa9eabdbe643f05b5ce9ff1d4b77873cc4af0f1c57496ac77e3ee72303bb3cd4ff327d3d9ec0670d54edb8cec939fd79f7817d6b55ee701cb742b2d6ec776418da77b31f0eab1a4415680ae08e22429eb49f998bdd5681b8744ee6b1fc5a6f41a58943c505e3435b3aac8672d14b03986277212fdc718d7e7375f551daf57aa47e7e04c43548adb94e31e920c688dc181e06f2c4169fb214fa418c6cd1d2152235210f0b7483be00e0ead7eb6f45da5653928d83be49762a444125211e084da8e14f262c0195d2a83588f6dec692646df772afc9aaf9385b8b5a89bb83e1c32580555b560d7fc2a32c7ff2754999620f44971a3f11fe95b706b9aa08cae6148e242857bd328ee4d9dbf9898067cb3539f5bce23f9ed34b33a40d660dfdfc3db93d546ed70e9213ee3ca6787217e53a4d5402608b3806a75d98745c3a84869897cea162e89312fafd479afb9ecc6e72fa139fcf509b8e01f7626b8d488d57871932ddc93703d1a621d4f82cb75fcfce00fb5c1961de3481b1d229270ba6beff06fadadfa87c931e1e12b16ea70d2df7a102e94042e8cf0a47ca172dd87291a606044e098c524ed86e59b80513590b4d606bccd9cd4a20a412aa5b3f70730df3aeea492b8252e66b2d4134149bad2f493a0c24877c625a2565886b6a0b41cae16457307feb1ae7dc61abcd40f8b3b0b7cbbb8afb201b0bc338a42c804f1082ab40a1d2854b1ed48a2f6f58aaeae0cf29e74c7982952e4cd88e36125095dae53751ab3358f6d3f9e0a0c8519c23bcab955d4a795f525aa0fb01f7e3a42ebd6129907a9c0ce167d3b18d78699f8bae588892643bfa87f1354ba19aeb08b17a62b2b6e77ee412cdc98d15e15bf4eeb4395",
+      "expected": "000000000000000001000000000000000000000000000080f8ffffffffffffff01000000fcffffff000000000100000000000000000000001032547698badcfe16c4765fc0fa7a8676d23e286d53bc65c05779a9e5a1fd8b10c765b651f85c8600c2c2dc40ffbff38e6fcb375962fdac4092eb9fa1539a3600895db11de3ff05f0b0e0d3b53d89d370ed67761e54e41b00f66a93c130cf6109e9d107f20a442c00e046c72e5a1ae8a1ee5e2f9a2fc4808c88ba509e14dbf5632e08b585c2e734995a024cf625c6afdb646e3ff422e3e9fcbb7559af16fe8f0078f8a77af786ab00bc0eba56f64467572570e5d2e013ffc0991d33277963d4a5141e37e78bd82200c2ee0de6bb3b4a20cf56f4c3de6afaf0e13a459b42c1d5700f79433ab9110120e642cc5e324f6e72d11b5e5496b7646f79f5145ad3df1d72eee233957f90d5008294718374e0eeaf2e8a30e8675be3e1ce7ef4a1d71e2600dcaab1b62c269f48e7c39a1635c088f0573dd89f1229a000606b0a8b744ebb989ce85ec9cd441a40d999f4e5583d72004bc0769d705f3eb869835df3801045c6d6e80faf88b0811d21010fd425ea9100844d48cfef70512ff1398225f7302700c002b409999501fd7ea9ca41504b77b4c8cd9dbc0c4ed4d5e4d683a9340d3f009aedccf5415e6089ae52bf7c3bb0ed8ee07fa2706d8f3b80f6c9e6077f10fc9773998dd95754372447986decf260824058c3507193c6ace000b58201fb732198e6d9f1861f97e0c0db792a6a757461b1b03260bc1882d0b83b7c5aac1137560000f7e7144572ff889f779d5c48c0c73013217578f97216e83871b6e88b95f768328894de427f42f06509ebc1183cf9ad8ea2292f1e82a4905fa108b33ca9ffc087a5c602dc304700005cb989002a2039fc6fe84397730b004a4da88b4f02b747dcd15c31868ca41b4914e1a1042c0b99481e9ffe62ca26807040ec91475354187df59af318b24880ada8c300d2931cb45d9913d9671da5cae26ed98b78059ce0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713",
+      "initial": "e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713"
+    },
+    "unsigned": {
+      "a": "0000000000000000ffffffffffffffff0000000000000080ffffffffffffff7fffffffff000000000000000001000000f0debc9a785634121032547698badcfea63af405763f85cff232e4734fb2e9aa2d124f5df1b1cc45026e01067a7478b56946c42642de8f449273949ffbf7ef059934fa8e8ec8ff3d94815f2fb89bcb3aaa587dca41203d6a4679229607d8947d3b212b44dd5dbd75b59d009c8de3f02150717dede1122a314931b1dc4a111befe4fa21b8595243a657cf4739e6159c8951ac44504f592c0a67c266e2d3c272115cb3ff26a9b84d7724f0168d4956ad732e8800e66e913e6793ebf710fcf47854414b93987de7480e49b58ca40eb353ccc0da5e510a806e67d407c4948893c328a23a9a71b005af8630ff3b217448e189a0de58891d294d026636fd020a5bc60e9fc5760766284a1f1a5ae086e212d3258da8a1f3a1688617752558e4955cd15e0d2f3336b2edb269369efc55b1be2a8238ec05bf114b75714a52b1e3f7742e7baed84b477b3c39ba3b764f9119a29767a38bda408a3192dc14c453dd22c6aefeff6dadc4cf9240babee85e3563acc132170c2a137a27db71b0d7e1351cf46434f38c9ed9f7822f9c741ca1b4a84f19501b9c103351e1509bb494217d58a6fd4115327fbb2b81e00ba8c328c97296ddc3d1d22f74fd6fcb599ada24f03a4ac68852306b619c511222b3abeb9dac561f8d84f519900cf95bbac0a5e7bde58a9c700cbbe0101685419888443570cd95b02fc02b0055300502eb51a98808ff4a41f4af72a6bce7afb82f621ce3c4417b516328353baf1707631806098c622585f694c97ae76ab179021221bc95919280a710da7713317414846e71ca8eea1fa5448de2b21fa6f7d73d4bd88f712650802e8eb8416b3b7d94e6137352250c469e34aaed62d2ad6367fca92bfcb869f519613fb1a175c1c825eb97cb821b39c05e23678095d148598fab71bd9d942c6e25c888e6cb067578df6f7484d2ae8759722cf6da0f297b42c9eb93f6427e023b985de02355ccb69a7484dbb7ad39dde6f89d9f9d9f4fb8f8398ae5ad5bd1ec5652f9af9a5be9380956fded605cd9d2e258f8e59ba676c1bf18c48a2ea17a39ba6b7d29c2f4e6ab2ac26ed3d91fe3d96b5bdb12b23e4faccec7b5f2ff00cb75784276d8ec94d4549c727e6f997fda34d9165544301406acdd0ec6fef12718d47efada803f98bfb4f96d8a7168c91b1cf70e7f03e07514fc9259acfd380cc53d441941b3ba4a5e76143207e73e3b462e53e9414a505b315f32c78d61610559222be966ad242f00015c1204f8df6b4e50037ee2e55ff7d721582f46474144c81cee1cb040f9dc63ce1dee90da5019f45503888013bbef68ae94fa2bfb993c21c4d40969d146ef67144cf53a3f32800c6f866cb657eaba7a3b7a6d22a3a1a6fc57d20e41bf",
+      "b": "ffffffffffffffffffffffffffffffffffffffffffffffff0200000000000000ffffffff0000000001000000000000800000000000000000010000000000000039a2d8ff778902c86bca19961e39df658c05d40f5e5d06b9a2315c0107607ce248e9de97de48122cafe28ed70020d0a44418c7b53577690a343de6c44181058dd6cbe8040633b4928ac694cc2be3c02508c2d0566c241783dd0df8f6e22516dd1868b23849e3d505499949fe99ced6a0e33aac16761ad0b3cd3b2a55a5a2890d592aec62fd125ad5d5bf7b14882b3451c963ff766cc669263868ed074d63ce48c8a3d6ac9836043b95f81431d67fabecdccdbad186bcac740530bda76d6066e3361ff88feeb0415a5a506bb4c4f15e489ed7b1b1e21d695055b3126b543c407ff5846793eb4dbb0f9b6ed6b1f610a924118d60f8e2168f22254e5a91b4e8651fe8f6b0a9ab58544dabdde9fd09d380f3bdf209669fd65d8568404e94e06a3b9caf4dfdb6bd766408d6c57321feb419ed50261e4ce44163a632198a5582c1a32c1c40b75d083aa105bc8a403c6a405af4b26aa9eabdbe643f05b5ce9ff1d4b77873cc4af0f1c57496ac77e3ee72303bb3cd4ff327d3d9ec0670d54edb8cec939fd79f7817d6b55ee701cb742b2d6ec776418da77b31f0eab1a4415680ae08e22429eb49f998bdd5681b8744ee6b1fc5a6f41a58943c505e3435b3aac8672d14b03986277212fdc718d7e7375f551daf57aa47e7e04c43548adb94e31e920c688dc181e06f2c4169fb214fa418c6cd1d2152235210f0b7483be00e0ead7eb6f45da5653928d83be49762a444125211e084da8e14f262c0195d2a83588f6dec692646df772afc9aaf9385b8b5a89bb83e1c32580555b560d7fc2a32c7ff2754999620f44971a3f11fe95b706b9aa08cae6148e242857bd328ee4d9dbf9898067cb3539f5bce23f9ed34b33a40d660dfdfc3db93d546ed70e9213ee3ca6787217e53a4d5402608b3806a75d98745c3a84869897cea162e89312fafd479afb9ecc6e72fa139fcf509b8e01f7626b8d488d57871932ddc93703d1a621d4f82cb75fcfce00fb5c1961de3481b1d229270ba6beff06fadadfa87c931e1e12b16ea70d2df7a102e94042e8cf0a47ca172dd87291a606044e098c524ed86e59b80513590b4d606bccd9cd4a20a412aa5b3f70730df3aeea492b8252e66b2d4134149bad2f493a0c24877c625a2565886b6a0b41cae16457307feb1ae7dc61abcd40f8b3b0b7cbbb8afb201b0bc338a42c804f1082ab40a1d2854b1ed48a2f6f58aaeae0cf29e74c7982952e4cd88e36125095dae53751ab3358f6d3f9e0a0c8519c23bcab955d4a795f525aa0fb01f7e3a42ebd6129907a9c0ce167d3b18d78699f8bae588892643bfa87f1354ba19aeb08b17a62b2b6e77ee412cdc98d15e15bf4eeb4395",
+      "expected": "000000000000000000000000000000000000000000000000fdffffffffffff7f00000000ffffffff0000000002000000f0debc9a785634122064a8ec3075b9fd9c5582bc2876120f18721aba75ccd7b7c9e32ba0d4a541e0466dafa3d77020b0f1a41bb0f090f0116058127d461191cb3d854d0e307aa7d7a4179e4b034a71cfc644a476c9abd5f702fdfb1291dfc01a13e1a2e6882ba33df6f3e205a8a06fcdd090e8705d72a13d1ae07d2d98ad0ecf101b4bda1b1b1df702e5d78b289d7c7a7ade155960b08cad1a5b6e605155f3fb981ac4b8bda7898b0418fe08537d55bd1e3694abc5fbb8632270f6a7795d721b1d04a56815a6297db6ef2eb36bc7aa04403fde21a7f0044f5c08bd79cab59c3f9e780aa22f034401204af61ee1efe40cc06d9040ab84834e28faf09eaeff7b362e78d214a3059c56dc4be5c7e83ac7b855e6090c1c213e719c2b0c3c314c2850a635ec711f45334026649ed8ea95f1e7803e775fca26b1de260e7d2f17d0c1d60e638dddc5778e7bc1502e0856061f6f77912f04ec3850b7c48a8a433a3a2a874d7f26080283297174caaba5da864fbc6cce553fba345370f091f14544de60218a68bddadabf3cd0341322af9fe352b3c87ba0009c8e014f68e5bd38c04ab9e06a7a13289a16226c48c363bbc44e4bca4a71f75c0528658bd81e37f0784421f47a92ad228e643aa8c260a2f57d833489e8b7806bd73a5be9001a441e3b0c30380445d1e16e8ef6f0e084fded3eb4833780e72c0894012e74c27b4a5e93c27433bd1bb397782831fb224e853e68d05ef4f03f4512bb477f98525587a357c03162f387d5732c71de8b8b7cc32dbace5aaa7623230c4803cc67262f24b285b56f03065338863e26dabc4859139c6fff0f32b8d8eed886daa13054f18c558f795118956f6dee6177e7731a341855e2dcf34214fdf07127c7e061bcf4b9c76e5336d900fa74504dc2e18e836893420b6c0b943ec9873229b74e78d8eca252c23fa401842314818f4f87c9e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713",
+      "initial": "e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713e0ac6824df9b5713"
+    },
+    "floating": {
+      "a": "0000fcc00000f8c00000f4c00000f0c00000ecc00000e8c00000e4c00000e0c00000dcc00000d8c00000d4c00000d0c00000ccc00000c8c00000c4c00000c0c00000bcc00000b8c00000b4c00000b0c00000acc00000a8c00000a4c00000a0c000009cc0000098c0000094c0000090c000008cc0000088c0000084c0000080c0000078c0000070c0000068c0000060c0000058c0000050c0000048c0000040c0000038c0000030c0000028c0000020c0000018c0000010c0000008c0000000c00000f0bf0000e0bf0000d0bf0000c0bf0000b0bf0000a0bf000090bf000080bf000060bf000040bf000020bf000000bf0000c0be000080be000000be000000000000003e0000803e0000c03e0000003f0000203f0000403f0000603f0000803f0000903f0000a03f0000b03f0000c03f0000d03f0000e03f0000f03f0000004000000840000010400000184000002040000028400000304000003840000040400000484000005040000058400000604000006840000070400000784000008040000084400000884000008c4000009040000094400000984000009c400000a0400000a4400000a8400000ac400000b0400000b4400000b8400000bc400000c0400000c4400000c8400000cc400000d0400000d4400000d8400000dc400000e0400000e4400000e8400000ec400000f0400000f4400000f8400000fc4000000041",
+      "b": "0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e0000003f0000403f0000803f0000a03f0000a0bf000080bf000040bf000000bf000080be000000000000803e",
+      "expected": "000088c1000084c1000080c1000078c1000070c1000068c1000060c1000058c1000050c1000048c1000040c1000064c100005cc1000054c100004cc1000044c100003cc1000034c100002cc1000024c100001cc1000014c1000038c1000030c1000028c1000020c1000018c1000010c1000008c1000000c10000f0c00000e0c00000d0c000000cc1000004c10000f8c00000e8c00000d8c00000c8c00000b8c00000a8c0000098c0000088c0000070c00000c0c00000b0c00000a0c0000090c0000080c0000060c0000040c0000020c0000000c00000c0bf000080bf000050c0000030c0000010c00000e0bf0000a0bf000040bf000080be0000803e0000403f0000a03f0000e03f000000bf000000000000003f0000803f0000c03f0000004000002040000040400000604000008040000090400000104000003040000050400000704000008840000098400000a8400000b8400000c8400000d8400000e8400000a0400000b0400000c04000e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c6",
+      "initial": "00e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c600e440c6"
+    }
+  },
+  "negative_controls": [
+    {
+      "name": "recursive",
+      "file": "arithmetic/base.py",
+      "old": "return x * y",
+      "new": "return signed_product(x,y)",
+      "reason": "recursive device helper"
+    },
+    {
+      "name": "cross_recursive",
+      "file": "arithmetic/base.py",
+      "old": "return x * y",
+      "new": "return back(x,y)",
+      "reason": "recursive device helper"
+    },
+    {
+      "name": "capture",
+      "file": "arithmetic/base.py",
+      "old": "return x * y",
+      "new": "return x * GLOBAL",
+      "reason": "captured"
+    },
+    {
+      "name": "host_call",
+      "file": "arithmetic/base.py",
+      "old": "return x * y",
+      "new": "return print(x)",
+      "reason": "not supported"
+    },
+    {
+      "name": "memory",
+      "file": "arithmetic/base.py",
+      "old": "return x * y",
+      "new": "return x[0]",
+      "reason": "access memory"
+    },
+    {
+      "name": "bare_return",
+      "file": "arithmetic/transforms.py",
+      "old": "result = x",
+      "new": "if x < y:\n        return\n    result = x",
+      "reason": "requires a value"
+    },
+    {
+      "name": "mixed_return",
+      "file": "arithmetic/base.py",
+      "old": "return x * y",
+      "new": "return 1.0",
+      "reason": "annotated"
+    },
+    {
+      "name": "missing_module",
+      "file": "arithmetic/transforms.py",
+      "old": "from .base import signed_product as product",
+      "new": "from .missing import signed_product as product",
+      "reason": "not found"
+    },
+    {
+      "name": "missing_function",
+      "file": "arithmetic/transforms.py",
+      "old": "from .base import signed_product as product",
+      "new": "from .base import missing as product",
+      "reason": "missing"
+    },
+    {
+      "name": "untyped",
+      "file": "arithmetic/base.py",
+      "old": "def signed_product(x: i64, y: i64) -> i64:",
+      "new": "def signed_product(x, y: i64) -> i64:",
+      "reason": "annotation"
+    },
+    {
+      "name": "not_device",
+      "file": "arithmetic/base.py",
+      "old": "@device\ndef signed_product",
+      "new": "def signed_product",
+      "reason": "not a typed"
+    },
+    {
+      "name": "default",
+      "file": "arithmetic/base.py",
+      "old": "x: i64, y: i64",
+      "new": "x: i64, y: i64 = 1",
+      "reason": "plain positional"
+    },
+    {
+      "name": "relative_escape",
+      "file": "arithmetic/transforms.py",
+      "old": "from .base import",
+      "new": "from ...base import",
+      "reason": "escapes"
+    },
+    {
+      "name": "local_shadow",
+      "file": "arithmetic/transforms.py",
+      "old": "result = product(result, y)",
+      "new": "product = result\n        result = product(result, y)",
+      "reason": "local value"
+    },
+    {
+      "name": "keyword",
+      "file": "entry.py",
+      "old": "repeated_product(a[i], b[i])",
+      "new": "repeated_product(x=a[i], y=b[i])",
+      "reason": "keyword"
+    },
+    {
+      "name": "bad_arity",
+      "file": "entry.py",
+      "old": "repeated_product(a[i], b[i])",
+      "new": "repeated_product(a[i])",
+      "reason": "expects"
+    },
+    {
+      "name": "bad_type",
+      "file": "entry.py",
+      "old": "repeated_product(a[i], b[i])",
+      "new": "repeated_product(float(1), b[i])",
+      "reason": "expected"
+    },
+    {
+      "name": "rebound_import",
+      "file": "entry.py",
+      "old": "raise RuntimeError('static compilation must not execute the entry module')",
+      "new": "repeated_product = 7",
+      "reason": "rebound"
+    },
+    {
+      "name": "deleted_import",
+      "file": "entry.py",
+      "old": "raise RuntimeError('static compilation must not execute the entry module')",
+      "new": "del repeated_product",
+      "reason": "rebound"
+    },
+    {
+      "name": "conditional_rebind",
+      "file": "entry.py",
+      "old": "raise RuntimeError('static compilation must not execute the entry module')",
+      "new": "if True:\n    repeated_product = 7",
+      "reason": "rebound"
+    },
+    {
+      "name": "module_attribute",
+      "file": "entry.py",
+      "old": "raise RuntimeError('static compilation must not execute the entry module')",
+      "new": "transforms.unsigned_step = 7",
+      "reason": "mutated"
+    },
+    {
+      "name": "conditional_import",
+      "file": "entry.py",
+      "old": "from arithmetic.transforms import signed_step as repeated_product",
+      "new": "if True:\n    from arithmetic.transforms import signed_step as repeated_product",
+      "reason": "not supported"
+    },
+    {
+      "name": "star_import",
+      "file": "entry.py",
+      "old": "from arithmetic.transforms import signed_step as repeated_product",
+      "new": "from arithmetic.transforms import *",
+      "reason": "not supported"
+    },
+    {
+      "name": "bad_annotation_alias",
+      "file": "arithmetic/base.py",
+      "old": "from openassembler.pyfront import device, i64, u64, f32",
+      "new": "from openassembler.pyfront import device, i64, u64, f32\ni64 = 7",
+      "reason": "annotation"
+    },
+    {
+      "name": "string_annotation",
+      "file": "arithmetic/base.py",
+      "old": "x: i64, y: i64",
+      "new": "x: \"Unknown\", y: i64",
+      "reason": "annotation"
+    },
+    {
+      "name": "nested_import_alias",
+      "file": "arithmetic/base.py",
+      "old": "return x * y",
+      "new": "import math as i64\n    return x * y",
+      "reason": "scalar assignments"
+    }
+  ]
+}

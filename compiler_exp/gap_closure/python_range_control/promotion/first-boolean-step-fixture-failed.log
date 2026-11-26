@@ -1,0 +1,118 @@
+........................................................................ [ 48%]
+................................................................F....F.. [ 96%]
+......                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_kernel_return_boolean_step_and_nearest_loop_else_targets[safe-    value=0\n    for i in range(0,3,True):\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n-10] _
+
+body = '    value=0\n    for i in range(0,3,True):\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n'
+wanted = 10, level = 'safe'
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-641/test_kernel_return_boolean_ste0')
+
+    @pytest.mark.parametrize('body,wanted',[
+     ('    value=0\n    for i in range(0,3,True):\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n',10),
+     ('    value=0\n    for i in range(3):\n        for j in range(0):\n            pass\n        else:\n            if i==1:\n                continue\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n',9),
+     ('    value=0\n    i=0\n    while i<3:\n        i+=1\n        for j in range(0):\n            pass\n        else:\n            break\n    else:\n        value=7\n    out[0]=i64(value+i)\n',1),
+     ('    value=0\n    for i in range(3):\n        j=0\n        while j<0:\n            j+=1\n        else:\n            break\n    else:\n        value=7\n    out[0]=i64(value)\n',0),
+     ('    for i in range(2147483646,2147483647,2):\n        return\n    else:\n        out[0]=i64(7)\n',-991),
+    ])
+    @pytest.mark.parametrize('level',['safe','opt'])
+    def test_kernel_return_boolean_step_and_nearest_loop_else_targets(body,wanted,level,tmp_path):
+>    source=tmp_path/'loop.py';source.write_text(HEADER+'@kernel\ndef k(out:Array(i64)):\n'+body);text,_=compile_file(source);module=parse_module(text);code,labels,words,_,regs=build.generate(module.kernels['k'],'sm_80',level);out=0x100000000
+                                                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_range_control/promotion/test_pyfront_range_control.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:1561: in compile_file
+    raise e.with_path(path) from None
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:1558: in compile_file
+    entries.append(_compile_entry(k, names, arch))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:1460: in _compile_entry
+    _Emitter(scope, names, fdef).body(fdef.body)
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:507: in body
+    self.stmt(st)
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:516: in stmt
+    fn(node)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.compile._Emitter object at 0x107bd8050>
+node = <ast.For object at 0x1079aef50>
+
+    def visit_For(self, node: ast.For) -> None:
+        if hasattr(node, '_oa_tuple_values'):
+            return self._static_tuple_loop(node)
+        # Existing runtime range-loop contract.
+        if not (isinstance(node.target, ast.Name) and isinstance(node.iter, ast.Call)
+                and self.names.resolve(node.iter.func) == "range" and not node.iter.keywords):
+            raise NotSupported("only 'for i in range(...)' loops are supported", node)
+        args = node.iter.args
+        if len(args) == 1:
+            start_e, stop_e, step = ast.Constant(value=0), args[0], 1
+        elif len(args) in (2, 3):
+            start_e, stop_e, step = args[0], args[1], 1
+            if len(args) == 3:
+                step = _const_value(args[2])
+                if not isinstance(step, int):
+>                   raise NotSupported("range() step must be a constant int", node)
+E                   openassembler.pyfront.compile.NotSupported: range() step must be a constant int (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-641/test_kernel_return_boolean_ste0/loop.py, line 6)
+
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:665: NotSupported
+_ test_kernel_return_boolean_step_and_nearest_loop_else_targets[opt-    value=0\n    for i in range(0,3,True):\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n-10] _
+
+body = '    value=0\n    for i in range(0,3,True):\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n'
+wanted = 10, level = 'opt'
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-641/test_kernel_return_boolean_ste5')
+
+    @pytest.mark.parametrize('body,wanted',[
+     ('    value=0\n    for i in range(0,3,True):\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n',10),
+     ('    value=0\n    for i in range(3):\n        for j in range(0):\n            pass\n        else:\n            if i==1:\n                continue\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n',9),
+     ('    value=0\n    i=0\n    while i<3:\n        i+=1\n        for j in range(0):\n            pass\n        else:\n            break\n    else:\n        value=7\n    out[0]=i64(value+i)\n',1),
+     ('    value=0\n    for i in range(3):\n        j=0\n        while j<0:\n            j+=1\n        else:\n            break\n    else:\n        value=7\n    out[0]=i64(value)\n',0),
+     ('    for i in range(2147483646,2147483647,2):\n        return\n    else:\n        out[0]=i64(7)\n',-991),
+    ])
+    @pytest.mark.parametrize('level',['safe','opt'])
+    def test_kernel_return_boolean_step_and_nearest_loop_else_targets(body,wanted,level,tmp_path):
+>    source=tmp_path/'loop.py';source.write_text(HEADER+'@kernel\ndef k(out:Array(i64)):\n'+body);text,_=compile_file(source);module=parse_module(text);code,labels,words,_,regs=build.generate(module.kernels['k'],'sm_80',level);out=0x100000000
+                                                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_range_control/promotion/test_pyfront_range_control.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:1561: in compile_file
+    raise e.with_path(path) from None
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:1558: in compile_file
+    entries.append(_compile_entry(k, names, arch))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:1460: in _compile_entry
+    _Emitter(scope, names, fdef).body(fdef.body)
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:507: in body
+    self.stmt(st)
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:516: in stmt
+    fn(node)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.compile._Emitter object at 0x106ef84a0>
+node = <ast.For object at 0x106f4ce50>
+
+    def visit_For(self, node: ast.For) -> None:
+        if hasattr(node, '_oa_tuple_values'):
+            return self._static_tuple_loop(node)
+        # Existing runtime range-loop contract.
+        if not (isinstance(node.target, ast.Name) and isinstance(node.iter, ast.Call)
+                and self.names.resolve(node.iter.func) == "range" and not node.iter.keywords):
+            raise NotSupported("only 'for i in range(...)' loops are supported", node)
+        args = node.iter.args
+        if len(args) == 1:
+            start_e, stop_e, step = ast.Constant(value=0), args[0], 1
+        elif len(args) in (2, 3):
+            start_e, stop_e, step = args[0], args[1], 1
+            if len(args) == 3:
+                step = _const_value(args[2])
+                if not isinstance(step, int):
+>                   raise NotSupported("range() step must be a constant int", node)
+E                   openassembler.pyfront.compile.NotSupported: range() step must be a constant int (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-641/test_kernel_return_boolean_ste5/loop.py, line 6)
+
+compiler_exp/gap_closure/python_range_control/promotion/candidate-pyfront.py:665: NotSupported
+=========================== short test summary info ============================
+FAILED compiler_exp/gap_closure/python_range_control/promotion/test_pyfront_range_control.py::test_kernel_return_boolean_step_and_nearest_loop_else_targets[safe-    value=0\n    for i in range(0,3,True):\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n-10]
+FAILED compiler_exp/gap_closure/python_range_control/promotion/test_pyfront_range_control.py::test_kernel_return_boolean_step_and_nearest_loop_else_targets[opt-    value=0\n    for i in range(0,3,True):\n        value+=i\n    else:\n        value+=7\n    out[0]=i64(value)\n-10]
+2 failed, 148 passed in 11.47s

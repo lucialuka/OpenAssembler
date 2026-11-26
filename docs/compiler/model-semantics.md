@@ -19,7 +19,7 @@ source identities. No vendor GPU compute fallback is introduced.
 | SGD extensions | Momentum/dampening/Nesterov, coupled decay and maximize; [contract and evidence](gaps-optimizers.md) | Direct execution for nondefault policies; no parameter groups |
 | Adam | FP32 master weights/moments, bias correction, coupled weight decay, configurable betas, positive epsilon outside square root; AMSGrad/maximize via [extended policy](gaps-optimizers.md) | No differentiation through updates or parameter groups; AMSGrad uses split updates |
 | AdamW | Same state with decoupled weight decay | No silent epsilon/precision changes; fusion is an explicit option |
-| KV cache | `DecodeSession`: OA prefill and precompiled exact positive past-length variants; one-token append; two immutable contiguous FP32 cache inputs and outputs | Copies the prefix; no empty-prefix bucket, paging, in-place append, unknown-length compilation or continuous batching |
+| KV cache | `DecodeSession`: OA prefill and exact positive past-length variants, with optional explicit bounded specialization; one-token append; two immutable contiguous FP32 cache inputs and outputs | Copies the prefix; no empty-prefix bucket, paging, in-place append or continuous batching |
 | Repository route | Ordinary model factory/config, integer/Boolean input declarations, CE/adaptive policy, source snapshot and saved native replay | Does not resolve arbitrary custom extension launch graphs, arbitrary Python effects or all third-party packages |
 
 Storage/compute/gradients remain FP32. Only index/mask inputs add int64/Boolean
@@ -59,10 +59,14 @@ replacement bindings at an update boundary, with failure rollback checks.
 owns its runtimes/cache bindings. Each program returns prediction, keys and
 values in that order. All variants share the prefill parameter owner. Use
 `prefill(inputs)`, then `step(non_cache_inputs)`; `reset()` starts a fresh
-sequence. An unknown past length, caller cache mutation, externally rerun cache
+sequence. By default an unknown past length, caller cache mutation, externally rerun cache
 producer or changed model parameters rejects before a cache transition. Returned
 tensors borrow runtime storage. Variants must already be compiled; no hidden
-code generation occurs during decoding.
+code generation occurs during decoding by default. The separate
+[explicit bounded specialization policy](gaps-decode.md) admits exact-length
+misses through a declared host factory, maximum context and build budget,
+with source/state/hardware validation. It adds no automatic padding or serving
+policy.
 
 Indexed inputs, cross-entropy and nondefault optimizers currently require direct
 execution. CUDA graph training replay rejects them explicitly: CPU bounds

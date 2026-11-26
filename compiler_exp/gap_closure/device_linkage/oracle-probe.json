@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "scope": "Actual original nvcc separate translation units/relocatable device objects/device linking and unresolved OA baseline; no implementation or independent hardware execution",
+  "commands": [
+    {
+      "name": "entry",
+      "mode": "-ptx",
+      "args": [
+        "-arch=sm_80",
+        "-O3",
+        "-rdc=true",
+        "-ptx",
+        "-o",
+        "compiler_exp/gap_closure/device_linkage/entry.ptx",
+        "compiler_exp/gap_closure/device_linkage/entry.cu"
+      ],
+      "returncode": 0,
+      "source_sha256": "9c70bd5c92185d2fbc1d9abb0ca511ada0fdb0cee5374add6801f8582aa66e37",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "780f0b0dc70cf3d75f15a4b26729d78af662f74202557082ed7a2b811042bd69"
+    },
+    {
+      "name": "entry",
+      "mode": "-dc",
+      "args": [
+        "-arch=sm_80",
+        "-O3",
+        "-rdc=true",
+        "-dc",
+        "-o",
+        "compiler_exp/gap_closure/device_linkage/entry.o",
+        "compiler_exp/gap_closure/device_linkage/entry.cu"
+      ],
+      "returncode": 0,
+      "source_sha256": "9c70bd5c92185d2fbc1d9abb0ca511ada0fdb0cee5374add6801f8582aa66e37",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "357b24394a575732e681f34e6ac09f93d3385a9d655a3ccb33f6bcf53f069bfd"
+    },
+    {
+      "name": "helper",
+      "mode": "-ptx",
+      "args": [
+        "-arch=sm_80",
+        "-O3",
+        "-rdc=true",
+        "-ptx",
+        "-o",
+        "compiler_exp/gap_closure/device_linkage/helper.ptx",
+        "compiler_exp/gap_closure/device_linkage/helper.cu"
+      ],
+      "returncode": 0,
+      "source_sha256": "6eea3c88335a99258288b25b388db752ca8d0f0ad327beed38a5e02f87f93795",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "4e3ecdc3c7089a300b9c51f9895f32be6e6df543b93062a3b5e60459c6940528"
+    },
+    {
+      "name": "helper",
+      "mode": "-dc",
+      "args": [
+        "-arch=sm_80",
+        "-O3",
+        "-rdc=true",
+        "-dc",
+        "-o",
+        "compiler_exp/gap_closure/device_linkage/helper.o",
+        "compiler_exp/gap_closure/device_linkage/helper.cu"
+      ],
+      "returncode": 0,
+      "source_sha256": "6eea3c88335a99258288b25b388db752ca8d0f0ad327beed38a5e02f87f93795",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "artifact_sha256": "bfb038fdd86bd75de2cf1c7831ae2def22abfce16d497a2948f0defe1c3c0db9"
+    }
+  ],
+  "link": {
+    "args": [
+      "-arch=sm_80",
+      "-dlink",
+      "-cubin",
+      "-o",
+      "compiler_exp/gap_closure/device_linkage/linked.cubin",
+      "compiler_exp/gap_closure/device_linkage/entry.o",
+      "compiler_exp/gap_closure/device_linkage/helper.o"
+    ],
+    "returncode": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cubin_sha256": "c944879aa9b804736af88af0965ba1cc4bcc471d6bce1e56998a0303ba445a27",
+    "texts": [
+      {
+        "name": ".text.linked_probe",
+        "size": 512
+      },
+      {
+        "name": ".text.helper",
+        "size": 256
+      }
+    ]
+  },
+  "oa": {
+    "accepted": false,
+    "error": "SyntaxError: unresolved device function helper"
+  },
+  "compiler_inputs": {
+    "openassembler/ptx/parse.py": "77f62c64de6d57026332578d0d3f64dbc4e2b34c6eb964e9f531713cb6599f59",
+    "openassembler/ptx/inlining.py": "ed699d94fadb5ffec620e1fc5363987476e2644b26291676d15b40f67c7484c7",
+    "openassembler/build.py": "b6b2827e0df295473695bc8663e5c3255fb5b706dc9dff42edb93601112d38ef"
+  },
+  "script_sha256": "c8321781fd28ae4b9b5e34f942563a1528286303f38d535255c7847f218d24ec",
+  "toolkit": "nvcc: NVIDIA (R) Cuda compiler driver\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Wed_Jan_15_19:21:50_PST_2025\nCuda compilation tools, release 12.8, V12.8.61\nBuild cuda_12.8.r12.8/compiler.35404655_0\n"
+}

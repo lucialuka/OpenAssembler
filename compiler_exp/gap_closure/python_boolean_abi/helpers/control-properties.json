@@ -1,0 +1,6085 @@
+{
+  "schema": 1,
+  "passed": true,
+  "seed": 86173,
+  "inputs": [
+    -2147483648,
+    -19,
+    -3,
+    -1,
+    0,
+    1,
+    3,
+    7,
+    19,
+    2147483647
+  ],
+  "results": [
+    {
+      "index": 0,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "or",
+            [
+              "second"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "chain"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (second or (-3 < x < 7))) or (not (-3 < x < 7)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 1,
+      "tree": [
+        "or",
+        [
+          "truth"
+        ],
+        [
+          "and",
+          [
+            "second"
+          ],
+          [
+            "chain"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (bool(x) or (second and (-3 < x < 7)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 2,
+      "tree": [
+        "or",
+        [
+          "or",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ],
+          [
+            "or",
+            [
+              "true"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "second"
+            ]
+          ],
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((not (-3 < x < 7)) or (True or True)) or ((second and second) or (False and second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 3,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not ((-3 < x < 7) or second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 4,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "first"
+            ]
+          ],
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((bool(x) and first) or (not (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 5,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "true"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not ((-3 < x < 7) or first)) and True)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 6,
+      "tree": [
+        "second"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return second\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 7,
+      "tree": [
+        "not",
+        [
+          "and",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "second"
+            ]
+          ],
+          [
+            "not",
+            [
+              "true"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((False and second) and (not True)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 8,
+      "tree": [
+        "not",
+        [
+          "and",
+          [
+            "second"
+          ],
+          [
+            "not",
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (second and (not False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 9,
+      "tree": [
+        "not",
+        [
+          "false"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not False)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 10,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "second"
+          ],
+          [
+            "not",
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (bool(x) and True)) and (second or (not first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 11,
+      "tree": [
+        "chain"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (-3 < x < 7)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 12,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "true"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not True))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 13,
+      "tree": [
+        "false"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return False\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 14,
+      "tree": [
+        "and",
+        [
+          "true"
+        ],
+        [
+          "or",
+          [
+            "true"
+          ],
+          [
+            "not",
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (True and (True or (not second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 15,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "true"
+          ]
+        ],
+        [
+          "true"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not True) and True)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 16,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "not",
+            [
+              "true"
+            ]
+          ],
+          [
+            "or",
+            [
+              "true"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ],
+        [
+          "and",
+          [
+            "not",
+            [
+              "first"
+            ]
+          ],
+          [
+            "and",
+            [
+              "true"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((not True) and (True or (-3 < x < 7))) and ((not first) and (True and first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 17,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "truth"
+          ],
+          [
+            "or",
+            [
+              "false"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (bool(x) or (False or False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 18,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "and",
+            [
+              "true"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "and",
+          [
+            "not",
+            [
+              "truth"
+            ]
+          ],
+          [
+            "not",
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (True and first)) and ((not bool(x)) and (not second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 19,
+      "tree": [
+        "second"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return second\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 20,
+      "tree": [
+        "chain"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (-3 < x < 7)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 21,
+      "tree": [
+        "not",
+        [
+          "second"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not second)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 22,
+      "tree": [
+        "not",
+        [
+          "first"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not first)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 23,
+      "tree": [
+        "not",
+        [
+          "false"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not False)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 24,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "not",
+            [
+              "true"
+            ]
+          ],
+          [
+            "or",
+            [
+              "false"
+            ],
+            [
+              "truth"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((not True) or (False or bool(x))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 25,
+      "tree": [
+        "or",
+        [
+          "and",
+          [
+            "not",
+            [
+              "first"
+            ]
+          ],
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "and",
+          [
+            "not",
+            [
+              "second"
+            ]
+          ],
+          [
+            "second"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((not first) and (first and first)) or ((not second) and second))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 26,
+      "tree": [
+        "and",
+        [
+          "second"
+        ],
+        [
+          "not",
+          [
+            "chain"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (second and (not (-3 < x < 7)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 27,
+      "tree": [
+        "or",
+        [
+          "truth"
+        ],
+        [
+          "chain"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (bool(x) or (-3 < x < 7))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 28,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "or",
+            [
+              "truth"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ],
+        [
+          "second"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (bool(x) or True)) or second)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 29,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "not",
+            [
+              "second"
+            ]
+          ]
+        ],
+        [
+          "true"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (not second)) or True)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 30,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "second"
+            ]
+          ],
+          [
+            "true"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((second and second) or True))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 31,
+      "tree": [
+        "not",
+        [
+          "and",
+          [
+            "not",
+            [
+              "first"
+            ]
+          ],
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((not first) and (second and False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 32,
+      "tree": [
+        "truth"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return bool(x)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 33,
+      "tree": [
+        "and",
+        [
+          "truth"
+        ],
+        [
+          "or",
+          [
+            "not",
+            [
+              "second"
+            ]
+          ],
+          [
+            "not",
+            [
+              "true"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (bool(x) and ((not second) or (not True)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 34,
+      "tree": [
+        "and",
+        [
+          "or",
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ],
+        [
+          "and",
+          [
+            "or",
+            [
+              "true"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "first"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((second and True) or ((-3 < x < 7) and True)) and ((True or True) and first))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 35,
+      "tree": [
+        "not",
+        [
+          "first"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not first)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 36,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not (not (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 37,
+      "tree": [
+        "or",
+        [
+          "or",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ],
+        [
+          "chain"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((bool(x) and True) or (second and True)) or (-3 < x < 7))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 38,
+      "tree": [
+        "or",
+        [
+          "chain"
+        ],
+        [
+          "truth"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((-3 < x < 7) or bool(x))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 39,
+      "tree": [
+        "not",
+        [
+          "truth"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not bool(x))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 40,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "second"
+          ],
+          [
+            "or",
+            [
+              "second"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "not",
+            [
+              "second"
+            ]
+          ],
+          [
+            "first"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((second and (second or first)) and ((not second) or first))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 41,
+      "tree": [
+        "not",
+        [
+          "truth"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not bool(x))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 42,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "chain"
+          ]
+        ],
+        [
+          "not",
+          [
+            "truth"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((((-3 < x < 7) or False) and (-3 < x < 7)) and (not bool(x)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 43,
+      "tree": [
+        "first"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return first\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 44,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "truth"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not ((-3 < x < 7) or bool(x))) or ((bool(x) and True) or (second and True)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 45,
+      "tree": [
+        "or",
+        [
+          "and",
+          [
+            "not",
+            [
+              "truth"
+            ]
+          ],
+          [
+            "second"
+          ]
+        ],
+        [
+          "not",
+          [
+            "truth"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((not bool(x)) and second) or (not bool(x)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 46,
+      "tree": [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            [
+              "truth"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "not",
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((bool(x) or True) or (not first)) and (not ((-3 < x < 7) and first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 47,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ],
+        [
+          "second"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not ((-3 < x < 7) and second)) and second)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 48,
+      "tree": [
+        "truth"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return bool(x)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 49,
+      "tree": [
+        "and",
+        [
+          "or",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "first"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((bool(x) and True) or (second and False)) and first)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 50,
+      "tree": [
+        "and",
+        [
+          "false"
+        ],
+        [
+          "true"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (False and True)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 51,
+      "tree": [
+        "true"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return True\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 52,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "not",
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not (not first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 53,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not (first and True)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 54,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "second"
+            ]
+          ],
+          [
+            "or",
+            [
+              "false"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ],
+        [
+          "false"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((bool(x) and second) and (False or second)) and False)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 55,
+      "tree": [
+        "and",
+        [
+          "or",
+          [
+            "or",
+            [
+              "second"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "or",
+            [
+              "first"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "and",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ],
+          [
+            "first"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((second or False) or (first or first)) and ((not (-3 < x < 7)) and first))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 56,
+      "tree": [
+        "chain"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (-3 < x < 7)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 57,
+      "tree": [
+        "or",
+        [
+          "or",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "second"
+            ]
+          ],
+          [
+            "or",
+            [
+              "second"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "not",
+            [
+              "truth"
+            ]
+          ],
+          [
+            "false"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((False and second) or (second or (-3 < x < 7))) or ((not bool(x)) or False))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 58,
+      "tree": [
+        "or",
+        [
+          "first"
+        ],
+        [
+          "or",
+          [
+            "first"
+          ],
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (first or (first or (second and second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 59,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "or",
+            [
+              "second"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ],
+          [
+            "or",
+            [
+              "first"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (second or True)) and ((not (-3 < x < 7)) or (first or first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 60,
+      "tree": [
+        "chain"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (-3 < x < 7)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 61,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "not",
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "not",
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (not False)) or (not (not first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 62,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (not (-3 < x < 7))) and (not (False and (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 63,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ]
+        ],
+        [
+          "chain"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (not (-3 < x < 7))) and (-3 < x < 7))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 64,
+      "tree": [
+        "second"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return second\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 65,
+      "tree": [
+        "or",
+        [
+          "first"
+        ],
+        [
+          "not",
+          [
+            "or",
+            [
+              "first"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (first or (not (first or first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 66,
+      "tree": [
+        "and",
+        [
+          "chain"
+        ],
+        [
+          "and",
+          [
+            "not",
+            [
+              "truth"
+            ]
+          ],
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((-3 < x < 7) and ((not bool(x)) and (bool(x) and second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 67,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "or",
+            [
+              "true"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "or",
+            [
+              "true"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((True or False) or (True or first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 68,
+      "tree": [
+        "not",
+        [
+          "first"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not first)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 69,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "second"
+            ]
+          ],
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "truth"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (False and False)) or (((-3 < x < 7) or second) or (first and bool(x))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 70,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ],
+        [
+          "second"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (bool(x) and True)) and second)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 71,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not (False and (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 72,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "or",
+            [
+              "truth"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "true"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (bool(x) or False)) or True)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 73,
+      "tree": [
+        "or",
+        [
+          "and",
+          [
+            "or",
+            [
+              "false"
+            ],
+            [
+              "first"
+            ]
+          ],
+          [
+            "false"
+          ]
+        ],
+        [
+          "true"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((False or first) and False) or True)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 74,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "chain"
+            ]
+          ],
+          [
+            "not",
+            [
+              "second"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "or",
+            [
+              "false"
+            ],
+            [
+              "first"
+            ]
+          ],
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((first and (-3 < x < 7)) and (not second)) and ((False or first) or (bool(x) and False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 75,
+      "tree": [
+        "not",
+        [
+          "false"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not False)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 76,
+      "tree": [
+        "true"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return True\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 77,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "or",
+            [
+              "first"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "first"
+            ]
+          ],
+          [
+            "or",
+            [
+              "first"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (first or (-3 < x < 7))) or (((-3 < x < 7) or first) or (first or False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 78,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "not",
+            [
+              "false"
+            ]
+          ],
+          [
+            "not",
+            [
+              "second"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "or",
+            [
+              "truth"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((not False) and (not second)) and ((bool(x) or False) or ((-3 < x < 7) and first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 79,
+      "tree": [
+        "or",
+        [
+          "first"
+        ],
+        [
+          "or",
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "truth"
+            ]
+          ],
+          [
+            "true"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (first or (((-3 < x < 7) and bool(x)) or True))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 80,
+      "tree": [
+        "or",
+        [
+          "or",
+          [
+            "not",
+            [
+              "truth"
+            ]
+          ],
+          [
+            "chain"
+          ]
+        ],
+        [
+          "and",
+          [
+            "not",
+            [
+              "truth"
+            ]
+          ],
+          [
+            "or",
+            [
+              "first"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((not bool(x)) or (-3 < x < 7)) or ((not bool(x)) and (first or False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 81,
+      "tree": [
+        "not",
+        [
+          "and",
+          [
+            "not",
+            [
+              "false"
+            ]
+          ],
+          [
+            "not",
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((not False) and (not first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 82,
+      "tree": [
+        "or",
+        [
+          "and",
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ]
+        ],
+        [
+          "first"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((first and False) and (not (-3 < x < 7))) or first)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 83,
+      "tree": [
+        "true"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return True\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 84,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "and",
+            [
+              "true"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "not",
+            [
+              "true"
+            ]
+          ],
+          [
+            "not",
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (True and False)) or ((not True) or (not first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 85,
+      "tree": [
+        "not",
+        [
+          "and",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ],
+          [
+            "first"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((not (-3 < x < 7)) and first))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 86,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "chain"
+            ]
+          ],
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "truth"
+          ],
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((((-3 < x < 7) or (-3 < x < 7)) and (second and (-3 < x < 7))) and (bool(x) or ((-3 < x < 7) and (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 87,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "and",
+            [
+              "second"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "chain"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((second and True) or (-3 < x < 7)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 88,
+      "tree": [
+        "true"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return True\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 89,
+      "tree": [
+        "not",
+        [
+          "and",
+          [
+            "not",
+            [
+              "second"
+            ]
+          ],
+          [
+            "or",
+            [
+              "false"
+            ],
+            [
+              "true"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((not second) and (False or True)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 90,
+      "tree": [
+        "first"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return first\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 91,
+      "tree": [
+        "truth"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return bool(x)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 92,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "first"
+          ],
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (first or ((-3 < x < 7) and False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 93,
+      "tree": [
+        "truth"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return bool(x)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 94,
+      "tree": [
+        "false"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return False\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 95,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "not",
+            [
+              "true"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "truth"
+          ],
+          [
+            "true"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (not True)) or (bool(x) or True))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 96,
+      "tree": [
+        "chain"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (-3 < x < 7)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 97,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "not",
+            [
+              "second"
+            ]
+          ],
+          [
+            "second"
+          ]
+        ],
+        [
+          "and",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "first"
+            ]
+          ],
+          [
+            "first"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((not second) and second) and ((False and first) and first))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 98,
+      "tree": [
+        "truth"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return bool(x)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 99,
+      "tree": [
+        "or",
+        [
+          "first"
+        ],
+        [
+          "not",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (first or (not (False and False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 100,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "or",
+            [
+              "truth"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not (bool(x) or second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 101,
+      "tree": [
+        "truth"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return bool(x)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 102,
+      "tree": [
+        "or",
+        [
+          "and",
+          [
+            "or",
+            [
+              "true"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "not",
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "and",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "second"
+            ]
+          ],
+          [
+            "or",
+            [
+              "truth"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((True or False) and (not first)) or ((bool(x) and second) and (bool(x) or second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 103,
+      "tree": [
+        "false"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return False\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 104,
+      "tree": [
+        "and",
+        [
+          "or",
+          [
+            "chain"
+          ],
+          [
+            "or",
+            [
+              "false"
+            ],
+            [
+              "truth"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "not",
+            [
+              "true"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((-3 < x < 7) or (False or bool(x))) and (not (not True)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 105,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "first"
+            ]
+          ],
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((bool(x) and first) or (bool(x) and False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 106,
+      "tree": [
+        "not",
+        [
+          "second"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not second)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 107,
+      "tree": [
+        "chain"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (-3 < x < 7)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 108,
+      "tree": [
+        "or",
+        [
+          "or",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "truth"
+            ]
+          ],
+          [
+            "not",
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "truth"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((False and bool(x)) or (not False)) or (not bool(x)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 109,
+      "tree": [
+        "or",
+        [
+          "or",
+          [
+            "and",
+            [
+              "true"
+            ],
+            [
+              "first"
+            ]
+          ],
+          [
+            "true"
+          ]
+        ],
+        [
+          "not",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((True and first) or True) or (not (not (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 110,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "not",
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "not",
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (not False)) or ((first and True) or (not first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 111,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "chain"
+            ]
+          ],
+          [
+            "not",
+            [
+              "second"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "true"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((bool(x) and (-3 < x < 7)) and (not second)) and (not True))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 112,
+      "tree": [
+        "and",
+        [
+          "or",
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "first"
+            ]
+          ],
+          [
+            "second"
+          ]
+        ],
+        [
+          "false"
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((first and first) or second) and False)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 113,
+      "tree": [
+        "or",
+        [
+          "not",
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "or",
+            [
+              "second"
+            ],
+            [
+              "truth"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not (bool(x) and False)) or (not (second or bool(x))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 114,
+      "tree": [
+        "or",
+        [
+          "and",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "or",
+            [
+              "false"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "and",
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "truth"
+            ]
+          ],
+          [
+            "or",
+            [
+              "first"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((((-3 < x < 7) or False) and (False or False)) or (((-3 < x < 7) or bool(x)) and (first or (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 115,
+      "tree": [
+        "or",
+        [
+          "and",
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "or",
+            [
+              "chain"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "or",
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "truth"
+            ]
+          ],
+          [
+            "not",
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((first and False) and ((-3 < x < 7) or first)) or (((-3 < x < 7) and bool(x)) or (not second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 116,
+      "tree": [
+        "truth"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return bool(x)\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 117,
+      "tree": [
+        "and",
+        [
+          "not",
+          [
+            "first"
+          ]
+        ],
+        [
+          "not",
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return ((not first) and (not (first and first)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 118,
+      "tree": [
+        "and",
+        [
+          "or",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "false"
+            ]
+          ],
+          [
+            "false"
+          ]
+        ],
+        [
+          "and",
+          [
+            "first"
+          ],
+          [
+            "or",
+            [
+              "first"
+            ],
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((False and False) or False) and (first and (first or (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 119,
+      "tree": [
+        "first"
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return first\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 120,
+      "tree": [
+        "not",
+        [
+          "and",
+          [
+            "second"
+          ],
+          [
+            "second"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (second and second))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 121,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not (not (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 122,
+      "tree": [
+        "not",
+        [
+          "not",
+          [
+            "false"
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not (not False))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 123,
+      "tree": [
+        "not",
+        [
+          "or",
+          [
+            "and",
+            [
+              "first"
+            ],
+            [
+              "truth"
+            ]
+          ],
+          [
+            "and",
+            [
+              "truth"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (not ((first and bool(x)) or (bool(x) and False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 124,
+      "tree": [
+        "or",
+        [
+          "truth"
+        ],
+        [
+          "or",
+          [
+            "truth"
+          ],
+          [
+            "not",
+            [
+              "true"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (bool(x) or (bool(x) or (not True)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        1,
+        1,
+        1,
+        1,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 125,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "or",
+            [
+              "true"
+            ],
+            [
+              "chain"
+            ]
+          ],
+          [
+            "and",
+            [
+              "chain"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ],
+        [
+          "and",
+          [
+            "or",
+            [
+              "second"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "not",
+            [
+              "chain"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((True or (-3 < x < 7)) and ((-3 < x < 7) and False)) and ((second or True) and (not (-3 < x < 7))))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 126,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "chain"
+            ]
+          ],
+          [
+            "or",
+            [
+              "true"
+            ],
+            [
+              "first"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "or",
+            [
+              "truth"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((False and (-3 < x < 7)) and (True or first)) and (not (bool(x) or second)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    },
+    {
+      "index": 127,
+      "tree": [
+        "and",
+        [
+          "and",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "true"
+            ]
+          ],
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "second"
+            ]
+          ]
+        ],
+        [
+          "not",
+          [
+            "and",
+            [
+              "false"
+            ],
+            [
+              "false"
+            ]
+          ]
+        ]
+      ],
+      "source": "from openassembler.pyfront import *\n@device\ndef h(first:bool,second:bool,x:i32)->bool:\n    return (((False and True) and (False and second)) and (not (False and False)))\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    out[i]=i32(h(bool(atomic_add(count,i,1)),bool(atomic_add(count,i,1)),a[i]))\n",
+      "expected_outputs": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_atomic_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "passed": true
+    }
+  ],
+  "executions": 1536,
+  "source_hashes": {
+    "candidate-pyfront.py": "dd4745ba1e51cc883ff1f7bbe15679ebd23a1a3023cfe989afb3a065f5f22186",
+    "candidate-helpers.py": "4be0fdab259c82ef2728b0295d2d0f31c219e01cdcd5a19723177df08a716f0d",
+    "candidate-modules.py": "902cca5b0083fbe4ccfeb539f5da2055e9f9c3ad61f300cebb9a1b2be23dbe5f",
+    "control_properties.py": "e1a8b28e2f493f1b4abffb14c8f56f6dc328d12b173b2a659d6a4586fa23d74d"
+  },
+  "scope": "128 original predicate helper expressions and independent recursive truth references, eager once-only atomic arguments, full output/counter/immutable input/guards at four PTX/normal/poisoned levels; no hardware claim"
+}

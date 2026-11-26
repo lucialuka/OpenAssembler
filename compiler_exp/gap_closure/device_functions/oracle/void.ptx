@@ -1,0 +1,10 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.func helper(.param .b64 p,.param .b64 v){.reg .u64 %p,%v;ld.param.u64 %p,[p];ld.param.u64 %v,[v];st.global.u64 [%p],%v;ret;}
+.visible .entry probe(.param .u64 out,.param .u64 input,.param .u32 n){
+.reg .u64 %out,%in,%off,%src,%dst,%wide,%result;.reg .u32 %t,%c,%i,%n,%lo,%hi;.reg .pred %active,%take;
+ld.param.u64 %out,[out];ld.param.u64 %in,[input];ld.param.u32 %n,[n];
+mov.u32 %t,%tid.x;mov.u32 %c,%ctaid.x;mad.lo.u32 %i,%c,128,%t;setp.lt.u32 %active,%i,%n;
+mul.wide.u32 %off,%i,8;add.u64 %src,%in,%off;add.u64 %dst,%out,%off;ld.global.b64 %wide,[%src];mov.b64 {%lo,%hi},%wide;
+{.param .b64 a;.param .b64 b;st.param.b64 [a],%dst;st.param.b64 [b],%wide;@%active call.uni helper,(a,b);}mov.b64 %result,%wide;ret;}

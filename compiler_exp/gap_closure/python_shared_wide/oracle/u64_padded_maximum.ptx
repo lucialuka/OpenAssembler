@@ -1,0 +1,70 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"u64_padded_maximum","parameters":[{"dtype":"u64","kind":"array","name":"a"},{"dtype":"u64","kind":"array","name":"out"},{"dtype":"u64","kind":"scalar","name":"delta"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry u64_padded_maximum(.param .u64 a, .param .u64 out, .param .u64 delta, .param .s32 n)
+{
+ .shared .align 4 .b32 __smem_prefix[1];
+ .shared .align 8 .b64 __smem_shared[6143];
+ .reg .pred %p<3>;
+ .reg .b32 %r<30>;
+ .reg .b64 %rd<11>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u64 %rd3, [delta];
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, __smem_prefix;
+ mov.u32 %r3, __smem_shared;
+ mov.u32 %r4, %tid.x;
+ mov.u32 %r5, %r4;
+ mov.u32 %r6, %ctaid.x;
+ mov.s32 %r7, 128;
+ mul.lo.s32 %r8, %r6, %r7;
+ add.s32 %r9, %r8, %r5;
+ mov.u32 %r10, %r9;
+ mov.s32 %r11, 0;
+ setp.eq.s32 %p1, %r5, %r11;
+ @!%p1 bra L_endif_1;
+ mov.s32 %r12, 305419896;
+ st.shared.u32 [__smem_prefix+0], %r12;
+L_endif_1:
+ mul.wide.u32 %rd4, %r10, 8;
+ add.s64 %rd4, %rd1, %rd4;
+ ld.global.u64 %rd5, [%rd4];
+ mov.s32 %r13, 6015;
+ add.s32 %r14, %r5, %r13;
+ shl.b32 %r15, %r14, 3;
+ add.s32 %r16, %r15, %r3;
+ st.shared.u64 [%r16], %rd5;
+ bar.sync 0;
+ mov.s32 %r17, 64;
+ xor.b32 %r18, %r5, %r17;
+ mov.s32 %r19, 6015;
+ add.s32 %r20, %r18, %r19;
+ shl.b32 %r21, %r20, 3;
+ add.s32 %r22, %r21, %r3;
+ ld.shared.u64 %rd6, [%r22];
+ mov.b64 %rd7, %rd6;
+ setp.lt.s32 %p2, %r10, %r1;
+ @!%p2 bra L_endif_2;
+ mov.s32 %r23, 4;
+ mul.lo.s32 %r24, %r10, %r23;
+ mul.wide.u32 %rd8, %r24, 8;
+ add.s64 %rd8, %rd2, %rd8;
+ st.global.u64 [%rd8], %rd7;
+ ld.shared.u32 %r25, [__smem_prefix+0];
+ cvt.u64.s32 %rd9, %r25;
+ mov.s32 %r26, 4;
+ mul.lo.s32 %r27, %r10, %r26;
+ mov.s32 %r28, 1;
+ add.s32 %r29, %r27, %r28;
+ mul.wide.u32 %rd10, %r29, 8;
+ add.s64 %rd10, %rd2, %rd10;
+ st.global.u64 [%rd10], %rd9;
+L_endif_2:
+L_exit:
+ ret;
+}

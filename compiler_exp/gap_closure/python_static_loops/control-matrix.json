@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "plain",
+      "source": "from typing import Final\nfrom openassembler.pyfront import *\nCOEFFICIENTS:Final=(3, -5, 7)\n@device\ndef helper(x:i64)->i64:\n    value=i64(0)\n    for c in COEFFICIENTS:\n        value=value*x+i64(c)\n    return value\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    out[0]=helper(a[0])\n",
+      "rejected": true,
+      "diagnostic": "static value: tuple value must be indexed, sliced or used by len at compile time (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-static-loop-controls-bu5cmc8y/plain.py, line 7)",
+      "reference_domain": [
+        -7,
+        0,
+        1,
+        3,
+        2147483648
+      ],
+      "expected_modulo64": [
+        189,
+        7,
+        5,
+        19,
+        13835058044544745479
+      ]
+    },
+    {
+      "name": "empty",
+      "source": "from typing import Final\nfrom openassembler.pyfront import *\nCOEFFICIENTS:Final=()\n@device\ndef helper(x:i64)->i64:\n    value=i64(0)\n    for c in COEFFICIENTS:\n        value+=i64(c)\n    return value\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    out[0]=helper(a[0])\n",
+      "rejected": true,
+      "diagnostic": "static value: tuple value must be indexed, sliced or used by len at compile time (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-static-loop-controls-bu5cmc8y/empty.py, line 7)",
+      "reference_domain": [
+        -7,
+        0,
+        1,
+        3,
+        2147483648
+      ],
+      "expected_modulo64": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "break",
+      "source": "from typing import Final\nfrom openassembler.pyfront import *\nCOEFFICIENTS:Final=(3, -5, 7)\n@device\ndef helper(x:i64)->i64:\n    value=i64(0)\n    for c in COEFFICIENTS:\n        if c<0:\n            break\n        value=value*x+i64(c)\n    return value\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    out[0]=helper(a[0])\n",
+      "rejected": true,
+      "diagnostic": "static value: tuple value must be indexed, sliced or used by len at compile time (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-static-loop-controls-bu5cmc8y/break.py, line 7)",
+      "reference_domain": [
+        -7,
+        0,
+        1,
+        3,
+        2147483648
+      ],
+      "expected_modulo64": [
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "name": "continue",
+      "source": "from typing import Final\nfrom openassembler.pyfront import *\nCOEFFICIENTS:Final=(3, -5, 7)\n@device\ndef helper(x:i64)->i64:\n    value=i64(0)\n    for c in COEFFICIENTS:\n        if c<0:\n            continue\n        value=value*x+i64(c)\n    return value\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    out[0]=helper(a[0])\n",
+      "rejected": true,
+      "diagnostic": "static value: tuple value must be indexed, sliced or used by len at compile time (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-static-loop-controls-bu5cmc8y/continue.py, line 7)",
+      "reference_domain": [
+        -7,
+        0,
+        1,
+        3,
+        2147483648
+      ],
+      "expected_modulo64": [
+        18446744073709551602,
+        7,
+        10,
+        16,
+        6442450951
+      ]
+    },
+    {
+      "name": "nested",
+      "source": "from typing import Final\nfrom openassembler.pyfront import *\nCOEFFICIENTS:Final=(3, -5, 7)\n@device\ndef helper(x:i64)->i64:\n    value=i64(0)\n    for c in COEFFICIENTS:\n        for d in (1,2):\n            value+=i64(c*d)\n    return value\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    out[0]=helper(a[0])\n",
+      "rejected": true,
+      "diagnostic": "static value: tuple value must be indexed, sliced or used by len at compile time (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-static-loop-controls-bu5cmc8y/nested.py, line 7)",
+      "reference_domain": [
+        -7,
+        0,
+        1,
+        3,
+        2147483648
+      ],
+      "expected_modulo64": [
+        15,
+        15,
+        15,
+        15,
+        15
+      ]
+    },
+    {
+      "name": "target_after",
+      "source": "from typing import Final\nfrom openassembler.pyfront import *\nCOEFFICIENTS:Final=(3, -5, 7)\n@device\ndef helper(x:i64)->i64:\n    value=i64(0)\n    c=11\n    for c in COEFFICIENTS:\n        value+=i64(c)\n    value+=i64(c)\n    return value\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    out[0]=helper(a[0])\n",
+      "rejected": true,
+      "diagnostic": "static value: tuple value must be indexed, sliced or used by len at compile time (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-static-loop-controls-bu5cmc8y/target_after.py, line 8)",
+      "reference_domain": [
+        -7,
+        0,
+        1,
+        3,
+        2147483648
+      ],
+      "expected_modulo64": [
+        12,
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    {
+      "name": "loop_else",
+      "source": "from typing import Final\nfrom openassembler.pyfront import *\nCOEFFICIENTS:Final=(3, -5, 7)\n@device\ndef helper(x:i64)->i64:\n    value=i64(0)\n    for c in COEFFICIENTS:\n        value+=i64(c)\n    else:\n        value+=i64(17)\n    return value\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    out[0]=helper(a[0])\n",
+      "rejected": true,
+      "diagnostic": "static value: tuple value must be indexed, sliced or used by len at compile time (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-static-loop-controls-bu5cmc8y/loop_else.py, line 7)",
+      "reference_domain": [
+        -7,
+        0,
+        1,
+        3,
+        2147483648
+      ],
+      "expected_modulo64": [
+        22,
+        22,
+        22,
+        22,
+        22
+      ]
+    },
+    {
+      "name": "tuple_values",
+      "source": "from typing import Final\nfrom openassembler.pyfront import *\nCOEFFICIENTS:Final=(3, 5, 7)\n@device\ndef helper(x:i64)->i64:\n    value=i64(0)\n    for c in COEFFICIENTS:\n        value*=i64(c)\n    return value\n@kernel\ndef k(a:Array(i64),out:Array(i64)):\n    out[0]=helper(a[0])\n",
+      "rejected": true,
+      "diagnostic": "static value: tuple value must be indexed, sliced or used by len at compile time (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-static-loop-controls-bu5cmc8y/tuple_values.py, line 7)",
+      "reference_domain": [
+        -7,
+        0,
+        1,
+        3,
+        2147483648
+      ],
+      "expected_modulo64": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "script_sha256": "a0af2d87c64fa36bb059914133d23de0ac1ce7f29ce4621aadc35337ea305d3a",
+  "scope": "Eight original-source static tuple iteration control contracts and deterministic independent expected values, all existing production rejections retained. No implementation or execution claims for break/continue/nested/empty/target/else semantics"
+}

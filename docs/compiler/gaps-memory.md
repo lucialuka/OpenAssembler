@@ -1,6 +1,6 @@
-# Global memory widths and predicate assignment
+# Global/shared memory widths and predicate assignment
 
-Status: implemented
+Status: implemented for the bounded contracts below
 
 ## Gap and numerical/effect contract
 
@@ -30,8 +30,8 @@ Existing load cache modifiers (`nc/cg/cs/lu/ca`) and store cache modifiers
 (`wb/cg/cs/wt`) retain the same value contract and may lose their performance
 hint. Ordering/scope/volatile semantics are still rejected. Alignment, valid
 addresses and sufficient allocation lengths remain caller invariants; this is
-not a new runtime bounds, race or alignment checker. Shared narrow/64-bit
-accesses and vectors of 64-bit elements remain outside this change.
+not a new runtime bounds, race or alignment checker. The subsequent shared-memory extension below adds scalar narrow/64-bit
+accesses. Vectors of 64-bit elements remain unsupported.
 
 Predicate MOV and logical/setp assignments preserve snapshots, false-guard old
 values, branch joins, loop-carried values and self-guarded writes. Freshly
@@ -123,6 +123,117 @@ All 496 current declarations select in its representative domains; 490
 register-backed and 482 parameter-backed fixtures encode. Its independent
 CPU/toolkit/packaging/hardware/performance stages remain explicitly `not-run`:
 the 28 hardware fixtures above have separate exact source identities. This
-repairs the named mismatches and expands G12's bounded support. Wider shared
-memory, arbitrary operand/alignment domains, ordered memory, general G11
+repairs the named mismatches and expands G12's bounded support. Arbitrary shared operand/alignment domains, ordered memory, general G11
 arithmetic and complete G02 semantic conformance remain open.
+
+## Scalar shared byte, halfword and 64-bit memory
+
+### Gap, solution and exact contract
+
+The [baseline](../../compiler_exp/gap_closure/shared_widths/oracle-probe.json)
+retains seven same-source toolkit-accepted shared exchanges that the selector
+rejected. Existing load/64-bit-store templates covered several observed forms;
+four narrow-store forms needed recovery. The maintained scalar matrix is now:
+
+| Element types | Bytes/alignment | Load | Store |
+|---|---:|---|---|
+| `b8/u8` | 1 | `LDS.U8` zero extension | `STS.U8` low byte |
+| `s8` | 1 | `LDS.S8` sign extension | `STS.S8` low byte |
+| `b16/u16` | 2 | `LDS.U16` zero extension | `STS.U16` low halfword |
+| `s16` | 2 | `LDS.S16` sign extension | `STS.S16` low halfword |
+| `b64/u64/s64/f64` | 8 | `LDS.64` pair | `STS.64` pair |
+
+The wide route preserves exact bits, including floating zeros, infinities and
+NaN payloads; it adds no FP64 arithmetic. Guarded loads preserve false-path old
+values and aliased wide destinations. Stores preserve every adjacent byte.
+Literal offsets must be naturally aligned. Direct shared-symbol accesses must
+fit their declared size and alignment. Dynamic bases must designate aligned,
+allocated and initialized shared storage; this remains a caller invariant.
+Vector narrow/wide-element forms, volatile/ordered accesses, arbitrary alias
+and initialization/race proofs remain outside this contract. Existing
+`v2.u32` uses the same 64-bit native store/load and is retained as a control.
+
+### Encoding recovery and hardware scheduling
+
+The [recovery](../../compiler_exp/gap_closure/shared_widths/template-recovery.json)
+uses actual oracle words and the existing field learner with `canonical=False`.
+The [field sweep](../../compiler_exp/gap_closure/shared_widths/field-sweep.json)
+checks **12,096 native words** across source/base registers, signed 24-bit
+literal offsets, address scales and guards. Deliberately misaligned offsets are
+encoding controls only. The [custody audit](../../compiler_exp/gap_closure/shared_widths/template-audit.json)
+binds the source, cubin, listing and log for all four recovered forms.
+Production loads these exact rows through the ordinary encoder from
+[`memory_templates.json`](../../specs/sm_80/memory_templates.json); existing
+generated tables are not hand-edited.
+
+The [first hardware attempt](../../compiler_exp/gap_closure/shared_widths/candidate-a100-20261123T143055Z.json)
+failed toolkit parsing of negative-offset PTX before execution. Retained
+[syntax observations](../../compiler_exp/gap_closure/shared_widths/negative-syntax-oracle.json)
+show the accepted `+-10` spelling. The next
+[960-launch gate](../../compiler_exp/gap_closure/shared_widths/candidate-a100-20261123T143647Z.json)
+failed 90 OA launches: optimized scalar 64-bit exchanges loaded the earlier
+initialization although a later complete shared snapshot was correct. Safe OA
+and all same-PTX controls passed. The
+[failed-output audit](../../compiler_exp/gap_closure/shared_widths/failed-execution-audit.json)
+checks all 27,525,120 retained bytes without relabeling those failures.
+
+The scalar latency model had shortened the barrier issue gap to one cycle.
+The validated repair retains at least six cycles at CTA barriers in ordinary
+code containing `LDS.64`/`STS.64`, including existing `v2.u32` exchanges. This
+bounds the observed scheduling repair; it is not a general minimum-latency
+proof or permission to relax another protocol. The
+[repaired initial gate](../../compiler_exp/gap_closure/shared_widths/candidate-a100-20261123T144011Z.json)
+passes 960 launches. The final expanded gate adds false-load preservation,
+aliased wide destinations, raw FP64 edges and the existing vector64 control.
+
+### Validation, promotion and reproduction
+
+The fresh [width matrix](../../compiler_exp/gap_closure/shared_widths/width-matrix.json)
+retains 336 scalar/vector rows over fourteen types, global/shared spaces and
+register/parameter-backed inputs. All 172 admitted representatives encode;
+164 unsupported rows reject at admission. These are encoding observations,
+with numerical/toolkit/hardware stages explicitly not run for those fixtures.
+Their source identities differ from the execution corpus below. A separate
+[read-only audit](../../compiler_exp/gap_closure/shared_widths/width-matrix-audit.json)
+replays all 172 exact native encodings and checks every retained fixture,
+rejection and stage count.
+
+The [offline gate](../../compiler_exp/gap_closure/shared_widths/candidate-offline.json)
+passes **1,368 executions** over nineteen fixtures, four compiler levels, two
+seeds, three active lengths and PTX/normal/poisoned SASS engines. The
+[final A100 report](../../compiler_exp/gap_closure/shared_widths/candidate-a100-20261123T144327Z.json)
+passes **1,216 launches**: nineteen fixtures × four levels × OA/same-PTX ptxas
+× four active lengths × two seeds. Three 128-thread CTAs exchange across warps.
+All threads reach each barrier, including empty and partial-tail domains.
+Signed extension, low/high words, guarded loads/stores, negative offsets,
+symbol bounds and every neighbor byte have independent expected buffers.
+
+The [production audit](../../compiler_exp/gap_closure/shared_widths/promotion-audit.json)
+checks **34,865,152 complete retained bytes**, input immutability/guards,
+**76 native word/register comparisons**, 2,048 shared bytes per CTA, zero local
+frames and manifest ownership. Actual device: A100-SXM4-40GB; worker Python
+3.12.1, CUDA 12.8.1, ptxas V12.8.93. Local recovery uses ptxas V12.8.61.
+Source and harness hashes bind the exact promoted implementation. There is no
+performance claim. The [integration](../../compiler_exp/gap_closure/shared_widths/validation.json)
+and [continuity dossier](gaps-continuity.md) retain full-suite and prior-native
+checks separately from the new hardware execution.
+
+```sh
+python compiler_exp/gap_closure/shared_widths/audit_templates.py
+python compiler_exp/gap_closure/shared_widths/offline.py
+modal run compiler_exp/gap_closure/shared_widths/run_modal.py
+python compiler_exp/gap_closure/shared_widths/audit.py compiler_exp/gap_closure/shared_widths/candidate-a100-20261123T144327Z.json /tmp/shared-audit.json
+python -m pytest -q tests/test_backend_shared_widths.py tests/test_backend_memory_widths.py
+```
+
+Use the supported Python/Torch environment described in [DEVELOPMENT](../DEVELOPMENT.md).
+The [experiment](../../compiler_exp/gap_closure/shared_widths/README.md) retains
+all intermediate failures, candidate snapshots and raw artifacts. Production
+and [regression fixtures](../../tests/data/shared_width_fixtures.json) import no
+experiment modules. The original G12 and G09 exit gates remain partial.
+
+The subsequent [typed Python shared-array extension](gaps-python-types.md#wide-shared-arrays-and-native-cta-reconvergence)
+adds i64/u64 with eight-byte storage/scaling and mixed-layout padding. Its own
+failed hardware gate led to a separate native CTA reconvergence repair before
+the final source-exact A100 admission. Broader memory-safety and control-flow
+contracts remain open.

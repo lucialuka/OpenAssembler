@@ -1,5 +1,517 @@
 # OpenAssembler architecture and status
 
+## November 25 logical Boolean kernel parameters
+
+[Boolean kernel parameters](compiler/gaps-boolean-parameters.md) now carry a
+logical predicate over the validated physical byte slot. Source type metadata,
+canonical typed verification, normal build/manifest/native ownership and public
+Boolean JSON bindings preserve the exact role. Integer/buffer/raw-byte host keys
+cannot silently become Boolean parameters; Boolean dimension names remain Boolean.
+Array/Buffer/shared Boolean storage remains separate work.
+
+The original-source gate passes **9,600 A100 launches** plus **960 actual public
+Boolean run-spec launches**, with **69,746,688 independently checked complete
+bytes** and **240 exact native outputs**. All **164 new regressions** pass. Two
+existing rejection fixtures now exercise unsupported Boolean array annotations
+because scalar annotation rejection became stale. All 49 measured policies and
+98 sessions retain exact binaries/controls/resources before identity rebinding.
+Full suites, fresh prior-native replay, installed/public remote and final docs
+integration are running; the
+[validation record](../compiler_exp/gap_closure/python_boolean_abi/scalar/validation.json)
+will bind exact final gates. The full 51-gap program remains incomplete.
+
+## November 25 narrow scalar entry parameters
+
+[Narrow entry ABI](compiler/gaps-narrow-parameters.md) now admits b/u/s8/16
+scalar slots, exact natural byte layout, signed/zero extension and within-slot
+partial reads. Parser, both selectors, interpreter, verifier, explicit-run schema
+and batch-driver arguments share the physical contract. Aggregate/vector/device
+call slots and logical Python Boolean launch/storage remain separate work.
+
+The independent original-source gate passes **14,400 A100 launches** and **240
+actual explicit-run launches**, auditing **67,461,120 complete bytes** and **240
+exact current native outputs**. All **171 new regressions** pass; existing tests
+remain unchanged. All 49 measured policy binaries and 98 sessions remain exact
+before source identity rebinding; public Modal publication preserves original
+signatures/native ownership. A fresh replay passes **3,734 direct prior-native
+comparisons**, every word/control/register exact. Full suites pass **4,764 supported
+tests** and **4,279 compiler-only tests with fifteen skips**. Wheel checks preserve
+132 installed identities and 240 native outputs; live/exported docs pass. The
+[validation record](../compiler_exp/gap_closure/narrow_parameters/validation.json)
+binds final sources and evidence. The next [original CUDA scalar study](compiler/gaps-narrow-scalars.md)
+records the now-reached setp.s16 boundary without claiming those operations supported.
+The full 51-gap program remains incomplete, with no speed claim.
+
+## November 24 logical Boolean helper signatures
+
+[Pure Boolean helpers](compiler/gaps-boolean-helpers.md) now accept and return
+logical predicates through existing static expansion, exact argument copies,
+complete return paths and source/native ownership. The independent original-source
+gate passes **2,400 A100 launches**, **16,220,160 complete bytes** and **240 exact
+current native outputs**. All **155 new regressions** pass; existing tests remain
+unchanged. Full suites pass **4,593 supported tests** and **4,108 compiler-only
+tests with fifteen skips**. The installed wheel checks 132 identities and 240
+original source/native regenerations; live and isolated-export documentation
+checks pass. The
+[validation record](../compiler_exp/gap_closure/python_boolean_abi/helpers/validation.json)
+binds final source, evidence and log identities.
+
+The preceding Boolean-value corpus freshly regenerates **240 exact PTX/native
+outputs**; **3,254 earlier exact comparisons** retain their proof/archive and
+unchanged executable/backend identities. Twenty source files retain 62 accepted
+kernels and unchanged rejected diagnostics. Public Modal publication keeps the
+predicate signatures; all measured-policy compiler inputs remain exact. The
+[physical ABI study](compiler/gaps-boolean-abi.md) remains open. The full 51-gap
+program remains incomplete, without a speed claim.
+
+## November 24 Boolean values and native predicate paths
+
+[Boolean values](compiler/gaps-boolean-values.md) now preserve operand-returning
+lazy and/or, exact numeric literal contexts, Boolean locals/literals/not/bool,
+chain values and typed integer conversion. Original value kind/location/digest/
+use records join source/native ownership. Boolean ABI, mixed-type unions, dynamic
+steps and unrestricted Python effects remain open.
+
+The first A100 gate found 54 real loop-carried predicate failures at mined/sched/
+opt. A native control-flow predecessor repair enforces the existing predicate
+readiness rule across backward/alternate edges. The final original-source gate
+passes **2,400 launches**, **16,957,440 complete independent bytes** and **240 exact
+current native outputs**. A separate transition audit proves unchanged sources/
+PTX/inputs/references and only stall/yield changes in twelve outputs. All **167
+new regressions / 1,246 focused tests** pass; public Modal publication works.
+All 49 measured policy binaries and 98 sessions remain exact before source
+identity rebinding. A fresh replay passes **3,254 prior native comparisons, all
+exact**; no inherited-only executable shortcut is used. Full suites pass **4,438
+supported tests** and **3,953 compiler-only tests with fifteen skips**. The wheel
+checks 132 identities and 240 native regenerations. The
+[integration record](../compiler_exp/gap_closure/python_boolean_values/promotion/validation.json)
+binds final sources, proofs and documentation. The next [Boolean ABI study](compiler/gaps-boolean-abi.md)
+records its actual unsupported byte-parameter boundary. The complete 51-gap program
+remains incomplete, with no speed claim.
+
+## November 24 typed condition comparison chains
+
+[Condition chains](compiler/gaps-comparison-chains.md) now preserve single
+middle-operand evaluation, short-circuit memory/atomic effects and pairwise exact
+literal typing. Existing numeric kinds, FP32 special-value/negation semantics,
+helper/caller isolation and convergence rules remain explicit. Original expression
+locations, AST digests and per-kernel counts join source/native ownership, including
+standalone kernels without helper/static-value metadata. First-class Boolean
+values, dynamic range steps and general Python effects remain open.
+
+The final original-source gate passes **2,400 A100 launches**, **15,482,880 complete
+independent bytes** and **240 exact native outputs**. The offline gate passes
+4,320 executions, generated controls add 128 chains / 1,536 executions, and all
+**159 new tests** pass. The earlier prototype and first numerically passed payload
+remain distinct from the final standalone-source ownership repair. Full suites
+pass **4,271 supported tests** and **3,786 compiler-only tests with fifteen skips**.
+All 1,079 frontend tests pass. Installed-wheel and public Modal checks preserve
+source/native ownership. 240 preceding range/else outputs regenerate exactly;
+2,774 earlier occurrences retain their proof/archive and unchanged backend-input
+binding. The [integration record](../compiler_exp/gap_closure/python_comparison_chains/promotion/validation.json)
+binds final source and evidence identities. The next [Boolean-value experiment](compiler/gaps-boolean-values.md)
+remains outside production. The full 51-gap program remains incomplete, with no
+performance claim.
+
+## November 24 finite range counters and loop else
+
+[Runtime loop control](compiler/gaps-range-control.md#original-source-production-extension)
+now exhausts finite i32 ranges before a nonunit counter can wrap and preserves
+range/while else with nearest-loop break/continue and helper/kernel returns.
+Bounds remain snapshotted; visible target mutation, empty loops, live-path
+initialization, convergence checks and original source/native ownership remain
+explicit. Dynamic steps, wider bounds and arbitrary Python control/effects remain open.
+
+The final original-source gate passes **2,400 A100 launches**, **17,203,200 complete
+independent bytes** and **240 exact native outputs**. The offline matrix passes
+4,320 executions; generated controls add 128 cases / 1,536 executions. All
+**150 new tests / 920 frontend tests** and public CLI/Modal publication pass.
+240 preceding helper-return outputs regenerate exactly; 2,534 earlier occurrences
+retain their proof/archive hashes and unchanged backend input binding. An O0/O3
+minimized hardware study isolates the external optimizer disagreement; all raw
+failed and successful observations remain retained. Full suites pass **4,112
+supported tests** and **3,627 compiler-only tests with fifteen skips**. The
+installed wheel checks 132 exact identities and 240 native regenerations. The
+[integration record](../compiler_exp/gap_closure/python_range_control/promotion/validation.json)
+binds final sources, proofs and documentation. Comparison chains remain an
+[isolated experiment](compiler/gaps-comparison-chains.md). The complete 51-gap
+program remains incomplete.
+
+## November 24 pure scalar helper return paths
+
+[Helper returns](compiler/gaps-helper-returns.md) now preserve original branch,
+loop and nested returns with typed return homes, caller snapshots, live-path
+initialization and exact original source/native ownership. Missing/bare/type/
+effect/initialization rejection controls stay active; runtime range/while else,
+arbitrary iterables, native aggregate ABI and general Python effects remain open.
+
+The final source-exact gate passes **2,400 A100 launches**, **16,465,920 complete
+independent bytes** and **240 exact native outputs**. The offline matrix passes
+4,320 complete executions; generated controls add 64 original combinations /
+768 executions. All **156 new tests / 425 focused regressions** and public
+CLI/Modal publication pass. Eighteen previous source files retain 62 exact PTX
+kernels; 240 prior tuple outputs newly regenerate exactly, and 2,294 earlier
+replay results retain their hashes and unchanged backend inputs. Full suites pass
+**3,962 supported tests** and **3,477 compiler-only tests with fifteen skips**.
+The installed wheel checks 132 identities and 240 native regenerations; the
+[integration record](../compiler_exp/gap_closure/python_helper_returns/promotion/validation.json)
+binds final source and proof identities. The next [range-counter study](compiler/gaps-range-control.md)
+remains experimental. The complete 51-gap program remains incomplete, with no speed claim.
+
+## November 24 finite static tuple iteration
+
+[Static tuple loops](compiler/gaps-static-loops.md) now preserve empty loops,
+selected/modified/post-loop targets, thread-dependent break/continue, nested
+tuple/range control and exhaustion else. A runtime counter/value-selection body
+retains original source/type/convergence and loop-value/native ownership. Runtime
+containers, arbitrary iterables, early helper returns and general Python control
+or host effects remain open.
+
+The original-source A100 gate passes **2,400 launches**, **16,465,920 audited
+bytes** and **240 exact native outputs**. The independent offline gate passes
+4,320 complete executions and twenty negative controls. All **150 focused tests**
+pass. The installed wheel regenerates all source/native outputs, and actual public
+CLI/Modal publication works. Eighteen earlier Python files retain 62 identical
+kernels and rejection results; all 49 measured policies retain original code
+across 98 sessions. The [experiment](../compiler_exp/gap_closure/python_static_loops/promotion/README.md)
+retains candidate type/fixture/harness failures and the reviewed repair. The
+full supported suite passes **3,806 tests**, and the compiler-only suite passes
+**3,321 tests with fifteen skips**. All **2,294 earlier native occurrences** retain
+exact words/registers. The [integration record](../compiler_exp/gap_closure/python_static_loops/promotion/validation.json)
+binds final source and evidence identities. The 51-gap program remains incomplete,
+with no new performance claim.
+
+## November 24 original-source static numeric and tuple values
+
+[Explicit static values](compiler/gaps-static-values.md) now specialize Final
+numeric/immutable tuple declarations in the original source graph. Bounded
+arithmetic, tuple indices/slices/len, imports and per-kernel helper specialization
+preserve exact source/value/diagnostic/dependency/native ownership. Mutable
+captures, runtime containers, arbitrary metaprogramming and host effects remain
+open. No user source module is executed during compilation.
+
+The final original-source gate passes **1,440 A100 launches**, with **9,338,880
+complete audited bytes** and **144 exact native outputs**. The independent
+functional gate passes 2,592 executions; 2,048 generated integer trees and 29
+negative controls pass. All **118 focused tests** pass. The installed wheel
+recreates original-source PTX/native code, and public CLI/Modal publication works.
+The [experiment](../compiler_exp/gap_closure/python_static_values/promotion/README.md)
+retains the prototype rebinding counterexample, first successful hardware payload,
+focused-reference failure and corrected final source evidence. Full suites pass
+**3,656 supported tests** and **3,171 compiler-only tests with fifteen skips**.
+All **2,150 earlier native kernel occurrences** retain exact words/registers.
+The [integration record](../compiler_exp/gap_closure/python_static_values/promotion/validation.json)
+binds final sources, suites, independent numerical/native/ownership proof, retained
+failures and documentation. The complete 51-gap program remains open; no speed
+claim is made.
+
+## November 24 static local-package Python device helpers
+
+[Local-package helpers](compiler/gaps-python.md#static-local-package-device-helpers)
+now retain their defining module's scalar types and original diagnostics through
+direct/module aliases, relative imports and static re-exports. Exact entry/helper/
+package hashes and helper signatures/bodies/call sites flow through PTX, manifests
+and native ownership. `--python-source-root` selects explicit local resolution;
+normal local/Modal/SSH builds share the frontend. Runtime imports, arbitrary
+packages, mutable captures and host application effects remain open.
+
+The final gate passes **600 original-source A100 launches**, **5,529,600 audited
+bytes** and **60 exact native outputs**, including CLI directory/explicit-root and
+serialized worker builds. The installed wheel regenerates all source trees and
+native outputs, and actual public CLI/Modal publication passes. All **73 focused
+tests**, **2,090 earlier native kernel occurrences**, and 49 measured policies
+across 98 original sessions pass their distinct gates. The
+[experiment](../compiler_exp/gap_closure/python_module_helpers/promotion/README.md)
+retains initial full-suite frontend-routing failures and the validated repair.
+The reruns pass **3,538 supported tests** and **3,053 compiler-only tests with
+fifteen skips**. The [integration record](../compiler_exp/gap_closure/python_module_helpers/promotion/validation.json)
+binds final sources, numerical/native proofs, failed runs and documentation.
+Existing generation code remains structurally identical outside separately
+validated entry adapters. The complete 51-gap program remains unfinished;
+no speed claim is made.
+
+## November 24 low64 multiplication in PTX/CUDA and typed Python
+
+[Low64 products](compiler/gaps-wide.md#low-64-bit-integer-multiplication) now
+compile through PTX/CUDA `mul.lo.u64/s64` and Python `i64/u64` `*`/`*=`. Four
+recovered IMAD/IMAD.HI words retain exact modulo-2^64 results through aliases,
+guards, literals/parameters, helpers/loops/casts and register/parameter squares.
+The backend and Python frontend were validated together before exact promotion.
+Wide/high products, FP64 arithmetic and division/remainder remain open.
+
+The two original-source A100 gates pass **1,560 launches**. Their production
+audits check **15,974,400 complete bytes** and **156 exact native comparisons**.
+All **140 focused tests** pass; the isolated wheel regenerates Python PTX and
+matches all 156 native outputs. Fifteen earlier Python files retain 62 identical
+kernels and unchanged rejections. All 49 measured policies retain exact native
+code across 98 original sessions. The
+[experiment record](../compiler_exp/gap_closure/wide_multiply/promotion/README.md)
+keeps base/square hardware gates and failures separate. Both full suites pass:
+**3,465 supported tests**, and **2,980 compiler-only tests with fifteen skips**.
+All **1,934 earlier native kernel occurrences** retain exact executable code.
+The [integration record](../compiler_exp/gap_closure/wide_multiply/promotion/validation.json)
+binds final sources, suites, native/byte proofs, retained failures and docs. The
+original 51-gap program remains incomplete; no speed claim is made.
+
+## November 24 exact scalar 64-bit selection
+
+[Wide selection](compiler/gaps-wide.md#scalar-64-bit-conditional-selection) now
+admits `selp.b64/u64/s64/f64` using two recovered scalar SEL words. Both halves
+preserve exact bits through aliases, outer guards, negated predicates,
+parameters and immediates. The actual CUDA noinline workload that exposed the
+rejection now builds and executes through the normal frontend and owned backend.
+FP64 arithmetic and general G11 coverage remain open.
+
+The original-source A100 gate passes **1,480 launches**; the production audit
+checks **15,155,200 complete bytes** and **148 exact native comparisons**.
+All **87 focused tests**, **3,361 supported tests**, and **2,876 compiler-only
+tests with fifteen skips** pass. The installed wheel reproduces all 148 native
+outputs. All 49 measured policies retain exact original code across 98 sessions.
+The [experiment](../compiler_exp/gap_closure/wide_select/README.md) keeps initial
+invalid FP64 sources, corrected legal controls, diagnostic failures and current
+integration gates separate. All **1,786 earlier native kernel occurrences**
+match exactly. The [integration record](../compiler_exp/gap_closure/wide_select/validation.json)
+binds the final source, suites, failure evidence and documentation. The original
+51-gap program remains incomplete; no speed claim is made.
+
+## November 24 explicit scalar device source libraries
+
+[PTX/CUDA source libraries](compiler/gaps-device-functions.md#explicit-ptx-and-cuda-source-libraries)
+now resolve through normal `--device-library` CLI and remote builds. Private,
+exported/weak and scalar signature rules are deterministic; each CUDA unit keeps
+its compile flags and before/after dependency hashes. Ownership records the
+complete link contract. Binary object/archive linking, native call stacks and
+general host build/link orchestration remain open.
+
+The final original-linked-control gate passes **576 A100 launches**, including
+wide slots, local frames, transitive/private helpers, per-unit databases and a
+serialized remote worker. The production audit checks **4,128,768 retained
+bytes** and **48 exact native comparisons**. Full suites pass **3,274 supported
+tests** and **2,789 compiler-only tests with fifteen skips**. An isolated wheel
+and an ordinary Modal CLI/publication check pass. All 49 measured policies keep
+their original native code. The [integration record](../compiler_exp/gap_closure/device_linkage/promotion/validation.json)
+retains source, failure and prior-native evidence. All **1,738 earlier native
+kernel occurrences** retain exact executable code. The original 51-gap program
+remains incomplete; no speed claim is made.
+
+## November 24 direct scalar device functions
+
+[Direct scalar PTX functions](compiler/gaps-device-functions.md) now resolve
+through static specialization before normal code generation. Lexical slots,
+argument snapshots, nested/guarded/early returns and per-call local objects
+preserve their admitted semantics. Kernel manifests and ownership bind the
+function signatures, body hashes and expanded call counts. Native stacks,
+recursive/indirect calls, aggregate/register ABI and cross-module linking
+remain open.
+
+The final gate passes **960 A100 launches**, including an ordinary CUDA
+`__noinline__` source build. The production audit checks **6,881,280 retained
+bytes** and sixty exact native comparisons. An isolated wheel passes all sixty
+comparisons, and all 49 measured policies retain their original code. The
+[integration record](../compiler_exp/gap_closure/device_functions/validation.json)
+keeps full suites and earlier-application continuity separate from new hardware
+execution. Both full suites pass: **3,229 supported tests** and **2,744 compiler-only tests
+with fifteen skips**. All **1,678 earlier native occurrences** retain
+exact code. No performance claim is made; the original 51-gap program remains
+incomplete.
+
+## November 24 typed shared arrays and CTA convergence
+
+[Python i64/u64 shared arrays](compiler/gaps-python-types.md#wide-shared-arrays-and-native-cta-reconvergence)
+now use natural eight-byte alignment/scaling and count mixed-layout padding
+against the existing 48 KiB limit. The initial A100 gate exposed missing native
+convergence before a CTA barrier. Failed scoreboard/layout ablations remain
+retained; a proven forward-phase BSSY/BSYNC pass repairs the tested dependency.
+Cyclic/irreducible control flow and general shared-memory safety remain open.
+
+The final gate passes **1,280 A100 launches**. The production audit checks
+**20,971,520 retained bytes** and eighty exact native comparisons. Full suites
+pass **3,176 supported tests** and **2,691 compiler-only tests with fifteen
+skips**. All 49 measured policies keep their original native code; 62 existing
+Python kernels retain byte-identical PTX. All **1,598 earlier native kernel
+occurrences** also retain exact executable code. The
+[integration record](../compiler_exp/gap_closure/python_shared_wide/validation.json)
+binds exact source, wheel and prior-native evidence. There is no performance
+claim; the original 51-gap program remains incomplete.
+
+## November 23 scalar shared-memory widths
+
+[Scalar shared byte/halfword/64-bit loads and stores](compiler/gaps-memory.md#scalar-shared-byte-halfword-and-64-bit-memory)
+now preserve signed extension, raw wide bits, false-load values and neighboring
+bytes. Four narrow-store templates are recovered from actual oracle words and
+12,096 varied disassemblies. An initial 64-bit exchange failed optimized A100
+execution; retaining the validated six-cycle barrier issue gap repairs the
+observed dependency. Failed runs and exact candidate snapshots remain retained.
+
+The final gate passes **1,216 A100 launches**. A production audit checks
+**34,865,152 retained bytes** and 76 exact native comparisons; an isolated wheel
+check verifies the same executable output and packaged template data. Full
+[integration evidence](../compiler_exp/gap_closure/shared_widths/validation.json)
+keeps suites and prior policy/application continuity separate from new hardware
+execution. Both full suites pass: **3,099 supported tests** and **2,614 compiler-only
+tests with 15 explicit skips**. All 49 measured policies and 1,522 earlier
+application kernel occurrences retain their exact native code. Dynamic shared alignment, initialization/races, wider vector/order
+contracts and the original 51-gap program remain open. No speed claim is made.
+
+## November 23 typed constant expressions
+
+[Typed scalar operand expressions](compiler/gaps-wide.md#typed-scalar-operand-constant-expressions)
+now support integer precedence/casts/arithmetic and per-operation binary64
+floating evaluation, with explicit type and depth diagnostics. The final A100
+gate passes **384 launches** and the audit checks **40,304,640 retained bytes**
+and 24 native comparisons. The initial failed hardware gate remains retained;
+remainder signedness, mixed conditional types and invalid generated-NaN cases
+have explicit unresolved boundaries. General expressions across declarations,
+addresses and broader PTX remain open. No speed claim is made.
+
+The [current integration](../compiler_exp/gap_closure/constant_expressions/validation.json)
+passes **3,042 supported tests** and **2,557 compiler-only tests with 15 explicit
+skips**. All 49 measured policies retain their native bytes. The original
+51-gap program remains incomplete.
+
+## November 23 decimal and raw floating literals
+
+[Typed literal normalization](compiler/gaps-wide.md#decimal-and-raw-floating-literal-contexts)
+now parses decimal/exponent values as binary64 before scalar use conversion.
+It preserves signed zero and observed raw payload/width rules and rejects
+invalid contexts. Independent rational/context controls, 360 complete PTX/SASS
+executions and **320 A100 launches** precede production promotion. The audit
+checks **28,737,536 retained bytes** and twenty native comparisons. General
+floating expressions, wider arithmetic/types/modifiers and full operand
+conformance remain open; no speed claim is made.
+
+The [current integration](../compiler_exp/gap_closure/float_literals/validation.json)
+passes **2,974 supported tests** and **2,489 compiler-only tests with 15 explicit
+skips**. All 49 measured policies and 1,478 earlier native occurrences retain
+exact code. The original 51-gap program remains incomplete.
+
+## November 23 virtual pressure scheduling
+
+[Pressure-aware scheduling](compiler/gaps-spilling.md#pressure-aware-virtual-scheduling)
+now compares virtual instruction order before allocation for spilled scalar
+kernels. Dependency/guard/load-order and fixed control/memory boundaries are
+preserved. An alternative must reduce spill slots without increasing the
+frame or any block's local transfers. Successful no-spill and equal-resource
+plans keep the existing path. The specialized tensor allocator remains separate.
+
+A100 records pass **2,144 correctness launches** and **1,323 timed launches**,
+plus 189 checked warmups, over frozen OA/current OA/same-PTX controls and final
+source admission. Six new workloads eliminate spills; another recovers a
+valid maximum local frame that previously rejected. Paired resident kernel
+medians improve on the new controls while ptxas remains faster in nominal
+comparisons. Host code-generation cost increases, including an unchanged
+legacy kernel; no whole-application or compile-amortized speedup is claimed.
+Slot reuse, tensor-fragment spilling and general occupancy policy remain open.
+
+The [current integration](../compiler_exp/gap_closure/pressure_schedule/validation.json)
+passes **2,927 supported tests** and **2,442 compiler-only tests with 15 explicit
+skips**. All 49 measured policies and 1,386 earlier native kernel occurrences
+retain exact code. G17 and the original 51-gap program remain partial beyond
+the explicitly validated contracts.
+
+## November 23 aligned-group and predicate spilling
+
+[Bounded spilling](compiler/gaps-spilling.md) now covers entire aligned
+pairs/quads and predicates. Another **320 A100 launches** pass at all four
+compiler levels, including automatic pressure, tight register limits,
+self-guarded/negated predicate loops and declared-local coexistence. An
+independent audit checks **83,787,776 complete retained bytes**, twenty native
+binaries and exact driver frame/register resources. The successful prior
+scalar policy remains unchanged. Slot reuse and general pressure/occupancy
+selection remain open; the original 51-gap program remains incomplete.
+
+The [current integration](../compiler_exp/gap_closure/spilling_groups/validation.json)
+passes **2,898 supported tests** and **2,413 compiler-only tests with 15 explicit
+skips**. All 49 measured policies and 1,366 earlier native kernel occurrences
+retain their executable bytes. Specialized tensor-fragment spilling remains
+a separate dependency/resource contract.
+
+## November 23 bounded scalar spilling
+
+[Scalar spill allocation](compiler/gaps-spilling.md) now recovers ordinary
+register exhaustion and honors explicit register limits through private local
+slots. A100 gates pass **384 launches** covering 16/32/64/252-register domains,
+guarded loop updates and coexistence with declared local objects. Driver frame
+and register resources match generated metadata. The subsequent extension above
+adds grouped/predicate spills; general pressure policy remains open.
+
+The [latest integration](../compiler_exp/gap_closure/spilling/validation.json)
+passes **2,883 supported tests** and **2,398 compiler-only tests with 15 explicit
+skips**. All 49 measured policies and 1,342 earlier native kernel occurrences
+retain their executable bytes. A separate randomized resident pressure-kernel
+comparison shows the 64-register OA variant slower than its 252-register control;
+no new automatic register policy or whole-application speedup is claimed.
+
+## November 23 static local storage
+
+[Native local frames](compiler/gaps-storage.md) now support static per-thread
+storage, explicit 32-bit local addresses and scalar32 load/store, with natural
+alignment and a 65,536-byte frame bound. OA patches its own per-function frame
+metadata after donor optimization and binds that reservation in native ownership.
+The final A100 gate passes **704 launches**, complete private-state/guard/tail
+checks and matching driver resources across 48/64/80/65,536-byte layouts.
+All 49 measured policies and 1,298 earlier application kernel occurrences retain
+their native code. Generic module storage, wider local transfers and device
+calls remain open; the subsequent spilling extensions above use this storage.
+
+The [latest integration](../compiler_exp/gap_closure/local_storage/validation.json)
+passes **2,868 supported-environment tests**, plus **2,383 compiler-only tests
+with 15 explicit skips**. The [553-form ledger](../compiler_exp/gap_closure/local_storage/ledger-local-20261123.json)
+separates representative encoding observations from independent hardware
+evidence. G13 is partial under its original exit gate; no timing result is claimed.
+
+## November 23 full-warp shuffle modes
+
+[Native indexed/up/down shuffles](compiler/gaps-collectives.md) now support
+declared full-mask/full-warp contracts beside the existing butterfly path.
+Independent A100 gates pass **1,792 launches**, including reconverged branches,
+aliased operands and complete byte/guard/tail checks. All 49 measured policies
+retain their original code, and 1,234 earlier atomic/decode/checkpoint kernel
+occurrences match current generation exactly. Partial participation and broader
+collectives/barriers remain open.
+
+The [latest integration](../compiler_exp/gap_closure/warp_collectives/validation.json)
+passes **2,810 supported-environment tests**, plus **2,325 compiler-only tests
+with 15 explicit skips**. Initial stale indexed-shuffle rejection failures remain
+retained beside the corrected final runs. The [gap register](compiler/gap-register.md)
+preserves every original exit gate; no full-program or performance claim follows.
+
+## November 23 explicit decode specialization
+
+[Bounded decode specialization](compiler/gaps-decode.md) now accepts an explicit
+native-runtime factory, maximum context and lifetime build-attempt budget for
+unseen positive exact lengths. Failed builds preserve prior cache/variants;
+reset reuses admitted programs. The default still requires precompiled variants.
+A100 checks pass 126 full prediction/cache comparisons over 9,520 elements,
+four storage policies and two sequences, with 16 builds reused on the second
+sequence. Forty trace audits observe 440 OA native launches; 25 bundles pass
+711 native word/register comparisons. Empty prefixes, paging, serving and
+performance remain open.
+
+The [latest validation](../compiler_exp/gap_closure/decode_specialization/validation.json)
+passes **2,738 supported-environment tests**, plus **2,253 compiler-only tests
+with 15 explicit skips**. The earlier foundation evidence below retains its
+separate source/device/result identities.
+
+## November 23 compiler foundations and application state
+
+The [current integration](../compiler_exp/gap_closure/integration_20261123/README.md)
+passes **2,710 supported-environment tests** and **2,253 compiler-only tests with
+14 explicit skips**. The [51-gap register](compiler/gap-register.md) now links
+wide Python types, checked shaped buffers, source atomic primitives, pointer
+metadata, recorded build commands, optimizer policies and complete owned-state
+checkpoints alongside the earlier repairs. These are bounded capabilities;
+the full supplied program remains unfinished.
+
+[Native atomic ordering](compiler/gaps-atomics.md) adds GPU acquire/release/acq_rel
+32-bit global operations and CTA shared add/exchange. Two final independent
+A100 gates pass 472 and 768 launches, with full state/old-value/guard checks.
+The investigation also repairs branch-local pointer materialization and mutable
+wide-product snapshots. All 49 installed measured policies retain their exact
+native code across 98 session checks. Changed model binaries receive fresh
+A100 checkpoint/optimizer/CLI execution and a 383-kernel custody audit.
+The dossiers identify actual A100 variants; no new timing result is claimed.
+
 ## November 21 compiler foundations and model operators
 
 The [current gap register](compiler/gap-register.md) records new bounded repairs

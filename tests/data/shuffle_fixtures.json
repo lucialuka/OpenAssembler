@@ -1,0 +1,98 @@
+[
+  {
+    "name": "idx_literal",
+    "mode": "idx",
+    "source_kind": "literal",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry idx_literal(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.idx.b32 %result,%value,33,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "idx_parameter",
+    "mode": "idx",
+    "source_kind": "parameter",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry idx_parameter(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.idx.b32 %result,%value,%delta,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "idx_varying",
+    "mode": "idx",
+    "source_kind": "varying",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry idx_varying(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.idx.b32 %result,%value,%b,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "idx_aliased",
+    "mode": "idx",
+    "source_kind": "aliased",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry idx_aliased(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.idx.b32 %value,%value,%value,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%value;\nret; }\n"
+  },
+  {
+    "name": "up_literal",
+    "mode": "up",
+    "source_kind": "literal",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry up_literal(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.up.b32 %result,%value,33,0,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "up_parameter",
+    "mode": "up",
+    "source_kind": "parameter",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry up_parameter(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.up.b32 %result,%value,%delta,0,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "up_varying",
+    "mode": "up",
+    "source_kind": "varying",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry up_varying(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.up.b32 %result,%value,%b,0,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "up_aliased",
+    "mode": "up",
+    "source_kind": "aliased",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry up_aliased(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.up.b32 %value,%value,%value,0,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%value;\nret; }\n"
+  },
+  {
+    "name": "down_literal",
+    "mode": "down",
+    "source_kind": "literal",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry down_literal(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.down.b32 %result,%value,33,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "down_parameter",
+    "mode": "down",
+    "source_kind": "parameter",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry down_parameter(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.down.b32 %result,%value,%delta,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "down_varying",
+    "mode": "down",
+    "source_kind": "varying",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry down_varying(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.down.b32 %result,%value,%b,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "down_aliased",
+    "mode": "down",
+    "source_kind": "aliased",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry down_aliased(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.down.b32 %value,%value,%value,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%value;\nret; }\n"
+  },
+  {
+    "name": "bfly_literal",
+    "mode": "bfly",
+    "source_kind": "literal",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry bfly_literal(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.bfly.b32 %result,%value,33,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "bfly_parameter",
+    "mode": "bfly",
+    "source_kind": "parameter",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry bfly_parameter(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.bfly.b32 %result,%value,%delta,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "bfly_varying",
+    "mode": "bfly",
+    "source_kind": "varying",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry bfly_varying(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.bfly.b32 %result,%value,%b,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%result;\nret; }\n"
+  },
+  {
+    "name": "bfly_aliased",
+    "mode": "bfly",
+    "source_kind": "aliased",
+    "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry bfly_aliased(.param .u64 output,.param .u64 input,.param .u32 delta) {\n.reg .u64 %out,%input,%offset,%src,%dst;\n.reg .u32 %t,%lane,%value,%result,%b,%delta; .reg .pred %branch;\nld.param.u64 %out,[output]; ld.param.u64 %input,[input]; ld.param.u32 %delta,[delta];\nmov.u32 %t,%tid.x; and.b32 %lane,%t,31;\nmul.wide.u32 %offset,%t,4; add.u64 %src,%input,%offset; ld.global.u32 %value,[%src];\nsetp.lt.u32 %branch,%lane,16; @%branch bra LOW;\nadd.u32 %value,%value,19; bra JOIN;\nLOW: xor.b32 %value,%value,0x76543210;\nJOIN: mad.lo.u32 %b,%lane,13,7;\nshfl.sync.bfly.b32 %value,%value,%value,31,0xffffffff;\nmul.wide.u32 %offset,%t,4; add.u64 %dst,%out,%offset; st.global.u32 [%dst],%value;\nret; }\n"
+  }
+]

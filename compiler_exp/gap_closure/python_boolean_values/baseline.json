@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "passed": true,
+  "rejected": true,
+  "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    x=a[i]\n    first=x and atomic_add(count,i,1)\n    second=x or atomic_add(count,i,1)\n    flag=0<x<7\n    inverted=not (flag or False)\n    enabled=bool(x) and True\n    out[i]=first+second+i32(flag)*2+i32(inverted)*4+i32(enabled)*8\n",
+  "diagnostic": "'and'/'or' are only supported directly in an if/while condition (e.g. 'if a < b and c < d:'), not assigned to a variable or nested in another expression (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-baseline-pko1bxsw/source.py, line 6)",
+  "frozen_frontend_sha256": "c7fbc92f984f1383793e75d9c4ffc04ba8ecb9b2a2c914c4c12b3ac425277acc",
+  "script_sha256": "8b95469ddfccb909b9b8fbc758cfd67722102775649d6de038d0738cd36dbae1",
+  "scope": "Original operand-returning and/or plus Boolean local program rejection from frozen production frontend; no source module execution"
+}

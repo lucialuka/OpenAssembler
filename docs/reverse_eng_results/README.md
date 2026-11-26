@@ -14,6 +14,18 @@ policies improve OpenAssembler's own reference under their exact contracts;
 matched same-source `ptxas` remained faster in all 42 nominal comparisons.
 See [`RESULTS.md`](../../exp/dispatch_tuning/RESULTS.md).
 
+The [November 23 foundation register](../compiler/gap-register.md) adds bounded
+typed buffers/wide values, atomic ordering, full-warp shuffle modes, bounded
+scalar/group/predicate spilling, virtual pressure scheduling, floating-literal
+normalization, typed constant expressions, scalar shared widths, typed Python shared
+arrays/CTA reconvergence, direct scalar function specialization and explicit decode
+specialization, explicit scalar source libraries, exact scalar wide selection, low64 multiplication static Python helper source graphs explicit static numeric/tuple values and finite tuple iteration. Their
+canonical dossiers retain independent A100
+correctness gates and source/native custody. All 49 currently installed
+GEMM/rowwise policies preserve their original bytes in the
+[latest continuity audit](../../compiler_exp/gap_closure/foundations_20261121/audit-20261124T052003Z.json);
+the historical identity above belongs to the November 11 measurement.
+
 The raw records remain in `corpus/`, `docs/evidence/` and `exp/`. Those files
 contain large JSON payloads, SASS listings, cubins, hashes and machine-readable
 measurements. This directory provides the readable interpretation and points to

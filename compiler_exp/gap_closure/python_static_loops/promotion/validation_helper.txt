@@ -1,0 +1,14 @@
+
+
+def validate_iterations(records, paths):
+    if not isinstance(records, dict) or not records or len(records) > 1024:
+        raise ValueError('invalid static tuple iteration inventory')
+    for key, row in records.items():
+        if row['path'] not in paths or type(row['line']) is not int or row['line'] <= 0 or type(row['column']) is not int or row['column'] < 0:
+            raise ValueError('invalid static tuple iteration source')
+        if key != row['path']+':'+row['function']+':'+str(row['line'])+':'+str(row['column']):
+            raise ValueError('invalid static tuple iteration identity')
+        value = row['values']
+        if value.get('type') != 'tuple':
+            raise ValueError('static tuple iteration requires tuple values')
+        validate_records({'loop:value':dict(path='loop',name='value',line=row['line'],value=value,kernels=row['kernels'])}, {'loop'})

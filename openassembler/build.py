@@ -61,6 +61,9 @@ class Options:
     dump_ptx: bool = False
     compile_commands: Path | None = None
     compile_command: object = None
+    device_libraries: list[Path] = field(default_factory=list)
+    device_library_options: list[dict] = field(default_factory=list)
+    python_source_root: Path | None = None
 
 
 def _err(msg: str) -> None:
@@ -90,7 +93,7 @@ def encoder(arch: str):
         _ENCODERS[arch] = Encoder(arch)
     return _ENCODERS[arch]
 
-def generate(kernel, arch: str, opt_level: str, *, tensor_config=None):
+def generate(kernel, arch: str, opt_level: str, *, tensor_config=None, resource_info=None):
     """One PTX kernel -> (code, labels, words, exits, nregs) with our backend. Raises
     ra.NotSupported / EncodeError for what it can't do (never guesses)."""
     from openassembler.backend import ra
@@ -106,6 +109,7 @@ def generate(kernel, arch: str, opt_level: str, *, tensor_config=None):
     if opt_level == "safe":
         code, st = ra.compile_kernel(kernel)
         labels = st["labels"]
+        if resource_info is not None:resource_info.update({k:st[k]for k in ("local_bytes","spill_slots","register_limit")})
     else:
         # Mirrors tools/bench_build.py:_reschedule_k, the reference pipeline for
         # the mined/sched/opt variants (list_schedule runs on the raw lowered
@@ -113,7 +117,9 @@ def generate(kernel, arch: str, opt_level: str, *, tensor_config=None):
         k = unroll_loops(kernel) if opt_level == "opt" else kernel
         s = ra.Selector(k)
         ops = ra.coalesce(ra.dce(s.run()))
-        phys = ra.allocate(ops, s.r1)
+        from openassembler.backend.spill import allocate_kernel
+        ops,phys,resources=allocate_kernel(s,ops)
+        if resource_info is not None:resource_info.update(resources)
         lowered = ra.lower(ops, phys)
         if opt_level in ("sched", "opt"):
             lowered = list_schedule(lowered)
@@ -255,7 +261,7 @@ def restrict_ptx(ptx: str, keep: set[str]) -> str:
     return "".join(out)
 
 
-def splice_kernels(base: bytes, ours: dict[str, tuple[list[int], int, list[int]]]) -> bytes:
+def splice_kernels(base: bytes, ours: dict[str, tuple[list[int], int, list[int]]], *, local_frames=None) -> bytes:
     """Splice several kernels' code (name -> (words, nregs, exits)) into one ptxas
     container. Kernels not in `ours` keep ptxas's code and its register count."""
     from openassembler.container import nvinfo
@@ -282,7 +288,12 @@ def splice_kernels(base: bytes, ours: dict[str, tuple[list[int], int, list[int]]
             n = ours[name][1] if name in ours else orig_regs.get(fn, struct.unpack_from("<II", r.data)[1])
             r.data = struct.pack("<II", fn, n)
     e.replace_data(".nv.info", nvinfo.serialize(recs))
-    return e.serialize()
+    binary=e.serialize()
+    if local_frames:
+        if not set(local_frames)<=set(ours):raise ValueError("local frame reservation requires replaced native code")
+        from openassembler.backend.storage import set_local_frames
+        binary=set_local_frames(binary,local_frames)
+    return binary
 
 
 def regcounts(cubin: bytes) -> dict[str, int]:
@@ -450,14 +461,23 @@ class KernelOut:
     tensor: dict | None = None
     gemm: dict | None = None
     rowwise: dict | None = None
+    logical_parameter_contract: dict | None = None
     buffer_contract: dict | None = None
+    local_bytes: int = 0
+    register_allocation: dict | None = None
     directives: dict = field(default_factory=dict)
     parameter_attributes: dict = field(default_factory=dict)
+    inlined_device_calls: dict | None = None
+    device_link: dict | None = None
+    python_source_graph: dict | None = None
 
     def record(self) -> dict:
         r = {"name": self.name, "params": [list(p) for p in self.params], "compiled_by": self.compiled_by,
              "backend": self.compiled_by,
              "instructions": self.instructions, "registers": self.registers, "verify": self.verify}
+        if self.register_allocation is not None:r["register_allocation"]=self.register_allocation
+        if self.local_bytes:
+            r["local_bytes"]=self.local_bytes
         if self.source_params:
             r["source_params"] = self.source_params
         if self.note:
@@ -468,12 +488,17 @@ class KernelOut:
             r["gemm"] = self.gemm
         if self.rowwise is not None:
             r["rowwise"] = self.rowwise
+        if self.logical_parameter_contract is not None:r["logical_parameter_contract"] = self.logical_parameter_contract
         if self.buffer_contract is not None:
             r["buffer_contract"] = self.buffer_contract
         if self.directives:
             r["ptx_directives"] = self.directives
         if self.parameter_attributes:
             r['parameter_attributes']=self.parameter_attributes
+        if self.inlined_device_calls is not None:
+            r['inlined_device_calls']=self.inlined_device_calls
+        if self.device_link is not None:r['device_link']=self.device_link
+        if self.python_source_graph is not None:r['python_source_graph']=self.python_source_graph
         return r
 
 
@@ -496,6 +521,7 @@ class SourceOut:
          'ptxas_container', 'packaging_ownership', 'disassembly'), 0.0))
     compile_total_ms: float = 0.0
     build_contract: dict | None = None
+    device_link: dict | None = None
 
     @contextmanager
     def phase(self, name):
@@ -570,7 +596,7 @@ def _build_source(so: SourceOut, opt: Options, *, single: bool) -> SourceOut:
         with so.phase('frontend'):
             if language == "cuda":
                 _need("nvcc")
-                if opt.compile_command is not None:
+                if opt.compile_command is not None and not opt.device_libraries:
                     from .compilation_database import dependencies
                     so.build_contract['dependencies'] = dependencies(opt.compile_command,
                         include_dirs=opt.include_dirs, extra_flags=opt.nvcc_flags)
@@ -581,8 +607,47 @@ def _build_source(so: SourceOut, opt: Options, *, single: bool) -> SourceOut:
                 flags = [*opt.compile_command.flags, *flags]
                 kwargs['working_directory'] = opt.compile_command.directory
                 kwargs['source_argument'] = opt.compile_command.source_argument
+            if opt.device_libraries and language=='cuda':
+                from openassembler.ptx.link import relocatable_flags
+                flags=relocatable_flags(flags)
+            if opt.device_libraries and language=='cuda':
+                from .compilation_database import dependencies,CompileCommand
+                check_command=opt.compile_command or CompileCommand(src.resolve(),str(src.resolve()),src.resolve().parent,(),
+                    ('nvcc',str(src.resolve())),src.resolve(),so.sha,{})
+                before_dependencies=dependencies(check_command,include_dirs=opt.include_dirs,
+                    extra_flags=relocatable_flags(opt.nvcc_flags)if opt.compile_command else flags)
+            if language == "python" and opt.python_source_root is not None:
+                kwargs['python_source_root'] = opt.python_source_root
             ptx, names, notes = to_ptx_module(src, arch=opt.arch, include_dirs=opt.include_dirs,
                                               nvcc_flags=flags, **kwargs)
+            if language == "python":
+                from openassembler.pyfront.modules import contract_from_ptx, validate_sources
+                validate_sources(src, contract_from_ptx(ptx), opt.python_source_root)
+            if opt.device_libraries and language=='cuda':
+                from .compilation_database import dependencies,CompileCommand
+                command=opt.compile_command
+                if command is None:
+                    command=CompileCommand(src.resolve(),str(src.resolve()),src.resolve().parent,(),
+                        ('nvcc',str(src.resolve())),src.resolve(),so.sha,{})
+                    extra=flags
+                else:
+                    from openassembler.ptx.link import relocatable_flags
+                    extra=relocatable_flags(opt.nvcc_flags)
+                dependency=dependencies(command,include_dirs=opt.include_dirs,extra_flags=extra)
+                if before_dependencies!=dependency:raise ValueError('entry dependencies changed during compilation')
+                so.device_link={'entry_compilation':{'source':str(src.resolve()),
+                    'source_sha256':so.sha,'device_flags':list(flags),'dependencies':dependency,
+                    'compile_contract':command.record()if opt.compile_command is not None else None}}
+        if opt.device_libraries:
+            if src.resolve() in {Path(p).resolve()for p in opt.device_libraries}:
+                raise ValueError('the entry source cannot also be a device library')
+            from openassembler.ptx.link import link_paths
+            entry_contract=so.device_link
+            ptx,so.device_link=link_paths(ptx,opt.device_libraries,arch=opt.arch,
+                include_dirs=opt.include_dirs,nvcc_flags=opt.nvcc_flags,
+                compile_commands=opt.compile_commands,library_options=opt.device_library_options)
+            if entry_contract:so.device_link.update(entry_contract)
+            if P.sha256_file(src)!=so.sha:raise ValueError('entry source changed during device linking')
         so.notes += notes
     except KeyboardInterrupt:
         raise
@@ -633,8 +698,29 @@ def _build_source(so: SourceOut, opt: Options, *, single: bool) -> SourceOut:
             k.error = f'invalid checked Buffer contract: {error}'
             so.kernels.append(k)
             continue
+        from openassembler.verify import parameter_contract_from_ptx
+        try:
+            parameter_contract = parameter_contract_from_ptx(ptx,module.kernels[kname],allow_buffers=True)
+            if parameter_contract and any(row['dtype']=='bool' for row in parameter_contract['parameters']):
+                k.logical_parameter_contract = parameter_contract
+        except (ValueError,KeyError,TypeError) as error:
+            k.error = f'invalid logical parameter contract: {error}'
+            so.kernels.append(k)
+            continue
         k.directives = {key: list(value) for key, value in module.kernels[kname].directives.items()}
         k.parameter_attributes = module.kernels[kname].parameter_attributes
+        k.device_link = so.device_link
+        from openassembler.pyfront.modules import contract_from_ptx
+        try:
+            k.python_source_graph = contract_from_ptx(ptx)
+        except (ValueError, KeyError, TypeError) as error:
+            k.error = f"invalid Python helper graph: {error}"
+            so.kernels.append(k)
+            continue
+        if kname in module.inlined_calls:
+            k.inlined_device_calls={'schema':1,'strategy':'direct-scalar-static-inlining',
+                                    'functions':{name:{**module.functions[name],'call_sites':count}
+                                                 for name,count in module.inlined_calls[kname].items()}}
         tensor_config = None
         if gemm_contract is not None and kname == "gemm":
             from openassembler.backend.tensor import TensorConfig
@@ -645,9 +731,10 @@ def _build_source(so: SourceOut, opt: Options, *, single: bool) -> SourceOut:
         so.kernels.append(k)
         why, can_fallback = "", False
         try:
+            resources={}
             with so.phase('backend'):
                 code, labels, words, exits, nregs = generate(module.kernels[kname], opt.arch, opt.opt_level,
-                                                          tensor_config=tensor_config)
+                                                          tensor_config=tensor_config,resource_info=resources)
             if k.directives.get('maxnreg') and nregs > k.directives['maxnreg'][0]:
                 raise ra.NotSupported(f"OA register count {nregs} exceeds .maxnreg {k.directives['maxnreg'][0]}; spilling is not implemented")
         except KeyboardInterrupt:
@@ -663,6 +750,9 @@ def _build_source(so: SourceOut, opt: Options, *, single: bool) -> SourceOut:
         else:
             k.code, k.labels, k.words = code, labels, (words, nregs, exits)
             k.instructions, k.registers = count_insns(code), nregs
+            from openassembler.backend.storage import local_frame
+            k.local_bytes=resources.get("local_bytes",local_frame(module.kernels[kname]).bytes)
+            if resources.get("spill_slots",0):k.register_allocation=dict(resources)
             from openassembler.backend.tensor import needs_tensor, policy
             if needs_tensor(module.kernels[kname]):
                 k.tensor = {**policy(tensor_config), "architecture": "sm_80",
@@ -723,7 +813,7 @@ def _build_source(so: SourceOut, opt: Options, *, single: bool) -> SourceOut:
     # 4. splice every kernel we compiled into that one container
     ours = {k.name: k.words for k in so.kept if k.compiled_by == "openassembler"}
     with so.phase('packaging_ownership'):
-        cubin = splice_kernels(ref, ours)
+        cubin = splice_kernels(ref, ours, local_frames={k.name:k.local_bytes for k in so.kept if k.compiled_by=="openassembler"})
         regs = regcounts(cubin)
     for k in so.kept:
         k.registers = regs.get(k.name, k.registers)
@@ -792,6 +882,13 @@ def _build_source(so: SourceOut, opt: Options, *, single: bool) -> SourceOut:
             else:
                 head.append(f"// kernel {k.name}: compiled by openassembler")
         sass = "\n".join(head) + "\n" + listing
+    if language == "python":
+        try:
+            from openassembler.pyfront.modules import contract_from_ptx, validate_sources
+            validate_sources(src, contract_from_ptx(ptx), opt.python_source_root)
+        except (OSError, ValueError) as error:
+            so.error, so.rc = f"Python helper source validation failed: {error}", 1
+            return so
     p = so.paths(opt.no_sass)
     so.files = {p["cubin"]: cubin, p["ptx"]: ptx, p["reference"]: ref}
     if sass is not None:
@@ -941,7 +1038,8 @@ def _compile_paths(src: Path, out_dir: Path, opt: Options, o_name: str | None = 
                     raise P.ProjectError('compilation database source is inside OA output directory')
                 if source not in files:
                     files.append(source)
-            cls = [P.classify(f, f.relative_to(root).as_posix()) for f in files]
+            library_paths={Path(p).resolve()for p in opt.device_libraries}
+            cls = [P.classify(f, f.relative_to(root).as_posix()) for f in files if f.resolve()not in library_paths]
             cls = [P.Classified(c.path,c.rel,'cuda','') if c.path.resolve() in commands else c for c in cls]
             skipped = {}
             for c in cls:
@@ -1030,7 +1128,8 @@ def _compile_paths(src: Path, out_dir: Path, opt: Options, o_name: str | None = 
         s, lang, name = item
         command = commands.get(s)
         includes = opt.include_dirs if single or command is not None else [*opt.include_dirs, root]
-        o = Options(**{**opt.__dict__, 'include_dirs':includes,'compile_command':command})
+        o = Options(**{**opt.__dict__, 'include_dirs':includes,'compile_command':command,
+                       'compile_commands':_database if opt.device_libraries and _database else opt.compile_commands})
         return build_source(s, lang, name, o, single=single)
 
     if build_jobs == 1:

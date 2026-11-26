@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "array",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(bool)):\n    a[0]=True\n",
+      "reason": "annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/array.py, line 3)"
+    },
+    {
+      "name": "buffer",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Buffer(bool,(4,))):\n    a[0]=True\n",
+      "reason": "annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/buffer.py, line 3)"
+    },
+    {
+      "name": "shared",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    s=shared_array(4,bool)\n    a[0]=i32(flag)\n",
+      "reason": "annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation '4' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/shared.py, line 4)"
+    },
+    {
+      "name": "shadow",
+      "source": "from openassembler.pyfront import *\nbool=i32\n@kernel\ndef k(a:Array(i32),flag:bool):\n    a[0]=i32(flag)\n",
+      "reason": "annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/shadow.py, line 4)"
+    },
+    {
+      "name": "default",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool=True):\n    a[0]=i32(flag)\n",
+      "reason": "default",
+      "rejected": true,
+      "diagnostic": "kernel parameters can't have default values (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/default.py, line 3)"
+    },
+    {
+      "name": "numeric_reassign",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    flag=1\n    a[0]=flag\n",
+      "reason": "different type",
+      "rejected": true,
+      "diagnostic": "variable 'flag' reassigned with a different type (pred -> s32) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/numeric_reassign.py, line 4)"
+    },
+    {
+      "name": "arithmetic",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    a[0]=flag+flag\n",
+      "reason": "arithmetic",
+      "rejected": true,
+      "diagnostic": "arithmetic on a comparison result (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/arithmetic.py, line 4)"
+    },
+    {
+      "name": "integer_comparison",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    a[0]=i32(flag==1)\n",
+      "reason": "mismatched types",
+      "rejected": true,
+      "diagnostic": "comparing mismatched types (pred vs s32) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/integer_comparison.py, line 4)"
+    },
+    {
+      "name": "unconverted_store",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    a[0]=flag\n",
+      "reason": "storing",
+      "rejected": true,
+      "diagnostic": "storing a pred value into an Array of s32 (write 1.0, not 1, for a float array; or convert with float()/int()) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/unconverted_store.py, line 4)"
+    },
+    {
+      "name": "union",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    result=flag or a[0]\n    a[0]=i32(result)\n",
+      "reason": "one fixed scalar kind",
+      "rejected": true,
+      "diagnostic": "and/or operands require one fixed scalar kind (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/union.py, line 4)"
+    },
+    {
+      "name": "tuple_annotation",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:(bool,bool)):\n    a[0]=1\n",
+      "reason": "annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation '(bool, bool)' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/tuple_annotation.py, line 3)"
+    },
+    {
+      "name": "bool_numeric_helper",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i32)->i32:\n    return x\n@kernel\ndef k(a:Array(i32),flag:bool):\n    a[0]=h(flag)\n",
+      "reason": "expected s32, got pred",
+      "rejected": true,
+      "diagnostic": "device helper 'h' expected s32, got pred (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/bool_numeric_helper.py, line 7)"
+    },
+    {
+      "name": "local_call_shadow",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    bool=flag\n    a[0]=i32(bool(flag))\n",
+      "reason": "local value",
+      "rejected": true,
+      "diagnostic": "call target 'bool' is a local value (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/local_call_shadow.py, line 5)"
+    },
+    {
+      "name": "varying_barrier",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    if flag and tid_x():\n        syncthreads()\n    a[tid_x()]=1\n",
+      "reason": "thread-dependent",
+      "rejected": true,
+      "diagnostic": "syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-bool-kernel-boundary-ko1qkx99/varying_barrier.py, line 5)"
+    }
+  ],
+  "source_hashes": {
+    "candidate-pyfront.py": "14287cd3f702a2f8795ae5ba3fd45466048eb5431ea6f53d02883465c3f1d9fa",
+    "candidate-verify.py": "088774bc3be452cbe4651d59ede01050534a9a2b4b8d2b98328368d8b4b741e7",
+    "candidate-build.py": "a14b0a58e20215946e12a70ec4e5d60765ee15404c84250e22a34e875c1d3ae3",
+    "candidate-ownership.py": "1e58196bd4f9586bfc0234e07f3c220fa3ba46a533fa9edbc225f3c36c8b5848",
+    "candidate-runner.py": "ad52c850a3f1612ceb0faf841793c34e8184abf293db5081d520aceb3122192b",
+    "negative_controls.py": "542b16c4526ed492f3a5479e86f5e4ce06c07f1c022dbdec83433f5b6634ff49"
+  },
+  "scope": "Fourteen original Boolean source array/storage/type/effect/annotation/convergence rejection boundaries; launch/metadata negatives have separate regression gates"
+}

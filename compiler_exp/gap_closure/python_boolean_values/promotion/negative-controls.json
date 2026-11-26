@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "mixed_value",
+      "source": "@kernel\ndef k(a:Array(i32),x:f32):\n    value=a[0]or x\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "and/or operands require one fixed scalar kind (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/mixed_value.py, line 4)"
+    },
+    {
+      "name": "bool_numeric_union",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=True or a[0]\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "and/or operands require one fixed scalar kind (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/bool_numeric_union.py, line 4)"
+    },
+    {
+      "name": "bool_arity",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=bool()\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "bool() takes exactly one scalar argument (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/bool_arity.py, line 4)"
+    },
+    {
+      "name": "bool_keywords",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=bool(x=a[0])\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "bool() keyword arguments are not supported (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/bool_keywords.py, line 4)"
+    },
+    {
+      "name": "bool_arrays",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=bool(a)\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "array 'a' used as a value (index it: a[i]) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/bool_arrays.py, line 4)"
+    },
+    {
+      "name": "bool_parameter",
+      "source": "@kernel\ndef k(a:Array(i32),value:bool):\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/bool_parameter.py, line 3)"
+    },
+    {
+      "name": "helper_memory",
+      "source": "@device\ndef h(x:i32)->i32:\n    return i32(bool(a[0]))\n@kernel\ndef k(a:Array(i32)):\n    a[0]=h(3)\n",
+      "rejected": true,
+      "diagnostic": "device helpers cannot access memory (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/helper_memory.py, line 4)"
+    },
+    {
+      "name": "uninitialized",
+      "source": "@device\ndef h(x:i32)->i32:\n    if x:\n        flag=True\n    return i32(flag)\n@kernel\ndef k(a:Array(i32)):\n    a[0]=h(3)\n",
+      "rejected": true,
+      "diagnostic": "device helper local 'flag' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/uninitialized.py, line 6)"
+    },
+    {
+      "name": "varying_barrier",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    flag=bool(tid_x())\n    if flag:\n        syncthreads()\n",
+      "rejected": true,
+      "diagnostic": "syncthreads() is reached under thread-dependent control flow (an if/while/for bound or early return/break that depends on tid_x()); every thread of the block must reach the barrier, otherwise it deadlocks or is undefined (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/varying_barrier.py, line 6)"
+    },
+    {
+      "name": "bool_arithmetic",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=True+False\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "arithmetic on a comparison result (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/bool_arithmetic.py, line 4)"
+    },
+    {
+      "name": "bool_store",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=not a[0]\n    a[0]=value\n",
+      "rejected": true,
+      "diagnostic": "storing a pred value into an Array of s32 (write 1.0, not 1, for a float array; or convert with float()/int()) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/bool_store.py, line 5)"
+    },
+    {
+      "name": "wide_union",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    value=a[0] or i64(7)\n    a[0]=i32(value)\n",
+      "rejected": true,
+      "diagnostic": "and/or operands require one fixed scalar kind (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/wide_union.py, line 4)"
+    },
+    {
+      "name": "inexact_context",
+      "source": "@kernel\ndef k(a:Array(f32)):\n    a[0]=16777217 or a[0]\n",
+      "rejected": true,
+      "diagnostic": "int literal 16777217 is not exactly representable as f32 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/inexact_context.py, line 4)"
+    },
+    {
+      "name": "unsigned_context",
+      "source": "@kernel\ndef k(a:Array(u64)):\n    a[0]=-1 or a[0]\n",
+      "rejected": true,
+      "diagnostic": "literal -1 does not fit in u64 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/unsigned_context.py, line 4)"
+    },
+    {
+      "name": "bool_named_shadow",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    bool=7\n    a[0]=i32(bool(a[0]))\n",
+      "rejected": true,
+      "diagnostic": "call target 'bool' is a local value (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/bool_named_shadow.py, line 5)"
+    },
+    {
+      "name": "float_integer_cast",
+      "source": "@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(1.5)\n",
+      "rejected": true,
+      "diagnostic": "typed integer casts require integer values, not floats (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-negative-08_ww6x8/float_integer_cast.py, line 4)"
+    }
+  ],
+  "source_hashes": {
+    "candidate-pyfront.py": "12b20d09f03d8d8d38adfcfa3826f7ef77f563af94964fbfda7444060f555b2b",
+    "candidate-backend.py": "3be53b04441febe2fe14b4ac0651628e32dae2a2649cbc289cd4f958d7e5e910",
+    "candidate-modules.py": "7cbdb6fb0ad31cd475467ef6499bb3d84992a7814de0cd80d68a6d901f49b923",
+    "negative_controls.py": "af5bd0d12b35e555ec6c9f05d3a6f24164ee1b373cd2fc5b5d29cdd834f3895a"
+  },
+  "script_sha256": "af5bd0d12b35e555ec6c9f05d3a6f24164ee1b373cd2fc5b5d29cdd834f3895a",
+  "scope": "16 original fixed-kind/literal/Boolean ABI/array/arity/keyword/helper-memory/initialization/convergence/arithmetic/conversion/shadowing boundaries with explicit type/effect limits; hardware separate"
+}

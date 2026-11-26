@@ -257,8 +257,14 @@ class Selector:
         raise NotSupported(f"64-bit value {v}")
 
     def pair(self, name: str) -> tuple[V, V]:
-        v = self.pair_value(self.val64(name))
-        self.env[name] = v
+        original = self.val64(name)
+        v = self.pair_value(original)
+        # A lazily materialized parameter/wide multiply may be first used in
+        # only one branch. Keep the symbolic value across CFG paths so a later
+        # use cannot trust registers whose definition it skipped.
+        if not (getattr(self, "has_cfg", False) and isinstance(original, tuple)
+                and original[0] in ("cpair", "widemul")):
+            self.env[name] = v
         return v
 
     def operand64(self, operand):
@@ -405,7 +411,8 @@ class Selector:
                 self.bind(a[0].name, v)
             return
         if op == "mul" and "wide" in m and t in ("u32", "s32"):
-            self.bind(a[0].name, ("widemul", self.reg32(a[1]), self.val32(a[2]), t == "u32"))
+            left, right = self.snapshot_parts((self.reg32(a[1]), self.val32(a[2])))
+            self.bind(a[0].name, ("widemul", left, right, t == "u32"))
             return
         if op in ("add", "sub") and t in ("s64", "u64"):
             if op == "add" and all(isinstance(x, Var) for x in a[1:]):

@@ -60,6 +60,10 @@ def main():
     commit = subprocess.check_output(['git', 'rev-parse', args.baseline or 'HEAD'], cwd=ROOT, text=True).strip()
     tables = {kind: json.loads(module.TABLE.read_text()) for kind, module in [('gemm', gd), ('rowwise', rd)]}
     inputs = {'gemm': gd.compiler_inputs(), 'rowwise': rd.identity_inputs()}
+    frozen_names=set(subprocess.check_output(['git','ls-tree','-r','--name-only',commit],cwd=ROOT,text=True).splitlines())
+    added={kind:sorted(set(files)-frozen_names)for kind,files in inputs.items()}
+    assert all(set(names)<={'openassembler/backend/storage.py','openassembler/backend/spill.py','openassembler/backend/pressure.py','specs/sm_80/memory_templates.json','openassembler/ptx/inlining.py','openassembler/ptx/link.py'}for names in added.values()),added
+    old_inputs={kind:{name:path for name,path in files.items()if name in frozen_names}for kind,files in inputs.items()}
     sections = rd._runtime_source_sections()
     def source_sections(cli,runner):
         begin='    pw = sub.add_parser("rowwise"'
@@ -74,7 +78,7 @@ def main():
     baseline_sections=source_sections(git_file(commit,'openassembler/cli.py').decode(),git_file(commit,'openassembler/runner.py').decode())
     assert sections==baseline_sections, 'rowwise runtime code changed'
     old_identity = {kind: identity(files, commit, sections if kind == 'rowwise' else None)
-                    for kind, files in inputs.items()}
+                    for kind, files in old_inputs.items()}
     current_identity = {'gemm': gd.compiler_identity(), 'rowwise': rd.compiler_identity()}
     for kind in tables:
         assert old_identity[kind] == json.loads(git_file(commit, str((gd.TABLE if kind == 'gemm' else rd.TABLE).relative_to(ROOT))))['compiler_identity']
@@ -82,9 +86,107 @@ def main():
         assert prior_audit, 'missing prior compiler binding'
         prior = json.loads((ROOT / prior_audit).read_text())
         assert tables[kind]['compiler_identity'] == prior['current_compiler_identity'][kind]
-    changed = {kind: [name for name, path in files.items() if path.read_bytes() != git_file(commit, name)]
+    changed = {kind: [name for name, path in files.items() if name not in frozen_names or path.read_bytes() != git_file(commit, name)]
                for kind, files in inputs.items()}
-    assert all(set(names) <= {'openassembler/build.py','openassembler/backend/ra.py','openassembler/backend/contracts.py','openassembler/ptx/parse.py','openassembler/oracle.py','openassembler/native_ownership.py'} for names in changed.values()), changed
+    # Exact narrow-ABI snapshots passed independent original-source/explicit-launch
+    # A100 auditing. Every measured frozen/current executable check below remains
+    # mandatory before any source identity can be rebound.
+    narrow_stage=HERE.parent/'narrow_parameters'
+    narrow_report_path=narrow_stage/'candidate-a100-20261125T011357Z.json'
+    narrow_report=json.loads(narrow_report_path.read_text())
+    narrow_audit=json.loads((narrow_stage/'candidate-audit.json').read_text())
+    narrow_previous=json.loads((HERE.parent/'python_boolean_abi/helpers/validation.json').read_text())
+    assert narrow_report['passed']and narrow_audit['passed']and narrow_previous['passed']
+    assert narrow_audit['launches']==14400 and narrow_audit['explicit_launches']==240
+    assert narrow_audit['bytes_checked']==67461120 and len(narrow_audit['native_comparisons'])==240
+    assert narrow_audit['report_sha256']==sha(narrow_report_path.read_bytes())
+    logical_stage=HERE.parent/'python_boolean_abi/scalar'
+    logical_report_path=logical_stage/'candidate-a100-20261125T074133Z.json'
+    logical_report=json.loads(logical_report_path.read_text())
+    logical_audit=json.loads((logical_stage/'candidate-audit.json').read_text())
+    logical_previous=json.loads((narrow_stage/'validation.json').read_text())
+    assert logical_report['passed']and logical_audit['passed']and logical_previous['passed']
+    assert logical_audit['launches']==9600 and logical_audit['explicit_launches']==960 and logical_audit['bytes_checked']==69746688
+    assert len(logical_audit['native_comparisons'])==240 and logical_audit['report_sha256']==sha(logical_report_path.read_bytes())
+    logical_inputs=json.loads((logical_stage/'inputs.json').read_text())
+    logical_sources={name:logical_stage/('candidate-'+suffix+'.py')for suffix,name in logical_inputs.items()}
+    for suffix,name in logical_inputs.items():
+        assert sha((logical_stage/('baseline-'+suffix+'.py')).read_bytes())==logical_previous['source_hashes'][name]
+        assert (ROOT/name).read_bytes()==logical_sources[name].read_bytes()
+        assert sha((ROOT/name).read_bytes())==logical_report['source_hashes'][name]
+    narrow_inputs=json.loads((narrow_stage/'inputs.json').read_text())
+    for suffix,name in narrow_inputs.items():
+        assert sha((narrow_stage/('baseline-'+suffix+'.py')).read_bytes())==narrow_previous['source_hashes'][name]
+        expected=logical_sources.get(name,narrow_stage/('candidate-'+suffix+'.py'))
+        assert (ROOT/name).read_bytes()==expected.read_bytes()
+        if name not in logical_sources:assert sha((ROOT/name).read_bytes())==narrow_report['source_hashes'][name]
+    assert all(set(names) <= {'openassembler/build.py','openassembler/backend/ra.py','openassembler/backend/contracts.py',
+                            'openassembler/backend/compile.py','openassembler/backend/sched.py',
+                            'openassembler/backend/storage.py','openassembler/backend/spill.py','openassembler/backend/pressure.py',
+                            'openassembler/isa/encode.py','specs/sm_80/memory_templates.json',
+                            'openassembler/ptx/parse.py','openassembler/ptx/semantics.py','openassembler/ptx/inlining.py','openassembler/ptx/link.py','openassembler/oracle.py','openassembler/native_ownership.py','openassembler/gpu/cuda_driver.py'} for names in changed.values()), changed
+    # Only the independently validated ordering-fence additions are permitted
+    # in scheduling. Full frozen/current executable equality is still required.
+    for name, old, new in (
+        ('openassembler/backend/compile.py', '("BRA", "EXIT", "WARPSYNC"):',
+         '("BRA", "EXIT", "WARPSYNC", "MEMBAR", "ERRBAR", "CCTL"):'),
+        ('openassembler/backend/sched.py', '"MEMBAR", "DEPBAR", "S2R", "CS2R", "WARPSYNC", "SHFL")',
+         '"MEMBAR", "ERRBAR", "CCTL", "DEPBAR", "S2R", "CS2R", "WARPSYNC", "SHFL")'),
+    ):
+        frozen = git_file(commit, name)
+        current = (ROOT/name).read_bytes()
+        expected=frozen.replace(old.encode(),new.encode())
+        if name=='openassembler/backend/compile.py':
+            anchor=b'        if _opname(txt) in ("BRA", "EXIT"):\n            st = max(st, 5)'
+            shared_gap=b'''\n        if _opname(txt)=="BAR" and any(_opname(o.text) in ("LDS","STS") and ".64 " in o.text for o in code):
+            # Shared 64-bit exchanges require the observed barrier issue gap.
+            # Retain the safe scheduler/ptxas gap rather than the scalar model's 1.
+            st = max(st, 6)'''
+            assert expected.count(anchor)==1
+            shared=expected.replace(anchor,anchor+shared_gap)
+            stage=HERE.parent/'python_shared_wide'
+            candidate=stage/'candidate-backend-compile.py'
+            allowed=[frozen,expected,shared]
+            if candidate.is_file():
+                report_path=stage/'candidate-a100-20261123T162930Z.json'
+                admission=json.loads(report_path.read_text())
+                audit=json.loads((stage/'candidate-audit.json').read_text())
+                assert admission['passed']and audit['passed']and audit['launches']==1280
+                assert audit['report_sha256']==sha(report_path.read_bytes())
+                assert sha(candidate.read_bytes())==admission['source_hashes'][name]
+                # Require the exact reviewed additions to the preceding compiler,
+                # plus full frozen/current executable equality below.
+                revised=shared.decode()
+                def once(old,new):
+                    nonlocal revised
+                    assert revised.count(old)==1
+                    revised=revised.replace(old,new,1)
+                entry='def schedule(code: list[Out], labels: dict | None = None, model: str = "safe") -> list[tuple[str, Control]]:'
+                once(entry,(stage/'convergence_helper.py').read_text()+entry)
+                once('    out = []\n    pending_w: dict[int, int] = {}','    code = _converge_cta_phases(code, labels)\n    out = []\n    pending_w: dict[int, int] = {}')
+                once('("BRA", "EXIT", "WARPSYNC", "MEMBAR", "ERRBAR", "CCTL"):', '("BRA", "EXIT", "WARPSYNC", "MEMBAR", "ERRBAR", "CCTL", "BSSY", "BSYNC"):')
+                once(anchor.decode(),anchor.decode()+'\n        if _opname(txt) in ("BSSY", "BSYNC"):\n            st = max(st, 6)')
+                assert revised.encode()==candidate.read_bytes()
+                allowed.append(revised.encode())
+            guard_stage=HERE.parent/'python_boolean_values/promotion'
+            guard_candidate=guard_stage/'candidate-backend.py'
+            if guard_candidate.is_file():
+                guard_report_path=guard_stage/'candidate-a100-20261124T120418Z.json'
+                guard_report=json.loads(guard_report_path.read_text())
+                guard_audit=json.loads((guard_stage/'candidate-audit.json').read_text())
+                assert (guard_stage/'baseline-backend.py').read_bytes() in allowed
+                assert guard_report['passed']and guard_audit['passed']and guard_audit['launches']==2400
+                assert guard_audit['bytes_checked']==16957440 and len(guard_audit['native_comparisons'])==240
+                assert guard_audit['report_sha256']==sha(guard_report_path.read_bytes())
+                assert sha(guard_candidate.read_bytes())==guard_report['source_hashes'][name]
+                # Exact source admitted by the independent failed/repaired A100
+                # predicate-path gate. All measured policy words/controls/labels/
+                # exits/registers must still match the frozen binaries below.
+                allowed.append(guard_candidate.read_bytes())
+            assert (narrow_stage/'baseline-backend.py').read_bytes() in allowed
+            allowed.append((narrow_stage/'candidate-backend.py').read_bytes())
+            assert current in allowed,name
+        else:assert current in(frozen,expected),name
     old_build = git_file(commit, 'openassembler/build.py')
     current_build = (ROOT/'openassembler/build.py').read_bytes()
     temporary=tempfile.TemporaryDirectory(prefix='oa-frozen-policy-')
@@ -107,6 +209,7 @@ print(json.dumps({'words_sha256':hashlib.sha256(b''.join(x.to_bytes(16,'little')
              'scope': 'Frozen HEAD and current generated PTX/native words/controls/registers equal retained selection and heldout executables for all 44 installed GEMM and five rowwise policies; no new hardware or timing claim',
              'old_compiler_identity': old_identity, 'current_compiler_identity': current_identity,
              'changed_identity_inputs': changed,
+             'added_identity_inputs':added,
              'compiler_inputs_sha256': {name: sha(path.read_bytes()) for files in inputs.values() for name, path in files.items()},
              'scoped_runtime_sections_sha256': {name: sha(data) for name, data in sections.items()},
              'frozen_build_sha256': sha(old_build), 'current_build_sha256': sha(current_build),

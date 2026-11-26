@@ -46,13 +46,8 @@ class Compiler:
         self.reg: dict[str, int] = {}
         self.next = 2           # R0/R1 reserved (R1 = stack pointer by convention)
         self.code: list[Out] = []
-        self.param_off = {}
-        off = 0
-        for ty, name in k.params:
-            sz = 8 if ty.endswith("64") else 4
-            off = (off + sz - 1) // sz * sz
-            self.param_off[name] = PARAM_BASE + off
-            off += sz
+        from openassembler.ptx.parse import parameter_layout
+        self.param_off = {name: PARAM_BASE+offset for name, (offset, size) in parameter_layout(k.params).items()}
         self.ptr_regs: set[str] = set()
 
     # ---- registers ---------------------------------------------------------------
@@ -108,7 +103,22 @@ class Compiler:
         t = next((x for x in m if x[:1] in ("s", "u", "b", "f") and x[1:].isdigit()), None)
         if op == "ld" and "param" in m:
             d = a[0].name
-            off = self.param_off[a[1].base] + a[1].off
+            from openassembler.ptx.parse import parameter_load
+            try: relative, width = parameter_load(self.k, a[1], t)
+            except ValueError as error: raise NotSupported(str(error)) from None
+            off = PARAM_BASE+relative
+            if width < 4:
+                rd = self.r(d)
+                self.emit(f"MOV R{rd}, c[0x0][{off & ~3:#x}]", writes=[rd])
+                shift, bits = (off & 3)*8, width*8
+                if t.startswith('s'):
+                    left = 32-bits-shift
+                    if left:self.emit(f"SHF.L.U32 R{rd}, R{rd}, {left:#x}, RZ", reads=[rd], writes=[rd])
+                    self.emit(f"SHF.R.S32.HI R{rd}, RZ, {32-bits:#x}, R{rd}", reads=[rd], writes=[rd])
+                else:
+                    if shift:self.emit(f"SHF.R.U32.HI R{rd}, RZ, {shift:#x}, R{rd}", reads=[rd], writes=[rd])
+                    self.emit(f"LOP3.LUT R{rd}, R{rd}, {(1 << bits)-1:#x}, RZ, 0xc0, !PT", reads=[rd], writes=[rd])
+                return
             if t in ("u64", "b64", "s64"):
                 rd = self.r(d, wide=True)
                 self.emit(f"MOV R{rd}, c[0x0][{off:#x}]", writes=[rd])
@@ -345,6 +355,74 @@ def _puses(text: str) -> set:
     return {x for x in args[count:] if re.fullmatch(r"P[0-6]", x)} | ({g[1]} if g else set())
 
 
+
+def _converge_cta_phases(code, labels):
+    """Reconverge acyclic conditional paths before an all-thread CTA barrier.
+
+    B0 is reused only after its matching BSYNC. Every selected path reaches the
+    same BAR without encountering another barrier, exit or cycle. This is an
+    execution dependency, independent of the functional model's implicit joins.
+    """
+    import re
+    labels = labels if labels is not None else {}
+    count = len(code)
+    successors = []
+    for i, operation in enumerate(code):
+        name = _opname(operation.text)
+        if name == "BRA":
+            target = re.search(r"`\((\S+?)\)", operation.text)
+            if target is None or target[1] not in labels:
+                return code
+            edges = [labels[target[1]]]
+            if operation.text.startswith("@"):
+                edges.append(i + 1)
+        elif name == "EXIT":
+            edges = []
+        else:
+            edges = [i + 1]
+        successors.append(edges)
+    opens, closes = {}, {}
+    previous = 0
+    for end, operation in enumerate(code):
+        if _opname(operation.text) != "BAR":
+            continue
+        reaches = {end: True}
+        # Reverse dynamic programming avoids Python recursion for long scalar
+        # phases. Backedges and paths crossing another phase stay outside this
+        # forward-only reconvergence proof.
+        for index in range(end - 1, previous - 1, -1):
+            reaches[index] = (_opname(code[index].text) not in ("BAR", "EXIT")
+                              and bool(successors[index])
+                              and all(index < target <= end and reaches.get(target, False)
+                                      for target in successors[index]))
+        for start in range(previous, end):
+            if (code[start].text.startswith("@") and _opname(code[start].text) == "BRA"
+                    and reaches[start]):
+                label = f"__oa_cta_join_{end}"
+                while label in labels:
+                    label += "_"
+                opens[start] = label
+                closes[end] = label
+                break
+        previous = end + 1
+    if not opens:
+        return code
+    # No token lives across another BAR, and the selected paths are acyclic.
+    mapping, updated, join_labels = {}, [], {}
+    for index, operation in enumerate(code):
+        mapping[index] = len(updated)
+        if index in closes:
+            join_labels[closes[index]] = len(updated)
+            updated.append(Out("BSYNC B0", False, [], []))
+        if index in opens:
+            updated.append(Out(f"BSSY B0, `({opens[index]})", False, [], []))
+        updated.append(operation)
+    mapping[count] = len(updated)
+    for label in list(labels):
+        labels[label] = mapping[labels[label]]
+    labels.update(join_labels)
+    return updated
+
 def schedule(code: list[Out], labels: dict | None = None, model: str = "safe") -> list[tuple[str, Control]]:
     """In-order, no reordering.
     * Variable-latency writes (loads, S2R): write scoreboard; readers and over-writers wait.
@@ -359,6 +437,7 @@ def schedule(code: list[Out], labels: dict | None = None, model: str = "safe") -
                        per-class minimum latencies mined from ptxas (tools/mine_latency.py
                        -> corpus/sm_80/machine_model.json) plus the mined issue gaps.
     """
+    code = _converge_cta_phases(code, labels)
     out = []
     pending_w: dict[int, int] = {}
     pending_r: dict[int, set[int]] = {}
@@ -374,7 +453,7 @@ def schedule(code: list[Out], labels: dict | None = None, model: str = "safe") -
     for i, o in enumerate(code):
         wait = 0
         live = set(pending_w.values()) | {b for bars in pending_r.values() for b in bars}
-        if i in join_at or _opname(o.text) in ("BRA", "EXIT", "WARPSYNC"):
+        if i in join_at or _opname(o.text) in ("BRA", "EXIT", "WARPSYNC", "MEMBAR", "ERRBAR", "CCTL", "BSSY", "BSYNC"):
             for b in live:
                 wait |= 1 << b
         pred_reads = [("p", p) for p in _puses(o.text)]
@@ -408,13 +487,13 @@ def schedule(code: list[Out], labels: dict | None = None, model: str = "safe") -
         out.append((o.text, Control(stall=stall, yield_=False, wbar=wbar, rbar=rbar, wait=wait, reuse=0)))
     if model == "mined":
         out = _mined_stalls(code, out, join_at)
-    return _branch_pred_latency(out)
+    return _branch_pred_latency(out, labels)
 
 
 PRED_TO_GUARD = 13   # SETP/PLOP3 -> any @P-guarded op (A100: tools/lat_sweep.py *.g; = ptxas's minimum)
 
 
-def _branch_pred_latency(out):
+def _branch_pred_latency(out, labels=None):
     """An instruction guarded by @Px reads Px at issue: on the A100 a guard 6..12 cycles
     after its ISETP/FSETP used the OLD predicate (loops ran one extra iteration; guarded
     IADD3/IMAD/FADD kept stale results), while the emulator, which has no timing, was
@@ -446,6 +525,57 @@ def _branch_pred_latency(out):
                     gap += add
                     q -= 1
                 break
+    return _cfg_pred_latency(out, labels) if labels else out
+
+
+def _cfg_pred_latency(out, labels):
+    """Keep guard predicates ready on every direct branch/fallthrough path.
+
+    The linear pass above preserves its established schedule. A backedge or
+    alternate predecessor can carry a newer predicate definition to a guard;
+    inspect those paths too, using the same measured 13-cycle requirement.
+    """
+    import heapq
+    import re
+
+    out = list(out)
+    predecessors = [[] for _ in out]
+    for index, (text, _) in enumerate(out):
+        operation = _opname(text)
+        guarded = text.startswith('@')
+        if operation == 'BRA':
+            target = text.split()[-1].strip('`;()')
+            if target in labels and 0 <= labels[target] < len(out):
+                predecessors[labels[target]].append(index)
+        if index + 1 < len(out) and (operation not in ('BRA', 'EXIT', 'RET') or guarded):
+            predecessors[index + 1].append(index)
+    for consumer, (text, _) in enumerate(out):
+        guard = re.match(r'@!?(P[0-6]) ', text)
+        if guard is None:
+            continue
+        predicate = guard[1]
+        queue = [(out[index][1].stall, index) for index in predecessors[consumer]]
+        heapq.heapify(queue)
+        visited, required = {}, {}
+        while queue:
+            distance, producer = heapq.heappop(queue)
+            if distance >= PRED_TO_GUARD:
+                break
+            if producer in visited and visited[producer] <= distance:
+                continue
+            visited[producer] = distance
+            instruction, control = out[producer]
+            if predicate in _pdefs(instruction):
+                required[producer] = max(required.get(producer, 0),
+                                         control.stall + PRED_TO_GUARD - distance)
+                if not instruction.startswith('@'):
+                    continue
+            for previous in predecessors[producer]:
+                heapq.heappush(queue, (distance + out[previous][1].stall, previous))
+        for producer, stall in required.items():
+            instruction, control = out[producer]
+            out[producer] = (instruction, _dc_replace(control, stall=stall,
+                                yield_=control.yield_ or stall > 11))
     return out
 
 
@@ -540,5 +670,11 @@ def _mined_stalls(code: list[Out], sched, join_at) -> list:
         st = max(st, 2) if (c.wbar != 7 or c.rbar != 7) else max(st, 1)
         if _opname(txt) in ("BRA", "EXIT"):
             st = max(st, 5)
+        if _opname(txt) in ("BSSY", "BSYNC"):
+            st = max(st, 6)
+        if _opname(txt)=="BAR" and any(_opname(o.text) in ("LDS","STS") and ".64 " in o.text for o in code):
+            # Shared 64-bit exchanges require the observed barrier issue gap.
+            # Retain the safe scheduler/ptxas gap rather than the scalar model's 1.
+            st = max(st, 6)
         out.append((txt, Control(stall=st, yield_=c.yield_, wbar=c.wbar, rbar=c.rbar, wait=c.wait, reuse=0)))
     return out

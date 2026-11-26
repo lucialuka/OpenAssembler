@@ -24,8 +24,8 @@ place it can't is listed here (and nothing else is silently different):
   local variables, global Array elements and pure device helpers. Add/subtract,
   bitwise and/or/xor/inversion, comparisons and constant shifts 0..63 are exact at
   the declared width. Signed right shifts extend the sign; unsigned shifts fill
-  zero. Unary minus supports i64 and wraps at INT64_MIN. Multiplication, all
-  division/remainder, float conversions and wide shared arrays remain rejected.
+  zero. Multiplication keeps the low 64 bits for both types. Unary minus supports
+  i64 and wraps at INT64_MIN. Division/remainder and float conversions remain rejected.
   Explicit i32/u32/i64/u64 casts preserve/truncate the low destination bits and
   sign-extend a signed source when widening; integer literals undergo the same
   modulo conversion. Mixed typed operands require explicit casts. Range counters
@@ -88,7 +88,8 @@ place it can't is listed here (and nothing else is silently different):
           (folded into the branch polarity -- no predicate is materialized), a bare
           int/float (Python truthiness: != 0, NaN is true), True/False. `not` anywhere
           else (assigned, nested in arithmetic) is rejected; so are and/or used as values.
-  Loops: for v in range(start, stop[, step]) with a constant non-zero step, while cond:,
+  Loops: bounded static numeric tuples (including break/continue/nested/else),
+          for v in range(start, stop[, step]) with a constant non-zero step, while cond:,
           break and continue in both, nested to any depth. Bounds are evaluated once
           (Python semantics), the loop variable keeps its last value after the loop, and
           assigning to it inside the body does not change the iteration count (both via
@@ -96,7 +97,7 @@ place it can't is listed here (and nothing else is silently different):
           read outside the loop). An i32 counter that would overflow (range near 2**31
           with a large step) wraps on the GPU. for/while ... else are rejected.
   Arrays: Array(f32|i32|u32|i64|u64) parameters (global memory), and shared memory declared at
-          kernel top level as  s = shared_array(f32, 256)  (i32/u32 too; constant
+          kernel top level as  s = shared_array(f32, 256)  (i32/u32/i64/u64 too; constant
           positive size; at most 48 KB in total), read/written as s[i]. Indices are i32.
           Out-of-bounds indices are not checked (Python raises IndexError; the GPU
           reads/writes whatever is there) and NEGATIVE indices do not count from the end
@@ -109,14 +110,18 @@ place it can't is listed here (and nothing else is silently different):
           after a tid-dependent return/break -- which would deadlock or be undefined.
           The analysis is conservative: values loaded from arrays at a tid-dependent index
           count as thread-dependent too.
-  Device helpers: same-file @device functions with explicitly annotated scalar
+  Device helpers: same-file or statically resolved local-package @device functions
+          with explicitly annotated scalar
           parameters and return values are inlined at each call site. Their bodies
           contain scalar assignments, if/elif/else, while/for-range with break/continue,
           and one terminal return expression. Nested pure helpers and numeric
           intrinsics are allowed. Locals must be initialized on every incoming path;
           loops conservatively may execute zero times. Arguments are copied, so helper
           parameter/local assignments cannot change caller variables. No memory effects,
-          captures, recursion, early returns, runtime calls or cross-module helper imports are admitted.
+          mutable captures, recursion, early returns or runtime calls are admitted. Explicit
+          typing.Final numeric/tuple source values have bounded compile-time semantics. Local-package
+          imports use an explicit source root (or the enclosing package), retain exact
+          source/dependency/call identities, and execute no user module code.
   Not supported (NotSupported with the line): any other call, lists/tuples/dicts,
           strings, attribute access other than math./pyfront. intrinsics, augmented or
           plain assignment to more than one target, f16/f64, atomics, recursion, nested
@@ -151,7 +156,7 @@ _MATH_MODULE = {"sqrt", "exp", "log", "tanh"}       # also accepted as math.<nam
 _PF_NAMES = set(_SREGS) | _MATH1 | {"shared_array", "syncthreads", "kernel", "device", "Array", "Buffer", "atomic_add", "atomic_exchange", "atomic_compare_exchange",
                                     "f32", "i32", "u32", "i64", "u64"}
 _INT_TYPES = {"i32": "s32", "u32": "u32", "i64": "s64", "u64": "u64"}
-_BUILTINS = {"min", "max", "abs", "float", "int", "range"}
+_BUILTINS = {"min", "max", "abs", "float", "int", "range", "bool"}
 
 _LOG2E_F32 = 0x3FB8AA3B     # f32(log2(e)) = 1.44269502, the constant __expf multiplies by
 _LN2_F32 = 0x3F317218       # f32(ln(2))   = 0.693147182
@@ -175,7 +180,7 @@ class NotSupported(Exception):
                  lineno: int | None = None):
         self.msg = msg
         self.lineno = lineno if lineno is not None else getattr(node, "lineno", None)
-        self.path = path
+        self.path = path or getattr(node, "_oa_source_path", None)
         super().__init__(self._render())
 
     def _render(self) -> str:
@@ -209,9 +214,10 @@ class _Names:
                    "openassembler.pyfront.compile")
 
     def __init__(self, tree: ast.AST):
+        self.source_tree = tree
         self.alias: dict[str, str] = {}        # local name -> dotted origin
         self.defined: set[str] = set()         # module-level names bound by def/class/assign
-        for n in ast.walk(tree):
+        for n in tree.body if isinstance(tree, ast.Module) else ():
             if isinstance(n, ast.Import):
                 for a in n.names:
                     if a.asname:
@@ -232,8 +238,11 @@ class _Names:
                         for sub in ast.walk(t):
                             if isinstance(sub, ast.Name):
                                 self.defined.add(sub.id)
-        from openassembler.pyfront.helpers import DeviceFunctions
-
+        from openassembler.pyfront.helpers import DeviceFunctions, _ModuleBindings
+        bindings = _ModuleBindings()
+        bindings.visit(tree)
+        self.defined.update(bindings.counts)
+        self.alias = {name: origin for name, origin in self.alias.items() if bindings.counts[name] == 1}
         self.devices = DeviceFunctions(tree, self)
 
     def _dotted(self, e: ast.expr) -> str | None:
@@ -265,7 +274,7 @@ class _Names:
         return None
 
 
-def _resolve_type(ann: ast.expr, names: _Names) -> Scalar | ArrayType:
+def _resolve_type(ann: ast.expr, names: _Names, *, allow_boolean: bool = False) -> Scalar | ArrayType:
     """Resolve a parameter annotation (i32, f32, Array(f32), pf.Array(pf.i32), or the same
     as a string under `from __future__ import annotations`) from the AST -- no eval."""
     from openassembler.pyfront import types as T
@@ -286,6 +295,8 @@ def _resolve_type(ann: ast.expr, names: _Names) -> Scalar | ArrayType:
         if not isinstance(elem, Scalar):
             raise NotSupported("Array element type must be f32, i32, u32, i64 or u64", ann)
         return T.Array(elem)
+    if allow_boolean and not isinstance(ann, ast.Call) and r == "bool":
+        return T.Scalar("pred")
     if not isinstance(ann, ast.Call) and r in ("pf.f32", "pf.i32", "pf.u32", "pf.i64", "pf.u64"):
         return getattr(T, r[3:])
     raise NotSupported(f"unsupported type annotation {ast.unparse(ann)!r} "
@@ -369,6 +380,10 @@ class _BarrierCheck:
             le, re_ = self._block(st.body, d)
             if le or re_:              # some threads left early: later iterations diverge
                 self._block(st.body, True)
+            if st.orelse:
+                a, b = self._block(st.orelse, d or le or re_)
+                ret_exit = re_ or b
+                return a, ret_exit
             # all threads that entered the loop meet again after it (break/continue don't
             # leak out); a divergent return does: the rest of the function is divergent.
             return False, re_
@@ -390,7 +405,7 @@ class _Reg:
 @dataclass
 class _Arr:
     space: str            # "global" | "shared"
-    elem: str             # "f32" | "s32" | "u32"
+    elem: str             # "f32" | "s32" | "u32" | "s64" | "u64"
     base: _Reg            # %rd (global, generic->global converted) or %r (shared window offset)
     sym: str | None = None
     length: int | None = None
@@ -406,6 +421,7 @@ class _Scope:
     arrays: dict[str, _Arr] = field(default_factory=dict)
     params: list[tuple[str, str]] = field(default_factory=list)  # (ptx_type, name)
     shared: list[tuple[str, str, int]] = field(default_factory=list)  # (sym, ptx type, count)
+    boolean_inputs: dict[str, _Reg] = field(default_factory=dict)
     smem_bytes: int = 0
     lines: list[str] = field(default_factory=list)
     n_r: int = 0
@@ -555,26 +571,92 @@ class _Emitter:
         self.s.emit(f"{end_label}:")
 
     def visit_While(self, node: ast.While) -> None:
-        if node.orelse:
-            raise NotSupported("'while ... else' is not supported", node.orelse[0])
         top, end = self.s.new_label("while"), self.s.new_label("wend")
+        exhausted = self.s.new_label("whileelse") if node.orelse else end
         self.s.emit(f"{top}:")
-        self._jump(node.test, end, when=False)
+        self._jump(node.test, exhausted, when=False)
         self.loops.append((top, end))
         self.depth += 1
         self.body(node.body)
         self.depth -= 1
         self.loops.pop()
         self.s.emit(f" bra {top};")
+        if node.orelse:
+            self.s.emit(f"{exhausted}:")
+            self.body(node.orelse)
         self.s.emit(f"{end}:")
 
+    def _static_tuple_loop(self, node: ast.For) -> None:
+        """Finite scalar tuple iteration with real loop exits and target homes."""
+        if not isinstance(node.target, ast.Name):
+            raise NotSupported('static tuple loop target must be a scalar name', node.target)
+        values = node._oa_tuple_values
+        if not values:
+            # No target binding or body effects occur for an empty tuple.
+            self.body(node.orelse)
+            return
+        self.s.static_tuple_values = getattr(self.s, 'static_tuple_values', 0) + len(values)
+        if self.s.static_tuple_values > 1024:
+            raise NotSupported('static tuple loops exceed 1024 selected values per kernel', node)
+        if any(type(value) not in (int, float) for value in values):
+            raise NotSupported('static tuple iteration requires numeric scalar elements', node.iter)
+        prior = self.s.vars.get(node.target.id)
+        if prior is not None:
+            kind = prior.kind
+        elif any(type(value) is float for value in values):
+            kind = 'f32'
+        elif all(_I32_MIN <= value <= _I32_MAX for value in values):
+            kind = 's32'
+        elif all(-(1 << 63) <= value < (1 << 63) for value in values):
+            kind = 's64'
+        elif all(0 <= value < (1 << 64) for value in values):
+            kind = 'u64'
+        else:
+            raise NotSupported('static tuple elements do not fit a single device integer type', node.iter)
+        if kind not in ('s32', 'u32', 's64', 'u64', 'f32'):
+            raise NotSupported('static tuple target requires a scalar numeric type', node.target)
+        if kind != 'f32' and any(type(value) is not int for value in values):
+            raise NotSupported('static tuple element does not fit the existing target type', node.iter)
+        target = self.s.var_reg(node.target.id, kind, node.target)
+        ctr = self.s.new_reg('s32')
+        self.s.emit(f' mov.u32 {ctr.name}, 0;')
+        top, body, cont, exhausted, end = [self.s.new_label(tag) for tag in
+                                          ('tuple', 'tuplebody', 'tuplenext', 'tupleelse', 'tupleend')]
+        self.s.emit(f'{top}:')
+        pred = self.s.new_reg('pred')
+        self.s.emit(f' setp.ge.s32 {pred.name}, {ctr.name}, {len(values)};')
+        self.s.emit(f' @{pred.name} bra {exhausted};')
+        for index, value in enumerate(values):
+            next_choice = self.s.new_label('tuplechoice') if index + 1 < len(values) else None
+            if next_choice:
+                check = self.s.new_reg('pred')
+                self.s.emit(f' setp.ne.s32 {check.name}, {ctr.name}, {index};')
+                self.s.emit(f' @{check.name} bra {next_choice};')
+            literal, actual_kind = self._lit_as(value, kind, node.iter)
+            self._mov(target, literal, actual_kind)
+            if next_choice:
+                self.s.emit(f' bra {body};')
+                self.s.emit(f'{next_choice}:')
+        self.s.emit(f'{body}:')
+        self.loops.append((cont, end))
+        self.depth += 1
+        self.body(node.body)
+        self.depth -= 1
+        self.loops.pop()
+        self.s.emit(f'{cont}:')
+        self.s.emit(f' add.s32 {ctr.name}, {ctr.name}, 1;')
+        self.s.emit(f' bra {top};')
+        self.s.emit(f'{exhausted}:')
+        self.body(node.orelse)
+        self.s.emit(f'{end}:')
+
     def visit_For(self, node: ast.For) -> None:
-        # for v in range(start, stop[, step]) -- the only `for` form supported.
+        if hasattr(node, '_oa_tuple_values'):
+            return self._static_tuple_loop(node)
+        # Existing runtime range-loop contract.
         if not (isinstance(node.target, ast.Name) and isinstance(node.iter, ast.Call)
                 and self.names.resolve(node.iter.func) == "range" and not node.iter.keywords):
             raise NotSupported("only 'for i in range(...)' loops are supported", node)
-        if node.orelse:
-            raise NotSupported("'for ... else' is not supported", node.orelse[0])
         args = node.iter.args
         if len(args) == 1:
             start_e, stop_e, step = ast.Constant(value=0), args[0], 1
@@ -586,6 +668,7 @@ class _Emitter:
                     raise NotSupported("range() step must be a constant int", node)
         else:
             raise NotSupported("range() takes 1-3 args", node)
+        step = int(step)  # Python permits a compile-time True step as integer one.
         if step == 0:
             raise NotSupported("range() step must not be 0", node)
         if not _I32_MIN <= step <= _I32_MAX:
@@ -612,10 +695,11 @@ class _Emitter:
         self.s.emit(f" mov.u32 {stop_reg.name}, {stop_v.name};")   # snapshot, never aliased
 
         top, cont, end = self.s.new_label("loop"), self.s.new_label("next"), self.s.new_label("loopend")
+        exhausted = self.s.new_label("forelse") if node.orelse else end
         self.s.emit(f"{top}:")
         pred = self.s.new_reg("pred")
         self.s.emit(f" setp.{'ge' if step > 0 else 'le'}.s32 {pred.name}, {ctr.name}, {stop_reg.name};")
-        self.s.emit(f" @{pred.name} bra {end};")
+        self.s.emit(f" @{pred.name} bra {exhausted};")
         if ctr is not var:
             self.s.emit(f" mov.u32 {var.name}, {ctr.name};")
         self.loops.append((cont, end))
@@ -624,11 +708,21 @@ class _Emitter:
         self.depth -= 1
         self.loops.pop()
         self.s.emit(f"{cont}:")
+        if abs(step) > 1:
+            # With i32 start/stop, a next value outside i32 has crossed stop.
+            # Exhaust before the increment can wrap, preserving the last target.
+            overflow = self.s.new_reg("pred")
+            relation, limit = ("gt", _I32_MAX - step) if step > 0 else ("lt", _I32_MIN - step)
+            self.s.emit(f" setp.{relation}.s32 {overflow.name}, {ctr.name}, {limit};")
+            self.s.emit(f" @{overflow.name} bra {exhausted};")
         if step > 0:
             self.s.emit(f" add.s32 {ctr.name}, {ctr.name}, {step};")
         else:
             self.s.emit(f" sub.s32 {ctr.name}, {ctr.name}, {-step};")
         self.s.emit(f" bra {top};")
+        if node.orelse:
+            self.s.emit(f"{exhausted}:")
+            self.body(node.orelse)
         self.s.emit(f"{end}:")
 
     def visit_Break(self, node: ast.Break) -> None:
@@ -659,6 +753,17 @@ class _Emitter:
         pass
 
     def visit_Return(self, node: ast.Return) -> None:
+        context = getattr(self, 'helper_return', None)
+        if context is not None:
+            target, wanted, end = context
+            if node.value is None:
+                raise NotSupported('scalar helper return requires a value', node)
+            value, kind = self._eval(node.value)
+            if kind != wanted:
+                raise NotSupported(f'device helper returns {kind}, annotated {wanted}', node)
+            self._mov(target, value, kind)
+            self.s.emit(f' bra {end};')
+            return
         if node.value is not None:
             raise NotSupported("kernels don't return a value (write to an output array)", node)
         # A bare `return` is the standard CUDA early-out (`if i >= n: return`).
@@ -676,12 +781,14 @@ class _Emitter:
         elem = _resolve_type(call.args[0], self.names)
         count = _const_value(call.args[1])
         if not isinstance(elem, Scalar):
-            raise NotSupported("shared_array element type must be f32, i32 or u32", node)
-        if not isinstance(count, int) or count <= 0:
+            raise NotSupported("shared_array element type must be f32, i32, u32, i64 or u64", node)
+        if type(count) is not int or count <= 0:
             raise NotSupported("shared_array count must be a positive integer literal", node)
-        if elem.ptx in ("s64", "u64"):
-            raise NotSupported("shared_array currently requires a 32-bit element type", node)
-        self.s.smem_bytes += 4 * count
+        element_bytes = 8 if elem.ptx in ("s64", "u64") else 4
+        # Match declaration order and natural alignment, including inter-array
+        # padding, when enforcing the existing per-block static storage limit.
+        self.s.smem_bytes = ((self.s.smem_bytes + element_bytes - 1)
+                             // element_bytes * element_bytes + element_bytes * count)
         if self.s.smem_bytes > _SMEM_LIMIT:
             raise NotSupported(f"shared_array total {self.s.smem_bytes} bytes exceeds the "
                                f"{_SMEM_LIMIT}-byte static shared-memory limit", node)
@@ -712,6 +819,8 @@ class _Emitter:
             if bool(test.value) == when:
                 self.s.emit(f" bra {label};")
             return
+        if isinstance(test, ast.Compare) and len(test.ops) > 1:
+            return self._chain_jump(test, label, when)
         if isinstance(test, ast.Compare):
             pred, inverted = self._compare(test, branch=True)
             when = when != inverted
@@ -729,6 +838,89 @@ class _Emitter:
                     self.s.emit(f" setp.eq.{k} {pred.name}, {v.name}, {zero};")
                 when = not when
         self.s.emit(f" @{'' if when else '!'}{pred.name} bra {label};")
+
+    def _chain_jump(self, test: ast.Compare, label: str, when: bool) -> None:
+        """Evaluate each operand once and later operands only on a live path."""
+        graph = getattr(self.names, 'graph', None)
+        if graph is not None:
+            graph.note_comparison(self.names, self.fdef, test)
+        failed = self.s.new_label("chainfalse") if when else label
+        left = test.left
+        for operator, right in zip(test.ops, test.comparators):
+            a, ka, b, kb = self._pair(left, right, test)
+            saved = self.s.new_reg(kb)
+            self._mov(saved, b, kb)
+            pred, inverted = self._compare_values(a, ka, saved, kb, operator, test, branch=True)
+            self.s.emit(f" @{'' if inverted else '!'}{pred.name} bra {failed};")
+            # A pure literal keeps the existing adjacent comparison's contextual
+            # type rule. An expression keeps its one evaluated scalar snapshot.
+            left = right if _const_value(right) is not None else (saved, kb)
+        if when:
+            self.s.emit(f" bra {label};")
+            self.s.emit(f"{failed}:")
+
+    def _boolean_value(self, value, kind):
+        if kind == "pred":
+            return value
+        if kind in ("s64", "u64"):
+            zero, _ = self._lit_as(0, kind, self.fdef)
+            equal = self._wide_compare(value, zero, kind, "eq")
+        else:
+            equal = self.s.new_reg("pred")
+            zero = "0f00000000" if kind == "f32" else "0"
+            self.s.emit(f" setp.eq.{kind} {equal.name}, {value.name}, {zero};")
+        result = self.s.new_reg("pred")
+        self.s.emit(f" not.pred {result.name}, {equal.name};")
+        return result
+
+    def _boolean_expression(self, node):
+        result, done = self.s.new_reg("s32"), self.s.new_label("boolean")
+        self.s.emit(f" mov.s32 {result.name}, 0;")
+        self._jump(node, done, when=False)
+        self.s.emit(f" mov.s32 {result.name}, 1;")
+        self.s.emit(f"{done}:")
+        return self._boolean_value(result, "s32")
+
+    def _boolean_operands(self, node):
+        # Compile expression fragments to learn their fixed kinds without running
+        # user code. Emit each fragment only on its original live runtime path.
+        operands, kinds = [], set()
+        for operand in node.values:
+            literal = _const_value(operand)
+            if literal is not None:
+                operands.append((operand, literal, None, None))
+                continue
+            enclosing = self.s.lines
+            self.s.lines = []
+            try:
+                value, kind = self._eval(operand)
+                fragment = self.s.lines
+            finally:
+                self.s.lines = enclosing
+            kinds.add(kind)
+            operands.append((operand, None, (value, kind), fragment))
+        if len(kinds) > 1 or (kinds == {"pred"} and any(item[1] is not None for item in operands)):
+            raise NotSupported("and/or operands require one fixed scalar kind", node)
+        kind = next(iter(kinds)) if kinds else ("f32" if any(type(item[1]) is float for item in operands) else "s32")
+        result, done = self.s.new_reg(kind), self.s.new_label("booloperands")
+        for index, (operand, literal, compiled, fragment) in enumerate(operands):
+            if index:
+                truth = self._boolean_value(result, kind)
+                self.s.emit(f" @{'' if isinstance(node.op, ast.Or) else '!'}{truth.name} bra {done};")
+            if compiled is None:
+                value, _ = self._lit_as(literal, kind, operand)
+            else:
+                value, _ = compiled
+                self.s.lines.extend(fragment)
+            self._mov(result, value, kind)
+        self.s.emit(f"{done}:")
+        self._note_value(node, kind)
+        return result, kind
+
+    def _note_value(self, node, kind):
+        graph = getattr(self.names, 'graph', None)
+        if graph is not None:
+            graph.note_boolean(self.names, self.fdef, node, kind)
 
     def _mov(self, dst: _Reg, src: _Reg, kind: str) -> None:
         if dst.name == src.name:
@@ -754,13 +946,15 @@ class _Emitter:
             return r, r.kind
         if isinstance(node, ast.BinOp):
             return self._arith(node.op, node.left, node.right, node)
+        if isinstance(node, ast.Compare) and len(node.ops) > 1:
+            result = self._boolean_expression(node)
+            self._note_value(node, "pred")
+            return result, "pred"
         if isinstance(node, ast.Compare):
             pred, _ = self._compare(node, branch=False)
             return pred, "pred"
         if isinstance(node, ast.BoolOp):
-            raise NotSupported("'and'/'or' are only supported directly in an if/while condition "
-                               "(e.g. 'if a < b and c < d:'), not assigned to a variable or nested "
-                               "in another expression", node)
+            return self._boolean_operands(node)
         if isinstance(node, ast.UnaryOp):
             return self._unaryop(node)
         if isinstance(node, ast.Call):
@@ -772,8 +966,9 @@ class _Emitter:
             arr, addr = self._address(node)
             return self._load(arr, addr), arr.elem
         if isinstance(node, ast.Constant) and isinstance(node.value, bool):
-            raise NotSupported("bool constants are only supported as a whole if/while condition "
-                               "('while True:')", node)
+            value, kind = self._lit_as(int(node.value), "s32", node)
+            self._note_value(node, "pred")
+            return self._boolean_value(value, kind), "pred"
         raise NotSupported(f"unsupported expression: {type(node).__name__}", node)
 
     def _lit_as(self, v, want: str, node: ast.AST) -> tuple[_Reg, str]:
@@ -845,8 +1040,6 @@ class _Emitter:
             self._mixed(ka, kb, node)
         if ka == "pred":
             raise NotSupported("arithmetic on a comparison result", node)
-        if ka in ("s64", "u64") and mnem == "mul":
-            raise NotSupported("64-bit multiplication is not supported; no narrowing is performed", node)
         dst = into if into is not None and into.kind == ka else self.s.new_reg(ka)
         if ka == "f32":
             self.s.emit(f" {mnem}.f32 {dst.name}, {a.name}, {b.name};")
@@ -884,8 +1077,12 @@ class _Emitter:
                 literal -= 1 << bits
             return self._lit_as(literal, want, arg)
         value, kind = self._eval(arg)
+        if kind == "pred":
+            converted = self.s.new_reg("s32")
+            self.s.emit(f" selp.s32 {converted.name}, 1, 0, {value.name};")
+            value, kind = converted, "s32"
         if kind not in ("s32", "u32", "s64", "u64"):
-            raise NotSupported("typed integer casts require integer values, not floats or predicates", node)
+            raise NotSupported("typed integer casts require integer or Boolean values", node)
         result = self.s.new_reg(want)
         self.s.emit(f" cvt.{want}.{kind} {result.name}, {value.name};")
         return result, want
@@ -1048,11 +1245,15 @@ class _Emitter:
         if len(node.ops) != 1 or len(node.comparators) != 1:
             raise NotSupported("chained comparisons (a < b < c) are not supported", node)
         a, ka, b, kb = self._pair(node.left, node.comparators[0], node)
+        return self._compare_values(a, ka, b, kb, node.ops[0], node, branch)
+
+    def _compare_values(self, a, ka, b, kb, operator, node, branch):
+        """One typed relation, shared by ordinary and chained comparisons."""
         if ka != kb:
             raise NotSupported(f"comparing mismatched types ({ka} vs {kb})", node)
         if ka == "pred":
             raise NotSupported("comparing comparison results", node)
-        op = type(node.ops[0])
+        op = type(operator)
         cmp = {ast.Lt: "lt", ast.LtE: "le", ast.Gt: "gt", ast.GtE: "ge", ast.Eq: "eq",
                ast.NotEq: "ne"}.get(op)
         if cmp is None:
@@ -1075,8 +1276,9 @@ class _Emitter:
             self.s.emit(f" xor.b{64 if kind.endswith('64') else 32} {result.name}, {value.name}, {hex((1 << (64 if kind.endswith('64') else 32)) - 1)};")
             return result, kind
         if isinstance(node.op, ast.Not):
-            raise NotSupported("'not' is only supported in an if/while condition (it is "
-                               "compiled into the branch); write the inverse comparison instead", node)
+            result = self._boolean_expression(node)
+            self._note_value(node, "pred")
+            return result, "pred"
         if isinstance(node.op, ast.UAdd):
             return self._eval(node.operand)
         if not isinstance(node.op, ast.USub):
@@ -1103,10 +1305,21 @@ class _Emitter:
                 return self.names.devices.inline(self, node)
         fname = self.names.resolve(node.func)
         if fname is None:
+            graph = getattr(self.names, "graph", None)
+            target = graph.resolve(self.names, node.func) if graph is not None else None
+            if target is not None:
+                target_names, target_name = target
+                return target_names.devices.inline(self, node, name=target_name)
             raise NotSupported(f"call to {ast.unparse(node.func)!r} is not supported", node)
         if node.keywords:
             raise NotSupported(f"{fname}() keyword arguments are not supported", node)
         args, short = node.args, fname.split(".")[-1]
+        if fname == "bool":
+            if len(args) != 1:
+                raise NotSupported("bool() takes exactly one scalar argument", node)
+            result = self._boolean_value(*self._eval(args[0]))
+            self._note_value(node, "pred")
+            return result, "pred"
         if fname.startswith("pf.") and short in {"atomic_add", "atomic_exchange", "atomic_compare_exchange"}:
             from openassembler.pyfront.primitives import atomic
             return atomic(self,node,short)
@@ -1238,7 +1451,7 @@ class _Emitter:
             raise NotSupported(f"array index must be an int32 expression, not {idx_kind}", sub)
         if arr.space == "shared":
             off, addr = self.s.new_reg("u32"), self.s.new_reg("u32")
-            self.s.emit(f" shl.b32 {off.name}, {idx.name}, 2;")
+            self.s.emit(f" shl.b32 {off.name}, {idx.name}, {3 if element_bytes == 8 else 2};")
             self.s.emit(f" add.s32 {addr.name}, {off.name}, {arr.base.name};")
             return arr, f"[{addr.name}]"
         addr = self.s.new_reg("ptr")
@@ -1322,6 +1535,9 @@ def _check_shared_producers(fdef, names):
 
 def _compile_entry(fdef: ast.FunctionDef, names: _Names, arch: str) -> str:
     """One `.visible .entry` (no module header) for a kernel FunctionDef."""
+    graph = getattr(names, 'graph', None)
+    if graph is not None:
+        fdef = graph.static_values.fold(names, fdef)
     _check_shared_producers(fdef, names)
     if isinstance(fdef, ast.AsyncFunctionDef):
         raise NotSupported("async kernels are not supported", fdef)
@@ -1336,7 +1552,7 @@ def _compile_entry(fdef: ast.FunctionDef, names: _Names, arch: str) -> str:
     for arg in a.args:
         if arg.annotation is None:
             raise NotSupported(f"parameter {arg.arg!r} has no type annotation", fdef)
-        t = _resolve_type(arg.annotation, names)
+        t = _resolve_type(arg.annotation, names, allow_boolean=True)
         _ident(arg.arg, "parameter", arg)
         if isinstance(t, ArrayType):
             scope.params.append(("u64", arg.arg))
@@ -1344,8 +1560,9 @@ def _compile_entry(fdef: ast.FunctionDef, names: _Names, arch: str) -> str:
             from openassembler.pyfront.buffers import BufferType
             if isinstance(t,BufferType):scope.arrays[arg.arg].view=t
         else:
-            scope.params.append((t.ptx, arg.arg))
+            scope.params.append(("u8" if t.ptx == "pred" else t.ptx, arg.arg))
             scope.vars[arg.arg] = scope.new_reg(t.ptx)
+            if t.ptx == "pred":scope.boolean_inputs[arg.arg] = scope.new_reg("u32")
     _BarrierCheck(fdef, names).run()
     _Emitter(scope, names, fdef).body(fdef.body)
     return _render(fdef.name, scope)
@@ -1354,10 +1571,10 @@ def _compile_entry(fdef: ast.FunctionDef, names: _Names, arch: str) -> str:
 def _render(name: str, s: _Scope) -> str:
     param_list = ", ".join(f".param .{t} {n}" for t, n in s.params)
     out = [f".visible .entry {name}({param_list})\n{{"]
-    if s.wide_integer or any(a.view is not None for a in s.arrays.values()):
+    if s.boolean_inputs or s.wide_integer or any(a.view is not None for a in s.arrays.values()):
         contract = {"schema": 1, "kernel": name, "parameters": [
             {"name": pname, "kind": "array" if pname in s.arrays else "scalar",
-             "dtype": s.arrays[pname].elem if pname in s.arrays else ptx_t}
+             "dtype": s.arrays[pname].elem if pname in s.arrays else "bool" if pname in s.boolean_inputs else ptx_t}
             for ptx_t, pname in s.params]}
         out.insert(0, "// openassembler-pyfront-types-v1 " + json.dumps(contract, sort_keys=True, separators=(",", ":")))
     views=[(pname,s.arrays[pname].view) for _,pname in s.params if pname in s.arrays and s.arrays[pname].view is not None]
@@ -1365,7 +1582,9 @@ def _render(name: str, s: _Scope) -> str:
         from openassembler.pyfront.buffers import metadata
         out.insert(0,"// openassembler-pyfront-buffer-v1 "+json.dumps({"schema":1,"kernel":name,"buffers":[metadata(pname,view) for pname,view in views]},sort_keys=True,separators=(",",":")))
     for sym, ty, count in s.shared:
-        out.append(f" .shared .align 4 .{'f32' if ty == 'f32' else 'b32'} {sym}[{count}];")
+        element_bytes = 8 if ty in ("s64", "u64") else 4
+        storage_type = "b64" if element_bytes == 8 else "f32" if ty == "f32" else "b32"
+        out.append(f" .shared .align {element_bytes} .{storage_type} {sym}[{count}];")
     if s.n_p:
         out.append(f" .reg .pred %p<{s.n_p + 1}>;")
     if s.n_r:
@@ -1381,7 +1600,12 @@ def _render(name: str, s: _Scope) -> str:
             out.append(f" cvta.to.global.u64 {r.name}, {r.name};")
         else:
             r = s.vars[pname]
-            out.append(f" ld.param.{ptx_t if ptx_t in ('f32','s64','u64') else 'u32'} {r.name}, [{pname}];")
+            if pname in s.boolean_inputs:
+                loaded = s.boolean_inputs[pname]
+                out.append(f" ld.param.u8 {loaded.name}, [{pname}];")
+                out.append(f" setp.ne.u32 {r.name}, {loaded.name}, 0;")
+            else:
+                out.append(f" ld.param.{ptx_t if ptx_t in ('f32','s64','u64') else 'u32'} {r.name}, [{pname}];")
     out.extend(s.lines)
     out.append(f"{s.exit_label}:")
     out.append(" ret;\n}")
@@ -1426,7 +1650,7 @@ def _file_kernels(tree: ast.Module, names: _Names, path) -> list[ast.FunctionDef
     return out
 
 
-def compile_file(path: Path, arch: str = "sm_80") -> tuple[str, list[str]]:
+def compile_file(path: Path, arch: str = "sm_80", *, source_root=None) -> tuple[str, list[str]]:
     """Compile every top-level @kernel in `path` into ONE PTX module (one header, one
     .visible .entry per kernel, in file order) WITHOUT importing or executing the file.
     Returns (ptx, kernel names); ("", []) if the file has no @kernel. Errors are
@@ -1438,10 +1662,16 @@ def compile_file(path: Path, arch: str = "sm_80") -> tuple[str, list[str]]:
         kernels = _file_kernels(tree, names, path)
         if not kernels:
             return "", []
-        entries = [_compile_entry(k, names, arch) for k in kernels]
+        from .modules import SourceGraph
+        graph = SourceGraph(path, tree, names, source_root)
+        entries = []
+        for k in kernels:
+            graph.kernel = k.name
+            entries.append(_compile_entry(k, names, arch))
+        prefix = graph.prefix()
     except NotSupported as e:
         raise e.with_path(path) from None
-    return HEADER.format(arch=arch) + "\n".join(entries), [k.name for k in kernels]
+    return prefix + HEADER.format(arch=arch) + "\n".join(entries), [k.name for k in kernels]
 
 
 class KernelRef:
@@ -1452,6 +1682,7 @@ class KernelRef:
 
     def __init__(self, path: Path, fdef: ast.FunctionDef, names: _Names):
         self.path, self.fdef, self.names = path, fdef, names
+        self.source_root = None
         self.__name__ = fdef.name
 
     def __repr__(self) -> str:
@@ -1462,7 +1693,7 @@ class KernelRef:
                            "openassembler.pyfront.compile_kernel(...)")
 
 
-def find_kernel(path, entry: str | None) -> KernelRef:
+def find_kernel(path, entry: str | None, *, source_root=None) -> KernelRef:
     """Find the @kernel named `entry` in a .py file (or the only one, if entry is None)
     WITHOUT importing it -- same static scan as compile_file. Raises NotSupported if none,
     or several when entry is None (same "don't guess" policy as the rest of pyfront)."""
@@ -1482,7 +1713,9 @@ def find_kernel(path, entry: str | None) -> KernelRef:
                            f"have {list(kernels)}")
     else:
         (fdef,) = kernels.values()
-    return KernelRef(path, fdef, names)
+    reference = KernelRef(path, fdef, names)
+    reference.source_root = source_root
+    return reference
 
 
 def _live_source(fn) -> tuple[ast.FunctionDef, _Names, str | None]:
@@ -1511,16 +1744,24 @@ def _live_source(fn) -> tuple[ast.FunctionDef, _Names, str | None]:
     return fdef, _Names(mod), None
 
 
-def compile_kernel(fn, arch: str = "sm_80") -> str:
+def compile_kernel(fn, arch: str = "sm_80", *, source_root=None) -> str:
     """PTX (header + one .visible .entry) for one kernel: a @kernel-decorated function, a
     plain function, or a find_kernel() result. Byte-identical to the corresponding entry
     of compile_file(). Raises NotSupported for anything outside the module docstring's
     subset."""
     if isinstance(fn, KernelRef):
-        fdef, names, path = fn.fdef, fn.names, fn.path
+        reference = find_kernel(fn.path, fn.__name__, source_root=source_root or fn.source_root)
+        fdef, names, path = reference.fdef, reference.names, reference.path
+        source_root = reference.source_root
     else:
         fdef, names, path = _live_source(getattr(fn, "__wrapped__", fn))
     try:
+        if path is not None:
+            from .modules import SourceGraph
+            graph = SourceGraph(path, names.source_tree, names, source_root)
+            graph.kernel = fdef.name
+            entry = _compile_entry(fdef, names, arch)
+            return graph.prefix() + HEADER.format(arch=arch) + entry
         return HEADER.format(arch=arch) + _compile_entry(fdef, names, arch)
     except NotSupported as e:
         raise (e.with_path(path) if path else e) from None

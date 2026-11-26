@@ -49,7 +49,7 @@ def test_full_width_values_arrays_parameters_helpers_and_casts(case,level):
 
 
 @pytest.mark.parametrize('expression,diagnostic',[
-    ('x * x','64-bit multiplication'),('x / x','convert s64 to f32'),
+    ('x ** i64(2)','operator Pow'),('x / x','convert s64 to f32'),
     ('x // x','64-bit floor division'),('x % x','64-bit floor division'),
     ('x + float(1)','mixed-type'),('float(x)','convert s64 to f32'),
     ('i64(1.25)','integer values'),('u64(1.25)','integer values'),
@@ -63,9 +63,9 @@ def test_wide_unsupported_domains_reject_with_source(tmp_path,expression,diagnos
     assert error.value.path==str(path) and error.value.lineno==4
 
 
-def test_shared_wide_arrays_reject_and_typed_metadata_disambiguates_scalar_u64(tmp_path):
-    path=tmp_path/'bad.py';path.write_text('@kernel\ndef test():\n    a = shared_array(i64,4)\n')
-    with pytest.raises(NotSupported,match='32-bit element'):compile_file(path)
+def test_oversize_shared_wide_array_rejects_and_metadata_disambiguates_scalar_u64(tmp_path):
+    path=tmp_path/'bad.py';path.write_text('@kernel\ndef test():\n    a = shared_array(i64,6145)\n')
+    with pytest.raises(NotSupported,match='49152-byte static shared-memory limit'):compile_file(path)
     ptx=compile_kernel(find_kernel(ROOT/'data/pyfront_wide.py','unsigned'))
     marker='// openassembler-pyfront-types-v1 '
     contract=json.loads(next(line[len(marker):] for line in ptx.splitlines() if line.startswith(marker)))

@@ -35,7 +35,7 @@ def _kernel_names(ptx: str) -> list[str]:
 
 def compile_to_ptx_module(path: Path, *, arch: str = "sm_80", include_dirs: list[Path] | None = None,
                           extra_flags: list[str] | None = None, working_directory: Path | None = None,
-                          source_argument: str | None = None) -> tuple[str, list[str]]:
+                          source_argument: str | None = None, allow_device_library: bool = False) -> tuple[str, list[str]]:
     """Run `nvcc --ptx` on a .cu/.cuh/.cpp/.cc/.cxx file; return (ptx_text, every
     __global__ entry in it). The file is compiled as CUDA (`-x cu`) whatever its
     extension: nvcc treats .cpp as host-only C++ (where __global__ is undefined)
@@ -92,7 +92,7 @@ def compile_to_ptx_module(path: Path, *, arch: str = "sm_80", include_dirs: list
         if staged is not None:
             staged.unlink(missing_ok=True)
     names = _kernel_names(ptx)
-    if not names:
+    if not names and not allow_device_library:
         raise CppFrontendError(f"nvcc produced no __global__ kernels from {path} -- "
                                 "is the kernel only a template that's never instantiated?")
     return ptx, names

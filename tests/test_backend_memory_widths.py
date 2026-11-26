@@ -45,9 +45,9 @@ def test_exact_memory_bytes_and_predicate_control_flow(case, level):
     'st.global.v4.u16 [%dst],{%a,%b,%c,%d};',
     'st.global.release.u32 [%dst],%a;',
     'st.global.volatile.u32 [%dst],%a;',
-    'st.shared.u8 [%a],%a;',
+    'st.shared.v2.u8 [%a],{%a,%b};',
     'ld.global.acquire.u32 %a,[%src];',
-    'st.global.f64 [%dst],0f3f800000;',
+    'st.global.v2.f64 [%dst],{%wide,%wide};',
 ])
 def test_unsupported_width_ordering_and_operand_contracts_reject(instruction):
     text = CASES[0]['source'].replace('@%take ld.global.v2.b32 {%a,%b},[%src];', instruction)

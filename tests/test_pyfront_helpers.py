@@ -98,7 +98,7 @@ def add(x: i32) -> i32:
     ('def h(x: i32 = 1) -> i32:\n    return x', 'h(1)', 'without defaults'),
     ('def h(*, x: i32) -> i32:\n    return x', 'h(1)', 'plain positional'),
     ('def h(x: i32) -> i32:\n    x += 1', 'h(1)', 'terminal return'),
-    ('def h(x: i32) -> i32:\n    if x:\n        return 1\n    return 0', 'h(1)', 'scalar assignments'),
+    ('def h(x: i32) -> i32:\n    if x:\n        return 1', 'h(1)', 'every path'),
     ('def h(x: i32) -> i32:\n    return h(x)', 'h(1)', 'recursive device helper'),
     ('def h(x: i32) -> i32:\n    return g(x)\n@device\ndef g(x: i32) -> i32:\n    return h(x)', 'h(1)', 'h -> g -> h'),
     ('def h(x: i32) -> i32:\n    return x', 'h(1.0)', 'expected s32, got f32'),

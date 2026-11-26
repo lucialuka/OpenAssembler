@@ -1,0 +1,67 @@
+........................................................................ [ 82%]
+...........F...                                                          [100%]
+=================================== FAILURES ===================================
+_ test_unvalidated_modifiers_types_operand_shapes_and_predicates_reject[selp.b64 %r,0f3f800000,%b,%take;] _
+
+instruction = 'selp.b64 %r,0f3f800000,%b,%take;'
+
+    @pytest.mark.parametrize('instruction', [
+        'selp.ftz.b64 %r,%a,%b,%take;',
+        'selp.rn.f64 %r,%a,%b,%take;',
+        'selp.b16 %r,%a,%b,%take;',
+        'selp.v2.b64 %r,%a,%b,%take;',
+        'selp.b64 %r,%a,%b;',
+        'selp.b64 %r,{%a,%b},%b,%take;',
+        'selp.b64 %r,%missing,%b,%take;',
+        'selp.b64 %r,%a,%b,%missing;',
+        'selp.b64 %r,%a,%b,%a;',
+        'selp.b64 %r,0f3f800000,%b,%take;',
+        'add.f64 %r,%a,%b;',
+    ])
+    def test_unvalidated_modifiers_types_operand_shapes_and_predicates_reject(instruction):
+        case = next(c for c in CASES if c['name'] == 'b64_register')
+        source = case['source'].replace('selp.b64 %r,%a,%b,%take;', instruction)
+        with pytest.raises(ra.NotSupported):
+>           build.generate(parse_module(source).kernels['probe'], 'sm_80', 'safe')
+                           ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_backend_wide_select.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+openassembler/ptx/parse.py:455: in parse_module
+    kernel = _parse_body(name, _parameters(raw_params, name,attributes), body,
+openassembler/ptx/parse.py:497: in _parse_body
+    k.body.append(parse_instr(stmt, line))
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+openassembler/ptx/parse.py:428: in parse_instr
+    args = _literal_operands(op,mods,args,line)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+openassembler/ptx/parse.py:260: in _literal_operands
+    return[convert(value,index,dtype)for index,value in enumerate(args)]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = ImmF(bits=1065353216, width=32), index = 1, context = 'b64'
+
+    def convert(value,index,context):
+        if isinstance(value,Vec):
+            # Pack/unpack .b64 contains two .b32 source components.
+            component='b32'if op=='mov'and context=='b64'else context
+            return Vec(tuple(convert(part,index,component)for part in value.elems))
+        if isinstance(value,ImmI)and context in('f32','f64')and index>0 and not(op=='selp'and index==3):
+            raise SyntaxError(f'PTX line {line}: {op}.{context} requires a floating literal, not an integer literal')
+        if not isinstance(value,ImmF):return value
+        if (index==0 or op=='selp'and index==3 or op in('shl','shr')and index==2):
+            raise SyntaxError(f'PTX line {line}: floating literal is invalid at operand {index} of {op}')
+        if context=='f32':return ImmF(_literal_f32(value.bits),32)if value.width==64 else value
+        if context=='f64':
+            # A raw 0f literal retains its exact 32 bits for mov.f64: the
+            # observed wider move zero-extends them rather than converting.
+            return ImmF(value.bits,64)if op in('mov','st')and value.width==32 else value
+        if context in('b32','b64')and value.width==int(context[1:]):return value
+>       raise SyntaxError(f'PTX line {line}: floating literal width {value.width} is invalid for {op}.{context or "untyped"}')
+E       SyntaxError: PTX line 12: floating literal width 32 is invalid for selp.b64
+
+openassembler/ptx/parse.py:259: SyntaxError
+=========================== short test summary info ============================
+FAILED tests/test_backend_wide_select.py::test_unvalidated_modifiers_types_operand_shapes_and_predicates_reject[selp.b64 %r,0f3f800000,%b,%take;]
+1 failed, 86 passed in 4.60s

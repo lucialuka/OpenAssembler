@@ -1,0 +1,216 @@
+........................................................................ [ 46%]
+........................................................................ [ 92%]
+....F....F..                                                             [100%]
+=================================== FAILURES ===================================
+_ test_scalar_return_types_and_branch_complete_integer_conditions[safe-f32-f-values4] _
+
+dtype = 'f32', fmt = 'f', values = [-19.0, -1.0, -0.0, 0.0, 1.0, 19.0]
+level = 'safe'
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-635/test_scalar_return_types_and_b4')
+
+    @pytest.mark.parametrize('dtype,fmt,values',[
+     ('i32','i',[-19,-1,0,1,3,19]),('u32','I',[0,1,3,19,2147483648,4294967295]),
+     ('i64','q',[-19,-1,0,1,3,19]),('u64','Q',[0,1,3,19,1<<63,(1<<64)-1]),
+     ('f32','f',[-19.0,-1.0,-0.0,0.0,1.0,19.0]),
+    ])
+    @pytest.mark.parametrize('level',['safe','opt'])
+    def test_scalar_return_types_and_branch_complete_integer_conditions(dtype,fmt,values,level,tmp_path):
+     body=f'    if x:\n        return {dtype}(1)\n    else:\n        return {dtype}(3)\n'
+     source=tmp_path/'return.py';source.write_text(HEADER+f'@device\ndef h(x:{dtype})->{dtype}:\n'+body+f'@kernel\ndef k(a:Array({dtype}),out:Array({dtype})):\n    i=tid_x()\n    out[i]=h(a[i])\n')
+>    text,_=compile_file(source);graph=contract_from_ptx(text);assert graph and graph['helpers'];validate_sources(source,graph)
+            ^^^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_helper_returns/promotion/test_pyfront_helper_returns.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:1549: in compile_file
+    raise e.with_path(path) from None
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:1546: in compile_file
+    entries.append(_compile_entry(k, names, arch))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:1448: in _compile_entry
+    _Emitter(scope, names, fdef).body(fdef.body)
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:507: in body
+    self.stmt(st)
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:516: in stmt
+    fn(node)
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:523: in visit_Assign
+    self._store(target, *self._eval(node.value))
+                         ^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:859: in _eval
+    return self._call(node)
+           ^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:1193: in _call
+    return self.names.devices.inline(self, node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-helpers.py:218: in inline
+    raise error.with_path(self.names.module_path) from None
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-helpers.py:215: in inline
+    fn, kinds, result_kind, body = self._signature(name)
+                                   ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.helpers.DeviceFunctions object at 0x106972000>
+name = 'h'
+
+    def _signature(self, name):
+        graph = getattr(self.names, 'graph', None)
+        signature_key = (name, graph.kernel) if graph is not None else name
+        if signature_key in self.signatures:
+            return self.signatures[signature_key]
+        fn = self.definitions[name]
+        graph = getattr(self.names, 'graph', None)
+        if graph is not None:
+            fn = graph.static_values.fold(self.names, fn)
+        a = fn.args
+        if isinstance(fn, ast.AsyncFunctionDef):
+            raise c.NotSupported('async device helpers are not supported', fn)
+        if a.vararg or a.kwarg or a.kwonlyargs or a.posonlyargs or a.defaults:
+            raise c.NotSupported('device helpers require plain positional parameters without defaults', fn)
+        if len({arg.arg for arg in a.args}) != len(a.args):
+            raise c.NotSupported('duplicate device helper parameter names', fn)
+        kinds = []
+        for arg in a.args:
+            if arg.annotation is None:
+                raise c.NotSupported(f'device helper parameter {arg.arg!r} needs a scalar annotation', arg)
+            ty = c._resolve_type(arg.annotation, self.names)
+            if not isinstance(ty, Scalar):
+                raise c.NotSupported('device helpers accept scalar parameters only', arg)
+            kinds.append(ty.ptx)
+        if fn.returns is None:
+            raise c.NotSupported('device helpers need an explicit scalar return annotation', fn)
+        result = c._resolve_type(fn.returns, self.names)
+        if not isinstance(result, Scalar):
+            raise c.NotSupported('device helpers return scalars only', fn)
+        body = fn.body
+        if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) \
+                and isinstance(body[0].value.value, str):
+            body = body[1:]
+        if not body:
+            raise c.NotSupported('device helpers require scalar return paths', fn)
+        locals_ = {arg.arg for arg in a.args} | {
+            node.id for node in ast.walk(fn)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)}
+        for st in body:
+            for node in ast.walk(st):
+                if isinstance(node, ast.Subscript):
+                    raise c.NotSupported('device helpers cannot access memory', node)
+                if isinstance(node, ast.Call):
+                    root = node.func
+                    while isinstance(root, ast.Attribute):
+                        root = root.value
+                    if isinstance(root, ast.Name) and root.id in locals_:
+                        raise c.NotSupported(f'call target {root.id!r} is a local value', node)
+                    target = self.names.resolve(node.func)
+                    if target and target.startswith('pf.') and target[3:] not in c._MATH1 | set(c._INT_TYPES):
+>                       raise c.NotSupported('device helpers allow only pure scalar calls', node)
+E                       openassembler.pyfront.compile.NotSupported: device helpers allow only pure scalar calls (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-635/test_scalar_return_types_and_b4/return.py, line 6)
+
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-helpers.py:187: NotSupported
+_ test_scalar_return_types_and_branch_complete_integer_conditions[opt-f32-f-values4] _
+
+dtype = 'f32', fmt = 'f', values = [-19.0, -1.0, -0.0, 0.0, 1.0, 19.0]
+level = 'opt'
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-635/test_scalar_return_types_and_b9')
+
+    @pytest.mark.parametrize('dtype,fmt,values',[
+     ('i32','i',[-19,-1,0,1,3,19]),('u32','I',[0,1,3,19,2147483648,4294967295]),
+     ('i64','q',[-19,-1,0,1,3,19]),('u64','Q',[0,1,3,19,1<<63,(1<<64)-1]),
+     ('f32','f',[-19.0,-1.0,-0.0,0.0,1.0,19.0]),
+    ])
+    @pytest.mark.parametrize('level',['safe','opt'])
+    def test_scalar_return_types_and_branch_complete_integer_conditions(dtype,fmt,values,level,tmp_path):
+     body=f'    if x:\n        return {dtype}(1)\n    else:\n        return {dtype}(3)\n'
+     source=tmp_path/'return.py';source.write_text(HEADER+f'@device\ndef h(x:{dtype})->{dtype}:\n'+body+f'@kernel\ndef k(a:Array({dtype}),out:Array({dtype})):\n    i=tid_x()\n    out[i]=h(a[i])\n')
+>    text,_=compile_file(source);graph=contract_from_ptx(text);assert graph and graph['helpers'];validate_sources(source,graph)
+            ^^^^^^^^^^^^^^^^^^^^
+
+compiler_exp/gap_closure/python_helper_returns/promotion/test_pyfront_helper_returns.py:57: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:1549: in compile_file
+    raise e.with_path(path) from None
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:1546: in compile_file
+    entries.append(_compile_entry(k, names, arch))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:1448: in _compile_entry
+    _Emitter(scope, names, fdef).body(fdef.body)
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:507: in body
+    self.stmt(st)
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:516: in stmt
+    fn(node)
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:523: in visit_Assign
+    self._store(target, *self._eval(node.value))
+                         ^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:859: in _eval
+    return self._call(node)
+           ^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-pyfront.py:1193: in _call
+    return self.names.devices.inline(self, node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-helpers.py:218: in inline
+    raise error.with_path(self.names.module_path) from None
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-helpers.py:215: in inline
+    fn, kinds, result_kind, body = self._signature(name)
+                                   ^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <openassembler.pyfront.helpers.DeviceFunctions object at 0x104f4eb70>
+name = 'h'
+
+    def _signature(self, name):
+        graph = getattr(self.names, 'graph', None)
+        signature_key = (name, graph.kernel) if graph is not None else name
+        if signature_key in self.signatures:
+            return self.signatures[signature_key]
+        fn = self.definitions[name]
+        graph = getattr(self.names, 'graph', None)
+        if graph is not None:
+            fn = graph.static_values.fold(self.names, fn)
+        a = fn.args
+        if isinstance(fn, ast.AsyncFunctionDef):
+            raise c.NotSupported('async device helpers are not supported', fn)
+        if a.vararg or a.kwarg or a.kwonlyargs or a.posonlyargs or a.defaults:
+            raise c.NotSupported('device helpers require plain positional parameters without defaults', fn)
+        if len({arg.arg for arg in a.args}) != len(a.args):
+            raise c.NotSupported('duplicate device helper parameter names', fn)
+        kinds = []
+        for arg in a.args:
+            if arg.annotation is None:
+                raise c.NotSupported(f'device helper parameter {arg.arg!r} needs a scalar annotation', arg)
+            ty = c._resolve_type(arg.annotation, self.names)
+            if not isinstance(ty, Scalar):
+                raise c.NotSupported('device helpers accept scalar parameters only', arg)
+            kinds.append(ty.ptx)
+        if fn.returns is None:
+            raise c.NotSupported('device helpers need an explicit scalar return annotation', fn)
+        result = c._resolve_type(fn.returns, self.names)
+        if not isinstance(result, Scalar):
+            raise c.NotSupported('device helpers return scalars only', fn)
+        body = fn.body
+        if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) \
+                and isinstance(body[0].value.value, str):
+            body = body[1:]
+        if not body:
+            raise c.NotSupported('device helpers require scalar return paths', fn)
+        locals_ = {arg.arg for arg in a.args} | {
+            node.id for node in ast.walk(fn)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)}
+        for st in body:
+            for node in ast.walk(st):
+                if isinstance(node, ast.Subscript):
+                    raise c.NotSupported('device helpers cannot access memory', node)
+                if isinstance(node, ast.Call):
+                    root = node.func
+                    while isinstance(root, ast.Attribute):
+                        root = root.value
+                    if isinstance(root, ast.Name) and root.id in locals_:
+                        raise c.NotSupported(f'call target {root.id!r} is a local value', node)
+                    target = self.names.resolve(node.func)
+                    if target and target.startswith('pf.') and target[3:] not in c._MATH1 | set(c._INT_TYPES):
+>                       raise c.NotSupported('device helpers allow only pure scalar calls', node)
+E                       openassembler.pyfront.compile.NotSupported: device helpers allow only pure scalar calls (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-635/test_scalar_return_types_and_b9/return.py, line 6)
+
+compiler_exp/gap_closure/python_helper_returns/promotion/candidate-helpers.py:187: NotSupported
+=========================== short test summary info ============================
+FAILED compiler_exp/gap_closure/python_helper_returns/promotion/test_pyfront_helper_returns.py::test_scalar_return_types_and_branch_complete_integer_conditions[safe-f32-f-values4]
+FAILED compiler_exp/gap_closure/python_helper_returns/promotion/test_pyfront_helper_returns.py::test_scalar_return_types_and_branch_complete_integer_conditions[opt-f32-f-values4]
+2 failed, 154 passed in 13.12s

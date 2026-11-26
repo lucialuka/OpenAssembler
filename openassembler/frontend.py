@@ -20,16 +20,16 @@ class FrontendError(Exception):
     pass
 
 
-def _python_module(path: Path, arch: str) -> tuple[str, list[str], list[str]]:
+def _python_module(path: Path, arch: str, source_root=None) -> tuple[str, list[str], list[str]]:
     """Statically compile all supported @kernel definitions; never import user code."""
     from openassembler.pyfront.compile import compile_file
-    ptx, names = compile_file(path, arch)
+    ptx, names = compile_file(path, arch, source_root=source_root)
     return ptx, list(names), []
 
 
 def to_ptx_module(path: Path, *, arch: str, include_dirs: list[Path] | None = None,
                   nvcc_flags: list[str] | None = None, working_directory: Path | None = None,
-                  source_argument: str | None = None) -> tuple[str, list[str], list[str]]:
+                  source_argument: str | None = None, python_source_root: Path | None = None) -> tuple[str, list[str], list[str]]:
     """(ptx_text, kernel names in source order, notes). Raises FrontendError for an
     unsupported extension; the frontends' own errors (pyfront.NotSupported,
     cppfront.CppFrontendError) propagate unchanged for the caller to report."""
@@ -40,7 +40,7 @@ def to_ptx_module(path: Path, *, arch: str, include_dirs: list[Path] | None = No
         text = path.read_text()
         return text, _kernel_names(text), []
     if suf in PY_EXTS:
-        return _python_module(path, arch)
+        return _python_module(path, arch, python_source_root)
     if suf in CU_EXTS or suf in CPP_EXTS:
         from openassembler.cppfront import compile_to_ptx_module
 

@@ -14,6 +14,28 @@ The scalar compiler uses virtual values, liveness, stable homes for repeated/gua
 
 Allocation is an implemented correctness/resource feature; its speed contribution was not independently isolated from instruction selection and scheduling. Later November 6 alias-binding and scoreboard repairs are separate from the original allocator design.
 
+The [November 23 atomic-ordering investigation](../../compiler/gaps-atomics.md)
+also repairs branch-local lazy pointer materialization and definition-time
+snapshots for wide products with mutable operands. Independent counterexamples
+fail the original compiler and pass normal/poisoned execution and A100 controls.
+These are value-lifetime repairs, with no isolated speed claim.
+
+The [bounded spill extension](../../compiler/gaps-spilling.md) adds private
+slot/reload/store semantics when ordinary allocation exhausts or an explicit
+register limit requires them. Separate A100 controls validate guarded loop
+values, static-local coexistence, actual registers and frame reservations.
+The subsequent extension validates entire aligned pairs/quads and predicates,
+including self-guarded/negated loop updates, with another 320 A100 launches.
+Slot reuse and general occupancy policy selection remain open.
+
+The subsequent [virtual pressure pass](../../compiler/gaps-spilling.md#pressure-aware-virtual-scheduling)
+compares a reordered allocation only after ordinary pressure requires spills.
+It preserves guards, dependency edges, fixed boundaries and source load order,
+and admits only fewer slots with non-increased per-block local transfers/frame.
+Independent A100 controls retain full bytes and paired resident intervals;
+host code-generation cost is measured separately and can increase even when
+the old executable is retained. General occupancy policy remains open.
+
 ## Method and validity checks
 
 Compare the PTX interpreter and poisoned-register SASS execution on branching/loop fixtures, validate consecutive pairs/quads, inspect declared counts and run selected kernels on A100. A lower count alone does not select the fastest kernel: spills, lifetime, occupancy and operand collection interact.
@@ -36,4 +58,6 @@ The final command is a compiler/interpreter check, not a claim about an arbitrar
 
 ## What remains open
 
-Spill handling, general-purpose inter-block liveness and larger model kernels need further coverage. Retain all implicit register readers when optimizing vector/tensor groups.
+Slot reuse, cross-region pressure scheduling, occupancy policies and larger model
+kernels need further coverage. Retain all implicit register readers when
+optimizing vector/tensor groups.

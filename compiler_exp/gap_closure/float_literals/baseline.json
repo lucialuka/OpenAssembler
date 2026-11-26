@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "passed": true,
+  "gap": "G11",
+  "scope": "Toolkit accepts valid decimal operands which OA parses as variable names; code-generation counterexample, no GPU numerical claim",
+  "source_sha256": "153497f9681ed060e4644339f4fb1d1ba2b1dba25102fa27aecd1e9cf6279e2c",
+  "reference_sha256": "0c0e9b9bd8a7c5ece44fb0d06cb9db1a7672a2e78757d55e77585684ffc2a464",
+  "parsed_operands": {
+    "0.0": "Var",
+    "1.5": "Var",
+    "1e-3": "Var"
+  },
+  "oa_failure": {
+    "type": "NotSupported",
+    "message": "PTX line 9 (fma.rn.f32): read of undefined/special 1.5"
+  },
+  "compiler_hashes": {
+    "openassembler/ptx/parse.py": "2baa9381e29f6adf386728521ce7a3b23d365d59f3e32617212f5c60be12c508",
+    "openassembler/backend/ra.py": "e77fc21e3277aa1c4d2b8d8760411eaff1d0e4445d9438f93755314df7db35ce"
+  },
+  "primary_spec": {
+    "url": "https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#floating-point-constants",
+    "quote": "Each 64-bit floating-point constant is converted to the appropriate floating-point size based on the data or instruction type at its use.",
+    "implication": "Decimal literals have binary64 representation before use-site conversion; parsing directly as binary32 would lose the specified two-stage rounding."
+  }
+}

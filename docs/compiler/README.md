@@ -12,13 +12,34 @@ as an implemented OA operation.
   NVCC flags, generated inputs, dependency hashes and remote relocation.
 - [Pointer parameter metadata](gaps-parameter-abi.md): global/generic pointer
   annotations, scalar slot layout and launch-alignment/ownership checks.
-- [Relaxed GPU atomics](gaps-atomics.md): 32-bit global RMW/reduction semantics
-  with multi-block contention and old-value return validation.
+- [Native atomics and bounded ordering](gaps-atomics.md): 32-bit global RMW,
+  GPU acquire/release and CTA shared operations with independent hardware gates.
+- [Typed Python atomic primitives](gaps-python-primitives.md): old-value returns,
+  nested effects, checked buffer indices and convergence diagnostics.
+- [Full-warp shuffle modes](gaps-collectives.md): indexed/up/down exchanges,
+  reconvergence, aliased operands and explicit participation limits.
+- [Static local storage](gaps-storage.md): per-thread frames, scalar32 access,
+  donor-independent metadata and exact A100 resource/ownership gates.
+- [Register and predicate spilling](gaps-spilling.md): private slots, aligned
+  pairs/quads, guarded values, virtual pressure scheduling and bounded
+  explicit/automatic pressure handling with separate kernel/compiler cost gates.
 - [Checked shaped buffers](gaps-buffers.md): explicit layouts, bounds behavior
   and validated storage bindings.
 - [Wide Python integer types](gaps-python-types.md) and
   [wide scalar lowerings](gaps-wide.md): wrapping integer contracts,
   shifts/comparisons, typed verification and source/hardware gates.
+- [Floating literal contexts](gaps-wide.md#decimal-and-raw-floating-literal-contexts):
+  binary64 decimal representation, use conversion, raw payload/width behavior
+  and independent context/rounding/A100 gates.
+- [Typed constant expressions](gaps-wide.md#typed-scalar-operand-constant-expressions):
+  integer precedence/casts and binary64 intermediate rounding, with explicit
+  unresolved type/exception diagnostics and retained failed hardware controls.
+- [Scalar 64-bit selection](gaps-wide.md#scalar-64-bit-conditional-selection):
+  integer/FP64 bit copies, aliases/guards/negated predicates, parameter/immediate
+  snapshots and original PTX/CUDA A100 controls.
+- [Low64 integer products](gaps-wide.md#low-64-bit-integer-multiplication):
+  PTX/CUDA low products and Python i64/u64 multiplication, exact wrapping,
+  aliases/guards, helpers/loops/casts and original-source A100 controls.
 - [Optimizer policy and state](gaps-optimizers.md): SGD momentum/Nesterov,
   AMSGrad/maximize, exact options and resumed trajectory validation.
 
@@ -26,14 +47,29 @@ as an implemented OA operation.
   bounded repairs and explicitly remaining work.
 - [Exact-division verification](gaps-verification.md): hardware-isolated FCHK
   repair and deterministic emulator regressions.
-- [Typed device helpers](gaps-python.md): statically inlined same-file scalar
-  helpers with explicit type/effect limits.
+- [Typed device helpers](gaps-python.md): static same-file/local-package scalar
+  specialization, exact source/diagnostic/dependency custody and explicit effect limits.
+- [Direct scalar PTX device calls and source libraries](gaps-device-functions.md):
+  static specialization, lexical slots, deterministic module resolution, per-unit
+  dependencies, local resources and executable custody.
+- [Static local-package Python helper graphs](gaps-python.md#static-local-package-device-helpers):
+  aliases/relative imports/re-exports, defining-module scalar specialization,
+  original diagnostics and exact local/remote source ownership.
+- [Explicit static numeric and tuple values](gaps-static-values.md): original Final
+  declarations, bounded arithmetic/index/slice/len, defining-module specialization
+  and exact source/value/dependency/native ownership.
+- [Finite static tuple loops](gaps-static-loops.md): empty/target/break/continue/
+  nested/exhaustion semantics, numeric type/convergence limits, exact original
+  source and loop-value ownership.
+- [Pure scalar helper returns](gaps-helper-returns.md): original return-path
+  completeness, live-path initialization, caller isolation and native source ownership.
 - [Compilation attribution](gaps-measurement.md): source/cache/worker phases,
   cold/hit evidence and remaining measurement boundaries.
 - [Policy continuity](gaps-continuity.md): all installed policy binaries checked
   before rebinding compiler identities after reporting changes.
-- [Global memory and predicate assignments](gaps-memory.md): byte/halfword/64-bit
-  stores, vector widths, predicate moves and immutable value snapshots.
+- [Global/shared memory and predicate assignments](gaps-memory.md): byte/halfword/64-bit
+  global stores, scalar shared loads/stores, vector widths, guarded predicates,
+  immutable snapshots and a hardware-validated shared64 barrier gap.
 - [Repeated kernel profiling](gaps-profiling.md): optional repeated audits,
   per-contract distributions/resources and separately labeled whole-step times.
 
@@ -47,11 +83,15 @@ as an implemented OA operation.
   Adam/AdamW AMSGrad/maximize, complete direct state and resume gates.
 - [Complete owned-state checkpoints](gaps-checkpoints.md): parameters/buffers,
   optimizer/RNG/application state, atomic loading and interrupted resume.
+- [Explicit bounded decode specialization](gaps-decode.md): guarded exact-length
+  misses, builder budgets, native cache ownership and full A100 transitions.
 
 - [Semantic acceptance and diagnostics](semantic-acceptance.md): November 19
   saturation/FTZ correctness repairs, explicit scalar contracts and source errors.
-- [Cross-stage scalar contract ledger](gaps-contracts.md): 426 exact forms,
-  operand variants, stage rejections and a separate memory-width matrix.
+- [Cross-stage scalar contract ledger](gaps-contracts.md): versioned forms,
+  operand variants, stage rejections and a separate memory-width matrix; the
+  [latest local-storage ledger](../../compiler_exp/gap_closure/local_storage/ledger-local-20261123.json)
+  records 553 declarations with explicit unexecuted stages.
 - [Coverage priorities and independent matrix](coverage-priorities.md): frozen
   CPU evidence, current bounds, open custom-kernel/model/training work and gates.
 
@@ -75,3 +115,42 @@ Coverage is a property of an explicit workload and input domain. Source discover
 successful compilation, functional emulation, hardware correctness and performance
 are separate evidence states. This program does not claim arbitrary repositories,
 all future inputs, or universal speed superiority are already supported.
+
+The subsequent [runtime loop-control cycle](gaps-range-control.md#original-source-production-extension)
+fixes finite i32 range-counter wrap and preserves runtime range/while else,
+nearest-loop exits, source/initialization/convergence and native ownership.
+The retained initial toolkit/native divergence has a separate minimized study.
+
+[Typed condition chains](gaps-comparison-chains.md) now preserve single-evaluation/
+short-circuit effects, pairwise literal types, numeric special-value truth and
+original expression/source/native ownership. Their final original-source gate
+passes 2,400 A100 launches; first-class Boolean values remain separate work.
+
+[Boolean values](gaps-boolean-values.md) now preserve operand-returning lazy
+and/or, contextual literals, explicit truth/conversion and original source/value
+ownership. Actual A100 failures led to a control-flow predicate-readiness repair;
+Boolean ABI and mixed-type unions remain separate work.
+
+The subsequent [Boolean ABI study](gaps-boolean-abi.md) establishes the original
+scalar/array/helper and byte-parameter admission boundary. Complete physical ABI
+and hardware integration remain required.
+
+[Logical Boolean helper signatures](gaps-boolean-helpers.md) now carry predicate
+arguments/returns through pure static expansion, with exact caller/return/source
+ownership and a 2,400-launch independent A100 gate. Boolean physical launch and
+storage contracts remain in the separate [ABI study](gaps-boolean-abi.md).
+
+[Narrow scalar entry ABI](gaps-narrow-parameters.md) now coordinates byte/halfword
+slots and extension across parser, both selectors, verifier and public launch
+bindings. Its original-source A100 gate passes 14,400 launches plus 240 explicit
+run-spec launches. Logical Python Boolean physical launch/storage remains a
+subsequent frontend/storage contract.
+
+[Logical Boolean kernel parameters](gaps-boolean-parameters.md) now preserve
+predicate bodies, canonical byte launch values and explicit source/manifest/native
+roles. Original-source A100 and actual public Boolean run-spec gates pass;
+Boolean Array/Buffer/shared storage remains separate work.
+
+The next [Boolean storage study](gaps-boolean-storage.md) retains three original
+Array/Buffer/shared rejections and defines independent canonical byte-storage,
+host-buffer/shape/safety and shared-convergence gates before implementation.

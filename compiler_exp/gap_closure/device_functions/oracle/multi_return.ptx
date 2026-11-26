@@ -1,0 +1,10 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.func (.param .b32 a,.param .b32 b) helper(.param .b32 x){.reg .u32 %x,%y;ld.param.u32 %x,[x];add.u32 %y,%x,7;st.param.b32 [a],%x;st.param.b32 [b],%y;ret;}
+.visible .entry probe(.param .u64 out,.param .u64 input,.param .u32 n){
+.reg .u64 %out,%in,%off,%src,%dst,%wide,%result;.reg .u32 %t,%c,%i,%n,%lo,%hi;.reg .pred %active,%take;
+ld.param.u64 %out,[out];ld.param.u64 %in,[input];ld.param.u32 %n,[n];
+mov.u32 %t,%tid.x;mov.u32 %c,%ctaid.x;mad.lo.u32 %i,%c,128,%t;setp.lt.u32 %active,%i,%n;
+mul.wide.u32 %off,%i,8;add.u64 %src,%in,%off;add.u64 %dst,%out,%off;ld.global.b64 %wide,[%src];mov.b64 {%lo,%hi},%wide;
+{.param .b32 a;.param .b32 b;.param .b32 x;st.param.b32 [x],%lo;call.uni (a,b),helper,(x);ld.param.b32 %lo,[a];ld.param.b32 %hi,[b];}mov.b64 %result,{%lo,%hi};@%active st.global.b64 [%dst],%result;ret;}

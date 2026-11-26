@@ -1,0 +1,51 @@
+Traceback (most recent call last):
+  File "/Users/lucasfang/Desktop/OpenAssembler/compiler_exp/gap_closure/python_helper_returns/probe.py", line 36, in <module>
+    path=Path(temp)/'normalized.py';path.write_text(normalized);text,names=compile_file(path);module=parse_module(text)
+                                                                           ^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 1538, in compile_file
+    raise e.with_path(path) from None
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 1535, in compile_file
+    entries.append(_compile_entry(k, names, arch))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 1437, in _compile_entry
+    _Emitter(scope, names, fdef).body(fdef.body)
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 507, in body
+    self.stmt(st)
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 516, in stmt
+    fn(node)
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 562, in visit_If
+    self.body(node.body)
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 507, in body
+    self.stmt(st)
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 516, in stmt
+    fn(node)
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 523, in visit_Assign
+    self._store(target, *self._eval(node.value))
+                         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 848, in _eval
+    return self._call(node)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/compile.py", line 1182, in _call
+    return self.names.devices.inline(self, node)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/helpers.py", line 212, in inline
+    raise error.with_path(self.names.module_path) from None
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/helpers.py", line 209, in inline
+    fn, kinds, result_kind, body = self._signature(name)
+                                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/helpers.py", line 189, in _signature
+    initialized = flow.block(body[:-1], flow.parameters)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/helpers.py", line 72, in block
+    initialized = self.block(st.body, initialized, loop_depth) & self.block(st.orelse, initialized, loop_depth)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/helpers.py", line 103, in block
+    self.block(st.body, inner, loop_depth + 1)
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/helpers.py", line 72, in block
+    initialized = self.block(st.body, initialized, loop_depth) & self.block(st.orelse, initialized, loop_depth)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/helpers.py", line 68, in block
+    self.expr(st.target, initialized)
+  File "/Users/lucasfang/Desktop/OpenAssembler/openassembler/pyfront/helpers.py", line 50, in expr
+    raise c.NotSupported(f'device helper local {expr.id!r} may be uninitialized or captured', expr)
+openassembler.pyfront.compile.NotSupported: device helper local 'result' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-helper-return-zs_m95an/normalized.py, line 32)

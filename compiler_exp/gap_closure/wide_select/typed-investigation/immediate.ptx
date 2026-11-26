@@ -1,0 +1,11 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.entry probe(.param .u64 out,.param .u64 input,.param .u32 n){
+.reg .u64 %out,%in,%off,%src,%dst;.reg .f64 %a,%b,%r;.reg .u32 %i,%n,%lo;.reg .pred %take,%writer,%active;
+ld.param.u64 %out,[out];ld.param.u64 %in,[input];ld.param.u32 %n,[n];mov.u32 %i,%tid.x;
+mul.wide.u32 %off,%i,16;add.u64 %src,%in,%off;ld.global.b64 %a,[%src];ld.global.b64 %b,[%src+8];
+and.b32 %lo,%i,1;setp.ne.u32 %take,%lo,0;and.b32 %lo,%i,2;setp.ne.u32 %writer,%lo,0;
+mov.b64 %r,0xdeadbeef13579bdf;selp.f64 %r,%a,0dfff8123456789abc,%take;
+mov.b64 %a,0;mov.b64 %b,0;
+mul.wide.u32 %off,%i,8;add.u64 %dst,%out,%off;setp.lt.u32 %active,%i,%n;@%active st.global.b64 [%dst],%r;ret;}

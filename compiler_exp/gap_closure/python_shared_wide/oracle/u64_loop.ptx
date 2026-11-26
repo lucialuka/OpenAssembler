@@ -1,0 +1,70 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"u64_loop","parameters":[{"dtype":"u64","kind":"array","name":"a"},{"dtype":"u64","kind":"array","name":"out"},{"dtype":"u64","kind":"scalar","name":"delta"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry u64_loop(.param .u64 a, .param .u64 out, .param .u64 delta, .param .s32 n)
+{
+ .shared .align 8 .b64 __smem_shared[128];
+ .reg .pred %p<3>;
+ .reg .b32 %r<24>;
+ .reg .b64 %rd<12>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u64 %rd3, [delta];
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, __smem_shared;
+ mov.u32 %r3, %tid.x;
+ mov.u32 %r4, %r3;
+ mov.u32 %r5, %ctaid.x;
+ mov.s32 %r6, 128;
+ mul.lo.s32 %r7, %r5, %r6;
+ add.s32 %r8, %r7, %r4;
+ mov.u32 %r9, %r8;
+ mul.wide.u32 %rd4, %r9, 8;
+ add.s64 %rd4, %rd1, %rd4;
+ ld.global.u64 %rd5, [%rd4];
+ shl.b32 %r10, %r4, 3;
+ add.s32 %r11, %r10, %r2;
+ st.shared.u64 [%r11], %rd5;
+ bar.sync 0;
+ mul.wide.u32 %rd6, %r9, 8;
+ add.s64 %rd6, %rd1, %rd6;
+ ld.global.u64 %rd7, [%rd6];
+ mov.b64 %rd8, %rd7;
+ mov.s32 %r12, 0;
+ mov.s32 %r13, 3;
+ mov.u32 %r14, %r12;
+ mov.u32 %r15, %r13;
+L_loop_1:
+ setp.ge.s32 %p1, %r14, %r15;
+ @%p1 bra L_loopend_3;
+ mov.s32 %r16, 64;
+ xor.b32 %r17, %r4, %r16;
+ shl.b32 %r18, %r17, 3;
+ add.s32 %r19, %r18, %r2;
+ ld.shared.u64 %rd9, [%r19];
+ add.u64 %rd10, %rd9, %rd3;
+ mov.b64 %rd8, %rd10;
+ bar.sync 0;
+ shl.b32 %r20, %r4, 3;
+ add.s32 %r21, %r20, %r2;
+ st.shared.u64 [%r21], %rd8;
+ bar.sync 0;
+L_next_2:
+ add.s32 %r14, %r14, 1;
+ bra L_loop_1;
+L_loopend_3:
+ setp.lt.s32 %p2, %r9, %r1;
+ @!%p2 bra L_endif_4;
+ mov.s32 %r22, 4;
+ mul.lo.s32 %r23, %r9, %r22;
+ mul.wide.u32 %rd11, %r23, 8;
+ add.s64 %rd11, %rd2, %rd11;
+ st.global.u64 [%rd11], %rd8;
+L_endif_4:
+L_exit:
+ ret;
+}

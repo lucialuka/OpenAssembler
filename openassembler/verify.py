@@ -36,10 +36,10 @@ from openassembler.ptx.interp import Launch as InterpLaunch
 from openassembler.ptx.interp import run_kernel
 from openassembler.ptx.parse import Kernel, Module, parse_module
 
-_SCALAR_FMT = {"u32": "<I", "s32": "<i", "f32": "<f", "u64": "<Q", "s64": "<q", "f64": "<d"}
+_SCALAR_FMT = {"b8":"<B", "u8":"<B", "s8":"<b", "b16":"<H", "u16":"<H", "s16":"<h", "u32": "<I", "s32": "<i", "f32": "<f", "u64": "<Q", "s64": "<q", "f64": "<d"}
 PARAM_BASE = {"sm_80": 0x160, "sm_86": 0x160, "sm_89": 0x160, "sm_90": 0x210, "sm_100": 0x380}
 _TYPE_METADATA = '// openassembler-pyfront-types-v1 '
-_TYPED_WIDTH = {'f32': 4, 's32': 4, 'u32': 4, 's64': 8, 'u64': 8}
+_TYPED_WIDTH = {'bool': 1, 'f32': 4, 's32': 4, 'u32': 4, 's64': 8, 'u64': 8}
 
 
 @dataclass
@@ -65,15 +65,17 @@ def _parameter_contract(kernel: Kernel, contract: dict) -> list[dict]:
                 or parameter['name'] != name or parameter['kind'] not in ('array', 'scalar')
                 or parameter['dtype'] not in _TYPED_WIDTH):
             raise ValueError(f'invalid parameter contract for PTX parameter {name}')
-        required = 'u64' if parameter['kind'] == 'array' else parameter['dtype']
+        if parameter['dtype'] == 'bool' and parameter['kind'] != 'scalar':
+            raise ValueError('Boolean array storage has no validated parameter contract')
+        required = 'u64' if parameter['kind'] == 'array' else 'u8' if parameter['dtype'] == 'bool' else parameter['dtype']
         if ptx_type != required:
             raise ValueError(f'parameter contract for {name} requires PTX .{required}, got .{ptx_type}')
     return parameters
 
 
-def parameter_contract_from_ptx(source: str, kernel: Kernel) -> dict | None:
+def parameter_contract_from_ptx(source: str, kernel: Kernel, *, allow_buffers=False) -> dict | None:
     """Read optional pyfront metadata; malformed/duplicate tags never fall back."""
-    if any(line.strip().startswith('// openassembler-pyfront-buffer-v1') for line in source.splitlines()):
+    if not allow_buffers and any(line.strip().startswith('// openassembler-pyfront-buffer-v1') for line in source.splitlines()):
         raise ValueError('shaped buffer verification requires explicit shape/stride/storage bounds; generic allocation is not verified')
     records = {}
     for line_number, line in enumerate(source.splitlines(), 1):
@@ -114,6 +116,9 @@ def _rand_scalar(rng: random.Random, ptx_type: str, n_elems: int):
     values, not structural, so they get a wider plausible range."""
     if ptx_type in ("f32", "f64"):
         return rng.uniform(-8, 8)
+    if ptx_type in ('b8','u8','s8','b16','u16','s16'):
+        bits = int(ptx_type[1:])
+        return rng.randrange(-(1 << (bits-1)), 1 << (bits-1)) if ptx_type.startswith('s') else rng.randrange(1 << bits)
     return rng.randrange(1, max(1, n_elems) + 1)
 
 
@@ -200,9 +205,13 @@ def run_and_diff(mod: Module, kname: str, sass_code, sass_labels, n_elems: int =
                 v = n_elems
             else:
                 v = _rand_scalar(rng, ptx_type, n_elems)
+            if ptx_type in ('b8','u8','s8','b16','u16','s16') and name.lower() in n_like:
+                bits = int(ptx_type[1:])
+                maximum = (1 << (bits-int(ptx_type.startswith('s'))))-1
+                if not 0 <= v <= maximum:raise ValueError('verification dimension does not fit narrow parameter '+name)
             interp_params[name] = (struct.unpack("<I", struct.pack("<f", v))[0]
                                     if ptx_type == "f32" else int(v) & 0xFFFFFFFF)
-            _align(sass_param_bytes, 8 if ptx_type.endswith("64") else 4)
+            _align(sass_param_bytes, struct.calcsize(_SCALAR_FMT.get(ptx_type, "<i")))
             sass_param_bytes.append(struct.pack(_SCALAR_FMT.get(ptx_type, "<i"),
                                                  v if ptx_type in ("f32", "f64") else int(v)))
 
@@ -232,6 +241,7 @@ def run_and_diff(mod: Module, kname: str, sass_code, sass_labels, n_elems: int =
 
 def _typed_bits(rng, dtype, index):
     """Deterministic boundary bits followed by seeded data, preserving high words."""
+    if dtype == 'bool':return index % 2
     if dtype == 'f32':
         return struct.unpack('<I', struct.pack('<f', rng.uniform(-8, 8)))[0]
     width = _TYPED_WIDTH[dtype] * 8
@@ -272,7 +282,7 @@ def _run_typed_and_diff(mod, kname, sass_code, sass_labels, n_elems, arch, seed,
             bits, width = address, 8
             address += max(4096, len(payload) + 256)
         else:
-            bits = n_elems if dtype != 'f32' and name.lower() in dimension_names else _typed_bits(rng, dtype, seed)
+            bits = n_elems if dtype not in ('f32','bool') and name.lower() in dimension_names else _typed_bits(rng, dtype, seed)
         interp_params[name] = bits
         _align(packed, width)
         packed.append(bits.to_bytes(width, 'little'))

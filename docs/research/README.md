@@ -24,6 +24,65 @@ centralized in the [reverse-engineering results hub](../reverse_eng_results/READ
 Per-idea dossiers remain the authoritative status and reproduction records for
 individual features.
 
+The [compiler gap register](../compiler/gap-register.md) links the November 23
+foundation additions and their canonical dossiers: typed wide values/buffers,
+[Python atomic effects](../compiler/gaps-python-primitives.md),
+[native ordering/shared atomics](../compiler/gaps-atomics.md), recorded builds,
+optimizer policies and complete owned-state checkpoints. Its
+[integration evidence](../../compiler_exp/gap_closure/integration_20261123/README.md)
+keeps source tests, hardware correctness, binary continuity and open exit gates
+separate; this does not change the historical idea-count inventory below.
+The [floating literal cycle](../compiler/gaps-wide.md#decimal-and-raw-floating-literal-contexts)
+adds decimal/exponent parsing, use-type rounding and raw payload/width rules,
+with independent rational, toolkit and A100 controls. This is a numerical/source
+contract repair with no speed claim.
+The subsequent [typed-expression cycle](../compiler/gaps-wide.md#typed-scalar-operand-constant-expressions)
+adds integer precedence/casts and per-operation binary64 rounding. It retains
+failed cross-toolchain controls and unresolved signedness/generated-NaN cases
+separately from the final A100 and full-suite gates.
+The [shared-width cycle](../compiler/gaps-memory.md#scalar-shared-byte-halfword-and-64-bit-memory)
+adds scalar narrow/64-bit exchanges and four exact recovered store templates.
+A failed 64-bit hardware gate led to a bounded barrier schedule repair before
+the final 1,216-launch A100 admission. Shared race/initialization and broader
+width/order contracts remain open.
+The subsequent [bounded decode specialization](../compiler/gaps-decode.md)
+adds explicit unseen-length builds with full cache/native-launch validation;
+paging and complete serving remain open.
+The [full-warp shuffle dossier](../compiler/gaps-collectives.md) adds exact
+indexed/up/down contracts with 1,792 A100 launches and preserved binary policies;
+general participation and cooperative synchronization remain open.
+The [native local-storage dossier](../compiler/gaps-storage.md) now adds static
+per-thread frames and scalar32 accesses with independent A100 frame/resource
+and complete-state validation. The subsequent
+[spilling route](../compiler/gaps-spilling.md) preserves scalar, aligned
+pair/quad and predicate values under explicit limits and automatic pressure.
+Generic module storage, device calls, slot reuse and pressure-aware policy
+selection remain open.
+
+The [typed Python shared-array extension](../compiler/gaps-python-types.md#wide-shared-arrays-and-native-cta-reconvergence)
+adds i64/u64 storage, mixed padding and eight-byte index scaling. A hardware
+conditional-writer failure led to a separate bounded CTA convergence pass.
+The expanded gate passes 1,280 A100 launches; cyclic control flow and general
+shared-memory safety remain open.
+
+The [direct scalar device-function route](../compiler/gaps-device-functions.md)
+resolves module-local calls through static specialization, preserving lexical
+slots, copied arguments, returns and local resources. The final original-source
+A100 gate passes 960 launches, including ordinary CUDA noinline input. Native
+call stacks, aggregate/register ABI and cross-module linking remain open.
+
+The [explicit source-library extension](../compiler/gaps-device-functions.md#explicit-ptx-and-cuda-source-libraries)
+adds deterministic scalar PTX/CUDA symbol resolution and per-unit dependency
+identity through normal CLI and remote builds. Its 576-launch A100 gate keeps
+original separately linked controls distinct from merged-source controls.
+Native objects/archives, dynamic stacks and complete host linking remain open.
+
+The [virtual pressure scheduling cycle](../compiler/gaps-spilling.md#pressure-aware-virtual-scheduling)
+adds independent dependency/resource checks, paired A100 kernel comparisons
+and maximum-frame recovery. Its explicit compiler-cost measurements remain
+separate from resident GPU gains. Tensor and occupancy policies retain their
+own admission gates.
+
 The role/shape coverage audit is under
 [`exp/shape_coverage`](../../exp/shape_coverage/README.md). That study remains a
 contract and measurement matrix. The separate completed
@@ -147,6 +206,36 @@ These are source-inspection conclusions, implementation proposals, missing hardw
 November 20: the [native model dossier](ideas/native-model-bridge.md) links the
 new [model semantics and state evidence](../compiler/model-semantics.md).
 
+The November 24 [scalar wide-selection addition](../compiler/gaps-wide.md#scalar-64-bit-conditional-selection)
+adds exact integer/FP64 bit selection after a 1,480-launch original-source A100
+gate. Earlier invalid FP64 fixtures and their corrected typed controls remain
+separate. General arithmetic/type/modifier coverage is still incomplete.
+
+The November 24 [low64 multiplication cycle](../compiler/gaps-wide.md#low-64-bit-integer-multiplication)
+adds PTX/CUDA low products and typed Python `*`/`*=` after 1,560 independent
+original-source A100 launches. Full product bits, wrapping, aliases/guards,
+helpers/loops/casts and squares have explicit source/byte/native gates. Broader
+G03/G11 coverage remains incomplete.
+
+The November 24 [local-package helper cycle](../compiler/gaps-python.md#static-local-package-device-helpers)
+adds defining-module scalar specialization, source/diagnostic/dependency custody
+and normal local/remote builds after a 600-launch original-source A100 gate.
+Aliases, relative imports, static re-exports and explicit roots have independent
+source/byte/native controls. Arbitrary runtime imports and global captures remain
+open; the static-value experiment is a separate hypothesis.
+
+The November 24 [explicit static-value cycle](../compiler/gaps-static-values.md)
+adds original-source Final numeric/tuple specialization after 1,440 A100 launches,
+2,592 functional executions and 2,048 independent integer expression trees. Source,
+value, diagnostics and ownership remain bound to original files. General objects,
+runtime containers, metaprogramming and arbitrary host state remain open G05 work.
+
+The November 24 [finite tuple iteration cycle](../compiler/gaps-static-loops.md)
+adds original-source tuple control semantics after 2,400 A100 launches and 4,320
+complete functional executions. Empty/nested loops, selected target state,
+break/continue and exhausted else have independent source/byte/native gates.
+General runtime iteration/control effects remain open G05/G06 work.
+
 ## How to use and maintain this catalogue
 
 Start with the problem you want to solve, then read that dossier's contract and
@@ -164,3 +253,40 @@ Duplicate chronological reports were consolidated into these dossiers. Their
 exact original text is available only as [documentation provenance](../evidence/documentation-history/README.md),
 not a competing active guide. Raw JSON, source snapshots, oracle inputs and
 hashes remain at their recorded evidence locations.
+
+The [pure helper return-path cycle](../compiler/gaps-helper-returns.md) now preserves
+original branch/loop returns, caller snapshots, live-path initialization and exact
+source/native ownership. Its final gate passes 2,400 A100 launches; broader
+Python effects remain open; the subsequent runtime loop-control cycle below
+now admits range/while else under its separate validated contract.
+
+The [finite runtime loop-control cycle](../compiler/gaps-range-control.md#original-source-production-extension)
+now preserves range/while else and exhausts finite i32 ranges before counter wrap.
+Its original-source gate passes 2,400 A100 launches; dynamic steps, wider bounds
+and general control/effects retain separate open contracts.
+
+The [typed condition-chain cycle](../compiler/gaps-comparison-chains.md) preserves
+single-evaluation/short-circuit memory and atomic effects, pairwise exact literal
+types, special-value truth and original expression/source/native ownership.
+Its final gate passes 2,400 A100 launches; general Boolean values and arbitrary
+Python effects remain open.
+
+The [Boolean-value cycle](../compiler/gaps-boolean-values.md) preserves lazy operand
+selection, contextual literal types, explicit truth/conversion and original value
+ownership. A100 loop failures led to a native predicate-path readiness repair; the
+final gate passes 2,400 launches. Boolean ABI and arbitrary type unions remain open.
+
+The [logical Boolean helper extension](../compiler/gaps-boolean-helpers.md) now admits exact predicate
+parameters/returns in pure static expansion, with original source/native signatures
+and a 2,400-launch independent A100 gate. Byte-backed launch/storage semantics
+remain a separate physical ABI experiment.
+
+The [narrow scalar entry ABI](../compiler/gaps-narrow-parameters.md) adds exact byte/halfword
+slots and extension with coordinated parser/selector/interpreter/verifier and
+public explicit-launch bindings. Independent original-PTX/A100 and explicit
+run-spec gates pass; logical Python Boolean launch/storage is a separate contract.
+
+The [logical Boolean kernel parameter cycle](../compiler/gaps-boolean-parameters.md) preserves predicate
+body semantics, canonical byte host values and exact source/manifest/native roles.
+Its original-source A100 gate passes 9,600 launches plus 960 public Boolean
+run-spec launches; Array/Buffer/shared Boolean storage remains separate research.

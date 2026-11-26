@@ -1,0 +1,33 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"python_i64_square_parameter","parameters":[{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s32","kind":"scalar","name":"n"},{"dtype":"s64","kind":"scalar","name":"choice"}],"schema":1}
+.visible .entry python_i64_square_parameter(.param .u64 out, .param .u64 a, .param .s32 n, .param .s64 choice)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [a];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ ld.param.s64 %rd3, [choice];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mov.b64 %rd4, %rd3;
+ mul.lo.s64 %rd5, %rd4, %rd4;
+ mul.wide.u32 %rd6, %r7, 8;
+ add.s64 %rd6, %rd1, %rd6;
+ st.global.s64 [%rd6], %rd5;
+L_endif_1:
+L_exit:
+ ret;
+}

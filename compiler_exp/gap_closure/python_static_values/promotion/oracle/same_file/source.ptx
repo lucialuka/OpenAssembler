@@ -1,0 +1,305 @@
+// openassembler-pyfront-source-graph-v1 {"entry":"entry.py","files":[{"path":"entry.py","sha256":"4c920e67ea2fe1f4bfaafa5f16d12717b62d2445941150d50afa398b48caeb2c"}],"helpers":{"entry.py:floating_scale":{"body_sha256":"35ac3256ed0d0839a10227ab8004765f5f7a5350c29fc93839ee277c07397500","function":"floating_scale","inputs":["f32"],"kernels":{"floating":1},"line":24,"output":"f32","path":"entry.py"},"entry.py:integer_expression":{"body_sha256":"30d9dd2d5fd37e5173f8f915f130bb5b9f697d96d2426af70bccea3712b56b5a","function":"integer_expression","inputs":["s64"],"kernels":{"shifted":1},"line":27,"output":"s64","path":"entry.py"},"entry.py:nested_table":{"body_sha256":"6531486ed63d7baf9916bcc3c9da1d816b2dbe4cb4bc2b6f4d1c7d1b1ed4df21","function":"nested_table","inputs":["u64"],"kernels":{"nested":1},"line":21,"output":"u64","path":"entry.py"},"entry.py:signed_affine":{"body_sha256":"5bbdd67ad085bc55df79e7d43d577a1d3181ee9b0e55ff935a69873192d09499","function":"signed_affine","inputs":["s64"],"kernels":{"local_shadow":1,"shared_helper":1,"signed":1},"line":15,"output":"s64","path":"entry.py"},"entry.py:unsigned_table":{"body_sha256":"cc40c7d133e2fe6de8828e7b568ddecb0b19ffbc22010ada5b325461992ae367","function":"unsigned_table","inputs":["u64"],"kernels":{"unsigned":1},"line":18,"output":"u64","path":"entry.py"}},"schema":1,"static_values":{"entry.py:BIAS":{"kernels":{"local_shadow":1,"shared_helper":1,"signed":1},"line":6,"name":"BIAS","path":"entry.py","value":{"type":"int","value":"-4294967289"}},"entry.py:COEFFICIENTS":{"kernels":{"direct_constant":1,"nested":1,"shifted":1,"unsigned":2},"line":7,"name":"COEFFICIENTS","path":"entry.py","value":{"items":[{"type":"int","value":"3"},{"type":"int","value":"5"},{"type":"int","value":"7"}],"type":"tuple"}},"entry.py:COUNT":{"kernels":{"shifted":1},"line":12,"name":"COUNT","path":"entry.py","value":{"type":"int","value":"3"}},"entry.py:GAIN":{"kernels":{"local_shadow":1,"shared_helper":1,"signed":1},"line":5,"name":"GAIN","path":"entry.py","value":{"type":"int","value":"3"}},"entry.py:GRID":{"kernels":{"nested":1},"line":8,"name":"GRID","path":"entry.py","value":{"items":[{"items":[{"type":"int","value":"11"},{"type":"int","value":"13"}],"type":"tuple"},{"items":[{"type":"int","value":"17"},{"type":"int","value":"19"}],"type":"tuple"}],"type":"tuple"}},"entry.py:NEGZERO":{"kernels":{"negative_zero":1},"line":10,"name":"NEGZERO","path":"entry.py","value":{"bits":"8000000000000000","type":"float"}},"entry.py:SCALE":{"kernels":{"floating":1},"line":9,"name":"SCALE","path":"entry.py","value":{"bits":"3fe0000000000000","type":"float"}},"entry.py:SHIFT":{"kernels":{"shifted":1},"line":11,"name":"SHIFT","path":"entry.py","value":{"type":"int","value":"5"}}},"strategy":"static-local-python-helper-source-graph"}
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"signed","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry signed(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<11>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r7, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.s64 %rd6, 3;
+ mul.lo.s64 %rd7, %rd5, %rd6;
+ mov.s64 %rd8, -4294967289;
+ add.s64 %rd9, %rd7, %rd8;
+ mul.wide.u32 %rd10, %r7, 8;
+ add.s64 %rd10, %rd2, %rd10;
+ st.global.s64 [%rd10], %rd9;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"unsigned","parameters":[{"dtype":"u64","kind":"array","name":"a"},{"dtype":"u64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry unsigned(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<11>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r7, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.u64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.u64 %rd6, 5;
+ mul.lo.u64 %rd7, %rd5, %rd6;
+ mov.u64 %rd8, 7;
+ add.u64 %rd9, %rd7, %rd8;
+ mul.wide.u32 %rd10, %r7, 8;
+ add.s64 %rd10, %rd2, %rd10;
+ st.global.u64 [%rd10], %rd9;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"nested","parameters":[{"dtype":"u64","kind":"array","name":"a"},{"dtype":"u64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry nested(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<9>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r7, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.u64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.u64 %rd6, 22;
+ add.u64 %rd7, %rd5, %rd6;
+ mul.wide.u32 %rd8, %r7, 8;
+ add.s64 %rd8, %rd2, %rd8;
+ st.global.u64 [%rd8], %rd7;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+.visible .entry floating(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .f32 %f<5>;
+ .reg .b64 %rd<5>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r7, 4;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.f32 %f1, [%rd3];
+ mov.f32 %f2, %f1;
+ mov.f32 %f3, 0f3F000000;
+ mul.f32 %f4, %f2, %f3;
+ mul.wide.u32 %rd4, %r7, 4;
+ add.s64 %rd4, %rd2, %rd4;
+ st.global.f32 [%rd4], %f4;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"shifted","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry shifted(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<10>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r7, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ shl.b64 %rd6, %rd5, 5;
+ mov.s64 %rd7, 3;
+ add.s64 %rd8, %rd6, %rd7;
+ mul.wide.u32 %rd9, %r7, 8;
+ add.s64 %rd9, %rd2, %rd9;
+ st.global.s64 [%rd9], %rd8;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"shared_helper","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry shared_helper(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<11>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r7, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.s64 %rd6, 3;
+ mul.lo.s64 %rd7, %rd5, %rd6;
+ mov.s64 %rd8, -4294967289;
+ add.s64 %rd9, %rd7, %rd8;
+ mul.wide.u32 %rd10, %r7, 8;
+ add.s64 %rd10, %rd2, %rd10;
+ st.global.s64 [%rd10], %rd9;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"direct_constant","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry direct_constant(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<8>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r7, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.s64 %rd5, 7;
+ add.s64 %rd6, %rd4, %rd5;
+ mul.wide.u32 %rd7, %r7, 8;
+ add.s64 %rd7, %rd2, %rd7;
+ st.global.s64 [%rd7], %rd6;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+.visible .entry negative_zero(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .f32 %f<2>;
+ .reg .b64 %rd<4>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mov.f32 %f1, 0f80000000;
+ mul.wide.u32 %rd3, %r7, 4;
+ add.s64 %rd3, %rd2, %rd3;
+ st.global.f32 [%rd3], %f1;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"local_shadow","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry local_shadow(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<2>;
+ .reg .b32 %r<8>;
+ .reg .b64 %rd<12>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %ctaid.x;
+ mov.s32 %r3, 128;
+ mul.lo.s32 %r4, %r2, %r3;
+ mov.u32 %r5, %tid.x;
+ add.s32 %r6, %r4, %r5;
+ mov.u32 %r7, %r6;
+ setp.lt.s32 %p1, %r7, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r7, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.b64 %rd6, %rd5;
+ mov.s64 %rd7, 3;
+ mul.lo.s64 %rd8, %rd6, %rd7;
+ mov.s64 %rd9, -4294967289;
+ add.s64 %rd10, %rd8, %rd9;
+ mul.wide.u32 %rd11, %r7, 8;
+ add.s64 %rd11, %rd2, %rd11;
+ st.global.s64 [%rd11], %rd10;
+L_endif_1:
+L_exit:
+ ret;
+}

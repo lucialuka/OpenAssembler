@@ -1,0 +1,233 @@
+// openassembler-pyfront-source-graph-v1 {"entry":"normalized.py","files":[{"path":"normalized.py","sha256":"9e5b2a3187dd5644c1e57478ffecddc0faf305ffbe1a5f130cdcf9de146b37de"}],"helpers":{"normalized.py:classify":{"body_sha256":"b938144b4b6bee62e37e445a811f7e20df33901d8947c23e1517c00403c9383f","function":"classify","inputs":["s64"],"kernels":{"classify_kernel":1},"line":5,"output":"s64","path":"normalized.py"},"normalized.py:find_limit":{"body_sha256":"b5f49a8482e32b283a078526710dee9bc6083f2c0f35805ce5bd5b0e64b4e9d6","function":"find_limit","inputs":["s64"],"kernels":{"find_kernel":1},"line":21,"output":"s64","path":"normalized.py"},"normalized.py:nested_return":{"body_sha256":"da4f94c88c0d345efcaa6e7eb74cf584e62ed78a671741144e351e99c656506a","function":"nested_return","inputs":["s64"],"kernels":{"nested_kernel":1},"line":38,"output":"s64","path":"normalized.py"}},"schema":1,"static_iterations":{"normalized.py:nested_return:42:4":{"column":4,"function":"nested_return","kernels":{"nested_kernel":1},"line":42,"path":"normalized.py","values":{"items":[{"type":"int","value":"1"},{"type":"int","value":"2"},{"type":"int","value":"3"}],"type":"tuple"}},"normalized.py:nested_return:43:8":{"column":8,"function":"nested_return","kernels":{"nested_kernel":1},"line":43,"path":"normalized.py","values":{"items":[{"type":"int","value":"3"},{"type":"int","value":"5"}],"type":"tuple"}}},"strategy":"static-local-python-helper-source-graph"}
+.version 8.7
+.target sm_80
+.address_size 64
+
+// openassembler-pyfront-types-v1 {"kernel":"classify_kernel","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry classify_kernel(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<6>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<15>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r3, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.s32 %r4, 0;
+ mov.u32 %r5, %r4;
+ mov.s64 %rd6, 0;
+ mov.b64 %rd7, %rd6;
+ mov.s64 %rd8, 0;
+ setp.lt.s64 %p2, %rd5, %rd8;
+ @!%p2 bra L_endif_2;
+ sub.s64 %rd9, 0, %rd5;
+ mov.b64 %rd7, %rd9;
+ mov.s32 %r6, 1;
+ mov.u32 %r5, %r6;
+L_endif_2:
+ mov.s32 %r7, 0;
+ setp.eq.s32 %p3, %r5, %r7;
+ @!%p3 bra L_endif_3;
+ mov.s64 %rd10, 0;
+ setp.eq.s64 %p4, %rd5, %rd10;
+ @!%p4 bra L_endif_4;
+ mov.s64 %rd11, 17;
+ mov.b64 %rd7, %rd11;
+ mov.s32 %r8, 1;
+ mov.u32 %r5, %r8;
+L_endif_4:
+L_endif_3:
+ mov.s32 %r9, 0;
+ setp.eq.s32 %p5, %r5, %r9;
+ @!%p5 bra L_endif_5;
+ mov.s64 %rd12, 3;
+ add.s64 %rd13, %rd5, %rd12;
+ mov.b64 %rd7, %rd13;
+ mov.s32 %r10, 1;
+ mov.u32 %r5, %r10;
+L_endif_5:
+ mul.wide.u32 %rd14, %r3, 8;
+ add.s64 %rd14, %rd2, %rd14;
+ st.global.s64 [%rd14], %rd7;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"find_kernel","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry find_kernel(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<6>;
+ .reg .b32 %r<14>;
+ .reg .b64 %rd<14>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r3, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.s32 %r4, 0;
+ mov.u32 %r5, %r4;
+ mov.s64 %rd6, 0;
+ mov.b64 %rd7, %rd6;
+ mov.s64 %rd8, 0;
+ mov.b64 %rd9, %rd8;
+ mov.s32 %r6, 0;
+ mov.s32 %r7, 5;
+ mov.u32 %r8, %r6;
+ mov.u32 %r9, %r7;
+L_loop_2:
+ setp.ge.s32 %p2, %r8, %r9;
+ @%p2 bra L_loopend_4;
+ cvt.s64.s32 %rd10, %r8;
+ add.s64 %rd9, %rd9, %rd10;
+ setp.gt.s64 %p3, %rd9, %rd5;
+ @!%p3 bra L_endif_5;
+ mov.b64 %rd7, %rd9;
+ mov.s32 %r10, 1;
+ mov.u32 %r5, %r10;
+L_endif_5:
+ mov.s32 %r11, 0;
+ setp.ne.s32 %p4, %r5, %r11;
+ @!%p4 bra L_endif_6;
+ bra L_loopend_4;
+L_endif_6:
+L_next_3:
+ add.s32 %r8, %r8, 1;
+ bra L_loop_2;
+L_loopend_4:
+ mov.s32 %r12, 0;
+ setp.eq.s32 %p5, %r5, %r12;
+ @!%p5 bra L_endif_7;
+ mov.s64 %rd11, 11;
+ add.s64 %rd12, %rd9, %rd11;
+ mov.b64 %rd7, %rd12;
+ mov.s32 %r13, 1;
+ mov.u32 %r5, %r13;
+L_endif_7:
+ mul.wide.u32 %rd13, %r3, 8;
+ add.s64 %rd13, %rd2, %rd13;
+ st.global.s64 [%rd13], %rd7;
+L_endif_1:
+L_exit:
+ ret;
+}
+
+// openassembler-pyfront-types-v1 {"kernel":"nested_kernel","parameters":[{"dtype":"s64","kind":"array","name":"a"},{"dtype":"s64","kind":"array","name":"out"},{"dtype":"s32","kind":"scalar","name":"n"}],"schema":1}
+.visible .entry nested_kernel(.param .u64 a, .param .u64 out, .param .s32 n)
+{
+ .reg .pred %p<11>;
+ .reg .b32 %r<21>;
+ .reg .b64 %rd<14>;
+ ld.param.u64 %rd1, [a];
+ cvta.to.global.u64 %rd1, %rd1;
+ ld.param.u64 %rd2, [out];
+ cvta.to.global.u64 %rd2, %rd2;
+ ld.param.u32 %r1, [n];
+ mov.u32 %r2, %tid.x;
+ mov.u32 %r3, %r2;
+ setp.lt.s32 %p1, %r3, %r1;
+ @!%p1 bra L_endif_1;
+ mul.wide.u32 %rd3, %r3, 8;
+ add.s64 %rd3, %rd1, %rd3;
+ ld.global.s64 %rd4, [%rd3];
+ mov.b64 %rd5, %rd4;
+ mov.s32 %r4, 0;
+ mov.u32 %r5, %r4;
+ mov.s64 %rd6, 0;
+ mov.b64 %rd7, %rd6;
+ mov.s64 %rd8, 0;
+ mov.b64 %rd9, %rd8;
+ mov.u32 %r7, 0;
+L_tuple_2:
+ setp.ge.s32 %p2, %r7, 3;
+ @%p2 bra L_tupleelse_5;
+ setp.ne.s32 %p3, %r7, 0;
+ @%p3 bra L_tuplechoice_7;
+ mov.s32 %r8, 1;
+ mov.u32 %r6, %r8;
+ bra L_tuplebody_3;
+L_tuplechoice_7:
+ setp.ne.s32 %p4, %r7, 1;
+ @%p4 bra L_tuplechoice_8;
+ mov.s32 %r9, 2;
+ mov.u32 %r6, %r9;
+ bra L_tuplebody_3;
+L_tuplechoice_8:
+ mov.s32 %r10, 3;
+ mov.u32 %r6, %r10;
+L_tuplebody_3:
+ mov.u32 %r12, 0;
+L_tuple_9:
+ setp.ge.s32 %p5, %r12, 2;
+ @%p5 bra L_tupleelse_12;
+ setp.ne.s32 %p6, %r12, 0;
+ @%p6 bra L_tuplechoice_14;
+ mov.s32 %r13, 3;
+ mov.u32 %r11, %r13;
+ bra L_tuplebody_10;
+L_tuplechoice_14:
+ mov.s32 %r14, 5;
+ mov.u32 %r11, %r14;
+L_tuplebody_10:
+ mul.lo.s32 %r15, %r6, %r11;
+ cvt.s64.s32 %rd10, %r15;
+ add.s64 %rd9, %rd9, %rd10;
+ setp.gt.s64 %p7, %rd9, %rd5;
+ @!%p7 bra L_endif_15;
+ mov.b64 %rd7, %rd9;
+ mov.s32 %r16, 1;
+ mov.u32 %r5, %r16;
+L_endif_15:
+ mov.s32 %r17, 0;
+ setp.ne.s32 %p8, %r5, %r17;
+ @!%p8 bra L_endif_16;
+ bra L_tupleend_13;
+L_endif_16:
+L_tuplenext_11:
+ add.s32 %r12, %r12, 1;
+ bra L_tuple_9;
+L_tupleelse_12:
+L_tupleend_13:
+ mov.s32 %r18, 0;
+ setp.ne.s32 %p9, %r5, %r18;
+ @!%p9 bra L_endif_17;
+ bra L_tupleend_6;
+L_endif_17:
+L_tuplenext_4:
+ add.s32 %r7, %r7, 1;
+ bra L_tuple_2;
+L_tupleelse_5:
+L_tupleend_6:
+ mov.s32 %r19, 0;
+ setp.eq.s32 %p10, %r5, %r19;
+ @!%p10 bra L_endif_18;
+ mov.s64 %rd11, 19;
+ add.s64 %rd12, %rd9, %rd11;
+ mov.b64 %rd7, %rd12;
+ mov.s32 %r20, 1;
+ mov.u32 %r5, %r20;
+L_endif_18:
+ mul.wide.u32 %rd13, %r3, 8;
+ add.s64 %rd13, %rd2, %rd13;
+ st.global.s64 [%rd13], %rd7;
+L_endif_1:
+L_exit:
+ ret;
+}

@@ -341,6 +341,11 @@ def run_plan_job(drv: Driver, job: dict) -> dict:
             for a in args:
                 if a[0] == "buf":
                     cargs.append(C.c_uint64(bufs[a[1]] + a[2]))
+                elif a[0] in ('u8','u16'):
+                    bits = int(a[0][1:])
+                    if type(a[1]) is not int or not 0 <= a[1] < (1 << bits):
+                        raise ValueError('invalid narrow scalar launch argument')
+                    cargs.append((C.c_uint8 if bits == 8 else C.c_uint16)(a[1]))
                 elif a[0] == "u32":
                     cargs.append(C.c_uint32(a[1] & 0xFFFFFFFF))
                 elif a[0] == "f32bits":

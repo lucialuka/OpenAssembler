@@ -2,6 +2,17 @@
 
 Status: implemented
 
+The [November 23 integration](../../compiler_exp/gap_closure/integration_20261123/README.md)
+reruns the complete gate after wide-value backend repairs. The
+[fresh full-state report](../../compiler_exp/gap_closure/checkpoints/hardware-20261123T082914Z.json)
+passes 7,862 comparisons / 124,438 elements, nested optimizer and CLI gates,
+and the [fresh IEEE report](../../compiler_exp/gap_closure/checkpoints/maximum-20261123T082454Z.json)
+passes 80 comparisons / 1,360 elements. Both workers identify A100-SXM4-80GB.
+The [current audit](../../compiler_exp/gap_closure/integration_20261123/checkpoint-final-audit.json)
+checks all four backend hashes, unchanged model sources, 28 bundles, 383 native
+comparisons and 17 exact checkpoint byte pairs. The earlier records below keep
+their original source/device identities.
+
 G35 identified that optimizer-only snapshots required callers to save weights
 separately and omitted application progress. The native runtime and
 `CompiledModel` now save a versioned, self-contained checkpoint for their exact

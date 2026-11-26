@@ -1,0 +1,41 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.func (.param .b32 result) add_scalar(.param .b32 a,.param .b32 b) {
+.reg .b32 %x,%y,%r;
+ld.param.u32 %x,[a];ld.param.u32 %y,[b];add.u32 %r,%x,%y;
+st.param.b32 [result],%r;ret;
+}
+.func (.param .b64 result) choose_wide(.param .b64 a,.param .b32 b) {
+.reg .b64 %x,%r;.reg .b32 %y;.reg .pred %p;
+ld.param.u64 %x,[a];ld.param.u32 %y,[b];setp.eq.u32 %p,%y,0;
+@%p bra ZERO;add.u64 %r,%x,0x123456789abcdef;st.param.b64 [result],%r;ret;
+ZERO:xor.b64 %r,%x,0xfedcba9876543210;st.param.b64 [result],%r;ret;
+}
+.func (.param .b32 result) nested(.param .b32 x) {
+.reg .b32 %x,%r;ld.param.u32 %x,[x];
+{
+.param .b32 a;.param .b32 b;.param .b32 r;
+st.param.b32 [a],%x;st.param.b32 [b],7;
+call.uni (r),add_scalar,(a,b);ld.param.u32 %r,[r];
+}
+st.param.b32 [result],%r;ret;
+}
+.visible .entry probe(.param .u64 out,.param .u64 input,.param .u32 n) {
+.reg .u64 %out,%in,%off,%src,%dst,%wide,%result;
+.reg .u32 %t,%c,%i,%n,%x,%r;.reg .pred %active,%p;
+ld.param.u64 %out,[out];ld.param.u64 %in,[input];ld.param.u32 %n,[n];
+mov.u32 %t,%tid.x;mov.u32 %c,%ctaid.x;mad.lo.u32 %i,%c,128,%t;
+mul.wide.u32 %off,%i,8;add.u64 %src,%in,%off;add.u64 %dst,%out,%off;
+ld.global.b64 %wide,[%src];cvt.u32.u64 %x,%wide;
+{
+.param .b32 a;.param .b32 r;
+st.param.b32 [a],%x;call.uni (r),nested,(a);ld.param.u32 %r,[r];
+}
+{
+.param .b64 a;.param .b32 b;.param .b64 r;
+st.param.b64 [a],%wide;and.b32 %x,%r,1;st.param.b32 [b],%x;
+call.uni (r),choose_wide,(a,b);ld.param.b64 %result,[r];
+}
+setp.lt.u32 %active,%i,%n;@%active st.global.b64 [%dst],%result;ret;
+}

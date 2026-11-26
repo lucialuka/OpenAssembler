@@ -1,0 +1,805 @@
+.version 8.7
+.target sm_80
+.address_size 64
+
+.visible .entry static_signed_positive_overflow(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, 2147483646;
+ mov.s32 %r6, 2147483647;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.s32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_unsigned_positive_overflow(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, 2147483646;
+ mov.s32 %r6, 2147483647;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.u32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.u32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry runtime_signed_positive_overflow(.param .u64 out, .param .s32 start, .param .s32 stop)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ ld.param.s32 %r5, [start];
+ ld.param.s32 %r6, [stop];
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.s32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_signed_negative_overflow(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, -2147483647;
+ mov.s32 %r6, -2147483648;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.s32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_unsigned_negative_overflow(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, -2147483647;
+ mov.s32 %r6, -2147483648;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.u32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.u32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry runtime_signed_negative_overflow(.param .u64 out, .param .s32 start, .param .s32 stop)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ ld.param.s32 %r5, [start];
+ ld.param.s32 %r6, [stop];
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.s32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_signed_large_positive_step(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, -2147483648;
+ mov.s32 %r6, 2147483647;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.s32 %r7, %r7, 2147483647;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_unsigned_large_positive_step(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, -2147483648;
+ mov.s32 %r6, 2147483647;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.u32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.u32 %r7, %r7, 2147483647;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry runtime_signed_large_positive_step(.param .u64 out, .param .s32 start, .param .s32 stop)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ ld.param.s32 %r5, [start];
+ ld.param.s32 %r6, [stop];
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.s32 %r7, %r7, 2147483647;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_signed_minimum_step(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, 2147483647;
+ mov.s32 %r6, -2147483648;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.s32 %r7, %r7, 2147483648;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_unsigned_minimum_step(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, 2147483647;
+ mov.s32 %r6, -2147483648;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.u32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.u32 %r7, %r7, 2147483648;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry runtime_signed_minimum_step(.param .u64 out, .param .s32 start, .param .s32 stop)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ ld.param.s32 %r5, [start];
+ ld.param.s32 %r6, [stop];
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.s32 %r7, %r7, 2147483648;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_signed_ordinary(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, 0;
+ mov.s32 %r6, 7;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.s32 %r7, %r7, 3;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_unsigned_ordinary(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, 0;
+ mov.s32 %r6, 7;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.u32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.u32 %r7, %r7, 3;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry runtime_signed_ordinary(.param .u64 out, .param .s32 start, .param .s32 stop)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ ld.param.s32 %r5, [start];
+ ld.param.s32 %r6, [stop];
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.ge.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ add.s32 %r7, %r7, 3;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_signed_empty(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, 0;
+ mov.s32 %r6, 1;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.s32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry static_unsigned_empty(.param .u64 out)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ mov.s32 %r5, 0;
+ mov.s32 %r6, 1;
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.u32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.u32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry runtime_signed_empty(.param .u64 out, .param .s32 start, .param .s32 stop)
+{
+ .reg .pred %p<3>;
+ .reg .b32 %r<11>;
+ .reg .b64 %rd<7>;
+ ld.param.u64 %rd1, [out];
+ cvta.to.global.u64 %rd1, %rd1;
+ mov.s32 %r1, 0;
+ mov.u32 %r2, %r1;
+ mov.s64 %rd2, 0;
+ mov.b64 %rd3, %rd2;
+ mov.s32 %r3, 17;
+ mov.u32 %r4, %r3;
+ ld.param.s32 %r5, [start];
+ ld.param.s32 %r6, [stop];
+ mov.u32 %r7, %r5;
+ mov.u32 %r8, %r6;
+L_loop_1:
+ setp.le.s32 %p1, %r7, %r8;
+ @%p1 bra L_loopend_3;
+ mov.u32 %r4, %r7;
+ cvt.s64.s32 %rd4, %r4;
+ add.s64 %rd3, %rd3, %rd4;
+ mov.s32 %r9, 1;
+ add.s32 %r2, %r2, %r9;
+ mov.s32 %r10, 8;
+ setp.eq.s32 %p2, %r2, %r10;
+ @!%p2 bra L_endif_4;
+ bra L_loopend_3;
+L_endif_4:
+L_next_2:
+ sub.s32 %r7, %r7, 2;
+ bra L_loop_1;
+L_loopend_3:
+ st.global.s64 [%rd1+0], %rd3;
+ cvt.s64.s32 %rd5, %r2;
+ st.global.s64 [%rd1+8], %rd5;
+ cvt.s64.s32 %rd6, %r4;
+ st.global.s64 [%rd1+16], %rd6;
+L_exit:
+ ret;
+}
+
+.visible .entry isolated_add_s32(.param .u64 out)
+{
+ .reg .b64 %rd<3>;
+ .reg .b32 %r<2>;
+ ld.param.u64 %rd1,[out];
+ mov.s32 %r1,2147483646;
+ add.s32 %r1,%r1,2;
+ cvt.s64.s32 %rd2,%r1;
+ st.global.s64 [%rd1],%rd2;
+ st.global.s64 [%rd1+8],%rd2;
+ st.global.s64 [%rd1+16],%rd2;
+ ret;
+}
+
+.visible .entry isolated_add_u32(.param .u64 out)
+{
+ .reg .b64 %rd<3>;
+ .reg .b32 %r<2>;
+ ld.param.u64 %rd1,[out];
+ mov.s32 %r1,2147483646;
+ add.u32 %r1,%r1,2;
+ cvt.s64.s32 %rd2,%r1;
+ st.global.s64 [%rd1],%rd2;
+ st.global.s64 [%rd1+8],%rd2;
+ st.global.s64 [%rd1+16],%rd2;
+ ret;
+}

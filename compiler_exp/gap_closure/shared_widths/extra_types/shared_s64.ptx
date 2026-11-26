@@ -1,0 +1,18 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.visible .entry shared_s64(.param .u64 output,.param .u64 input){
+.shared .align 16 .b8 arena[4096];
+.reg .u64 %out,%input,%offset,%src,%dst;
+.reg .u32 %t,%peer,%addr,%other,%base,%v,%loaded;
+.reg .b64 %wide,%loadedwide;
+ld.param.u64 %out,[output];ld.param.u64 %input,[input];
+mov.u32 %t,%tid.x;mul.wide.u32 %offset,%t,8;
+add.u64 %src,%input,%offset;add.u64 %dst,%out,%offset;
+ld.global.b64 %wide,[%src];
+mov.u32 %base,arena;mul.lo.u32 %addr,%t,16;xor.b32 %peer,%t,1;mul.lo.u32 %other,%peer,16;
+add.u32 %addr,%addr,%base;add.u32 %other,%other,%base;
+st.shared.s64 [%addr],%wide;bar.sync 0;
+ld.shared.s64 %loadedwide,[%other];
+st.global.b64 [%dst],%loadedwide;ret;
+}

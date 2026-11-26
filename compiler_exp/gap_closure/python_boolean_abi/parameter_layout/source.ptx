@@ -1,0 +1,29 @@
+.version 8.0
+.target sm_80
+.address_size 64
+.visible .entry adjacent(
+ .param .u8 first,
+ .param .u8 second,
+ .param .u16 third,
+ .param .u32 fourth,
+ .param .u8 fifth,
+ .param .u64 out,
+ .param .u16 last
+) {
+ .reg .u32 %r<8>;
+ .reg .u64 %rd<2>;
+ ld.param.u8 %r1,[first];
+ ld.param.u8 %r2,[second];
+ ld.param.u16 %r3,[third];
+ ld.param.u32 %r4,[fourth];
+ ld.param.u8 %r5,[fifth];
+ ld.param.u64 %rd1,[out];
+ ld.param.u16 %r6,[last];
+ st.global.u32 [%rd1],%r1;
+ st.global.u32 [%rd1+4],%r2;
+ st.global.u32 [%rd1+8],%r3;
+ st.global.u32 [%rd1+12],%r4;
+ st.global.u32 [%rd1+16],%r5;
+ st.global.u32 [%rd1+20],%r6;
+ ret;
+}

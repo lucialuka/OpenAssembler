@@ -138,6 +138,12 @@ class Encoder:
                 ins = parse_insn(0, r["text"], w)
                 groups[key(ins)][w] = ins
                 synth_words.add(w)
+        memory = ROOT / "specs" / arch / "memory_templates.json"
+        if memory.exists():
+            for r in json.loads(memory.read_text()):
+                w = int(r["word"],16)
+                ins = parse_insn(0,r["text"],w)
+                groups[key(ins)][w] = ins
         for k, members in groups.items():
             t = self._learn(list(members.values()), canonical=all(w in synth_words for w in members))
             if t:

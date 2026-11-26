@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated": "2026-11-21",
+  "updated": "2026-11-25",
   "description": "Machine-readable map from reverse-engineering topics to canonical readable documents and retained evidence.",
   "topics": [
     {
@@ -80,12 +80,25 @@
       "production": [
         "openassembler/backend/fragments.py",
         "openassembler/backend/ptxas_fragments.json",
-        "openassembler/opt/divconst.py"
+        "openassembler/opt/divconst.py",
+        "openassembler/ptx/parse.py"
       ],
       "evidence": [
         "corpus/sm_80/div_const_survey.json",
         "corpus/sm_80/divconst_proofs.json",
-        "docs/research/ideas/constant-division.md"
+        "docs/research/ideas/constant-division.md",
+        "compiler_exp/gap_closure/float_literals/baseline.json",
+        "compiler_exp/gap_closure/float_literals/oracle-evidence-audit.json",
+        "compiler_exp/gap_closure/float_literals/rounding-probe.json",
+        "compiler_exp/gap_closure/float_literals/candidate-a100-20261123T121453Z.json",
+        "compiler_exp/gap_closure/float_literals/promotion-audit.json",
+        "compiler_exp/gap_closure/float_literals/application-continuity.json",
+        "compiler_exp/gap_closure/constant_expressions/oracle-evidence-audit.json",
+        "compiler_exp/gap_closure/constant_expressions/candidate-offline.json",
+        "compiler_exp/gap_closure/constant_expressions/first-hardware-failure-audit.json",
+        "compiler_exp/gap_closure/constant_expressions/candidate-a100-20261123T131948Z.json",
+        "compiler_exp/gap_closure/constant_expressions/promotion-audit.json",
+        "compiler_exp/gap_closure/constant_expressions/application-continuity.json"
       ]
     },
     {
@@ -244,6 +257,490 @@
         "docs/compiler/gaps-profiling.md",
         "compiler_exp/gap_closure/operators/hardware-20261121T124125Z.json",
         "compiler_exp/gap_closure/profiling/hardware-20261121T124038Z.json"
+      ]
+    },
+    {
+      "id": "native-atomic-ordering",
+      "document": "../compiler/gaps-atomics.md",
+      "production": [
+        "openassembler/backend/ra.py",
+        "openassembler/backend/contracts.py",
+        "openassembler/backend/compile.py",
+        "openassembler/backend/sched.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/atomic_ordering/a100-20261123T080159Z.json",
+        "compiler_exp/gap_closure/atomic_ordering/forms-a100-20261123T081214Z.json",
+        "compiler_exp/gap_closure/atomic_ordering/promotion-audit-20261123.json"
+      ]
+    },
+    {
+      "id": "full-warp-shuffles",
+      "document": "../compiler/gaps-collectives.md",
+      "production": [
+        "openassembler/backend/ra.py",
+        "openassembler/backend/contracts.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/warp_collectives/candidate-a100-20261123T090825Z.json",
+        "compiler_exp/gap_closure/warp_collectives/promotion-audit.json",
+        "compiler_exp/gap_closure/warp_collectives/reference-source.json"
+      ]
+    },
+    {
+      "id": "bounded-decode-specialization",
+      "document": "../compiler/gaps-decode.md",
+      "production": [
+        "openassembler/modelfront/decode.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/decode_specialization/candidate-hardware-20261123T085245Z.json",
+        "compiler_exp/gap_closure/decode_specialization/promotion-audit.json",
+        "compiler_exp/gap_closure/warp_collectives/application-continuity.json"
+      ]
+    },
+    {
+      "id": "static-local-storage",
+      "document": "../compiler/gaps-storage.md",
+      "production": [
+        "openassembler/backend/storage.py",
+        "openassembler/backend/ra.py",
+        "openassembler/build.py",
+        "openassembler/native_ownership.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/local_storage/oracle-20261123.json",
+        "compiler_exp/gap_closure/local_storage/layout-sweep-20261123.json",
+        "compiler_exp/gap_closure/local_storage/candidate-a100-20261123T093837Z.json",
+        "compiler_exp/gap_closure/local_storage/promotion-audit.json"
+      ]
+    },
+    {
+      "id": "register-predicate-spilling",
+      "document": "../compiler/gaps-spilling.md",
+      "production": [
+        "openassembler/backend/spill.py",
+        "openassembler/backend/ra.py",
+        "openassembler/build.py",
+        "openassembler/backend/pressure.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/spilling/baseline-pressure.json",
+        "compiler_exp/gap_closure/spilling/candidate-a100-20261123T095515Z.json",
+        "compiler_exp/gap_closure/spilling/tight-a100-20261123T095932Z.json",
+        "compiler_exp/gap_closure/spilling/promotion-audit.json",
+        "compiler_exp/gap_closure/spilling/application-continuity.json",
+        "compiler_exp/gap_closure/spilling_groups/baseline.json",
+        "compiler_exp/gap_closure/spilling_groups/candidate-a100-20261123T102437Z.json",
+        "compiler_exp/gap_closure/spilling_groups/promotion-audit.json",
+        "compiler_exp/gap_closure/spilling_groups/application-continuity.json",
+        "compiler_exp/gap_closure/pressure_schedule/candidate-a100-20261123T105809Z.json",
+        "compiler_exp/gap_closure/pressure_schedule/heldout-a100-20261123T110440Z.json",
+        "compiler_exp/gap_closure/pressure_schedule/final-a100-20261123T112918Z.json",
+        "compiler_exp/gap_closure/pressure_schedule/promotion-audit.json",
+        "compiler_exp/gap_closure/pressure_schedule/promotion-heldout-audit.json",
+        "compiler_exp/gap_closure/pressure_schedule/promotion-final-audit.json",
+        "compiler_exp/gap_closure/pressure_schedule/compile-cost.json",
+        "compiler_exp/gap_closure/pressure_schedule/application-continuity.json"
+      ]
+    },
+    {
+      "id": "scalar-shared-widths",
+      "document": "07_ASYNC_COPY_LDSM_SHARED_MEMORY.md",
+      "production": [
+        "openassembler/backend/ra.py",
+        "openassembler/backend/contracts.py",
+        "openassembler/backend/compile.py",
+        "openassembler/isa/encode.py",
+        "specs/sm_80/memory_templates.json"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-memory.md",
+        "compiler_exp/gap_closure/shared_widths/template-audit.json",
+        "compiler_exp/gap_closure/shared_widths/candidate-a100-20261123T143647Z.json",
+        "compiler_exp/gap_closure/shared_widths/failed-execution-audit.json",
+        "compiler_exp/gap_closure/shared_widths/candidate-a100-20261123T144327Z.json",
+        "compiler_exp/gap_closure/shared_widths/promotion-audit.json",
+        "compiler_exp/gap_closure/shared_widths/application-continuity.json"
+      ]
+    },
+    {
+      "id": "python-shared-wide-cta-convergence",
+      "document": "07_ASYNC_COPY_LDSM_SHARED_MEMORY.md",
+      "production": [
+        "openassembler/pyfront/compile.py",
+        "openassembler/backend/compile.py",
+        "openassembler/backend/ra.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-python-types.md",
+        "docs/compiler/gaps-collectives.md",
+        "compiler_exp/gap_closure/python_shared_wide/failure-isolation-audit.json",
+        "compiler_exp/gap_closure/python_shared_wide/convergence-encoding.json",
+        "compiler_exp/gap_closure/python_shared_wide/candidate-a100-20261123T162930Z.json",
+        "compiler_exp/gap_closure/python_shared_wide/promotion-audit.json",
+        "compiler_exp/gap_closure/python_shared_wide/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_shared_wide/application-continuity.json"
+      ]
+    },
+    {
+      "id": "direct-scalar-device-functions",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/ptx/parse.py",
+        "openassembler/ptx/inlining.py",
+        "openassembler/build.py",
+        "openassembler/native_ownership.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-device-functions.md",
+        "compiler_exp/gap_closure/device_functions/oracle-audit.json",
+        "compiler_exp/gap_closure/device_functions/candidate-a100-20261123T181957Z.json",
+        "compiler_exp/gap_closure/device_functions/promotion-audit.json",
+        "compiler_exp/gap_closure/device_functions/wheel-audit.json",
+        "compiler_exp/gap_closure/device_functions/application-continuity.json"
+      ]
+    },
+    {
+      "id": "scalar-source-library-linkage",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/ptx/link.py",
+        "openassembler/ptx/inlining.py",
+        "openassembler/build.py",
+        "openassembler/cppfront.py",
+        "openassembler/cli.py",
+        "openassembler/remote_build.py",
+        "openassembler/native_ownership.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-device-functions.md",
+        "compiler_exp/gap_closure/device_linkage/promotion/candidate-a100-20261123T201545Z.json",
+        "compiler_exp/gap_closure/device_linkage/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/device_linkage/promotion/oracle-audit.json",
+        "compiler_exp/gap_closure/device_linkage/promotion/normal-remote-audit.json",
+        "compiler_exp/gap_closure/device_linkage/promotion/application-continuity.json"
+      ]
+    },
+    {
+      "id": "scalar-wide-select",
+      "document": "08_ARITHMETIC_DIVISION_AND_FRAGMENTS.md",
+      "production": [
+        "openassembler/backend/ra.py",
+        "openassembler/backend/contracts.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-wide.md",
+        "compiler_exp/gap_closure/wide_select/oracle-audit.json",
+        "compiler_exp/gap_closure/wide_select/candidate-a100-20261123T205126Z.json",
+        "compiler_exp/gap_closure/wide_select/promotion-audit.json",
+        "compiler_exp/gap_closure/wide_select/wheel-audit.json",
+        "compiler_exp/gap_closure/wide_select/application-continuity.json",
+        "compiler_exp/gap_closure/wide_select/validation.json"
+      ]
+    },
+    {
+      "id": "scalar-low64-multiply",
+      "document": "08_ARITHMETIC_DIVISION_AND_FRAGMENTS.md",
+      "production": [
+        "openassembler/backend/ra.py",
+        "openassembler/backend/contracts.py",
+        "openassembler/pyfront/compile.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-wide.md",
+        "docs/compiler/gaps-python-types.md",
+        "compiler_exp/gap_closure/wide_multiply/promotion/oracle-audit.json",
+        "compiler_exp/gap_closure/wide_multiply/promotion/oracle-squares-audit.json",
+        "compiler_exp/gap_closure/wide_multiply/promotion/candidate-a100-20261123T212929Z.json",
+        "compiler_exp/gap_closure/wide_multiply/promotion/candidate-squares-a100-20261123T213402Z.json",
+        "compiler_exp/gap_closure/wide_multiply/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/wide_multiply/promotion/frontend-continuity.json",
+        "compiler_exp/gap_closure/wide_multiply/promotion/wheel-audit.json",
+        "compiler_exp/gap_closure/wide_multiply/promotion/application-continuity.json",
+        "compiler_exp/gap_closure/wide_multiply/promotion/validation.json"
+      ]
+    },
+    {
+      "id": "static-local-python-helper-source-graph",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/pyfront/modules.py",
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/helpers.py",
+        "openassembler/frontend.py",
+        "openassembler/build.py",
+        "openassembler/native_ownership.py",
+        "openassembler/remote_build.py",
+        "openassembler/cli.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-python.md",
+        "compiler_exp/gap_closure/python_module_helpers/promotion/candidate-a100-20261123T224420Z.json",
+        "compiler_exp/gap_closure/python_module_helpers/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/python_module_helpers/promotion/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_module_helpers/promotion/application-continuity.json",
+        "compiler_exp/gap_closure/python_module_helpers/promotion/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_module_helpers/promotion/wheel-audit.json",
+        "compiler_exp/gap_closure/python_module_helpers/promotion/validation.json"
+      ]
+    },
+    {
+      "id": "explicit-static-source-values",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/pyfront/static_values.py",
+        "openassembler/pyfront/modules.py",
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/helpers.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-static-values.md",
+        "compiler_exp/gap_closure/python_static_values/promotion/candidate-a100-20261124T021349Z.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/property-probe.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/negative-controls.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/oracle-probe.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/application-continuity.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/wheel-audit.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_static_values/promotion/validation.json"
+      ]
+    },
+    {
+      "id": "finite-static-tuple-iteration",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/pyfront/static_values.py",
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/helpers.py",
+        "openassembler/pyfront/modules.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-static-loops.md",
+        "compiler_exp/gap_closure/python_static_loops/promotion/candidate-a100-20261124T051600Z.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/negative-controls.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/oracle-probe.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/control-properties.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/application-continuity.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/wheel-audit.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_static_loops/promotion/validation.json"
+      ]
+    },
+    {
+      "id": "pure-scalar-python-helper-returns",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/pyfront/return_flow.py",
+        "openassembler/pyfront/helpers.py",
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/modules.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-helper-returns.md",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/candidate-a100-20261124T055307Z.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/negative-controls.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/control-properties.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/test-contract-updates.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/application-continuity.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/wheel-audit.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_helper_returns/promotion/validation.json"
+      ]
+    },
+    {
+      "id": "finite-runtime-python-loop-control",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/return_flow.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-range-control.md",
+        "compiler_exp/gap_closure/python_range_control/minimized-audit.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/candidate-a100-20261124T111006Z.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/control-properties.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/negative-controls.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/test-contract-updates.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/application-continuity.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/wheel-audit.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_range_control/promotion/validation.json"
+      ]
+    },
+    {
+      "id": "typed-python-condition-comparison-chains",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/modules.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-comparison-chains.md",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/candidate-a100-20261124T113417Z.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/negative-controls.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/control-properties.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/context-probe.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/application-continuity.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/wheel-audit.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_comparison_chains/promotion/validation.json"
+      ]
+    },
+    {
+      "id": "python-boolean-values-and-native-predicate-paths",
+      "document": "02_PTXAS_AND_FRONTEND_PIPELINE.md",
+      "production": [
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/modules.py",
+        "openassembler/backend/compile.py"
+      ],
+      "evidence": [
+        "docs/compiler/gaps-boolean-values.md",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/candidate-a100-20261124T115739Z.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/candidate-a100-20261124T120206Z.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/candidate-a100-20261124T120418Z.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/failure-transition-audit.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/promotion-audit.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/control-properties.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/negative-controls.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/application-continuity.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/wheel-audit.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_boolean_values/promotion/validation.json"
+      ]
+    },
+    {
+      "id": "python-logical-boolean-helpers",
+      "document": "../compiler/gaps-boolean-helpers.md",
+      "production": [
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/helpers.py",
+        "openassembler/pyfront/modules.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/README.md",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/baseline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/candidate-offline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/control-properties.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/negative-controls.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/oracle-probe.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/candidate-a100-20261124T123953Z.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/promotion-audit.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/application-continuity.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/frontend-continuity.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/normal-remote-audit.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/validation.json",
+        "compiler_exp/gap_closure/python_boolean_abi/helpers/wheel-audit.json"
+      ]
+    },
+    {
+      "id": "narrow-parameter-layout-boundary",
+      "document": "../compiler/gaps-boolean-abi.md",
+      "production": [
+        "openassembler/ptx/parse.py",
+        "openassembler/backend/contracts.py",
+        "openassembler/backend/ra.py",
+        "openassembler/verify.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/python_boolean_abi/parameter_layout/README.md",
+        "compiler_exp/gap_closure/python_boolean_abi/parameter_layout/source.ptx",
+        "compiler_exp/gap_closure/python_boolean_abi/parameter_layout/baseline-layout.json",
+        "compiler_exp/gap_closure/python_boolean_abi/parameter_layout/layout-audit.json"
+      ]
+    },
+    {
+      "id": "narrow-scalar-entry-abi",
+      "document": "../compiler/gaps-narrow-parameters.md",
+      "production": [
+        "openassembler/ptx/parse.py",
+        "openassembler/backend/contracts.py",
+        "openassembler/backend/ra.py",
+        "openassembler/backend/compile.py",
+        "openassembler/ptx/semantics.py",
+        "openassembler/verify.py",
+        "openassembler/runner.py",
+        "openassembler/gpu/cuda_driver.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/narrow_parameters/README.md",
+        "compiler_exp/gap_closure/narrow_parameters/baseline.json",
+        "compiler_exp/gap_closure/narrow_parameters/candidate-offline.json",
+        "compiler_exp/gap_closure/narrow_parameters/negative-controls.json",
+        "compiler_exp/gap_closure/narrow_parameters/candidate-a100-20261125T011357Z.json",
+        "compiler_exp/gap_closure/narrow_parameters/promotion-audit.json",
+        "compiler_exp/gap_closure/narrow_parameters/normal-remote-audit.json",
+        "compiler_exp/gap_closure/narrow_parameters/validation.json",
+        "compiler_exp/gap_closure/narrow_parameters/layout-properties.json",
+        "compiler_exp/gap_closure/narrow_parameters/application-continuity.json",
+        "compiler_exp/gap_closure/narrow_parameters/frontend-continuity.json",
+        "compiler_exp/gap_closure/narrow_parameters/wheel-audit.json"
+      ]
+    },
+    {
+      "id": "cuda-narrow-scalar-boundary",
+      "document": "../compiler/gaps-narrow-scalars.md",
+      "production": [
+        "openassembler/backend/contracts.py",
+        "openassembler/backend/ra.py",
+        "openassembler/ptx/semantics.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/narrow_scalars/README.md",
+        "compiler_exp/gap_closure/narrow_scalars/baseline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/source.ptx",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/README.md",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/baseline.json"
+      ]
+    },
+    {
+      "id": "logical-boolean-kernel-parameters",
+      "document": "../compiler/gaps-boolean-parameters.md",
+      "production": [
+        "openassembler/pyfront/compile.py",
+        "openassembler/verify.py",
+        "openassembler/build.py",
+        "openassembler/native_ownership.py",
+        "openassembler/runner.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/README.md",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/baseline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/baseline-replay.json",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/original-replay.json",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/candidate-offline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/negative-controls.json",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/candidate-a100-20261125T074133Z.json",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/promotion-audit.json",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/test-contract-updates.json",
+        "compiler_exp/gap_closure/python_boolean_abi/scalar/validation.json"
+      ]
+    },
+    {
+      "id": "boolean-storage-boundary",
+      "document": "../compiler/gaps-boolean-storage.md",
+      "production": [
+        "openassembler/pyfront/compile.py",
+        "openassembler/pyfront/buffers.py",
+        "openassembler/verify.py",
+        "openassembler/runner.py"
+      ],
+      "evidence": [
+        "compiler_exp/gap_closure/python_boolean_abi/storage/README.md",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/baseline.json",
+        "compiler_exp/gap_closure/python_boolean_abi/storage/source.py"
       ]
     }
   ]

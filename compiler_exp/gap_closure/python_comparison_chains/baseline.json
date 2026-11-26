@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "passed": true,
+  "rejected": true,
+  "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),out:Array(i32),count:Array(i32)):\n    i=tid_x()\n    value=11\n    if -3<a[i]<7:\n        value+=1\n    if not (0<=a[i]<=3):\n        value+=2\n    if a[i]<0<atomic_add(count,i,1):\n        value+=4\n    if -1<atomic_add(count,i,1)<1:\n        value+=8\n    out[i]=value\n",
+  "diagnostic": "chained comparisons (a < b < c) are not supported (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-chain-baseline-wozdziil/source.py, line 6)",
+  "frontend_sha256": "d53f93fa23499845527cf1379e41b00d41ad04c6427af9b3d178bffc5a82b690",
+  "script_sha256": "90b7374d8e0316ded27203058c04f57bb4fb5275ff584ca8ed574b4f537b4063",
+  "scope": "Original condition/atomic chain rejection before candidate promotion; source module not executed"
+}

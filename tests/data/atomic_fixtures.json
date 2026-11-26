@@ -1,5 +1,4 @@
 {
-  "schema": 1,
   "cases": [
     {
       "name": "atom_global_add_u32",
@@ -176,6 +175,186 @@
         "dtype": "s32",
         "scope": "gpu",
         "ordering": "relaxed",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_acquire_gpu_global_add_u32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.acquire.gpu.global.add.u32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.acquire.gpu.global.add.u32",
+        "family": "atom",
+        "operation": "add",
+        "dtype": "u32",
+        "scope": "gpu",
+        "ordering": "acquire",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_acquire_gpu_global_add_s32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.acquire.gpu.global.add.s32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.acquire.gpu.global.add.s32",
+        "family": "atom",
+        "operation": "add",
+        "dtype": "s32",
+        "scope": "gpu",
+        "ordering": "acquire",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_acquire_gpu_global_exch_b32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.acquire.gpu.global.exch.b32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.acquire.gpu.global.exch.b32",
+        "family": "atom",
+        "operation": "exch",
+        "dtype": "b32",
+        "scope": "gpu",
+        "ordering": "acquire",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_acquire_gpu_global_cas_b32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.acquire.gpu.global.cas.b32 %old,[%address+4],%compare,%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.acquire.gpu.global.cas.b32",
+        "family": "atom",
+        "operation": "cas",
+        "dtype": "b32",
+        "scope": "gpu",
+        "ordering": "acquire",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_release_gpu_global_add_u32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.release.gpu.global.add.u32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.release.gpu.global.add.u32",
+        "family": "atom",
+        "operation": "add",
+        "dtype": "u32",
+        "scope": "gpu",
+        "ordering": "release",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_release_gpu_global_add_s32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.release.gpu.global.add.s32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.release.gpu.global.add.s32",
+        "family": "atom",
+        "operation": "add",
+        "dtype": "s32",
+        "scope": "gpu",
+        "ordering": "release",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_release_gpu_global_exch_b32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.release.gpu.global.exch.b32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.release.gpu.global.exch.b32",
+        "family": "atom",
+        "operation": "exch",
+        "dtype": "b32",
+        "scope": "gpu",
+        "ordering": "release",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_release_gpu_global_cas_b32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.release.gpu.global.cas.b32 %old,[%address+4],%compare,%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.release.gpu.global.cas.b32",
+        "family": "atom",
+        "operation": "cas",
+        "dtype": "b32",
+        "scope": "gpu",
+        "ordering": "release",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_acq_rel_gpu_global_add_u32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.acq_rel.gpu.global.add.u32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.acq_rel.gpu.global.add.u32",
+        "family": "atom",
+        "operation": "add",
+        "dtype": "u32",
+        "scope": "gpu",
+        "ordering": "acq_rel",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_acq_rel_gpu_global_add_s32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.acq_rel.gpu.global.add.s32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.acq_rel.gpu.global.add.s32",
+        "family": "atom",
+        "operation": "add",
+        "dtype": "s32",
+        "scope": "gpu",
+        "ordering": "acq_rel",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_acq_rel_gpu_global_exch_b32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.acq_rel.gpu.global.exch.b32 %old,[%address+4],%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.acq_rel.gpu.global.exch.b32",
+        "family": "atom",
+        "operation": "exch",
+        "dtype": "b32",
+        "scope": "gpu",
+        "ordering": "acq_rel",
+        "alignment": 4,
+        "predication": "even global lanes participate; false lanes keep old result",
+        "address_offset": 4
+      }
+    },
+    {
+      "name": "atom_acq_rel_gpu_global_cas_b32",
+      "source": ".version 8.7\n.target sm_80\n.address_size 64\n.visible .entry probe(.param .u64 output,.param .u64 state,.param .u64 input,.param .u32 n,.param .u32 mode) {\n.reg .u64 %output,%state,%input,%offset,%address,%src,%dst;\n.reg .b32 %t,%ct,%nt,%i,%n,%mode,%odd,%bin,%value,%compare,%old;\n.reg .pred %end,%take,%contended;\nld.param.u64 %output,[output]; ld.param.u64 %state,[state]; ld.param.u64 %input,[input];\nld.param.u32 %n,[n]; ld.param.u32 %mode,[mode]; mov.u32 %t,%tid.x; mov.u32 %ct,%ctaid.x; mov.u32 %nt,%ntid.x;\nmad.lo.u32 %i,%ct,%nt,%t; setp.ge.u32 %end,%i,%n; @%end bra DONE;\nsetp.ne.u32 %contended,%mode,0; mov.u32 %bin,%i; @%contended rem.u32 %bin,%i,17;\nmul.wide.u32 %offset,%i,8; add.u64 %src,%input,%offset;\nld.global.b32 %value,[%src]; ld.global.b32 %compare,[%src+4];\nmul.wide.u32 %offset,%bin,4; add.u64 %address,%state,%offset;\nand.b32 %odd,%i,1; setp.eq.u32 %take,%odd,0; mov.b32 %old,324508639;\n@%take atom.acq_rel.gpu.global.cas.b32 %old,[%address+4],%compare,%value;\nmul.wide.u32 %offset,%i,4; add.u64 %dst,%output,%offset; st.global.u32 [%dst],%old;\nDONE: ret; }\n",
+      "contract": {
+        "form": "atom.acq_rel.gpu.global.cas.b32",
+        "family": "atom",
+        "operation": "cas",
+        "dtype": "b32",
+        "scope": "gpu",
+        "ordering": "acq_rel",
         "alignment": 4,
         "predication": "even global lanes participate; false lanes keep old result",
         "address_offset": 4

@@ -1,0 +1,11 @@
+.version 8.7
+.target sm_80
+.address_size 64
+.func (.param .b32 result) internal(.param .b32 input);
+.extern .func (.param .b32 r) tail(.param .b32 a);
+.visible .func (.param .b32 result) helper(.param .b32 input){
+.reg .b32 %x,%v;ld.param.b32 %x,[input];.param .b32 a;.param .b32 r;st.param.b32 [a],%x;call.uni (r),internal,(a);ld.param.b32 %v,[r];st.param.b32 [a],%v;call.uni (r),tail,(a);ld.param.b32 %v,[r];st.param.b32 [result],%v;ret;
+}
+.func (.param .b32 result) internal(.param .b32 input){
+.reg .b32 %x,%v;ld.param.b32 %x,[input];add.u32 %v,%x,3;st.param.b32 [result],%v;ret;
+}

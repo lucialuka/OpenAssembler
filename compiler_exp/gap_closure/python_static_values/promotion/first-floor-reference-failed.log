@@ -1,0 +1,32 @@
+........................................................................ [ 61%]
+.............................F................                           [100%]
+=================================== FAILURES ===================================
+_ test_constant_only_kernel_original_identity_and_independent_values[VALUE:Final[int]=(-17//3)*9+(-17%3)-i64(VALUE)--52] _
+
+definition = 'VALUE:Final[int]=(-17//3)*9+(-17%3)', expression = 'i64(VALUE)'
+expected_value = -52
+tmp_path = PosixPath('/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/pytest-of-lucasfang/pytest-623/test_constant_only_kernel_orig0')
+
+    @pytest.mark.parametrize('definition,expression,expected_value',[
+     ('VALUE:Final[int]=(-17//3)*9+(-17%3)','i64(VALUE)',-52),
+     ('VALUE:Final[int]=(2**100+7)>>80','i64(VALUE)',1<<20),
+     ('TABLE:Final[tuple[int,...]]=(3,5,7)\nVALUE:Final[int]=len(TABLE[::-1])+TABLE[-1]','i64(VALUE)',10),
+     ('FLAG:Final[bool]=(3<5)\nVALUE:Final[int]=7','i64(VALUE)',7),
+     ('VALUE:Final[float]=16777217.0','VALUE',16777216.0),
+    ])
+    def test_constant_only_kernel_original_identity_and_independent_values(definition,expression,expected_value,tmp_path):
+     dtype='f32'if type(expected_value)is float else'i64';source=tmp_path/'static.py'
+     source.write_text('from typing import Final\nfrom openassembler.pyfront import *\n'+definition+'\n@kernel\ndef k(out:Array('+dtype+')):\n    out[0]='+expression+'\n')
+     text,_=compile_file(source);graph=contract_from_ptx(text);assert not graph['helpers']and graph['static_values']
+     module=parse_module(text);memory=Memory();out=0x100000000;Interp(module,'k',PLaunch(params={'out':out}),memory).run()
+>    fmt='<f'if dtype=='f32'else'<q';actual=bytes(memory.read(out+i,1)for i in range(struct.calcsize(fmt)));assert actual==struct.pack(fmt,expected_value)
+                                                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E    AssertionError: assert b'\xcb\xff\xf...f\xff\xff\xff' == b'\xcc\xff\xf...f\xff\xff\xff'
+E      
+E      At index 0 diff: b'\xcb' != b'\xcc'
+E      Use -v to get more diff
+
+compiler_exp/gap_closure/python_static_values/promotion/test-stage/test_pyfront_static_values.py:59: AssertionError
+=========================== short test summary info ============================
+FAILED compiler_exp/gap_closure/python_static_values/promotion/test-stage/test_pyfront_static_values.py::test_constant_only_kernel_original_identity_and_independent_values[VALUE:Final[int]=(-17//3)*9+(-17%3)-i64(VALUE)--52]
+1 failed, 117 passed in 4.18s

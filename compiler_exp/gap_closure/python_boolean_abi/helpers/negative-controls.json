@@ -1,0 +1,167 @@
+{
+  "schema": 1,
+  "passed": true,
+  "results": [
+    {
+      "name": "integer_argument",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(1))\n",
+      "reason": "expected pred, got s32",
+      "rejected": true,
+      "diagnostic": "device helper 'h' expected pred, got s32 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/integer_argument.py, line 7)"
+    },
+    {
+      "name": "numeric_argument",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(a[0]))\n",
+      "reason": "expected pred, got s32",
+      "rejected": true,
+      "diagnostic": "device helper 'h' expected pred, got s32 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/numeric_argument.py, line 7)"
+    },
+    {
+      "name": "float_argument",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return x\n@kernel\ndef k(a:Array(f32)):\n    a[0]=float(i32(h(a[0])))\n",
+      "reason": "expected pred, got f32",
+      "rejected": true,
+      "diagnostic": "device helper 'h' expected pred, got f32 (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/float_argument.py, line 7)"
+    },
+    {
+      "name": "numeric_return",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return 1\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "returns s32, annotated pred",
+      "rejected": true,
+      "diagnostic": "device helper 'h' returns s32, annotated pred (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/numeric_return.py, line 4)"
+    },
+    {
+      "name": "mixed_return",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    if x:\n        return True\n    return 0\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "returns s32, annotated pred",
+      "rejected": true,
+      "diagnostic": "device helper returns s32, annotated pred (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/mixed_return.py, line 6)"
+    },
+    {
+      "name": "missing_return",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    if x:\n        return True\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "return on every path",
+      "rejected": true,
+      "diagnostic": "device helper requires a terminal return or scalar return on every path (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/missing_return.py, line 3)"
+    },
+    {
+      "name": "bool_to_integer",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:i32)->i32:\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=h(True)\n",
+      "reason": "expected s32, got pred",
+      "rejected": true,
+      "diagnostic": "device helper 'h' expected s32, got pred (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/bool_to_integer.py, line 7)"
+    },
+    {
+      "name": "bool_array_argument",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:Array(bool))->bool:\n    return True\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "unsupported type annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/bool_array_argument.py, line 3)"
+    },
+    {
+      "name": "bool_array_return",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->Array(bool):\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "unsupported type annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/bool_array_return.py, line 3)"
+    },
+    {
+      "name": "kernel_parameter",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32),flag:bool):\n    a[0]=i32(flag)\n",
+      "reason": "unsupported type annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/kernel_parameter.py, line 3)"
+    },
+    {
+      "name": "array_parameter",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(bool)):\n    a[0]=True\n",
+      "reason": "unsupported type annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/array_parameter.py, line 3)"
+    },
+    {
+      "name": "buffer_parameter",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Buffer(bool,(4,))):\n    a[0]=True\n",
+      "reason": "unsupported type annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/buffer_parameter.py, line 3)"
+    },
+    {
+      "name": "shared_storage",
+      "source": "from openassembler.pyfront import *\n@kernel\ndef k(a:Array(i32)):\n    data=shared_array(4,bool)\n    a[0]=1\n",
+      "reason": "unsupported type annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation '4' (use i32, u32, i64, u64, f32 or Array of those types) (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/shared_storage.py, line 4)"
+    },
+    {
+      "name": "memory_helper",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return bool(a[0])\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "cannot access memory",
+      "rejected": true,
+      "diagnostic": "device helpers cannot access memory (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/memory_helper.py, line 4)"
+    },
+    {
+      "name": "atomic_helper",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return bool(atomic_add(a,0,1))\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "pure scalar calls",
+      "rejected": true,
+      "diagnostic": "device helpers allow only pure scalar calls (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/atomic_helper.py, line 4)"
+    },
+    {
+      "name": "barrier_helper",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    syncthreads()\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "pure scalar calls",
+      "rejected": true,
+      "diagnostic": "device helpers allow only pure scalar calls (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/barrier_helper.py, line 4)"
+    },
+    {
+      "name": "capture",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return flag\n@kernel\ndef k(a:Array(i32)):\n    flag=True\n    a[0]=i32(h(flag))\n",
+      "reason": "uninitialized or captured",
+      "rejected": true,
+      "diagnostic": "device helper local 'flag' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/capture.py, line 4)"
+    },
+    {
+      "name": "uninitialized",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    if x:\n        flag=True\n    return flag\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "uninitialized",
+      "rejected": true,
+      "diagnostic": "device helper local 'flag' may be uninitialized or captured (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/uninitialized.py, line 6)"
+    },
+    {
+      "name": "recursion",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return h(x)\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "recursive",
+      "rejected": true,
+      "diagnostic": "recursive device helper call: h -> h (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/recursion.py, line 4)"
+    },
+    {
+      "name": "keyword_call",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(x=True))\n",
+      "reason": "keyword",
+      "rejected": true,
+      "diagnostic": "device helper keyword arguments are not supported (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/keyword_call.py, line 7)"
+    },
+    {
+      "name": "boolean_union",
+      "source": "from openassembler.pyfront import *\n@device\ndef h(x:bool)->bool:\n    return x or 7\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "one fixed scalar kind",
+      "rejected": true,
+      "diagnostic": "and/or operands require one fixed scalar kind (/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/boolean_union.py, line 4)"
+    },
+    {
+      "name": "shadow_annotation",
+      "source": "from openassembler.pyfront import *\nbool=i32\n@device\ndef h(x:bool)->bool:\n    return x\n@kernel\ndef k(a:Array(i32)):\n    a[0]=i32(h(True))\n",
+      "reason": "unsupported type annotation",
+      "rejected": true,
+      "diagnostic": "unsupported type annotation 'bool' (use i32, u32, i64, u64, f32 or Array of those types) (/private/var/folders/th/bbk28r3j6772whp0nbk8gcmh0000gn/T/oa-boolean-helper-negative-_rcqt2gu/shadow_annotation.py, line 4)"
+    }
+  ],
+  "source_hashes": {
+    "candidate-pyfront.py": "dd4745ba1e51cc883ff1f7bbe15679ebd23a1a3023cfe989afb3a065f5f22186",
+    "candidate-helpers.py": "4be0fdab259c82ef2728b0295d2d0f31c219e01cdcd5a19723177df08a716f0d",
+    "candidate-modules.py": "902cca5b0083fbe4ccfeb539f5da2055e9f9c3ad61f300cebb9a1b2be23dbe5f",
+    "negative_controls.py": "56ca78847cbccd8789daa2ff5d0d36a7a4401fb23bdb2451b91e5cd8d17737e4"
+  },
+  "scope": "22 original helper type/effect/source/initialization and physical Boolean ABI rejection controls; no GPU claim"
+}
