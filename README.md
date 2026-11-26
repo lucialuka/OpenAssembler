@@ -33,9 +33,10 @@ modal setup
 From a source checkout, compile and run the vector-add example on a Modal A100:
 
 ```bash
-openassembler compile examples/vector_add.py --backend modal --out-dir output/first-kernel --verify
-openassembler run output/first-kernel --spec examples/run_spec.json --backend modal
+openassembler compile examples/vector_add.py --backend [local, modal, user@host] --out-dir output/first-kernel --verify
+openassembler run output/first-kernel --spec examples/run_spec.json --backend [local, modal, user@host]
 ```
+For the `--backend` flag, there are three available options: local, modal, user@host. The first only allow you to compile, the second (through modal) and the third (through SSH into your Nvidia hardware) can do both compilation and execution of the compiled cuda binary files. 
 
 The [first-kernel walkthrough](docs/getting-started/first-kernel.md) explains
 the expected artifacts and launch specification. See the
