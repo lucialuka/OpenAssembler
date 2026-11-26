@@ -15,10 +15,20 @@ Production execution loads OpenAssembler-owned cubins through the CUDA driver.
 ## Quick start
 
 Install with Homebrew and authenticate Modal once:
+```bash
+brew tap lucialuka/openassembler https://github.com/lucialuka/OpenAssembler
+brew install lucialuka/openassembler/openassembler
+```
+<details>
+  <summary>If you are using Modal</summary>
+If you do not have access to real NVIDIA hardware, you can use Modal for A100 and other Nvidia hardware. Just enter:
 
-    brew tap lucialuka/openassembler https://github.com/lucialuka/OpenAssembler
-    brew install lucialuka/openassembler/openassembler
-    modal setup
+```bash
+modal setup
+```
+</details>
+
+---
 
 From a source checkout, compile and run the vector-add example on a Modal A100:
 
