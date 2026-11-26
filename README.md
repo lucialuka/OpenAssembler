@@ -4,13 +4,13 @@
 
 <h1 align="center">OpenAssembler</h1>
 
-**Compile supported GPU kernels and Python model graphs to native NVIDIA SASS and cubins.**
+**Compile customized GPU kernels and Python model graphs to native NVIDIA SASS and cubins.**
 
 OpenAssembler targets **A100 / SM80**. Its native backend selects instructions,
 allocates registers, schedules dependencies and encodes GPU machine code.
 Production execution loads OpenAssembler-owned cubins through the CUDA driver.
 
-**Python 3.12+ · Linux and macOS · Apache 2.0**
+<h4 align="center"> Python 3.12+ · Linux and macOS · Apache 2.0 </h4>
 
 ## Quick start
 
@@ -21,7 +21,7 @@ brew install lucialuka/openassembler/openassembler
 ```
 <details>
   <summary>If you are using Modal</summary>
-If you do not have access to real NVIDIA hardware, you can use Modal for A100 and other Nvidia hardware. Just enter:
+    If you do not have access to real NVIDIA hardware, you can use Modal for A100 and other Nvidia hardware. Just enter:
 
 ```bash
 modal setup
@@ -32,8 +32,10 @@ modal setup
 
 From a source checkout, compile and run the vector-add example on a Modal A100:
 
-    openassembler compile examples/vector_add.py --backend modal --out-dir output/first-kernel --verify
-    openassembler run output/first-kernel --spec examples/run_spec.json --backend modal
+```bash
+openassembler compile examples/vector_add.py --backend modal --out-dir output/first-kernel --verify
+openassembler run output/first-kernel --spec examples/run_spec.json --backend modal
+```
 
 The [first-kernel walkthrough](docs/getting-started/first-kernel.md) explains
 the expected artifacts and launch specification. See the
@@ -45,7 +47,7 @@ macOS/Colima and SSH requirements.
 | Input | Compilation route |
 |---|---|
 | PTX | OpenAssembler parses admitted PTX and compiles it with the native backend. |
-| Typed Python kernels | The supported @kernel subset lowers to PTX, then uses the native backend. |
+| Typed Python kernels | **Customized Kernel MUST use @kernel at the start.** The supported @kernel subset lowers to PTX, then uses the native backend. |
 | CUDA C/C++ device sources | nvcc emits PTX; OpenAssembler compiles the admitted PTX. |
 | Python model repositories | Static discovery or an explicit model contract captures supported CPU PyTorch graphs and generates native kernels. |
 | Generated GEMM and rowwise kernels | Dedicated generators compile bounded shape and policy contracts. |
