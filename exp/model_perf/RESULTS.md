@@ -1,5 +1,137 @@
 # Exact model kernel performance improvements
 
+## November 27 stream repair and composed projections
+
+The continuation repairs a demonstrated cross-stream workspace race and
+integrates two execution optimizations through the ordinary model compiler.
+The measured three-projection inference task now beats the frozen direct
+Triton arm. All figures below describe resident GPU work with explicit FP16
+RNE operands, FP32 accumulation/storage and the original FP32 bias/sum order.
+
+### Stream-ordered initialization and poisoning
+
+The driver's legacy `cuMemsetD8` call can return before its work completes on
+the default stream. The [delayed-stream probe](evidence/memory-order-20261126T155148Z.json)
+observed old bytes from an independent nonblocking stream at all three tested
+sizes. A [complete model reproduction](evidence/runtime-memory-order-20261126T155329Z.json)
+then delayed that legacy stream before workspace poisoning. The retained
+implementation overwrote all 16,384 prediction elements after forward in each
+of three trials. Stream-ordered poisoning passed every element in all three.
+The [integrated reproduction](evidence/runtime-memory-order-20261126T155651Z.json)
+repeats the failed/repaired comparison through production.
+
+`Driver.memset_async` now enqueues work on the owning model stream. Runtime
+guard initialization, workspace poisoning and optimizer-state zeroing use that
+entry point. Research comparator buffers also initialize on their consumer
+stream. The existing legacy helper remains available for its other callers.
+The [policy audit](evidence/stream-memory-continuity-20261126.json) preserves
+all 49 installed policies across 98 retained native sessions before source
+identities are rebound. Native instruction generation is unchanged by this
+driver API addition.
+
+This repairs an independently reproduced ordering defect in the same poison
+path implicated by the earlier incomplete failure report. That older report
+has no full failure inputs, so its precise numerical symptom cannot be
+retrospectively attributed. The new failed/repaired reproducer and later
+deliberately delayed-stream training gates provide the repair evidence.
+
+### Bias epilogues and one wider product
+
+For the three admitted tile64 linear shapes, the bias epilogue performs the
+same FP32 addition after the tensor accumulator becomes ready. It removes a
+separate output read/write and launch. A
+[complete standalone check](evidence/bias-epilogue-20261126T160033Z.json)
+passes 54 direct/replay cases across the three shapes, including zeros,
+integers, random finite inputs, cancellation, dyadic common offsets and
+exceptional bias values. Fused outputs match the separate product/bias path
+exactly under the NaN comparison convention. Existing HMMA drains and async
+copy synchronization remain intact.
+
+The subsequent composition matches exactly `q(x)+k(x)+v(x)` with three biased
+128×128 projections and a 128×128 input. It packs the three weights in one
+launch, computes a 128×384 product, then adds each bias and sums the three
+columns in the original order. Input packing is shared. The resulting forward
+has four launches, compared with nine after the bias epilogue optimization.
+The matcher rejects exposed intermediate results, backward consumers of those
+intermediates, different shapes/types/packing and different sum orders.
+Training keeps its original backward graph and update policy.
+
+The [staged composition experiment](evidence/projection-composition-20261126T160744Z.json)
+passed complete changing-input/weight inference and measured 15.51 µs versus
+the direct Triton arm's 19.25 µs on A100-SXM4-40GB. Production then passed
+inference and complete training across all four storage configurations in a
+[delayed-stream stress campaign](evidence/composition-stress-integrated-20261126T161045Z.json),
+an [independent seed confirmation](evidence/composition-confirm-integrated-20261126T161327Z.json)
+and the [final matched-control campaign](evidence/composition-final-integrated-20261126T161422Z.json).
+These workers retain separate UUIDs and absolute times.
+
+Final timing uses A100-SXM4-40GB, Torch 2.7.1+cu128, Triton 3.3.1 and CUDA
+toolkit 12.8. Values are medians of three round medians, with fifteen randomized
+samples per round and four resident invocations per CUDA Graph. All intervals
+are µs. Both ptxas controls use their corresponding OA source and allocation/
+launch schedule, confirmed against independent profiler ledgers. Compilation,
+capture, allocation, CPU validation, transfers and delivery are excluded.
+
+| Task, views/reuse enabled | Prior OA with fused bias | Composed OA | Matched composed PTX + ptxas | Direct Triton | Launches |
+|---|---:|---:|---:|---:|---:|
+| Three-projection inference | 35.42 | 15.38 | 14.03 | 19.23 | 9→4 |
+| Three-projection training | 160.01 | 139.61 | 111.15 | 74.09 | 40→35 |
+
+Inference improves **2.30× over the preceding OA path** and **1.25× over this
+Triton arm**. With views/reuse varied, composed inference medians range from
+15.38 to 15.52 µs against Triton's 19.23 to 19.39 µs in the same paired rows.
+Training improves about 1.15× over preceding OA while remaining about 1.88×
+slower than Triton. Broader graph shapes and dense-MLP training require their
+own performance validation.
+
+All eight final configurations pass six direct iterations and six actual
+captured replays in five arms. Inputs/targets change every iteration and
+inference changes every weight after capture. Full prediction, loss, input/
+parameter gradients, updated weights, immutable inputs and allocation guards
+pass the original `rtol=0.002, atol=0.00002` gate. The stress run delays the
+legacy stream before each OA poison. The
+[independent snapshot audit](evidence/composition-audit-20261127.json) verifies
+**3,840 field checks**, reloads snapshots covering **5,929,000 output
+elements**, checks native code/resources/source hashes and recomputes every
+timing median. Final profiler audits match both native and both ptxas launch
+ledgers.
+
+The full shared-checkout suite passes **4,668 tests with 16 explicit skips**.
+The final focused source checks pass **49 tests**, and the CUDA/Torch worker
+passes **64 tests**, including the composition admission and bias ABI cases.
+The [validation record](evidence/stream-bias-validation-20261127.json) binds
+the delivered kernel/runtime sources to these gates and retained hardware
+records.
+
+### Costs, failed controls and scope
+
+With storage reuse, private guarded allocations grow from 723,012 to 985,188
+bytes, an extra **262,176 bytes**. Without storage reuse they grow from
+1,181,988 to 1,444,164 bytes. A single final inference build pair measured
+4.063→4.178 seconds. At its paired 20.04 µs steady-state saving, that observed
+additional build cost corresponds to roughly 5,742 invocations. Startup and
+tuning are outside this calculation. Build samples are observations, not a
+portable break-even guarantee, and Triton upfront cost was not measured at the
+same boundary.
+
+The first bias prototype failed a canary gate because its bias/output parameter
+order disagreed with the launch ABI. The corrected prototype and production
+tests explicitly check that ABI. An initial common-offset numerical stress
+case matched fused/unfused outputs exactly but failed the existing near-zero
+CPU-reference tolerance. It remains retained as a limitation of that stress
+case. The later dyadic-offset fixture permits an exact independent FP32
+reference without changing tolerance. An early composition harness selected no
+candidate because it expected a different source-step order. The corrected
+harness requires the composition matcher to apply before it can time a result.
+Failed and no-op envelopes receive no speedup claim.
+
+The [evidence index](evidence/kernel-study-20261126.json) retains source-bound
+success/failure envelopes, snapshots/archive identities and test logs. Raw
+archives stay under ignored `runs/`. Concurrent installation/CLI/UI work in the
+shared checkout is outside this kernel study. The tensor dependency scheduler,
+general projection geometries, embedding gradients and tiled attention remain
+separate research projects.
+
 ## November 26 kernel-research continuation
 
 The first completed changes from the attached agenda are bounded forward pack

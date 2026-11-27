@@ -11,7 +11,9 @@ def main():
     evidence = here / 'evidence'
     records = []
     for run in sorted((here / 'runs').iterdir()):
-        if not run.name.startswith(('native-pack-', 'pack-reuse-', 'allocator-build-')):
+        if not run.name.startswith(('native-pack-', 'pack-reuse-', 'allocator-build-', 'memory-order-',
+                                    'runtime-memory-order-', 'bias-fusion-', 'bias-epilogue-', 'stream-bias-tests-',
+                                    'projection-composition-', 'composition-')):
             continue
         result = run / 'result.json'
         if not result.exists():
@@ -35,7 +37,8 @@ def main():
     scratch = Path('output/kernel-research')
     for name in ('allocator-experiment.json', 'allocator-intervals-experiment.json',
                  'allocator-integrated.json', 'allocator-all-integrated.json', 'allocator-cold.json',
-                 'full-suite.log', 'final-suite.log', 'targeted.log', 'docs-check.log'):
+                 'full-suite.log', 'final-suite.log', 'stream-bias-full-suite.log', 'targeted.log',
+                 'bias-unit.log', 'stream-bias-focused.log', 'composition-focused.log', 'composition-full-suite.log', 'docs-check.log'):
         source = scratch / name
         if source.exists():
             target = evidence / ('kernel-study-' + name)
@@ -44,7 +47,8 @@ def main():
                             'sha256': sha256(target.read_bytes()).hexdigest()})
     output = evidence / 'kernel-study-20261126.json'
     for name in ('allocator-continuity-20261126.json', 'pack-reuse-complete-state-audit-20261126.json',
-                 'kernel-study-validation-20261126.json'):
+                 'kernel-study-validation-20261126.json', 'stream-memory-continuity-20261126.json',
+                 'bias-fusion-audit-20261127.json', 'composition-audit-20261127.json', 'stream-bias-validation-20261127.json'):
         proof = evidence / name
         if proof.exists():
             records.append({'result': str(proof.relative_to(here)), 'sha256': sha256(proof.read_bytes()).hexdigest()})

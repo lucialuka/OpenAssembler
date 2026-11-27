@@ -1,5 +1,9 @@
 # Naive scalar attention-score baseline
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: tested-not-selected
 
 The retained exact hardware comparison fails. This is an illustrative source
@@ -37,7 +41,7 @@ From the repository root with Python 3.12+, CUDA 12.8 tools and an authenticated
 Modal client or another supported GPU backend:
 
 ```sh
-openassembler compile examples/nn_ops.py --kernel attention_scores \
+compile examples/nn_ops.py --kernel attention_scores \
   --out-dir output_attention_scores
 .venv/bin/python tools/nn_study.py --help
 .venv/bin/python tools/nn_study.py --dry-run --out-dir output_nn_study

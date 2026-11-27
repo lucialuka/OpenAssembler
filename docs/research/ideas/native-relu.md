@@ -1,5 +1,9 @@
 # Native scalar ReLU example
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The explicit example compiles and passes exact finite-input output checks.
@@ -47,8 +51,8 @@ Run from the repository root with Python 3.12+, CUDA 12.8 tools, and a GPU or
 authenticated Modal client for hardware:
 
 ```sh
-openassembler compile examples/nn_ops.py --kernel relu --out-dir output_relu
-openassembler run output_relu --kernel relu --backend modal -n 1048576 --budget 300
+compile examples/nn_ops.py --kernel relu --out-dir output_relu
+run output_relu --kernel relu --backend modal -n 1048576 --budget 300
 modal run exp/whole_stack/native_ops.py --rebuild
 .venv/bin/python -m pytest -q tests/test_pyfront.py tests/test_backend_ops.py
 ```

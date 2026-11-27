@@ -3,6 +3,7 @@ class Openassembler < Formula
   homepage "https://github.com/lucialuka/OpenAssembler"
   url "https://github.com/lucialuka/OpenAssembler/archive/refs/heads/main.tar.gz"
   version "0.2.0"
+  revision 1
   license "Apache-2.0"
 
   # OpenAssembler's compiler and emulator use only the Python standard library.
@@ -22,7 +23,7 @@ class Openassembler < Formula
       #!/bin/bash
       set -euo pipefail
       export PYTHONPATH="#{libexec}${PYTHONPATH:+:$PYTHONPATH}"
-      exec "#{formula_opt_bin("python@3.12")}/python3.12" -m openassembler "$@"
+      exec "#{formula_opt_bin("python@3.12")}/python3.12" -P -m openassembler "$@"
     EOS
 
     (bin / "openassembler-cuda").write <<~EOS
@@ -36,11 +37,6 @@ class Openassembler < Formula
       set -euo pipefail
       exec "#{libexec}/env/fetch_cuda.sh" "$@"
     EOS
-  end
-
-  def post_install
-    # The same per-user stamp suppresses subsequent CLI and REPL logos.
-    system bin/"openassembler", "welcome"
   end
 
   def caveats
@@ -58,10 +54,18 @@ class Openassembler < Formula
         colima start
         openassembler-fetch-cuda
 
-      The usual repository workflow is:
-        openassembler compile /path/to/repo --backend modal --verify
-        openassembler run /path/to/repo --backend modal
-        openassembler cnr /path/to/repo --backend modal --verify
+      Start the interactive shell from your terminal:
+        openassembler
+
+      Then enter commands at its prompt:
+        compile /path/to/repo --backend modal --verify
+        run /path/to/repo --backend modal
+        cnr /path/to/repo --backend modal --verify
+        exit
+
+      If an active Python environment shadows this command, leave that
+      environment with `deactivate`, or launch this installation directly:
+        #{opt_bin}/openassembler
     EOS
   end
 
@@ -71,6 +75,8 @@ class Openassembler < Formula
     assert_match "compile", help
     assert_match "cnr", help
     assert_match "modal", help.downcase
+    shell = pipe_output("#{bin}/openassembler", "help compile\nexit\n", 0)
+    assert_match "--backend", shell
     assert_path_exists libexec / "env/cuda.sh"
     assert_path_exists bin / "openassembler-cuda"
     assert_path_exists bin / "openassembler-fetch-cuda"

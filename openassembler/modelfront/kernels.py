@@ -279,12 +279,17 @@ def tensor_recipes(plan, specs=None):
         return {}
     from .kernels_tensor import emit_tensor_recipe
     specs = specs or tensor_specs(plan)
+    from . import tensor_projection
+    composed = tensor_projection.match(plan)
     recipes = {}
-    for step in plan.get("steps", []) + plan.get("backward", {}).get("steps", []):
+    for step in ([] if composed else plan.get("steps", [])) + plan.get("backward", {}).get("steps", []):
         if step["kernel"] in ("linear", "linear_dx", "linear_dw", "bmm", "bmm_dx", "bmm_dw"):
             recipe = emit_tensor_recipe(step["kernel"], [specs[x] for x in step["inputs"]],
                                         specs[step["output"]], {"math_mode":mode,"packing":packing})
             recipes[recipe.name] = recipe
+    if composed:
+        recipe = tensor_projection.recipe()
+        recipes[recipe.name] = recipe
     return recipes
 
 
@@ -388,6 +393,14 @@ def prepare(plan):
         kernels[kernel.name] = kernel
     elif plan.get("loss", "mse") != "mse":
         raise ValueError("unsupported native loss policy")
+    from . import tensor_projection
+    composed = tensor_projection.match(plan)
+    if composed:
+        recipe = tensor_projection.recipe()
+        names, output = composed
+        steps = [{'kernel': 'projection_sum3', 'entry': recipe.name, 'inputs': names,
+                  'output': output, 'phase': 'forward', 'tensor': True},
+                 *[step for step in steps if step['phase'] != 'forward']]
     return specs, steps, kernels
 
 

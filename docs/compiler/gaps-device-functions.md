@@ -1,5 +1,9 @@
 # Direct scalar PTX device-function specialization
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented for direct scalar parameter calls and explicit source libraries;
 G16 and G10 remain partial beyond the contract below.
 
@@ -131,9 +135,9 @@ below; the original baseline, failed visibility hypothesis and research gate
 remain intact.
 
 ```sh
-openassembler compile entry.cu --device-library helper.cu --out-dir build
-openassembler compile entry.ptx --device-library math.ptx --device-library util.ptx --out-dir build
-openassembler compile entry.cu --device-library helper.cu --compile-commands compile_commands.json --build-backend modal --out-dir build
+compile entry.cu --device-library helper.cu --out-dir build
+compile entry.ptx --device-library math.ptx --device-library util.ptx --out-dir build
+compile entry.cu --device-library helper.cu --compile-commands compile_commands.json --build-backend modal --out-dir build
 ```
 
 `--device-library SOURCE` is repeatable on standalone `compile`/`cnr` routes.

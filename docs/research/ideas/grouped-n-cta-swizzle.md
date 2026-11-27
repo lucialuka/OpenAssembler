@@ -1,5 +1,9 @@
 # CUTLASS-style grouped-N CTA traversal
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 This experiment tests a public CUTLASS CTA traversal policy against OA's
@@ -55,7 +59,7 @@ gates pass; source and toolkit identities are retained in the
 ```bash
 pytest -q exp/gemm_dispatch/test_cta_swizzle.py
 modal run exp/gemm_dispatch/grouped_n_modal.py --rounds 2 --samples 8
-openassembler gemm --m 16384 --n 4096 --k 4096 \
+gemm --m 16384 --n 4096 --k 4096 \
   --cta-order grouped_n8 --out-dir output_grouped_n
 ```
 

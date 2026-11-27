@@ -1,5 +1,9 @@
 # Serial scalar cross-entropy baseline
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: tested-not-selected
 
 The example source exists and compiles, but the retained November 2 hardware
@@ -39,7 +43,7 @@ From the repository root, use Python 3.12+, CUDA 12.8 tools and an authenticated
 Modal client or compatible GPU backend:
 
 ```sh
-openassembler compile examples/nn_ops.py --kernel cross_entropy --out-dir output_cross_entropy
+compile examples/nn_ops.py --kernel cross_entropy --out-dir output_cross_entropy
 .venv/bin/python tools/nn_study.py --help
 .venv/bin/python tools/nn_study.py --dry-run --out-dir output_nn_study
 .venv/bin/python tools/nn_study.py --backend modal --budget 180 --rounds 3 --reps 20 \

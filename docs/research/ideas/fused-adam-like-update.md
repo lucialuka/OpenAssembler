@@ -1,5 +1,9 @@
 # Fused Adam-like scalar update example
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The explicit one-kernel formula passes its declared accuracy gate. It is not
@@ -58,7 +62,7 @@ From the repository root, use Python 3.12+, CUDA 12.8 tools and an authenticated
 Modal client for the hardware study:
 
 ```sh
-openassembler compile examples/nn_ops.py --kernel adam_step --out-dir output_adam_like
+compile examples/nn_ops.py --kernel adam_step --out-dir output_adam_like
 modal run exp/whole_stack/native_ops.py --rebuild
 .venv/bin/python -m pytest -q tests/test_pyfront.py tests/test_backend_ops.py
 ```

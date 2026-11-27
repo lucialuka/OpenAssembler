@@ -305,6 +305,18 @@ KV-cache half support, or a performance claim over NVIDIA/Triton.
 
 ## Exact model performance follow-up, November 19
 
+The November 27 [kernel continuation](../../../exp/model_perf/RESULTS.md) repairs
+workspace initialization/poisoning on nonblocking model streams, fuses FP32 bias
+after selected tile64 products and composes a bounded three-projection graph.
+The composed graph packs its three weights together, runs one 128×384 product
+and applies the original bias/sum association. Exposed intermediates, backward
+uses of those intermediates, different shapes and different sum orders retain
+the original path. Full changed-input/weight inference, training gradients,
+updates and graph replay gates accompany the production measurements. The
+measured projection inference contract beats the frozen direct Triton arm;
+training retains a substantial gap. Workspace growth and build/runtime
+measurement boundaries are recorded in the dossier.
+
 The subsequent November 26 [pack-reuse study](../../../exp/model_perf/RESULTS.md)
 reuses a repeated row-major 128×128 FP16 operand pack within one forward call.
 Identity includes the logical source, exact layout and conversion signature.

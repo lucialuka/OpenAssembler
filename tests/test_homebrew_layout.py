@@ -22,7 +22,7 @@ def test_formula_declares_runtime_and_complete_source_layout():
     for command in ("openassembler", "openassembler-cuda", "openassembler-fetch-cuda"):
         assert f'bin / "{command}"' in formula
     assert 'refs/heads/main.tar.gz' in formula
-    assert 'def post_install' in formula and '"welcome"' in formula
+    assert 'def post_install' not in formula and '"welcome"' not in formula
     assert subprocess.run(["ruby", "-c", str(FORMULA)], capture_output=True,
                           text=True, check=True).stdout.strip() == "Syntax OK"
 
@@ -44,3 +44,25 @@ def test_relocated_source_tree_runs_without_editable_install(tmp_path):
     status = subprocess.run([sys.executable, "-m", "openassembler", "status"],
                             cwd=tmp_path, env=env, capture_output=True, text=True, check=True)
     assert "Repository regression" in status.stdout
+
+    # Execute the formula's actual launcher from a different working directory,
+    # including a conflicting package and inherited PYTHONPATH, as after brew install.
+    import re
+    launcher = re.search(r'\(bin / "openassembler"\).write <<~EOS\n(.*?)    EOS',
+                         FORMULA.read_text(), re.S)[1]
+    import textwrap
+    launcher = textwrap.dedent(launcher).replace('#{libexec}', str(tmp_path))
+    launcher = launcher.replace('#{formula_opt_bin("python@3.12")}/python3.12', sys.executable)
+    script = tmp_path / 'openassembler-launcher'
+    script.write_text(launcher)
+    script.chmod(0o755)
+    hostile = tmp_path / 'working-directory'
+    hostile.mkdir()
+    (hostile / 'openassembler.py').write_text('raise RuntimeError("wrong package")')
+    env['PYTHONPATH'] = str(hostile)
+    launched = subprocess.run([str(script)], input='help compiler\ninspect ../examples/native_model --json\nexit\n',
+                              cwd=hostile, env=env, capture_output=True, text=True, check=True)
+    assert '--backend' in launched.stdout
+    assert '"frontend": "model"' in launched.stdout
+    assert 'OpenAssembler v' not in launched.stdout
+    assert not launched.stderr

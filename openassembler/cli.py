@@ -491,15 +491,6 @@ def cmd_status(a: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_welcome(a: argparse.Namespace) -> int:
-    """Installer/source-checkout welcome; share the normal persistent stamp."""
-    from openassembler.ui.banner import render
-    from openassembler.ui.session import consume_show_once
-    if consume_show_once():
-        print(render())
-    return 0
-
-
 COMPILE_HELP = """Compile a source file or a whole source tree to SASS and CUDA binaries.
 
   openassembler compile examples/div_by_const.ptx -o out --verify
@@ -648,11 +639,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version=f"openassembler {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    pc = sub.add_parser("compile", help="compile a file or a whole repo to SASS + cubin (into output/)",
+    pc = sub.add_parser("compile", aliases=["compiler"], help="compile a file or a whole repo to SASS + cubin (into output/)",
                         description=COMPILE_HELP, formatter_class=argparse.RawDescriptionHelpFormatter)
     pc.add_argument("src", metavar="SRC", nargs="?", default=".", help="source file or repository (default: current directory)")
     _add_compile_args(pc)
-    pc.set_defaults(func=cmd_compile)
+    pc.set_defaults(func=cmd_compile, cmd="compile")
 
     pi = sub.add_parser("inspect", help="show source coverage without running code or using a GPU")
     pi.add_argument("src", metavar="SRC", nargs="?", default=".")
@@ -795,9 +786,6 @@ def build_parser() -> argparse.ArgumentParser:
     ps = sub.add_parser("status", help="print the headline results from docs/STATUS.md")
     ps.set_defaults(func=cmd_status)
 
-    welcome = sub.add_parser("welcome", help="show the installation welcome once for this user")
-    welcome.set_defaults(func=cmd_welcome)
-
     pbench = sub.add_parser("benchmark", help="run or describe the full CLI integration matrix")
     pbench.add_argument("--backend", default="modal", help="GPU backend: modal, local, or user@host")
     pbench.add_argument("--build-backend", choices=("modal", "local", "ssh"), default="modal")
@@ -867,17 +855,6 @@ def main(argv: list[str] | None = None) -> int:
     if not raw:
         from openassembler.ui.repl import run as run_repl
         return run_repl()
-
-    # Installers and every terminal share a persistent per-user welcome. Keep
-    # machine-readable output and help/version probes free of banner text.
-    if (sys.stdout.isatty() and sys.stderr.isatty() and raw[0] != 'welcome'
-            and not {"-h", "--help", "--version", "--json"} & set(raw)):
-        from openassembler.ui.banner import render
-        from openassembler.ui.session import consume_show_once
-
-        if consume_show_once():
-            print(render(), file=sys.stderr)
-            print(file=sys.stderr)
 
     parser = build_parser()
     # A literal source path is the common one-shot build operation. Explicit

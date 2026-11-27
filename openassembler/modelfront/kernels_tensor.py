@@ -89,7 +89,7 @@ def emit_tensor_recipe(op, inputs, output, attrs=None):
 
     Bindings are local recipe names a0/a1 and output. Each recipe owns two
     reusable packed workspaces; training refreshes them on every invocation.
-    Bias is deliberately a separate FP32 graph add rather than a hidden fusion.
+    Exact measured tile64 shapes add FP32 bias in the product epilogue.
     """
     attrs = dict(attrs or {})
     if attrs.pop("math_mode", None) != MATH_MODE:
@@ -172,7 +172,8 @@ done: ret;
 """
         stages += (TensorStage(bias_name,"bias_add",("output","a2"),"output",bias_ptx,
                                {"grid":[(out[1]+127)//128,out[0],1],"threads":128,"smem":0},bias_signature),)
-    return TensorRecipe(name, op, signature, workspaces, stages)
+    from .tensor_epilogue import fuse_bias
+    return fuse_bias(TensorRecipe(name, op, signature, workspaces, stages))
 
 
 def build_tensor_kernels(root, recipes, *, sass_listings=True):

@@ -1,5 +1,9 @@
 # Shape-aware native GEMM dispatch and on-device tuning
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The November 15 [compiler memory/latency campaign](../../compiler/memory-latency.md)
@@ -140,12 +144,12 @@ validation and timing costs; those costs are not included in a steady kernel
 speedup.
 
 ```sh
-openassembler gemm --m 128 --n 512 --k 512 --out-dir output/auto
-openassembler gemm --m 128 --n 512 --k 512 --dispatch manual --out-dir output/control
-openassembler gemm --m 128 --n 512 --k 512 --tile 64x64 --out-dir output/manual64
-openassembler gemm --m 128 --n 512 --k 512 --autotune modal \
+gemm --m 128 --n 512 --k 512 --out-dir output/auto
+gemm --m 128 --n 512 --k 512 --dispatch manual --out-dir output/control
+gemm --m 128 --n 512 --k 512 --tile 64x64 --out-dir output/manual64
+gemm --m 128 --n 512 --k 512 --autotune modal \
   --tuning-record output/tuning/small-output-f16.json --out-dir output/tuned
-openassembler gemm --m 128 --n 512 --k 512 \
+gemm --m 128 --n 512 --k 512 \
   --tuning-record output/tuning/small-output-f16.json --out-dir output/reused
 ```
 

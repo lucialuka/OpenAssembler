@@ -1,5 +1,9 @@
 # CLI and reproduction map
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Commands below use Python 3.12+ from the repository's test environment and the
 CUDA toolkit for real compilation. See [COMMANDS.md](../COMMANDS.md) for every
 flag and [REPRODUCING.md](../../REPRODUCING.md) for the entry map. A compile or
@@ -96,7 +100,7 @@ archived GPU result without a separate Modal or A100 replay.
 | Reduction counters | `exp/weaknesses/reduction_overlap_ncu_modal.py` | `exp/weaknesses/` |
 | Exact GEMM selection/replay | `exp/dispatch_tuning/modal_campaign.py` | `exp/dispatch_tuning/runs/` |
 | Rowwise CTA geometry | `exp/dispatch_tuning/rowwise_modal.py` | `exp/dispatch_tuning/rowwise_runs/` |
-| Whole application capture | `openassembler cnr ... --frontend torch --backend modal` | application output manifest/report |
+| Whole application capture | `cnr ... --frontend torch --backend modal` | application output manifest/report |
 
 ## Environment identity
 

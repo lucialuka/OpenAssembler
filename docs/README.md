@@ -1,5 +1,11 @@
 # OpenAssembler documentation
 
+After installation, type `openassembler` in your terminal to open the interactive
+shell. Enter `compile PATH --backend modal`, `run PATH --backend modal`, or
+`cnr PATH --backend modal --verify`; type `exit` to leave. CLI examples use these
+commands without repeating `openassembler`. Homebrew, Modal, SSH and Python
+setup commands run in your regular terminal.
+
 Choose a path by what you want to do. The established command, workflow, status,
 compiler, research and reverse-engineering records remain detailed references;
 this page links to them rather than copying their evidence tables.

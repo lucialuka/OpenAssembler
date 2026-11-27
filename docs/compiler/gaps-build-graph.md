@@ -1,5 +1,9 @@
 # Recorded NVCC build commands and dependency identities
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 G42 identified that discovering source names does not preserve original build
@@ -88,8 +92,8 @@ integration evidence is recorded beside those source-defined controls.
 
 ```sh
 python -m pytest -q tests/test_compilation_database.py tests/test_cppfront.py tests/test_repo_workflow.py
-openassembler inspect /path/to/repository --json
-openassembler compile /path/to/repository --compile-commands /path/to/build/compile_commands.json --verify
+inspect /path/to/repository --json
+compile /path/to/repository --compile-commands /path/to/build/compile_commands.json --verify
 modal run compiler_exp/gap_closure/build_graph/run_modal.py
 ```
 

@@ -1,5 +1,9 @@
 # Typed Python kernel frontend
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The [typed helper contract](../../compiler/gaps-python.md) adds same-file
@@ -82,8 +86,8 @@ Run from the repository root with Python 3.12+ and CUDA 12.8 `ptxas`/`nvdisasm`.
 Compilation and `--verify` do not require a GPU; actual execution does.
 
 ```sh
-openassembler compile examples/vector_add.py --verify --out-dir output_python
-openassembler run output_python --backend modal --budget 300 --job-timeout 60
+compile examples/vector_add.py --verify --out-dir output_python
+run output_python --backend modal --budget 300 --job-timeout 60
 .venv/bin/python -m pytest -q tests/test_pyfront.py tests/test_pyfront_semantics.py \
   tests/test_pyfront_static.py tests/test_interp_barrier.py tests/test_cli_compile.py
 ```

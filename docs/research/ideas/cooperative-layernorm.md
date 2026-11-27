@@ -1,5 +1,9 @@
 # Cooperative population LayerNorm
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The explicit `rowwise --op layernorm` generator is validated for bounded FP32
@@ -87,10 +91,10 @@ Requirements: Python 3.12+, CUDA 12.8 tools; a real driver/GPU or authenticated
 Modal client for execution. Run from the repository root:
 
 ```sh
-openassembler rowwise --op layernorm --rows 1024 --width 512 --epsilon 1e-5 \
+rowwise --op layernorm --rows 1024 --width 512 --epsilon 1e-5 \
   --out-dir output_norm
-openassembler compile output_norm/.build/generated/layernorm.ptx --out-dir output_norm_again
-openassembler run output_norm --backend modal --budget 180 --job-timeout 60
+compile output_norm/.build/generated/layernorm.ptx --out-dir output_norm_again
+run output_norm --backend modal --budget 180 --job-timeout 60
 .venv/bin/python -m pytest -q tests/test_reduction_codegen.py tests/test_cli_rowwise.py
 ```
 

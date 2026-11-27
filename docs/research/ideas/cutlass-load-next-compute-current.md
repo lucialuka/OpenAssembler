@@ -1,10 +1,14 @@
 # CUTLASS-style load-next / compute-current fragment schedule
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 This experiment adapts a public CUTLASS SM80 mainloop idea to the current OA
 GEMM source. The validated schedule is now available as an explicit production
-`GemmPlan(fragment_schedule="load_next")` / `openassembler gemm
+`GemmPlan(fragment_schedule="load_next")` / `gemm
 --fragment-schedule load_next` option for two exact wide shapes. It does not
 change the default source-order tensor schedule or copy cuBLAS device code.
 
@@ -69,7 +73,7 @@ records. These are paired ratios within each device, not pooled absolute times:
 pytest -q exp/tensor_scheduler/test_load_next_compute_current.py
 modal run exp/tensor_scheduler/load_next_compute_current_modal.py \
   --rounds 2 --samples 8
-openassembler gemm --m 1024 --n 4096 --k 1024 \
+gemm --m 1024 --n 4096 --k 1024 \
   --fragment-schedule load_next --out-dir output_load_next
 ```
 

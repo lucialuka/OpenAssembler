@@ -1,5 +1,9 @@
 # Masked attention, indexed models and persistent training state
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented within the contracts below, November 20, 2026. Research
 candidates preceded production changes. The [protocol](../../compiler_exp/model_semantics/PROTOCOL.md)
 fixes numerical policy and gates; [source research](../../compiler_exp/model_semantics/sources.json)
@@ -80,8 +84,8 @@ The checked example contains embedding, causal attention, residual branches,
 LayerNorm, tanh GELU and a vocabulary projection:
 
 ```sh
-openassembler compile examples/native_language_model --backend modal --verify --no-sass
-openassembler run examples/native_language_model --backend modal --verify
+compile examples/native_language_model --backend modal --verify --no-sass
+run examples/native_language_model --backend modal --verify
 ```
 
 Its [configuration](../../examples/native_language_model/openassembler.toml)

@@ -1,5 +1,9 @@
 # Cooperative FP32 row softmax
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The explicit `rowwise --op softmax` generator passes its declared numerical
@@ -84,9 +88,9 @@ authenticated optional Modal client for hardware. The CLI smoke is independent
 of the larger numerical experiment:
 
 ```sh
-openassembler rowwise --op softmax --rows 1024 --width 512 --out-dir output_softmax
-openassembler compile output_softmax/.build/generated/softmax.ptx --out-dir output_softmax_again
-openassembler run output_softmax --backend modal --budget 180 --job-timeout 60
+rowwise --op softmax --rows 1024 --width 512 --out-dir output_softmax
+compile output_softmax/.build/generated/softmax.ptx --out-dir output_softmax_again
+run output_softmax --backend modal --budget 180 --job-timeout 60
 .venv/bin/python -m pytest -q tests/test_reduction_codegen.py tests/test_cli_rowwise.py
 ```
 

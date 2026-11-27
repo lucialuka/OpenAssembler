@@ -1,5 +1,9 @@
 # FP32 model convolution
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 `nn.Conv2d`, `torch.conv2d` and `torch.nn.functional.conv2d` now compile through
 CPU FX capture, native graph lowering, first-order autodiff and OA execution on
 SM80/A100. The runnable CNN example combines two convolutions, ReLU, sigmoid,
@@ -35,7 +39,7 @@ dynamic shapes require further work.
 From the repository root, with a configured A100 backend, run
 
 ```sh
-openassembler cnr examples/native_cnn --backend modal --verify
+cnr examples/native_cnn --backend modal --verify
 ```
 
 The example runs three SGD updates with full output, loss, input-gradient,

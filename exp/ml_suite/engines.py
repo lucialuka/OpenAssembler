@@ -127,7 +127,8 @@ class Engine:
         backing,value=guarded(self.driver,shape,dtype)
         self.backings.append(backing)
         self.backing_labels.append(label)
-        self.driver.memset(value.data_ptr(),0,value.numel()*value.element_size())
+        self.driver.memset_async(value.data_ptr(),0,value.numel()*value.element_size(),
+                                 torch.cuda.current_stream().cuda_stream)
         return value
 
     def load(self,binary,kernels):

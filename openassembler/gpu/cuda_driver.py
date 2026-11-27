@@ -42,6 +42,7 @@ class Driver:
         cu.cuMemcpyHtoD_v2.argtypes = [u64, vp, sz]
         cu.cuMemcpyDtoH_v2.argtypes = [vp, u64, sz]
         cu.cuMemsetD8_v2.argtypes = [u64, C.c_ubyte, sz]
+        cu.cuMemsetD8Async.argtypes = [u64, C.c_ubyte, sz, vp]
         cu.cuMemFree_v2.argtypes = [u64]
         cu.cuMemAlloc_v2.argtypes = [C.POINTER(u64), sz]
         cu.cuLaunchKernel.argtypes = [vp] + [C.c_uint] * 7 + [vp, C.POINTER(vp), vp]
@@ -109,6 +110,10 @@ class Driver:
 
     def memset(self, p: int, byte: int, n: int) -> None:
         self.ck(self.cu.cuMemsetD8_v2(p, byte, n), "memset")
+
+    def memset_async(self, p: int, byte: int, n: int, stream: int) -> None:
+        """Enqueue byte initialization on the stream that owns its consumers."""
+        self.ck(self.cu.cuMemsetD8Async(p, byte, n, C.c_void_p(stream)), "stream memset")
 
     # ---- modules / launch -----------------------------------------------------------
 

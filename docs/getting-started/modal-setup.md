@@ -1,5 +1,9 @@
 # Run on Modal or an A100 over SSH
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 OpenAssembler separates a workload from its transport. Choose Modal for a
 managed remote A100, SSH for an A100 you administer, or local on a compatible
 Linux GPU host.
@@ -12,12 +16,12 @@ The Homebrew installation includes the Modal CLI. Authenticate once:
 
 Then compile and run a repository:
 
-    openassembler compile /path/to/repo --backend modal --verify
-    openassembler run /path/to/repo --backend modal
+    compile /path/to/repo --backend modal --verify
+    run /path/to/repo --backend modal
 
 Or combine the stages:
 
-    openassembler cnr /path/to/repo --backend modal --verify
+    cnr /path/to/repo --backend modal --verify
 
 The default requested GPU is A100-40GB. Reports record returned hardware; the
 request string does not prove which device the provider returned. See
@@ -36,7 +40,7 @@ Check noninteractive access and the remote environment, then build and run:
 
     ssh -o BatchMode=yes training-a100 'python3 --version; nvidia-smi'
     ssh training-a100 'ptxas --version; nvdisasm --version; nvcc --version'
-    openassembler cnr /path/to/repo --backend training-a100 --verify
+    cnr /path/to/repo --backend training-a100 --verify
 
 CUDA toolkit tools are needed on the SSH host to compile native inputs; the
 driver and A100 are needed to execute there. Model capture also requires the
@@ -45,7 +49,7 @@ and [commands inside the GPU host](../REPOSITORY_WORKFLOW.md#inside-an-ssh-termi
 
 ## Inspect without a job
 
-openassembler inspect PATH --json reads repository files and source syntax
+inspect PATH --json reads repository files and source syntax
 without importing user code. A supported compile/run dry-run describes planned
 work without submitting or launching it. Neither checks remote credentials,
 compiles a cubin, nor proves that a GPU job will pass.

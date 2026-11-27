@@ -1,5 +1,29 @@
 # Model kernel performance campaign
 
+The November 27 continuation adds a stream-order repair, measured FP32 bias
+epilogues and a bounded three-projection composition. The latter combines the
+three weight packs and products while preserving each half conversion, FP32
+bias addition and final sum order. Its normal compiler path is guarded by the
+complete graph, shape, output and backward-use contract.
+
+```sh
+modal run exp/model_perf/modal_run.py --phase memory-order
+modal run exp/model_perf/modal_run.py --phase runtime-memory-order
+modal run exp/model_perf/modal_run.py --phase bias-epilogue
+modal run exp/model_perf/modal_run.py --phase composition-stress-integrated
+modal run exp/model_perf/modal_run.py --phase composition-final-integrated
+modal run exp/model_perf/modal_run.py --phase stream-bias-tests
+python -m exp.model_perf.audit_pack_reuse exp/model_perf/runs/composition-final-integrated-20261126T161422Z --composition --output output/composition-audit.json
+```
+
+The memory-order driver delays the legacy stream to reproduce output corruption
+with the retained poison implementation and requires exact stream-ordered
+recovery. The stress model campaign delays that stream before poisoning each OA
+runtime. The final composition campaign profiles both ptxas controls against
+their corresponding OA launch ledgers. Independent CPU snapshot auditing
+requires Torch. [Results](RESULTS.md) retain the original failed controls and
+scope each GPU measurement to its own worker.
+
 The November 26 continuation follows the attached kernel-research agenda under
 the same `exp/` workflow. Separate-pack reuse covers a repeated row-major 128×128
 FP32 source converted to FP16 within one forward call. The allocator experiment

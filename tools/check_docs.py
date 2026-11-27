@@ -282,7 +282,7 @@ class Checker:
             return
         def walk(current, names):
             self.cli_levels += 1
-            command = "openassembler" + (" " + " ".join(names) if names else "")
+            command = " ".join(names) if names else "openassembler"
             if not re.search(re.escape(command) + r"(?![\w-])", text):
                 self.fail(path, f"command path not documented: {command}")
             for action in current._actions:

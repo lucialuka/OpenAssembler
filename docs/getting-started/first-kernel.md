@@ -1,5 +1,9 @@
 # Compile and run your first kernel
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 This walkthrough uses the checked-in typed Python vector-add kernel. It compiles
 to an OpenAssembler-owned cubin, then describes a launch for two 128-element
 buffers.
@@ -20,7 +24,7 @@ interpreter. This did not execute the cubin on an A100.
 
 ## Compile
 
-    openassembler compile examples/vector_add.py \
+    compile examples/vector_add.py \
       --backend local --out-dir output/first-kernel --verify
 
 Local compilation uses the current Linux host. On a workstation without local
@@ -37,7 +41,7 @@ is a driver-loaded GPU module, not an executable.
 
 The checked-in launch spec describes the buffers, arguments, grid and block:
 
-    openassembler run output/first-kernel \
+    run output/first-kernel \
       --spec examples/run_spec.json --backend modal
 
 This launches the cubin on the selected Modal A100. Replace modal with an SSH

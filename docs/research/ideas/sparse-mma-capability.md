@@ -1,5 +1,9 @@
 # Structured-sparse MMA capability probes
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: validated-not-integrated
 
 Status applies to the stated experiment and contract, not to every possible version of the idea.
@@ -26,7 +30,7 @@ Run from the repository root. Use Python 3.12+ and an installed test environment
 python3 -m json.tool docs/evidence/a100-mma/phase2/sparse-results.json
 .venv/bin/python -m pytest -q tests/test_backend_tensor.py
 ```
-The original sparse probe generator/cubins were retired; their hashes and outcomes remain in JSON. No `openassembler gemm --sparse` command exists. Current backend tests verify supported dense forms and explicit refusal, not general sparse hardware correctness.
+The original sparse probe generator/cubins were retired; their hashes and outcomes remain in JSON. No `gemm --sparse` command exists. Current backend tests verify supported dense forms and explicit refusal, not general sparse hardware correctness.
 
 ## Code and retained evidence
 

@@ -1,5 +1,9 @@
 # PyTorch application capture and saved replay
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: tested-not-selected
 
 This dossier preserves the historical PyTorch capture/replay experiment.
@@ -69,10 +73,10 @@ python3.13 exp/whole_stack/cli_proof/prove.py
 Equivalent explicit command set for that generated application:
 
 ```sh
-openassembler compile exp/whole_stack/cli_proof/application --frontend torch \
+compile exp/whole_stack/cli_proof/application --frontend torch \
   -o proof_model --verify --no-sass --out-dir output_application \
   --build-backend modal --build-budget 600
-openassembler run output_application --application proof_model --backend modal \
+run output_application --application proof_model --backend modal \
   --verify-application --budget 240 --job-timeout 180
 ```
 

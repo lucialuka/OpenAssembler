@@ -1,5 +1,9 @@
 # Native PTX input and compilation boundary
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The November 19 [semantic acceptance repair](../../compiler/semantic-acceptance.md)
@@ -97,10 +101,10 @@ Requirements: Python 3.12+, CUDA 12.8 `ptxas`/`nvdisasm`; compilation and
 functional verification need no GPU. Run from the repository root:
 
 ```sh
-openassembler compile examples/div_by_const.ptx --verify --out-dir output_ptx
-openassembler run output_ptx --backend modal --budget 300 --job-timeout 60
-openassembler gemm --m 128 --n 128 --k 128 --dtype f16 --out-dir output_gemm
-openassembler compile output_gemm/.build/generated/gemm.ptx --out-dir output_recompiled
+compile examples/div_by_const.ptx --verify --out-dir output_ptx
+run output_ptx --backend modal --budget 300 --job-timeout 60
+gemm --m 128 --n 128 --k 128 --dtype f16 --out-dir output_gemm
+compile output_gemm/.build/generated/gemm.ptx --out-dir output_recompiled
 .venv/bin/python -m pytest -q tests/test_backend.py tests/test_backend_ops.py \
   tests/test_backend_loops.py tests/test_backend_tensor.py tests/test_cli_compile.py
 ```

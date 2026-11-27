@@ -1,5 +1,9 @@
 # Shape-aware CTA geometry for cooperative rowwise kernels
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 OpenAssembler's native FP32 rowwise softmax and population LayerNorm now use an
@@ -113,8 +117,8 @@ The offline dispatch, CLI, generator and launch-contract regressions run with:
 Try the selected narrow-row case and an unmeasured control:
 
 ```sh
-openassembler rowwise --op softmax --rows 4096 --width 32 --emit-only --out-dir out_selected
-openassembler rowwise --op softmax --rows 4096 --width 513 --emit-only --out-dir out_default
+rowwise --op softmax --rows 4096 --width 32 --emit-only --out-dir out_selected
+rowwise --op softmax --rows 4096 --width 513 --emit-only --out-dir out_default
 ```
 
 The first writes the exact heldout eight-warp plan. The second remains on the

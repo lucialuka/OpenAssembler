@@ -26,7 +26,7 @@ def check_text(binary, name, record):
     assert record['compiled_by'] == 'openassembler'
 
 
-def run(directory):
+def run(directory, bias_fusion=False, composition=False):
     envelope_path = directory / 'result.json'
     envelope = json.loads(envelope_path.read_text())
     assert envelope['returncode'] == 0 and envelope['result']['passed'] is True
@@ -37,7 +37,8 @@ def run(directory):
               'environment': result['environment'], 'auditor_python': sys.version,
               'auditor_torch': torch.__version__, 'models': []}
     report['production_sources'] = {name: value for name, value in envelope['source_sha256'].items()
-                                    if name.startswith('openassembler/')}
+                                    if name.endswith('.py') and name.startswith(('openassembler/backend/', 'openassembler/modelfront/',
+                                                                               'openassembler/gpu/', 'openassembler/kernels/'))}
     assert all(Path(name).is_file() and digest(Path(name).read_bytes()) == value
                for name, value in report['production_sources'].items())
     combinations = set()
@@ -47,18 +48,20 @@ def run(directory):
             assert key not in combinations
             combinations.add(key)
             root = 'results/' + '-'.join(str(x) for x in key) + '/'
-            assert model['ledgers']['incumbent'] == model['ledgers']['candidate']
-            ledger = model['ledgers']['candidate']
-            native = archive.read(root + 'incumbent/' + ledger['cubin'])
-            assert digest(native) == ledger['cubin_sha256']
-            for name, record in ledger['kernels'].items():
-                check_text(native, name, record)
-            for name, record in ledger['tensor_kernels'].items():
-                binary = archive.read(root + 'incumbent/' + record['module'])
-                assert digest(binary) == record['cubin_sha256']
-                check_text(binary, name, record)
-                ptx = Path(record['module']).with_name('kernel.ptx').as_posix()
-                assert digest(archive.read(root + 'incumbent/' + ptx)) == record['source_sha256']
+            if not bias_fusion and not composition:
+                assert model['ledgers']['incumbent'] == model['ledgers']['candidate']
+            for arm in ('incumbent', 'candidate') if bias_fusion or composition else ('incumbent',):
+                ledger = model['ledgers'][arm]
+                native = archive.read(root + arm + '/' + ledger['cubin'])
+                assert digest(native) == ledger['cubin_sha256']
+                for name, record in ledger['kernels'].items():
+                    check_text(native, name, record)
+                for name, record in ledger['tensor_kernels'].items():
+                    binary = archive.read(root + arm + '/' + record['module'])
+                    assert digest(binary) == record['cubin_sha256']
+                    check_text(binary, name, record)
+                    ptx = Path(record['module']).with_name('kernel.ptx').as_posix()
+                    assert digest(archive.read(root + arm + '/' + ptx)) == record['source_sha256']
 
             checks = {(row['iteration'], row['arm'], row['field']): row for row in model['validation']}
             assert len(checks) == len(model['validation'])
@@ -97,14 +100,20 @@ def run(directory):
                         assert statistics.median(samples) == row['medians_ms'][arm]
             assert all(audit['passed'] for audit in model['audits'].values())
             assert model['audits']['candidate']['kernel_counts'] == model['audits']['candidate_ptxas']['kernel_counts']
-            expected_launches = (14, 12) if model['task'] == 'projection_inference' else (32, 32)
+            if composition:
+                expected_launches = (9, 4) if model['task'] == 'projection_inference' else (40, 35)
+            elif bias_fusion:
+                expected_launches = (12, 9) if model['task'] == 'projection_inference' else (32, 30)
+            else:
+                expected_launches = (14, 12) if model['task'] == 'projection_inference' else (32, 32)
             assert (model['audits']['incumbent']['observed_compute_launches'],
                     model['audits']['candidate']['observed_compute_launches']) == expected_launches
             report['models'].append({'task': key[0], 'storage_views': key[1], 'reuse_storage': key[2],
                                      'complete_field_checks': len(checks), 'snapshot_fields': snapshot_fields,
                                      'snapshot_elements': snapshot_elements,
                                      'timing_samples': sum(len(r['orders']) * len(expected_arms) for rounds in intervals for r in rounds)})
-    assert combinations == {(task, views, reuse) for task in ('dense_regression_fp16', 'projection_inference')
+    tasks = ('projection_inference', 'projection_training') if composition else ('dense_regression_fp16', 'projection_inference')
+    assert combinations == {(task, views, reuse) for task in tasks
                             for views in (False, True) for reuse in (False, True)}
     report['passed'] = True
     report['auditor_sha256'] = digest(Path(__file__).read_bytes())
@@ -115,8 +124,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('directory', type=Path)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--bias-fusion', action='store_true')
+    parser.add_argument('--composition', action='store_true')
     args = parser.parse_args()
-    result = run(args.directory)
+    result = run(args.directory, args.bias_fusion, args.composition)
     args.output.write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps({'passed': True, 'models': len(result['models']),
                       'snapshot_elements': sum(row['snapshot_elements'] for row in result['models'])}))

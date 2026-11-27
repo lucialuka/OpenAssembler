@@ -123,7 +123,30 @@ def environment():
 
 def main(phase):
     Path('results').mkdir(exist_ok=True)
-    if phase in ('native-pack', 'pack-reuse', 'pack-reuse-integrated', 'pack-reuse-debug-integrated'):
+    if phase=='bias-epilogue':
+        from exp.model_perf.bias_epilogue_gate import run
+        run()
+        return
+    if phase=='memory-order':
+        from exp.model_perf.memory_order_gate import run
+        run()
+        return
+    if phase=='runtime-memory-order':
+        from exp.model_perf.memory_order_gate import runtime_gate
+        runtime_gate()
+        return
+    if phase=='stream-bias-tests':
+        names=['tests/test_model_runtime.py','tests/test_model_tensor.py',
+               'tests/test_model_tensor_schedule.py','tests/test_model_tensor_epilogue.py','tests/test_model_tensor_projection.py',
+               'tests/test_model_training_kernels.py','tests/test_model_optimizer.py']
+        names=[name for name in names if Path(name).is_file()]
+        worker=subprocess.run([sys.executable,'-m','pytest','-q',*names],capture_output=True,text=True,timeout=600)
+        Path('results/result.json').write_text(json.dumps({'passed':worker.returncode==0,
+                                                         'returncode':worker.returncode,
+                                                         'output':worker.stdout+worker.stderr},indent=2))
+        assert worker.returncode==0,worker.stdout+worker.stderr
+        return
+    if phase in ('native-pack', 'pack-reuse', 'pack-reuse-integrated', 'pack-reuse-debug-integrated', 'bias-fusion', 'bias-fusion-integrated', 'bias-fusion-stress-integrated', 'projection-composition', 'composition-stress-integrated', 'composition-confirm-integrated', 'composition-final-integrated'):
         from exp.model_perf.native_pack_gate import run
         run(phase)
         return

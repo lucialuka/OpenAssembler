@@ -1,5 +1,9 @@
 # Direct pointer homes for asynchronous GEMM copies
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The historical [joint option search](joint-tensor-options.md) and
@@ -81,10 +85,10 @@ Run from the repository root with Python 3.12+, CUDA 12.8 tools, and an
 authenticated Modal client for A100 tests:
 
 ```sh
-openassembler gemm --m 1024 --n 4096 --k 1024 --dtype f16 \
+gemm --m 1024 --n 4096 --k 1024 --dtype f16 \
   --pointer-mode direct --out-dir output_direct
-openassembler compile output_direct/.build/generated/gemm.ptx --out-dir output_direct_again
-openassembler run output_direct --backend modal --budget 300 --job-timeout 120
+compile output_direct/.build/generated/gemm.ptx --out-dir output_direct_again
+run output_direct --backend modal --budget 300 --job-timeout 120
 .venv/bin/python -m pytest -q tests/test_tensor_pointer_homes.py tests/test_cli_gemm.py
 PYTHONPATH=. modal run exp/weaknesses/gemm_pointer_homes.py --mode production --rounds 2
 PYTHONPATH=. modal run exp/weaknesses/gemm_pointer_homes_counters.py

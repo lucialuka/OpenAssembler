@@ -22,6 +22,22 @@ def plan():
                         "seed_grads":{"y":"seed"},"grad_inputs":{"x":"dx"},"grad_parameters":{}}}
 
 
+def test_poison_is_enqueued_on_the_model_stream():
+    events = []
+    tensor = SimpleNamespace(data_ptr=lambda: 0x123400, numel=lambda: 32, element_size=lambda: 4)
+    runtime = Runtime.__new__(Runtime)
+    runtime._module = object()
+    runtime._stream_id = 0xabcdef
+    runtime.buffers = {'x': tensor}
+    runtime._training = {'out': {'seed': tensor}}
+    runtime._tensor_workspaces = {'packed': tensor}
+    runtime.synchronize = lambda: events.append('synchronize')
+    runtime._context_scope = nullcontext
+    runtime._driver = SimpleNamespace(memset_async=lambda *args: events.append(args))
+    runtime.poison_workspace()
+    assert events == ['synchronize', *((0x123400, 255, 128, 0xabcdef),) * 3]
+
+
 @pytest.fixture(scope="module")
 def compiled_bundle(tmp_path_factory):
     from openassembler import oracle
@@ -136,6 +152,7 @@ def make_runtime(monkeypatch,p=None):
         def func_attrs(self,fn):return {"binary_version":80,"num_regs":16}
         def ck(self,result,what):assert result==0
         def memset(self,*args):pass
+        def memset_async(self,*args):pass
         def launch(self,*args):counts["launches"]+=1;assert args[-3].value==123;return 0
         def unload(self,module):counts["unloads"]+=1
     monkeypatch.setattr("openassembler.gpu.cuda_driver.Driver",Driver)

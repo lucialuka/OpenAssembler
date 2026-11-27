@@ -12,6 +12,19 @@ With Homebrew installed, register the formula repository and install:
     openassembler --version
     openassembler --help
 
+Then launch the interactive shell:
+
+    openassembler
+
+At its prompt, use `compile PATH --backend modal`, `run PATH --backend modal`,
+or `cnr PATH --backend modal --verify`. Use `help` for commands and `exit` to
+return to your terminal. Choose a single backend value; square-bracketed lists
+are documentation notation and must not be pasted as an argument.
+
+If an active virtual environment selects a broken `.venv/bin/openassembler`,
+run `deactivate` in your terminal or use `"$(brew --prefix openassembler)/bin/openassembler"`.
+See [PATH troubleshooting](../HOMEBREW.md#an-old-python-environment-shadows-homebrew).
+
 The formula currently installs a moving repository branch, not an immutable
 release. The version command reports the installed package version, not its
 source commit. For reproducible builds or bug reports, record the formula and

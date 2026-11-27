@@ -88,6 +88,12 @@ reuse of repeated 128×128 forward operand packs and allocator interval-scan
 cost. The [allocator dossier](ideas/scalar-register-allocation.md) records exact
 binary continuity and compile-time measurements alongside the workload results.
 
+The continuation repairs a reproduced cross-stream workspace poison race and
+integrates exact bias epilogues and three-projection composition. Its
+[native-model dossier](ideas/native-model-bridge.md) links original/repaired
+hardware controls, complete training/replay audits and a measured inference
+win over the frozen direct Triton implementation.
+
 The role/shape coverage audit is under
 [`exp/shape_coverage`](../../exp/shape_coverage/README.md). That study remains a
 contract and measurement matrix. The separate completed

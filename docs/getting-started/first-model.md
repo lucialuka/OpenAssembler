@@ -1,5 +1,9 @@
 # Compile a supported Python model
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 This walkthrough uses examples/native_model, with an explicit model
 configuration and a small FP32 PyTorch module. Its current example contract is
 three MSE/SGD training steps at input shape 17 by 8. OpenAssembler captures the
@@ -21,7 +25,7 @@ service; this is not represented as a live hardware run from this workstation.
 
 From the repository root:
 
-    openassembler compile examples/native_model --backend modal --verify
+    compile examples/native_model --backend modal --verify
 
 The model verification option compares native results with a CPU reference for
 the configured case. This checks that contract; it does not prove support for
@@ -34,14 +38,14 @@ result.
 
 ## Replay the saved model
 
-    openassembler run examples/native_model --backend modal --verify-application
+    run examples/native_model --backend modal --verify-application
 
 Replay loads the saved bundle; it does not compile edited sources. Compile
 again after changing the model. The verification option checks saved native
 execution against the CPU reference and state/guard checks in the
 [native model contract](../research/ideas/native-model-bridge.md).
 
-To assess another repository, first run openassembler inspect PATH --json,
+To assess another repository, first run inspect PATH --json,
 then compare graph, shapes, dtypes and execution mode with
 [supported model operations](../reference/supported-operators.md). Discovery
 can succeed even when a graph operation is unsupported.

@@ -82,5 +82,5 @@ def resolve_run(path: str | Path | None, explicit: str | Path | None = None,
         return RunTarget(Path('output').resolve(), application)
     expected = candidates[0]
     raise project.ProjectError(f'no compiled build for {source} in {expected}; '
-                               f'run `openassembler compile {source}` first, or select '
+                               f'run `compile {source}` in OpenAssembler first, or select '
                                '--out-dir DIR from its previous build. `run` never compiles sources.')

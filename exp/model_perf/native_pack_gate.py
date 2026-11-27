@@ -138,7 +138,7 @@ def gate_packs(root):
 
 
 def model_case(name, root, phase, storage_views, reuse_storage):
-    torch.manual_seed(941 if phase.endswith('integrated') else 818)
+    torch.manual_seed(1223 if 'confirm' in phase else 1051 if 'stress' in phase else 941 if phase.endswith('integrated') else 818)
     spec = TASKS[name]
     shape, training = spec['shape'], spec['training']
     model = create(name)
@@ -151,8 +151,21 @@ def model_case(name, root, phase, storage_views, reuse_storage):
     reuse = phase.startswith('pack-reuse')
     for label in ('incumbent', 'candidate'):
         with ExitStack() as stack:
-            if label == 'candidate' and not reuse:
-                enable(stack)
+            if label == 'candidate' and not reuse and not phase.endswith('integrated'):
+                if phase == 'projection-composition':
+                    from exp.model_perf.projection_composition import enable as enable_composition
+                    enable_composition(stack)
+                elif phase == 'bias-fusion':
+                    from exp.model_perf.bias_fusion import enable as enable_bias
+                    enable_bias(stack)
+                else:
+                    enable(stack)
+            if label == 'incumbent' and phase.startswith('bias-fusion') and phase.endswith('integrated'):
+                from openassembler.modelfront import tensor_epilogue
+                stack.enter_context(patch.object(tensor_epilogue, 'fuse_bias', lambda recipe: recipe))
+            if label == 'incumbent' and phase.startswith('composition'):
+                from openassembler.modelfront import tensor_projection
+                stack.enter_context(patch.object(tensor_projection, 'match', return_value=None))
             if label == 'incumbent' and reuse:
                 from openassembler.modelfront import tensor_schedule
                 stack.enter_context(patch.object(tensor_schedule, 'workspace_plan', return_value=None))
@@ -167,10 +180,18 @@ def model_case(name, root, phase, storage_views, reuse_storage):
             build_bundle(plan, weights, bundle, sass_listings=True, cache=False)
             build_seconds[label] = perf_counter() - start
             runtimes[label] = Runtime.load(bundle)
-            engines[label + '_ptxas'] = Engine(plan, weights, bundle, 'nvidia_same_ptx')
-    engines['triton'] = Engine(plan, weights, root / 'incumbent', 'triton')
+            if phase == 'projection-composition' and label == 'candidate':
+                assert runtimes[label].steps[0]['kernel'] == 'projection_sum3', 'composition matcher did not apply'
+            engines[label + '_ptxas'] = (PackedPTXEngine(plan, weights, bundle) if phase == 'projection-composition' or phase.endswith('integrated') else
+                                        Engine(plan, weights, bundle, 'nvidia_same_ptx'))
+    with ExitStack() as control:
+        if phase.startswith('composition'):
+            from openassembler.modelfront import tensor_projection
+            control.enter_context(patch.object(tensor_projection, 'match', return_value=None))
+        engines['triton'] = Engine(plan, weights, root / 'incumbent', 'triton')
     if phase.endswith('integrated'):
-        engines['candidate_ptxas'] = PackedPTXEngine(plan, weights, root / 'incumbent')
+        if 'candidate_ptxas' not in engines:
+            engines['candidate_ptxas'] = PackedPTXEngine(plan, weights, root / ('incumbent' if reuse else 'candidate'))
     x, target = torch.empty(shape, device='cuda'), torch.empty(out_shape, device='cuda')
     inputs = {input_name: x}
     functions = {key: (lambda r=r: r.train_step(inputs, target, .01) if training else r.forward(inputs))
@@ -239,6 +260,9 @@ def model_case(name, root, phase, storage_views, reuse_storage):
         truth = reference.train_step({input_name: cx}, cy, .01) if training else reference.forward({input_name: cx})
         for key, fn in functions.items():
             if i and key in runtimes:
+                if 'stress' in phase:
+                    with torch.cuda.stream(torch.cuda.default_stream()):
+                        torch.cuda._sleep(100000000)
                 runtimes[key].poison_workspace()
             if i >= 6:
                 graphs[key].replay()
@@ -275,13 +299,14 @@ def model_case(name, root, phase, storage_views, reuse_storage):
                 if attempt == 2:
                     raise
     if phase.endswith('integrated'):
-        engine = engines['candidate_ptxas']
-        with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
-                                                torch.profiler.ProfilerActivity.CUDA]) as prof:
-            torch.cuda.synchronize()
-            functions['candidate_ptxas']()
-            torch.cuda.synchronize()
-        audits['candidate_ptxas'] = audit_profile(prof, runtimes['candidate'].launch_ledger)
+        for label in ('incumbent', 'candidate'):
+            arm = label + '_ptxas'
+            with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
+                                                    torch.profiler.ProfilerActivity.CUDA]) as prof:
+                torch.cuda.synchronize()
+                functions[arm]()
+                torch.cuda.synchronize()
+            audits[arm] = audit_profile(prof, runtimes[label].launch_ledger)
     total = paired(functions, repeats=4, bound_runtimes=runtimes)
     parts = {}
     for phase in ('forward', 'backward') if training else ('forward',):
@@ -295,7 +320,7 @@ def model_case(name, root, phase, storage_views, reuse_storage):
                 r._run(phase, values)
             region[key] = region_call
         parts[phase] = paired(region, repeats=4, bound_runtimes=runtimes)
-    record = {"task": name, "storage_views": storage_views, "reuse_storage": reuse_storage,
+    record = {"task": name, "phase": phase, "storage_views": storage_views, "reuse_storage": reuse_storage,
               "plan": plan, "build_seconds": build_seconds, "direct_steps": 6,
               "graph_steps": 6, "total": total, "parts": parts, "audits": audits,
               "validation": validation,
@@ -331,7 +356,10 @@ def run(phase):
     if 'debug' in phase:
         layouts = [(False, True)]
     for views, storage in layouts:
-        for name in ('dense_regression_fp16', 'projection_inference'):
+        tasks = ('projection_inference', 'projection_training') if phase.startswith('composition') else ('dense_regression_fp16', 'projection_inference')
+        for name in tasks:
+            if phase == 'projection-composition' and name != 'projection_inference':
+                continue
             if 'debug' in phase and name != 'dense_regression_fp16':
                 continue
             directory = root / f'{name}-{views}-{storage}'
@@ -350,6 +378,8 @@ def run(phase):
 
 if __name__ == '__main__':
     phase, name, directory, views, storage = sys.argv[1:]
+    if name == 'projection_training':
+        TASKS[name] = {**TASKS['projection_inference'], 'training': True}
     configure_device()
     directory = Path(directory)
     record = model_case(name, directory, phase, bool(int(views)), bool(int(storage)))

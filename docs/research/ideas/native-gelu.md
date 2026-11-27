@@ -1,5 +1,9 @@
 # Native tanh-approximation GELU example
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The standalone example passes its predeclared FP64-reference tolerance on the
@@ -52,7 +56,7 @@ Run from the repository root with Python 3.12+, CUDA 12.8 tools and an optional
 authenticated Modal client:
 
 ```sh
-openassembler compile examples/nn_ops.py --kernel gelu --out-dir output_gelu
+compile examples/nn_ops.py --kernel gelu --out-dir output_gelu
 modal run exp/whole_stack/native_ops.py --rebuild
 .venv/bin/python -m pytest -q tests/test_pyfront.py tests/test_pyfront_semantics.py \
   tests/test_backend_ops.py

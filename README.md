@@ -30,26 +30,41 @@ modal setup
 
 ---
 
-From a source checkout, compile and run the vector-add example on a Modal A100:
+Start OpenAssembler from your terminal:
 
 ```bash
-openassembler compile examples/vector_add.py --backend [local, modal, user@host] --out-dir output/first-kernel --verify
-openassembler run output/first-kernel --spec examples/run_spec.json --backend [local, modal, user@host]
+openassembler
 ```
-For the `--backend` flag, there are three available options: local, modal, user@host. The first only allow you to compile, the second (through modal) and the third (through SSH into your Nvidia hardware) can do both compilation and execution of the compiled cuda binary files. 
+
+The logo appears each time you open the interactive shell. At its prompt, enter
+commands directly. From a source checkout, try the vector-add example on Modal:
+
+```bash
+compile examples/vector_add.py --backend modal --out-dir output/first-kernel --verify
+run output/first-kernel --spec examples/run_spec.json --backend modal
+exit
+```
+Choose one backend: `modal`, `local`, or an SSH destination such as `user@host`.
+Local Linux supports compilation and execution with the required CUDA toolkit,
+driver and A100. macOS supports local compilation through Colima; use Modal or
+SSH for GPU execution. Type `help`, `help compile`, or press Tab for completion.
+Type `exit` or press Ctrl-D to return to your terminal.
+
+If an old Python environment shadows the Homebrew executable, run `deactivate`
+in your terminal, then launch `openassembler` again. See
+[installation troubleshooting](docs/HOMEBREW.md#an-old-python-environment-shadows-homebrew).
 
 The [first-kernel walkthrough](docs/getting-started/first-kernel.md) explains
 the expected artifacts and launch specification. See the
-[installation guide](docs/getting-started/installation.md) for local Linux,
-macOS/Colima and SSH requirements.
+[installation guide](docs/getting-started/installation.md) for local Linux, macOS/Colima and SSH requirements.
 
 ## Supported inputs
 
 | Input | Compilation route |
 |---|---|
-| PTX | OpenAssembler parses admitted PTX and compiles it with the native backend. |
+| PTX | OpenAssembler parses admitted PTX and compiles it with the native backend. Best for customized MMA (Matrix Multiplication and Addition) operation |
 | Typed Python kernels | **Customized Kernel MUST use @kernel at the start.** The supported @kernel subset lowers to PTX, then uses the native backend. |
-| CUDA C/C++ device sources | nvcc emits PTX; OpenAssembler compiles the admitted PTX. |
+| CUDA C/C++ device sources | nvcc emits PTX; OpenAssembler compiles the admitted PTX. Better for routine ML tasks.|
 | Python model repositories | Static discovery or an explicit model contract captures supported CPU PyTorch graphs and generates native kernels. |
 | Generated GEMM and rowwise kernels | Dedicated generators compile bounded shape and policy contracts. |
 
@@ -62,11 +77,11 @@ larger workload.
 
 ## Build, inspect and run
 
-The same repository path can be used across the workflow:
+After starting `openassembler`, use the same repository path across the workflow:
 
-    openassembler inspect /path/to/repo --json
-    openassembler compile /path/to/repo --backend modal --verify
-    openassembler run /path/to/repo --backend modal
+    inspect /path/to/repo --json
+    compile /path/to/repo --backend modal --verify
+    run /path/to/repo --backend modal
 
 Use cnr to compile and run in one command. The compile step writes a manifest,
 cubins, and readable SASS listings by default. Model bundles also save their

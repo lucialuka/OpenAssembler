@@ -1,5 +1,9 @@
 # Homebrew installation
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Homebrew is the user installation path on macOS and Linux. With Homebrew already
 installed, copy this single command:
 
@@ -38,12 +42,40 @@ local checkout. Check `Formula/openassembler.rb` before relying on a particular
 compiler/table revision. Local changes take effect for new installations after
 they are published to that repository.
 
-The post-install step displays the OpenAssembler welcome logo once per user.
-The same stamp suppresses it in later CLI invocations and interactive shells,
-including new terminal sessions and reinstalls. State lives in
-`${XDG_STATE_HOME:-$HOME/.local/state}/openassembler/welcome-shown`.
-Help, version, JSON inspection and piped CLI output do not display or consume it.
-An unwritable state location suppresses the optional logo without failing a build.
+Start the interactive shell by typing `openassembler` in your terminal. Its
+logo appears on every interactive launch, followed by a workspace and command
+guide. Enter `compile`, `run` or `cnr` at the prompt, and `exit` to leave.
+Installation, direct commands, help, version and piped output show no logo.
+An old `welcome-shown` marker has no effect and can be removed.
+
+## An old Python environment shadows Homebrew
+
+If `openassembler` raises `ModuleNotFoundError` from `.venv/bin/openassembler`,
+your terminal selected an older Python launcher before the Homebrew executable.
+The installation log may explicitly warn that the command is shadowed. In your
+regular terminal, leave that environment and check the command path:
+
+```sh
+deactivate
+hash -r
+command -v openassembler
+openassembler
+```
+
+You can also launch Homebrew's installation directly without leaving the environment:
+
+```sh
+"$(brew --prefix openassembler)/bin/openassembler"
+```
+
+For a source checkout's development environment, repair its editable installation
+with `uv pip install --python .venv/bin/python -e .` from the repository root.
+On macOS, Python also ignores editable-install `.pth` files marked with the
+filesystem's hidden flag. If that flag is being reapplied by a local tool,
+reinstalling alone will not fix imports; use the Homebrew launcher directly or
+run `PYTHONPATH="$PWD" .venv/bin/openassembler` from the checkout.
+Setting `HOMEBREW_NO_PATH_SHADOW_CHECK` only hides the warning; it does not change
+which executable your shell selects.
 
 The formula does not install the repository's full `exp/` evidence archive or
 `testcases/` tree. Documentation links to those paths describe research in a
@@ -57,17 +89,20 @@ repository command for native build, execution and combined execution:
 
 ```sh
 modal setup
-openassembler compile /path/to/repo --backend modal --verify
-openassembler run /path/to/repo --backend modal
-openassembler cnr /path/to/repo --backend modal --verify
+openassembler
+compile /path/to/repo --backend modal --verify
+run /path/to/repo --backend modal
+cnr /path/to/repo --backend modal --verify
 ```
 
 For an A100 over SSH:
 
+Inside the OpenAssembler shell:
+
 ```sh
-openassembler compile /path/to/repo --backend user@a100 --verify
-openassembler run /path/to/repo --backend user@a100
-openassembler cnr /path/to/repo --backend user@a100 --verify
+compile /path/to/repo --backend user@a100 --verify
+run /path/to/repo --backend user@a100
+cnr /path/to/repo --backend user@a100 --verify
 ```
 
 The remote host still needs its compatible Linux Python/CUDA/PyTorch runtime as

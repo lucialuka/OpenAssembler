@@ -1,0 +1,4848 @@
+{
+  "result": {
+    "environment": {
+      "gpu": "NVIDIA A100-SXM4-40GB, GPU-ff0d175a-ce2e-4d69-78b2-53c63154f11f, 620.70.06\n",
+      "cuda": "12.8",
+      "tools": {
+        "ptxas": "ptxas: NVIDIA (R) Ptx optimizing assembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Fri_Feb_21_20:21:21_PST_2025\nCuda compilation tools, release 12.8, V12.8.93\nBuild cuda_12.8.r12.8/compiler.35583870_0\n",
+        "nvdisasm": "nvdisasm: NVIDIA (R) CUDA disassembler\nCopyright (c) 2005-2025 NVIDIA Corporation\nBuilt on Thu_Feb_13_02:14:45_PST_2025\nCuda compilation tools, release 12.8, V12.8.90\nBuild cuda_12.8.r12.8/compiler.35538042_0\n"
+      }
+    },
+    "torch": "2.7.1+cu128",
+    "triton": "3.3.1",
+    "phase": "projection-composition",
+    "packs": [],
+    "passed": true,
+    "models": [
+      {
+        "task": "projection_inference",
+        "phase": "forward",
+        "storage_views": true,
+        "reuse_storage": true,
+        "plan": {
+          "schema": 1,
+          "arch": "sm_80",
+          "math": "f16_rne_f32_accum",
+          "inputs": [
+            {
+              "name": "x",
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "parameter:q.weight",
+              "target": "q.weight",
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32",
+              "requires_grad": true
+            },
+            {
+              "name": "parameter:q.bias",
+              "target": "q.bias",
+              "shape": [
+                128
+              ],
+              "dtype": "f32",
+              "requires_grad": true
+            },
+            {
+              "name": "parameter:k.weight",
+              "target": "k.weight",
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32",
+              "requires_grad": true
+            },
+            {
+              "name": "parameter:k.bias",
+              "target": "k.bias",
+              "shape": [
+                128
+              ],
+              "dtype": "f32",
+              "requires_grad": true
+            },
+            {
+              "name": "parameter:v.weight",
+              "target": "v.weight",
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32",
+              "requires_grad": true
+            },
+            {
+              "name": "parameter:v.bias",
+              "target": "v.bias",
+              "shape": [
+                128
+              ],
+              "dtype": "f32",
+              "requires_grad": true
+            }
+          ],
+          "buffers": {
+            "x": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "parameter:q.weight": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "parameter:q.bias": {
+              "shape": [
+                128
+              ],
+              "dtype": "f32"
+            },
+            "q": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "parameter:k.weight": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "parameter:k.bias": {
+              "shape": [
+                128
+              ],
+              "dtype": "f32"
+            },
+            "k": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "add": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "parameter:v.weight": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "parameter:v.bias": {
+              "shape": [
+                128
+              ],
+              "dtype": "f32"
+            },
+            "v": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "add_1": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_seed_1": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_linear_dx_2": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_linear_dw_3": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_bias_grad_4": {
+              "shape": [
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_linear_dx_5": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_add_6": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_linear_dw_7": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_bias_grad_8": {
+              "shape": [
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_linear_dx_9": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_add_10": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_linear_dw_11": {
+              "shape": [
+                128,
+                128
+              ],
+              "dtype": "f32"
+            },
+            "_oa_grad_bias_grad_12": {
+              "shape": [
+                128
+              ],
+              "dtype": "f32"
+            }
+          },
+          "steps": [
+            {
+              "kernel": "linear",
+              "inputs": [
+                "x",
+                "parameter:q.weight",
+                "parameter:q.bias"
+              ],
+              "output": "q",
+              "attrs": {
+                "m": 128,
+                "n": 128,
+                "k": 128
+              }
+            },
+            {
+              "kernel": "linear",
+              "inputs": [
+                "x",
+                "parameter:k.weight",
+                "parameter:k.bias"
+              ],
+              "output": "k",
+              "attrs": {
+                "m": 128,
+                "n": 128,
+                "k": 128
+              }
+            },
+            {
+              "kernel": "add",
+              "inputs": [
+                "q",
+                "k"
+              ],
+              "output": "add",
+              "attrs": {}
+            },
+            {
+              "kernel": "linear",
+              "inputs": [
+                "x",
+                "parameter:v.weight",
+                "parameter:v.bias"
+              ],
+              "output": "v",
+              "attrs": {
+                "m": 128,
+                "n": 128,
+                "k": 128
+              }
+            },
+            {
+              "kernel": "add",
+              "inputs": [
+                "add",
+                "v"
+              ],
+              "output": "add_1",
+              "attrs": {}
+            }
+          ],
+          "outputs": [
+            "add_1"
+          ],
+          "contract": {
+            "backend": "openassembler-native",
+            "device_compute": "OA-emitted SASS only",
+            "shape_policy": "exact",
+            "input_layout": "contiguous",
+            "input_dtype": "f32",
+            "accumulation_dtype": "f32",
+            "output_dtype": "f32",
+            "fallback": "none",
+            "numerical_domain": "finite FP32 arithmetic; matrix operands must remain finite after FP16 rounding",
+            "exceptional_values": "NaN/Inf and overflow outside the supported contract",
+            "matrix_operand_dtype": "f16",
+            "matrix_operand_rounding": "round_to_nearest_even",
+            "master_parameter_dtype": "f32",
+            "matrix_backward": "straight-through input cast; dX and dW independently round both operands to FP16"
+          },
+          "output_structure": {
+            "tensor": "add_1"
+          },
+          "backward": {
+            "steps": [
+              {
+                "kernel": "linear_dx",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:v.weight"
+                ],
+                "output": "_oa_grad_linear_dx_2",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              },
+              {
+                "kernel": "linear_dw",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "output": "_oa_grad_linear_dw_3",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              },
+              {
+                "kernel": "bias_grad",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "output": "_oa_grad_bias_grad_4",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              },
+              {
+                "kernel": "linear_dx",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:k.weight"
+                ],
+                "output": "_oa_grad_linear_dx_5",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              },
+              {
+                "kernel": "add",
+                "inputs": [
+                  "_oa_grad_linear_dx_2",
+                  "_oa_grad_linear_dx_5"
+                ],
+                "output": "_oa_grad_add_6",
+                "attrs": {}
+              },
+              {
+                "kernel": "linear_dw",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "output": "_oa_grad_linear_dw_7",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              },
+              {
+                "kernel": "bias_grad",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "output": "_oa_grad_bias_grad_8",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              },
+              {
+                "kernel": "linear_dx",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:q.weight"
+                ],
+                "output": "_oa_grad_linear_dx_9",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              },
+              {
+                "kernel": "add",
+                "inputs": [
+                  "_oa_grad_add_6",
+                  "_oa_grad_linear_dx_9"
+                ],
+                "output": "_oa_grad_add_10",
+                "attrs": {}
+              },
+              {
+                "kernel": "linear_dw",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "output": "_oa_grad_linear_dw_11",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              },
+              {
+                "kernel": "bias_grad",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "output": "_oa_grad_bias_grad_12",
+                "attrs": {
+                  "m": 128,
+                  "n": 128,
+                  "k": 128
+                }
+              }
+            ],
+            "seed_grads": {
+              "add_1": "_oa_grad_seed_1"
+            },
+            "grad_inputs": {
+              "x": "_oa_grad_add_10"
+            },
+            "grad_parameters": {
+              "parameter:q.weight": "_oa_grad_linear_dw_11",
+              "parameter:q.bias": "_oa_grad_bias_grad_12",
+              "parameter:k.weight": "_oa_grad_linear_dw_7",
+              "parameter:k.bias": "_oa_grad_bias_grad_8",
+              "parameter:v.weight": "_oa_grad_linear_dw_3",
+              "parameter:v.bias": "_oa_grad_bias_grad_4"
+            }
+          },
+          "optimization": {
+            "storage_views": true,
+            "aliased_copies": 0,
+            "numerical_transformations": false
+          },
+          "storage": {
+            "schema": 1,
+            "policy": "exact-size-liveness-v1",
+            "slots": [
+              {
+                "dtype": "f32",
+                "elements": 16384,
+                "members": [
+                  "q",
+                  "v",
+                  "_oa_grad_seed_1"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 16384,
+                "members": [
+                  "k",
+                  "add_1"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 16384,
+                "members": [
+                  "add",
+                  "_oa_grad_linear_dx_2",
+                  "_oa_grad_linear_dw_7"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 16384,
+                "members": [
+                  "_oa_grad_linear_dw_3"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 128,
+                "members": [
+                  "_oa_grad_bias_grad_4"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 16384,
+                "members": [
+                  "_oa_grad_linear_dx_5",
+                  "_oa_grad_linear_dx_9",
+                  "_oa_grad_linear_dw_11"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 16384,
+                "members": [
+                  "_oa_grad_add_6"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 128,
+                "members": [
+                  "_oa_grad_bias_grad_8"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 16384,
+                "members": [
+                  "_oa_grad_add_10"
+                ]
+              },
+              {
+                "dtype": "f32",
+                "elements": 128,
+                "members": [
+                  "_oa_grad_bias_grad_12"
+                ]
+              }
+            ],
+            "assignments": {
+              "q": 0,
+              "k": 1,
+              "add": 2,
+              "v": 0,
+              "add_1": 1,
+              "_oa_grad_seed_1": 0,
+              "_oa_grad_linear_dx_2": 2,
+              "_oa_grad_linear_dw_3": 3,
+              "_oa_grad_bias_grad_4": 4,
+              "_oa_grad_linear_dx_5": 5,
+              "_oa_grad_add_6": 6,
+              "_oa_grad_linear_dw_7": 2,
+              "_oa_grad_bias_grad_8": 7,
+              "_oa_grad_linear_dx_9": 5,
+              "_oa_grad_add_10": 8,
+              "_oa_grad_linear_dw_11": 5,
+              "_oa_grad_bias_grad_12": 9
+            },
+            "lifetimes": {
+              "q": [
+                0,
+                2
+              ],
+              "k": [
+                1,
+                2
+              ],
+              "add": [
+                2,
+                4
+              ],
+              "v": [
+                3,
+                4
+              ],
+              "add_1": [
+                4,
+                18
+              ],
+              "_oa_grad_seed_1": [
+                5,
+                16
+              ],
+              "_oa_grad_linear_dx_2": [
+                6,
+                10
+              ],
+              "_oa_grad_linear_dw_3": [
+                7,
+                18
+              ],
+              "_oa_grad_bias_grad_4": [
+                8,
+                18
+              ],
+              "_oa_grad_linear_dx_5": [
+                9,
+                10
+              ],
+              "_oa_grad_add_6": [
+                10,
+                14
+              ],
+              "_oa_grad_linear_dw_7": [
+                11,
+                18
+              ],
+              "_oa_grad_bias_grad_8": [
+                12,
+                18
+              ],
+              "_oa_grad_linear_dx_9": [
+                13,
+                14
+              ],
+              "_oa_grad_add_10": [
+                14,
+                18
+              ],
+              "_oa_grad_linear_dw_11": [
+                15,
+                18
+              ],
+              "_oa_grad_bias_grad_12": [
+                16,
+                18
+              ]
+            },
+            "logical_buffers": 17,
+            "physical_slots": 10,
+            "logical_bytes": 919040,
+            "physical_bytes": 460288
+          }
+        },
+        "build_seconds": {
+          "incumbent": 3.780953386,
+          "candidate": 4.677952320000001
+        },
+        "direct_steps": 6,
+        "graph_steps": 6,
+        "total": [
+          {
+            "round": 0,
+            "orders": [
+              [
+                "incumbent",
+                "incumbent_ptxas",
+                "candidate_ptxas",
+                "candidate",
+                "triton"
+              ],
+              [
+                "candidate_ptxas",
+                "candidate",
+                "triton",
+                "incumbent_ptxas",
+                "incumbent"
+              ],
+              [
+                "triton",
+                "incumbent_ptxas",
+                "candidate_ptxas",
+                "incumbent",
+                "candidate"
+              ],
+              [
+                "incumbent",
+                "incumbent_ptxas",
+                "candidate_ptxas",
+                "candidate",
+                "triton"
+              ],
+              [
+                "candidate_ptxas",
+                "triton",
+                "incumbent",
+                "incumbent_ptxas",
+                "candidate"
+              ],
+              [
+                "incumbent_ptxas",
+                "candidate_ptxas",
+                "incumbent",
+                "triton",
+                "candidate"
+              ],
+              [
+                "triton",
+                "incumbent",
+                "candidate_ptxas",
+                "candidate",
+                "incumbent_ptxas"
+              ],
+              [
+                "incumbent_ptxas",
+                "candidate_ptxas",
+                "incumbent",
+                "candidate",
+                "triton"
+              ],
+              [
+                "incumbent",
+                "triton",
+                "incumbent_ptxas",
+                "candidate",
+                "candidate_ptxas"
+              ],
+              [
+                "candidate",
+                "triton",
+                "incumbent_ptxas",
+                "incumbent",
+                "candidate_ptxas"
+              ],
+              [
+                "triton",
+                "incumbent",
+                "candidate",
+                "candidate_ptxas",
+                "incumbent_ptxas"
+              ],
+              [
+                "incumbent",
+                "candidate_ptxas",
+                "incumbent_ptxas",
+                "triton",
+                "candidate"
+              ],
+              [
+                "candidate",
+                "candidate_ptxas",
+                "triton",
+                "incumbent_ptxas",
+                "incumbent"
+              ],
+              [
+                "triton",
+                "candidate_ptxas",
+                "incumbent",
+                "candidate",
+                "incumbent_ptxas"
+              ],
+              [
+                "candidate",
+                "incumbent_ptxas",
+                "incumbent",
+                "candidate_ptxas",
+                "triton"
+              ]
+            ],
+            "samples_ms": {
+              "incumbent": [
+                0.05485599860548973,
+                0.03718400001525879,
+                0.0360959991812706,
+                0.0358240008354187,
+                0.03595200181007385,
+                0.035840000957250595,
+                0.035679999738931656,
+                0.035679999738931656,
+                0.035704001784324646,
+                0.03567200154066086,
+                0.03558399900794029,
+                0.03579999879002571,
+                0.03548799827694893,
+                0.0355600006878376,
+                0.03558399900794029
+              ],
+              "candidate": [
+                0.023399999365210533,
+                0.01592000015079975,
+                0.015744000673294067,
+                0.015615999698638916,
+                0.015448000282049179,
+                0.015728000551462173,
+                0.015672000125050545,
+                0.01573600061237812,
+                0.01539199985563755,
+                0.01595200039446354,
+                0.015704000368714333,
+                0.015560000203549862,
+                0.0157919991761446,
+                0.015615999698638916,
+                0.01559200044721365
+              ],
+              "incumbent_ptxas": [
+                0.04828000068664551,
+                0.03256800025701523,
+                0.032207999378442764,
+                0.032287999987602234,
+                0.03220000118017197,
+                0.03205600008368492,
+                0.03207999840378761,
+                0.032072000205516815,
+                0.03202399984002113,
+                0.03235999867320061,
+                0.03207999840378761,
+                0.03200000151991844,
+                0.03203200176358223,
+                0.032072000205516815,
+                0.03206399828195572
+              ],
+              "candidate_ptxas": [
+                0.02173599973320961,
+                0.014783999882638454,
+                0.014431999996304512,
+                0.014336000196635723,
+                0.01408000010997057,
+                0.014159999787807465,
+                0.013887999579310417,
+                0.01414399966597557,
+                0.014023999683558941,
+                0.013303999789059162,
+                0.014240000396966934,
+                0.014192000031471252,
+                0.01422400027513504,
+                0.01414399966597557,
+                0.0142639996483922
+              ],
+              "triton": [
+                0.022895999252796173,
+                0.01940000057220459,
+                0.019592000171542168,
+                0.019408000633120537,
+                0.019303999841213226,
+                0.019247999414801598,
+                0.019487999379634857,
+                0.019247999414801598,
+                0.019279999658465385,
+                0.019287999719381332,
+                0.019352000206708908,
+                0.01937600038945675,
+                0.019128000363707542,
+                0.019360000267624855,
+                0.019255999475717545
+              ]
+            },
+            "medians_ms": {
+              "incumbent": 0.035704001784324646,
+              "candidate": 0.015704000368714333,
+              "incumbent_ptxas": 0.03207999840378761,
+              "candidate_ptxas": 0.014192000031471252,
+              "triton": 0.019352000206708908
+            }
+          },
+          {
+            "round": 1,
+            "orders": [
+              [
+                "candidate",
+                "candidate_ptxas",
+                "incumbent_ptxas",
+                "triton",
+                "incumbent"
+              ],
+              [
+                "triton",
+                "incumbent",
+                "candidate",
+                "candidate_ptxas",
+                "incumbent_ptxas"
+              ],
+              [
+                "triton",
+                "candidate_ptxas",
+                "incumbent",
+                "candidate",
+                "incumbent_ptxas"
+              ],
+              [
+                "incumbent_ptxas",
+                "triton",
+                "incumbent",
+                "candidate_ptxas",
+                "candidate"
+              ],
+              [
+                "candidate",
+                "incumbent",
+                "candidate_ptxas",
+                "triton",
+                "incumbent_ptxas"
+              ],
+              [
+                "triton",
+                "candidate_ptxas",
+                "incumbent_ptxas",
+                "candidate",
+                "incumbent"
+              ],
+              [
+                "triton",
+                "candidate_ptxas",
+                "candidate",
+                "incumbent",
+                "incumbent_ptxas"
+              ],
+              [
+                "candidate_ptxas",
+                "triton",
+                "incumbent_ptxas",
+                "incumbent",
+                "candidate"
+              ],
+              [
+                "triton",
+                "incumbent_ptxas",
+                "incumbent",
+                "candidate",
+                "candidate_ptxas"
+              ],
+              [
+                "incumbent",
+                "triton",
+                "candidate_ptxas",
+                "candidate",
+                "incumbent_ptxas"
+              ],
+              [
+                "candidate_ptxas",
+                "incumbent_ptxas",
+                "incumbent",
+                "triton",
+                "candidate"
+              ],
+              [
+                "incumbent",
+                "candidate",
+                "candidate_ptxas",
+                "incumbent_ptxas",
+                "triton"
+              ],
+              [
+                "incumbent_ptxas",
+                "candidate",
+                "candidate_ptxas",
+                "triton",
+                "incumbent"
+              ],
+              [
+                "incumbent",
+                "incumbent_ptxas",
+                "triton",
+                "candidate_ptxas",
+                "candidate"
+              ],
+              [
+                "candidate_ptxas",
+                "incumbent_ptxas",
+                "incumbent",
+                "triton",
+                "candidate"
+              ]
+            ],
+            "samples_ms": {
+              "incumbent": [
+                0.035551998764276505,
+                0.0355600006878376,
+                0.03564000129699707,
+                0.03553599864244461,
+                0.03543199971318245,
+                0.03548799827694893,
+                0.03568800166249275,
+                0.03569599986076355,
+                0.03554400056600571,
+                0.03575199842453003,
+                0.035760000348091125,
+                0.035576000809669495,
+                0.035576000809669495,
+                0.03553599864244461,
+                0.03551999852061272
+              ],
+              "candidate": [
+                0.016095999628305435,
+                0.01576000079512596,
+                0.01548799965530634,
+                0.015536000020802021,
+                0.015359999611973763,
+                0.015544000081717968,
+                0.015615999698638916,
+                0.015440000221133232,
+                0.015456000342965126,
+                0.015495999716222286,
+                0.015527999959886074,
+                0.015464000403881073,
+                0.01551199983805418,
+                0.015464000403881073,
+                0.01568800024688244
+              ],
+              "incumbent_ptxas": [
+                0.03216800093650818,
+                0.03195999935269356,
+                0.032127998769283295,
+                0.032232001423835754,
+                0.03197599947452545,
+                0.03195999935269356,
+                0.03207999840378761,
+                0.03235999867320061,
+                0.03206399828195572,
+                0.03203200176358223,
+                0.031991999596357346,
+                0.03203200176358223,
+                0.032047998160123825,
+                0.03230400010943413,
+                0.03197599947452545
+              ],
+              "candidate_ptxas": [
+                0.014183999970555305,
+                0.014159999787807465,
+                0.0142639996483922,
+                0.014248000457882881,
+                0.014423999935388565,
+                0.014159999787807465,
+                0.013976000249385834,
+                0.013927999883890152,
+                0.01438399963080883,
+                0.014127999544143677,
+                0.014208000153303146,
+                0.014031999744474888,
+                0.014120000414550304,
+                0.014112000353634357,
+                0.014112000353634357
+              ],
+              "triton": [
+                0.019392000511288643,
+                0.019207999110221863,
+                0.01934400014579296,
+                0.019279999658465385,
+                0.019223999232053757,
+                0.019247999414801598,
+                0.019759999588131905,
+                0.019088000059127808,
+                0.01942400075495243,
+                0.019120000302791595,
+                0.01923999935388565,
+                0.01947999931871891,
+                0.019176000729203224,
+                0.01927199959754944,
+                0.019247999414801598
+              ]
+            },
+            "medians_ms": {
+              "incumbent": 0.0355600006878376,
+              "candidate": 0.01551199983805418,
+              "incumbent_ptxas": 0.032047998160123825,
+              "candidate_ptxas": 0.014159999787807465,
+              "triton": 0.019247999414801598
+            }
+          },
+          {
+            "round": 2,
+            "orders": [
+              [
+                "incumbent_ptxas",
+                "candidate_ptxas",
+                "incumbent",
+                "triton",
+                "candidate"
+              ],
+              [
+                "incumbent_ptxas",
+                "triton",
+                "candidate_ptxas",
+                "candidate",
+                "incumbent"
+              ],
+              [
+                "incumbent_ptxas",
+                "triton",
+                "incumbent",
+                "candidate_ptxas",
+                "candidate"
+              ],
+              [
+                "candidate_ptxas",
+                "incumbent",
+                "candidate",
+                "incumbent_ptxas",
+                "triton"
+              ],
+              [
+                "incumbent",
+                "candidate",
+                "incumbent_ptxas",
+                "triton",
+                "candidate_ptxas"
+              ],
+              [
+                "triton",
+                "incumbent_ptxas",
+                "incumbent",
+                "candidate_ptxas",
+                "candidate"
+              ],
+              [
+                "candidate",
+                "candidate_ptxas",
+                "triton",
+                "incumbent",
+                "incumbent_ptxas"
+              ],
+              [
+                "candidate",
+                "candidate_ptxas",
+                "triton",
+                "incumbent",
+                "incumbent_ptxas"
+              ],
+              [
+                "incumbent",
+                "triton",
+                "incumbent_ptxas",
+                "candidate",
+                "candidate_ptxas"
+              ],
+              [
+                "incumbent",
+                "candidate_ptxas",
+                "candidate",
+                "incumbent_ptxas",
+                "triton"
+              ],
+              [
+                "incumbent",
+                "triton",
+                "incumbent_ptxas",
+                "candidate_ptxas",
+                "candidate"
+              ],
+              [
+                "triton",
+                "incumbent",
+                "candidate",
+                "incumbent_ptxas",
+                "candidate_ptxas"
+              ],
+              [
+                "incumbent",
+                "triton",
+                "incumbent_ptxas",
+                "candidate_ptxas",
+                "candidate"
+              ],
+              [
+                "incumbent_ptxas",
+                "candidate",
+                "incumbent",
+                "triton",
+                "candidate_ptxas"
+              ],
+              [
+                "triton",
+                "candidate",
+                "incumbent",
+                "candidate_ptxas",
+                "incumbent_ptxas"
+              ]
+            ],
+            "samples_ms": {
+              "incumbent": [
+                0.03564000129699707,
+                0.03566399961709976,
+                0.03546399995684624,
+                0.03560800105333328,
+                0.03587999939918518,
+                0.03593600168824196,
+                0.035471998155117035,
+                0.03559200093150139,
+                0.03558399900794029,
+                0.035711999982595444,
+                0.0355600006878376,
+                0.03566399961709976,
+                0.035576000809669495,
+                0.03550399839878082,
+                0.035551998764276505
+              ],
+              "candidate": [
+                0.015599999576807022,
+                0.01551199983805418,
+                0.01548799965530634,
+                0.015383999794721603,
+                0.01576000079512596,
+                0.015584000386297703,
+                0.015560000203549862,
+                0.015607999637722969,
+                0.015704000368714333,
+                0.01547200046479702,
+                0.015495999716222286,
+                0.01547200046479702,
+                0.015503999777138233,
+                0.015560000203549862,
+                0.015479999594390392
+              ],
+              "incumbent_ptxas": [
+                0.03235999867320061,
+                0.03206399828195572,
+                0.03219199925661087,
+                0.03192000091075897,
+                0.0321200005710125,
+                0.03195999935269356,
+                0.03200000151991844,
+                0.03195200115442276,
+                0.03203999996185303,
+                0.03195200115442276,
+                0.03207999840378761,
+                0.0337040014564991,
+                0.032072000205516815,
+                0.031968001276254654,
+                0.031936001032590866
+              ],
+              "candidate_ptxas": [
+                0.014240000396966934,
+                0.014175999909639359,
+                0.014423999935388565,
+                0.014192000031471252,
+                0.014151999726891518,
+                0.014336000196635723,
+                0.014127999544143677,
+                0.01434400025755167,
+                0.01414399966597557,
+                0.014072000049054623,
+                0.01408000010997057,
+                0.014216000214219093,
+                0.014000000432133675,
+                0.014047999866306782,
+                0.014232000336050987
+              ],
+              "triton": [
+                0.019144000485539436,
+                0.019495999440550804,
+                0.01918400079011917,
+                0.01923999935388565,
+                0.01923999935388565,
+                0.019255999475717545,
+                0.01913600042462349,
+                0.01927199959754944,
+                0.019207999110221863,
+                0.019231999292969704,
+                0.019231999292969704,
+                0.01927199959754944,
+                0.01921599917113781,
+                0.019255999475717545,
+                0.01958400011062622
+              ]
+            },
+            "medians_ms": {
+              "incumbent": 0.03559200093150139,
+              "candidate": 0.01551199983805418,
+              "incumbent_ptxas": 0.03203999996185303,
+              "candidate_ptxas": 0.014175999909639359,
+              "triton": 0.01923999935388565
+            }
+          }
+        ],
+        "parts": {
+          "forward": [
+            {
+              "round": 0,
+              "orders": [
+                [
+                  "incumbent_ptxas",
+                  "triton",
+                  "incumbent",
+                  "candidate_ptxas",
+                  "candidate"
+                ],
+                [
+                  "incumbent",
+                  "candidate_ptxas",
+                  "candidate",
+                  "triton",
+                  "incumbent_ptxas"
+                ],
+                [
+                  "candidate",
+                  "triton",
+                  "incumbent",
+                  "incumbent_ptxas",
+                  "candidate_ptxas"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "triton",
+                  "incumbent",
+                  "candidate_ptxas",
+                  "candidate"
+                ],
+                [
+                  "incumbent",
+                  "candidate",
+                  "incumbent_ptxas",
+                  "triton",
+                  "candidate_ptxas"
+                ],
+                [
+                  "triton",
+                  "incumbent",
+                  "incumbent_ptxas",
+                  "candidate",
+                  "candidate_ptxas"
+                ],
+                [
+                  "candidate",
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "candidate_ptxas",
+                  "triton"
+                ],
+                [
+                  "triton",
+                  "incumbent",
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "candidate"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "candidate",
+                  "triton",
+                  "candidate_ptxas",
+                  "incumbent"
+                ],
+                [
+                  "candidate_ptxas",
+                  "candidate",
+                  "triton",
+                  "incumbent_ptxas",
+                  "incumbent"
+                ],
+                [
+                  "candidate",
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "incumbent",
+                  "triton"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "triton",
+                  "candidate",
+                  "candidate_ptxas"
+                ],
+                [
+                  "candidate_ptxas",
+                  "incumbent",
+                  "candidate",
+                  "triton",
+                  "incumbent_ptxas"
+                ],
+                [
+                  "candidate",
+                  "incumbent",
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "triton"
+                ],
+                [
+                  "candidate_ptxas",
+                  "triton",
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "candidate"
+                ]
+              ],
+              "samples_ms": {
+                "incumbent_ptxas": [
+                  0.05039199814200401,
+                  0.03216800093650818,
+                  0.03215999901294708,
+                  0.032232001423835754,
+                  0.03222399950027466,
+                  0.03219199925661087,
+                  0.032287999987602234,
+                  0.03222399950027466,
+                  0.03208800032734871,
+                  0.03209599852561951,
+                  0.032391998916864395,
+                  0.03219199925661087,
+                  0.0321040004491806,
+                  0.032207999378442764,
+                  0.03213600069284439
+                ],
+                "candidate_ptxas": [
+                  0.020312000066041946,
+                  0.014551999978721142,
+                  0.0144640002399683,
+                  0.014216000214219093,
+                  0.014240000396966934,
+                  0.01422400027513504,
+                  0.014183999970555305,
+                  0.014047999866306782,
+                  0.014088000170886517,
+                  0.014208000153303146,
+                  0.014167999848723412,
+                  0.014096000231802464,
+                  0.014120000414550304,
+                  0.014312000013887882,
+                  0.014151999726891518
+                ],
+                "triton": [
+                  0.027248000726103783,
+                  0.019440000876784325,
+                  0.019432000815868378,
+                  0.019416000694036484,
+                  0.019328000023961067,
+                  0.019303999841213226,
+                  0.01926399953663349,
+                  0.01929599978029728,
+                  0.019360000267624855,
+                  0.01926399953663349,
+                  0.019287999719381332,
+                  0.01940000057220459,
+                  0.019255999475717545,
+                  0.019352000206708908,
+                  0.01929599978029728
+                ],
+                "incumbent": [
+                  0.0461760014295578,
+                  0.03590400144457817,
+                  0.035815998911857605,
+                  0.03577600046992302,
+                  0.03587200120091438,
+                  0.035711999982595444,
+                  0.03600800037384033,
+                  0.03595200181007385,
+                  0.035840000957250595,
+                  0.035704001784324646,
+                  0.03571999818086624,
+                  0.03585600107908249,
+                  0.03564000129699707,
+                  0.03595200181007385,
+                  0.03596000000834465
+                ],
+                "candidate": [
+                  0.017575999721884727,
+                  0.015720000490546227,
+                  0.015776000916957855,
+                  0.015647999942302704,
+                  0.01571200042963028,
+                  0.015904000028967857,
+                  0.015375999733805656,
+                  0.015536000020802021,
+                  0.015479999594390392,
+                  0.015599999576807022,
+                  0.015536000020802021,
+                  0.015783999115228653,
+                  0.015615999698638916,
+                  0.015432000160217285,
+                  0.015728000551462173
+                ]
+              },
+              "medians_ms": {
+                "incumbent_ptxas": 0.03219199925661087,
+                "candidate_ptxas": 0.014208000153303146,
+                "triton": 0.019328000023961067,
+                "incumbent": 0.03585600107908249,
+                "candidate": 0.015647999942302704
+              }
+            },
+            {
+              "round": 1,
+              "orders": [
+                [
+                  "candidate_ptxas",
+                  "incumbent",
+                  "triton",
+                  "candidate",
+                  "incumbent_ptxas"
+                ],
+                [
+                  "candidate",
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "incumbent",
+                  "triton"
+                ],
+                [
+                  "candidate",
+                  "incumbent",
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "triton"
+                ],
+                [
+                  "triton",
+                  "candidate",
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "candidate_ptxas"
+                ],
+                [
+                  "candidate_ptxas",
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "candidate",
+                  "triton"
+                ],
+                [
+                  "candidate",
+                  "incumbent",
+                  "triton",
+                  "candidate_ptxas",
+                  "incumbent_ptxas"
+                ],
+                [
+                  "candidate",
+                  "incumbent",
+                  "candidate_ptxas",
+                  "incumbent_ptxas",
+                  "triton"
+                ],
+                [
+                  "incumbent",
+                  "candidate",
+                  "triton",
+                  "incumbent_ptxas",
+                  "candidate_ptxas"
+                ],
+                [
+                  "candidate",
+                  "triton",
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "incumbent"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "candidate",
+                  "incumbent",
+                  "candidate_ptxas",
+                  "triton"
+                ],
+                [
+                  "incumbent",
+                  "triton",
+                  "incumbent_ptxas",
+                  "candidate",
+                  "candidate_ptxas"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "incumbent",
+                  "triton",
+                  "candidate"
+                ],
+                [
+                  "triton",
+                  "candidate_ptxas",
+                  "incumbent",
+                  "candidate",
+                  "incumbent_ptxas"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "triton",
+                  "candidate",
+                  "incumbent",
+                  "candidate_ptxas"
+                ],
+                [
+                  "incumbent",
+                  "triton",
+                  "incumbent_ptxas",
+                  "candidate",
+                  "candidate_ptxas"
+                ]
+              ],
+              "samples_ms": {
+                "incumbent_ptxas": [
+                  0.032207999378442764,
+                  0.0321119986474514,
+                  0.03214399889111519,
+                  0.0321119986474514,
+                  0.0321119986474514,
+                  0.03206399828195572,
+                  0.03202399984002113,
+                  0.0321200005710125,
+                  0.032047998160123825,
+                  0.032175999134778976,
+                  0.0321040004491806,
+                  0.03207999840378761,
+                  0.03221600130200386,
+                  0.03244800120592117,
+                  0.032391998916864395
+                ],
+                "candidate_ptxas": [
+                  0.014415999874472618,
+                  0.01414399966597557,
+                  0.014287999831140041,
+                  0.01410400029271841,
+                  0.01448800042271614,
+                  0.014271999709308147,
+                  0.014112000353634357,
+                  0.014167999848723412,
+                  0.014511999674141407,
+                  0.0142000000923872,
+                  0.01414399966597557,
+                  0.014039999805390835,
+                  0.014096000231802464,
+                  0.01414399966597557,
+                  0.01410400029271841
+                ],
+                "triton": [
+                  0.019336000084877014,
+                  0.01929599978029728,
+                  0.019368000328540802,
+                  0.019231999292969704,
+                  0.019287999719381332,
+                  0.02107200026512146,
+                  0.019255999475717545,
+                  0.019303999841213226,
+                  0.019408000633120537,
+                  0.019352000206708908,
+                  0.019328000023961067,
+                  0.019336000084877014,
+                  0.019328000023961067,
+                  0.019440000876784325,
+                  0.01926399953663349
+                ],
+                "incumbent": [
+                  0.035760000348091125,
+                  0.03576799854636192,
+                  0.03564000129699707,
+                  0.035704001784324646,
+                  0.035656001418828964,
+                  0.03567200154066086,
+                  0.035656001418828964,
+                  0.03590400144457817,
+                  0.03587200120091438,
+                  0.03569599986076355,
+                  0.03604799881577492,
+                  0.03593600168824196,
+                  0.035255998373031616,
+                  0.03572800010442734,
+                  0.03564799949526787
+                ],
+                "candidate": [
+                  0.015560000203549862,
+                  0.015831999480724335,
+                  0.015544000081717968,
+                  0.01547200046479702,
+                  0.015527999959886074,
+                  0.015527999959886074,
+                  0.015568000264465809,
+                  0.015536000020802021,
+                  0.015599999576807022,
+                  0.015664000064134598,
+                  0.015432000160217285,
+                  0.015503999777138233,
+                  0.015568000264465809,
+                  0.01547200046479702,
+                  0.015607999637722969
+                ]
+              },
+              "medians_ms": {
+                "incumbent_ptxas": 0.0321119986474514,
+                "candidate_ptxas": 0.01414399966597557,
+                "triton": 0.019328000023961067,
+                "incumbent": 0.035704001784324646,
+                "candidate": 0.015544000081717968
+              }
+            },
+            {
+              "round": 2,
+              "orders": [
+                [
+                  "triton",
+                  "incumbent",
+                  "incumbent_ptxas",
+                  "candidate",
+                  "candidate_ptxas"
+                ],
+                [
+                  "triton",
+                  "candidate",
+                  "incumbent",
+                  "candidate_ptxas",
+                  "incumbent_ptxas"
+                ],
+                [
+                  "triton",
+                  "candidate",
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "candidate_ptxas"
+                ],
+                [
+                  "incumbent",
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "triton",
+                  "candidate"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "triton",
+                  "candidate",
+                  "incumbent"
+                ],
+                [
+                  "candidate",
+                  "triton",
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "candidate_ptxas"
+                ],
+                [
+                  "candidate_ptxas",
+                  "incumbent",
+                  "candidate",
+                  "incumbent_ptxas",
+                  "triton"
+                ],
+                [
+                  "candidate_ptxas",
+                  "incumbent",
+                  "candidate",
+                  "incumbent_ptxas",
+                  "triton"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "candidate",
+                  "triton",
+                  "candidate_ptxas",
+                  "incumbent"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "candidate_ptxas",
+                  "triton",
+                  "candidate"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "candidate",
+                  "triton",
+                  "incumbent",
+                  "candidate_ptxas"
+                ],
+                [
+                  "candidate",
+                  "incumbent_ptxas",
+                  "candidate_ptxas",
+                  "triton",
+                  "incumbent"
+                ],
+                [
+                  "incumbent_ptxas",
+                  "candidate",
+                  "triton",
+                  "incumbent",
+                  "candidate_ptxas"
+                ],
+                [
+                  "triton",
+                  "candidate_ptxas",
+                  "incumbent_ptxas",
+                  "candidate",
+                  "incumbent"
+                ],
+                [
+                  "candidate",
+                  "candidate_ptxas",
+                  "incumbent_ptxas",
+                  "incumbent",
+                  "triton"
+                ]
+              ],
+              "samples_ms": {
+                "incumbent_ptxas": [
+                  0.03227199986577034,
+                  0.03207999840378761,
+                  0.03232000023126602,
+                  0.03203200176358223,
+                  0.03209599852561951,
+                  0.03232799842953682,
+                  0.031936001032590866,
+                  0.03206399828195572,
+                  0.032047998160123825,
+                  0.03221600130200386,
+                  0.032232001423835754,
+                  0.032287999987602234,
+                  0.03215999901294708,
+                  0.03205600008368492,
+                  0.0321200005710125
+                ],
+                "candidate_ptxas": [
+                  0.014352000318467617,
+                  0.014055999927222729,
+                  0.014096000231802464,
+                  0.014031999744474888,
+                  0.014096000231802464,
+                  0.014208000153303146,
+                  0.014175999909639359,
+                  0.014248000457882881,
+                  0.014055999927222729,
+                  0.014151999726891518,
+                  0.01408000010997057,
+                  0.014127999544143677,
+                  0.0144640002399683,
+                  0.014151999726891518,
+                  0.01432000007480383
+                ],
+                "triton": [
+                  0.01950399950146675,
+                  0.01921599917113781,
+                  0.019440000876784325,
+                  0.01931999996304512,
+                  0.01927199959754944,
+                  0.019279999658465385,
+                  0.019511999562382698,
+                  0.019287999719381332,
+                  0.019463999196887016,
+                  0.02117599919438362,
+                  0.01927199959754944,
+                  0.01931999996304512,
+                  0.019328000023961067,
+                  0.019447999075055122,
+                  0.019328000023961067
+                ],
+                "incumbent": [
+                  0.03574400022625923,
+                  0.03578399866819382,
+                  0.03576799854636192,
+                  0.03567200154066086,
+                  0.03567200154066086,
+                  0.03567200154066086,
+                  0.035415999591350555,
+                  0.03576799854636192,
+                  0.03579200059175491,
+                  0.03560800105333328,
+                  0.03569599986076355,
+                  0.03566399961709976,
+                  0.03595200181007385,
+                  0.03574400022625923,
+                  0.035704001784324646
+                ],
+                "candidate": [
+                  0.015519999898970127,
+                  0.01551199983805418,
+                  0.015407999977469444,
+                  0.01568800024688244,
+                  0.015495999716222286,
+                  0.015560000203549862,
+                  0.015615999698638916,
+                  0.01559200044721365,
+                  0.015799999237060547,
+                  0.01571200042963028,
+                  0.015552000142633915,
+                  0.015599999576807022,
+                  0.015503999777138233,
+                  0.015456000342965126,
+                  0.01551199983805418
+                ]
+              },
+              "medians_ms": {
+                "incumbent_ptxas": 0.0321200005710125,
+                "candidate_ptxas": 0.014151999726891518,
+                "triton": 0.019328000023961067,
+                "incumbent": 0.035704001784324646,
+                "candidate": 0.015552000142633915
+              }
+            }
+          ]
+        },
+        "audits": {
+          "incumbent": {
+            "passed": true,
+            "observed_compute_launches": 9,
+            "kernel_counts": {
+              "oa_pack_d4f4cdb177288a1facc6": 4,
+              "oa_tensor_688d3469089cff7f1e9a_gemm_bias": 3,
+              "oa_model_f82e18bcae64b2188987": 2
+            },
+            "storage_activities": {},
+            "kernel_duration_us": {
+              "oa_pack_d4f4cdb177288a1facc6": [
+                2.913,
+                2.945,
+                2.818,
+                2.85
+              ],
+              "oa_tensor_688d3469089cff7f1e9a_gemm_bias": [
+                7.556,
+                7.491,
+                7.46
+              ],
+              "oa_model_f82e18bcae64b2188987": [
+                2.946,
+                2.85
+              ]
+            },
+            "duration_scope": "raw kernel activities from this profiled invocation; not a steady-state timing distribution",
+            "unknown_compute_kernels": [],
+            "scope": "independent Kineto kernel activities, exact names/counts; copies classified by activity category"
+          },
+          "candidate": {
+            "passed": true,
+            "observed_compute_launches": 4,
+            "kernel_counts": {
+              "oa_pack_d4f4cdb177288a1facc6": 1,
+              "oa_projection_ad8579b20ef263c58231_stack_weights": 1,
+              "oa_projection_ad8579b20ef263c58231_gemm": 1,
+              "oa_projection_ad8579b20ef263c58231_sum": 1
+            },
+            "storage_activities": {},
+            "kernel_duration_us": {
+              "oa_pack_d4f4cdb177288a1facc6": [
+                2.944
+              ],
+              "oa_projection_ad8579b20ef263c58231_stack_weights": [
+                3.137
+              ],
+              "oa_projection_ad8579b20ef263c58231_gemm": [
+                6.753
+              ],
+              "oa_projection_ad8579b20ef263c58231_sum": [
+                3.457
+              ]
+            },
+            "duration_scope": "raw kernel activities from this profiled invocation; not a steady-state timing distribution",
+            "unknown_compute_kernels": [],
+            "scope": "independent Kineto kernel activities, exact names/counts; copies classified by activity category"
+          }
+        },
+        "validation": [
+          {
+            "iteration": 0,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "663f828bc3039ddde0751df0a98b9559337284a1c1fa92c4383afe7b6e722711",
+            "expected_sha256": "91102275abd767fdb0f82c199b9cdd05323c05753601444431dc31ba4721f66f"
+          },
+          {
+            "iteration": 0,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "663f828bc3039ddde0751df0a98b9559337284a1c1fa92c4383afe7b6e722711",
+            "expected_sha256": "91102275abd767fdb0f82c199b9cdd05323c05753601444431dc31ba4721f66f"
+          },
+          {
+            "iteration": 0,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "663f828bc3039ddde0751df0a98b9559337284a1c1fa92c4383afe7b6e722711",
+            "expected_sha256": "91102275abd767fdb0f82c199b9cdd05323c05753601444431dc31ba4721f66f"
+          },
+          {
+            "iteration": 0,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "663f828bc3039ddde0751df0a98b9559337284a1c1fa92c4383afe7b6e722711",
+            "expected_sha256": "91102275abd767fdb0f82c199b9cdd05323c05753601444431dc31ba4721f66f"
+          },
+          {
+            "iteration": 0,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "663f828bc3039ddde0751df0a98b9559337284a1c1fa92c4383afe7b6e722711",
+            "expected_sha256": "91102275abd767fdb0f82c199b9cdd05323c05753601444431dc31ba4721f66f"
+          },
+          {
+            "iteration": 1,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "dcb9447493695fe88a1d223a66daf22dac1fe96c1506404b80c837e92447a3ce",
+            "expected_sha256": "e587547ac7daa92a3f9ea81685b96d0192cd88c0595cb3892da6f5b4612263cd"
+          },
+          {
+            "iteration": 1,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "dcb9447493695fe88a1d223a66daf22dac1fe96c1506404b80c837e92447a3ce",
+            "expected_sha256": "e587547ac7daa92a3f9ea81685b96d0192cd88c0595cb3892da6f5b4612263cd"
+          },
+          {
+            "iteration": 1,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "dcb9447493695fe88a1d223a66daf22dac1fe96c1506404b80c837e92447a3ce",
+            "expected_sha256": "e587547ac7daa92a3f9ea81685b96d0192cd88c0595cb3892da6f5b4612263cd"
+          },
+          {
+            "iteration": 1,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "dcb9447493695fe88a1d223a66daf22dac1fe96c1506404b80c837e92447a3ce",
+            "expected_sha256": "e587547ac7daa92a3f9ea81685b96d0192cd88c0595cb3892da6f5b4612263cd"
+          },
+          {
+            "iteration": 1,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "dcb9447493695fe88a1d223a66daf22dac1fe96c1506404b80c837e92447a3ce",
+            "expected_sha256": "e587547ac7daa92a3f9ea81685b96d0192cd88c0595cb3892da6f5b4612263cd"
+          },
+          {
+            "iteration": 2,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "fd0a7a7ea488f04093dc4bfebd0ed84f27749d6bdb8068505f3083c28d04397b",
+            "expected_sha256": "6a69bae6ec3ef10962d4e127b551863eef4af8007e5f8aad28e23a6e0f6ebf12"
+          },
+          {
+            "iteration": 2,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "fd0a7a7ea488f04093dc4bfebd0ed84f27749d6bdb8068505f3083c28d04397b",
+            "expected_sha256": "6a69bae6ec3ef10962d4e127b551863eef4af8007e5f8aad28e23a6e0f6ebf12"
+          },
+          {
+            "iteration": 2,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "fd0a7a7ea488f04093dc4bfebd0ed84f27749d6bdb8068505f3083c28d04397b",
+            "expected_sha256": "6a69bae6ec3ef10962d4e127b551863eef4af8007e5f8aad28e23a6e0f6ebf12"
+          },
+          {
+            "iteration": 2,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "fd0a7a7ea488f04093dc4bfebd0ed84f27749d6bdb8068505f3083c28d04397b",
+            "expected_sha256": "6a69bae6ec3ef10962d4e127b551863eef4af8007e5f8aad28e23a6e0f6ebf12"
+          },
+          {
+            "iteration": 2,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "fd0a7a7ea488f04093dc4bfebd0ed84f27749d6bdb8068505f3083c28d04397b",
+            "expected_sha256": "6a69bae6ec3ef10962d4e127b551863eef4af8007e5f8aad28e23a6e0f6ebf12"
+          },
+          {
+            "iteration": 3,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "84cd548e1e69c99ed112e3711c2d2553c989c58fd46d7f7af9fb9d4aa9bee9eb",
+            "expected_sha256": "52a5f6cd1ab5682dbab94e228a4ec8966f6649dc9cfba63c0f121ee65ac613d9"
+          },
+          {
+            "iteration": 3,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "84cd548e1e69c99ed112e3711c2d2553c989c58fd46d7f7af9fb9d4aa9bee9eb",
+            "expected_sha256": "52a5f6cd1ab5682dbab94e228a4ec8966f6649dc9cfba63c0f121ee65ac613d9"
+          },
+          {
+            "iteration": 3,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "84cd548e1e69c99ed112e3711c2d2553c989c58fd46d7f7af9fb9d4aa9bee9eb",
+            "expected_sha256": "52a5f6cd1ab5682dbab94e228a4ec8966f6649dc9cfba63c0f121ee65ac613d9"
+          },
+          {
+            "iteration": 3,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "84cd548e1e69c99ed112e3711c2d2553c989c58fd46d7f7af9fb9d4aa9bee9eb",
+            "expected_sha256": "52a5f6cd1ab5682dbab94e228a4ec8966f6649dc9cfba63c0f121ee65ac613d9"
+          },
+          {
+            "iteration": 3,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "84cd548e1e69c99ed112e3711c2d2553c989c58fd46d7f7af9fb9d4aa9bee9eb",
+            "expected_sha256": "52a5f6cd1ab5682dbab94e228a4ec8966f6649dc9cfba63c0f121ee65ac613d9"
+          },
+          {
+            "iteration": 4,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "ffa27c8402e50fc4208c299455e71b9c903411bbdaffd48f2dfa2c5b26314c27",
+            "expected_sha256": "a8b2f922b8ffadb6ef7af265f96086f19e4645eff8530cf6d6a9e8a7ba8d7ba1"
+          },
+          {
+            "iteration": 4,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "ffa27c8402e50fc4208c299455e71b9c903411bbdaffd48f2dfa2c5b26314c27",
+            "expected_sha256": "a8b2f922b8ffadb6ef7af265f96086f19e4645eff8530cf6d6a9e8a7ba8d7ba1"
+          },
+          {
+            "iteration": 4,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "ffa27c8402e50fc4208c299455e71b9c903411bbdaffd48f2dfa2c5b26314c27",
+            "expected_sha256": "a8b2f922b8ffadb6ef7af265f96086f19e4645eff8530cf6d6a9e8a7ba8d7ba1"
+          },
+          {
+            "iteration": 4,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "ffa27c8402e50fc4208c299455e71b9c903411bbdaffd48f2dfa2c5b26314c27",
+            "expected_sha256": "a8b2f922b8ffadb6ef7af265f96086f19e4645eff8530cf6d6a9e8a7ba8d7ba1"
+          },
+          {
+            "iteration": 4,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "ffa27c8402e50fc4208c299455e71b9c903411bbdaffd48f2dfa2c5b26314c27",
+            "expected_sha256": "a8b2f922b8ffadb6ef7af265f96086f19e4645eff8530cf6d6a9e8a7ba8d7ba1"
+          },
+          {
+            "iteration": 5,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "e9b6352139102c9f047aa708af87cd0673d56f897d15ab141ee0d2dce6b20ab1",
+            "expected_sha256": "8cb81390213b880848703a2cf4eebe124e9fc91de94ea53b8a487f8826830545"
+          },
+          {
+            "iteration": 5,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "e9b6352139102c9f047aa708af87cd0673d56f897d15ab141ee0d2dce6b20ab1",
+            "expected_sha256": "8cb81390213b880848703a2cf4eebe124e9fc91de94ea53b8a487f8826830545"
+          },
+          {
+            "iteration": 5,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "e9b6352139102c9f047aa708af87cd0673d56f897d15ab141ee0d2dce6b20ab1",
+            "expected_sha256": "8cb81390213b880848703a2cf4eebe124e9fc91de94ea53b8a487f8826830545"
+          },
+          {
+            "iteration": 5,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "e9b6352139102c9f047aa708af87cd0673d56f897d15ab141ee0d2dce6b20ab1",
+            "expected_sha256": "8cb81390213b880848703a2cf4eebe124e9fc91de94ea53b8a487f8826830545"
+          },
+          {
+            "iteration": 5,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "e9b6352139102c9f047aa708af87cd0673d56f897d15ab141ee0d2dce6b20ab1",
+            "expected_sha256": "8cb81390213b880848703a2cf4eebe124e9fc91de94ea53b8a487f8826830545"
+          },
+          {
+            "iteration": 6,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "47f004ce3a2de3fc6bd8fd8d80535b0ac75cbcbb15c6264fe433588407e0c430",
+            "expected_sha256": "9d2148dbee6131ed3f847e436e5f0192ce1b2342c518aa891d0c27399ac8a70c"
+          },
+          {
+            "iteration": 6,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "47f004ce3a2de3fc6bd8fd8d80535b0ac75cbcbb15c6264fe433588407e0c430",
+            "expected_sha256": "9d2148dbee6131ed3f847e436e5f0192ce1b2342c518aa891d0c27399ac8a70c"
+          },
+          {
+            "iteration": 6,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "47f004ce3a2de3fc6bd8fd8d80535b0ac75cbcbb15c6264fe433588407e0c430",
+            "expected_sha256": "9d2148dbee6131ed3f847e436e5f0192ce1b2342c518aa891d0c27399ac8a70c"
+          },
+          {
+            "iteration": 6,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "47f004ce3a2de3fc6bd8fd8d80535b0ac75cbcbb15c6264fe433588407e0c430",
+            "expected_sha256": "9d2148dbee6131ed3f847e436e5f0192ce1b2342c518aa891d0c27399ac8a70c"
+          },
+          {
+            "iteration": 6,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "47f004ce3a2de3fc6bd8fd8d80535b0ac75cbcbb15c6264fe433588407e0c430",
+            "expected_sha256": "9d2148dbee6131ed3f847e436e5f0192ce1b2342c518aa891d0c27399ac8a70c"
+          },
+          {
+            "iteration": 7,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "977e4ad31226e6a55b44e7429e0264df0b67e940d471a4fe6a55d1f564f82166",
+            "expected_sha256": "b98e5adbed7e967daf52a7c9e312d007e1917ee7c8ceb97289d1a53a4749e8bc"
+          },
+          {
+            "iteration": 7,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "977e4ad31226e6a55b44e7429e0264df0b67e940d471a4fe6a55d1f564f82166",
+            "expected_sha256": "b98e5adbed7e967daf52a7c9e312d007e1917ee7c8ceb97289d1a53a4749e8bc"
+          },
+          {
+            "iteration": 7,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "977e4ad31226e6a55b44e7429e0264df0b67e940d471a4fe6a55d1f564f82166",
+            "expected_sha256": "b98e5adbed7e967daf52a7c9e312d007e1917ee7c8ceb97289d1a53a4749e8bc"
+          },
+          {
+            "iteration": 7,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "977e4ad31226e6a55b44e7429e0264df0b67e940d471a4fe6a55d1f564f82166",
+            "expected_sha256": "b98e5adbed7e967daf52a7c9e312d007e1917ee7c8ceb97289d1a53a4749e8bc"
+          },
+          {
+            "iteration": 7,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.066394805908203e-07,
+            "actual_sha256": "977e4ad31226e6a55b44e7429e0264df0b67e940d471a4fe6a55d1f564f82166",
+            "expected_sha256": "b98e5adbed7e967daf52a7c9e312d007e1917ee7c8ceb97289d1a53a4749e8bc"
+          },
+          {
+            "iteration": 8,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "b8dfd9c595563f891f0305b31a9217855c5eb849f7d89a1f4624fc888e6863ff",
+            "expected_sha256": "1506d134bc0bdd0a92ce92c90577b5242470734b02ba8e53c04e2bccce806d7f"
+          },
+          {
+            "iteration": 8,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "b8dfd9c595563f891f0305b31a9217855c5eb849f7d89a1f4624fc888e6863ff",
+            "expected_sha256": "1506d134bc0bdd0a92ce92c90577b5242470734b02ba8e53c04e2bccce806d7f"
+          },
+          {
+            "iteration": 8,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "b8dfd9c595563f891f0305b31a9217855c5eb849f7d89a1f4624fc888e6863ff",
+            "expected_sha256": "1506d134bc0bdd0a92ce92c90577b5242470734b02ba8e53c04e2bccce806d7f"
+          },
+          {
+            "iteration": 8,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "b8dfd9c595563f891f0305b31a9217855c5eb849f7d89a1f4624fc888e6863ff",
+            "expected_sha256": "1506d134bc0bdd0a92ce92c90577b5242470734b02ba8e53c04e2bccce806d7f"
+          },
+          {
+            "iteration": 8,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "b8dfd9c595563f891f0305b31a9217855c5eb849f7d89a1f4624fc888e6863ff",
+            "expected_sha256": "1506d134bc0bdd0a92ce92c90577b5242470734b02ba8e53c04e2bccce806d7f"
+          },
+          {
+            "iteration": 9,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "23eb807f25059234d793ce09de6aa7a692ce43d116b87c7074aeb0ef0e10d5d2",
+            "expected_sha256": "bcb9c2b7c8c978e0fb18bee909ddb3d433b95f2bb601b84c282d92789e77bf88"
+          },
+          {
+            "iteration": 9,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "23eb807f25059234d793ce09de6aa7a692ce43d116b87c7074aeb0ef0e10d5d2",
+            "expected_sha256": "bcb9c2b7c8c978e0fb18bee909ddb3d433b95f2bb601b84c282d92789e77bf88"
+          },
+          {
+            "iteration": 9,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "23eb807f25059234d793ce09de6aa7a692ce43d116b87c7074aeb0ef0e10d5d2",
+            "expected_sha256": "bcb9c2b7c8c978e0fb18bee909ddb3d433b95f2bb601b84c282d92789e77bf88"
+          },
+          {
+            "iteration": 9,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "23eb807f25059234d793ce09de6aa7a692ce43d116b87c7074aeb0ef0e10d5d2",
+            "expected_sha256": "bcb9c2b7c8c978e0fb18bee909ddb3d433b95f2bb601b84c282d92789e77bf88"
+          },
+          {
+            "iteration": 9,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.960464477539062e-07,
+            "actual_sha256": "23eb807f25059234d793ce09de6aa7a692ce43d116b87c7074aeb0ef0e10d5d2",
+            "expected_sha256": "bcb9c2b7c8c978e0fb18bee909ddb3d433b95f2bb601b84c282d92789e77bf88"
+          },
+          {
+            "iteration": 10,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "e9d15b20b9791f4be9c8af2472f92de6d55a2b7d97f0b0581c481b3ab9f80c24",
+            "expected_sha256": "3b0f8e21841541d7d64c207d52e2ee8f6a3bc82224cca26ea65bafc7e5035f49"
+          },
+          {
+            "iteration": 10,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "e9d15b20b9791f4be9c8af2472f92de6d55a2b7d97f0b0581c481b3ab9f80c24",
+            "expected_sha256": "3b0f8e21841541d7d64c207d52e2ee8f6a3bc82224cca26ea65bafc7e5035f49"
+          },
+          {
+            "iteration": 10,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "e9d15b20b9791f4be9c8af2472f92de6d55a2b7d97f0b0581c481b3ab9f80c24",
+            "expected_sha256": "3b0f8e21841541d7d64c207d52e2ee8f6a3bc82224cca26ea65bafc7e5035f49"
+          },
+          {
+            "iteration": 10,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "e9d15b20b9791f4be9c8af2472f92de6d55a2b7d97f0b0581c481b3ab9f80c24",
+            "expected_sha256": "3b0f8e21841541d7d64c207d52e2ee8f6a3bc82224cca26ea65bafc7e5035f49"
+          },
+          {
+            "iteration": 10,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 5.364418029785156e-07,
+            "actual_sha256": "e9d15b20b9791f4be9c8af2472f92de6d55a2b7d97f0b0581c481b3ab9f80c24",
+            "expected_sha256": "3b0f8e21841541d7d64c207d52e2ee8f6a3bc82224cca26ea65bafc7e5035f49"
+          },
+          {
+            "iteration": 11,
+            "arm": "incumbent",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "0755e2273a5c45436efe6a8714efbb7967fb60a8f0728adf5375022a1ea463a1",
+            "expected_sha256": "7d4dc53665ad83e9a47e1f29be2ee6da9bf0219636391f7f5bfdc85e808ba5be"
+          },
+          {
+            "iteration": 11,
+            "arm": "candidate",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "0755e2273a5c45436efe6a8714efbb7967fb60a8f0728adf5375022a1ea463a1",
+            "expected_sha256": "7d4dc53665ad83e9a47e1f29be2ee6da9bf0219636391f7f5bfdc85e808ba5be"
+          },
+          {
+            "iteration": 11,
+            "arm": "incumbent_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "0755e2273a5c45436efe6a8714efbb7967fb60a8f0728adf5375022a1ea463a1",
+            "expected_sha256": "7d4dc53665ad83e9a47e1f29be2ee6da9bf0219636391f7f5bfdc85e808ba5be"
+          },
+          {
+            "iteration": 11,
+            "arm": "candidate_ptxas",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "0755e2273a5c45436efe6a8714efbb7967fb60a8f0728adf5375022a1ea463a1",
+            "expected_sha256": "7d4dc53665ad83e9a47e1f29be2ee6da9bf0219636391f7f5bfdc85e808ba5be"
+          },
+          {
+            "iteration": 11,
+            "arm": "triton",
+            "field": "prediction",
+            "elements": 16384,
+            "mismatches": 0,
+            "max_abs": 4.76837158203125e-07,
+            "actual_sha256": "0755e2273a5c45436efe6a8714efbb7967fb60a8f0728adf5375022a1ea463a1",
+            "expected_sha256": "7d4dc53665ad83e9a47e1f29be2ee6da9bf0219636391f7f5bfdc85e808ba5be"
+          }
+        ],
+        "audit_failures": [],
+        "allocation_bytes": {
+          "incumbent": 723012,
+          "candidate": 985188
+        },
+        "ledgers": {
+          "incumbent": {
+            "arch": "sm_80",
+            "backend": "openassembler-native",
+            "cubin": "native/cubin/native.cubin",
+            "cubin_sha256": "966082aa83b233c7bcae539a4baaa566d44c8e7661cc5635a14a87c19dec6bb8",
+            "kernels": {
+              "oa_bias_reduce_e6910ba607e040735c85": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    4,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 18,
+                "signature": {
+                  "attrs": {
+                    "k": 128,
+                    "m": 128,
+                    "n": 128
+                  },
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "bias_grad",
+                  "output": [
+                    128
+                  ]
+                },
+                "text_sha256": "39cac67a19659f4565ee2f4d101dd91d25080d7d69771649bd04ee7126f8a2f9"
+              },
+              "oa_model_1c5dd070e3d4ea6332be": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {
+                    "value": 0.0
+                  },
+                  "inputs": [],
+                  "op": "fill",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "c99f298d321593b926346508a3588562a1a87d56ea781cb1093743186326dbad"
+              },
+              "oa_model_5c8bcd9826dea6b50f6c": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "mse_grad",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "dd8d254c34c36d6f61d0ec9921d41bfdb8c28264835601bd295d18b0a41c1e62"
+              },
+              "oa_model_9041d4b00506e40c21fb": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {
+                    "value": 1.0
+                  },
+                  "inputs": [],
+                  "op": "fill",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "9b737124b805b577c3a33da61e55abd79e774c9e628a138f1a50f3cca5028e75"
+              },
+              "oa_model_a579391d1133ed131aa8": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    1,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128
+                    ],
+                    [
+                      128
+                    ]
+                  ],
+                  "op": "sgd",
+                  "output": [
+                    128
+                  ]
+                },
+                "text_sha256": "30b6c5c5ae826ccbab74cfd5dbb1fefa76be3a2dec978adae8bb79e897a4fc51"
+              },
+              "oa_model_c4bd493e3ea4447c0f2f": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "sgd",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "de4ccf05fbbe3d9f0c9ffd29c965253ed347e4d37998df3f9ec40563946d6772"
+              },
+              "oa_model_f82e18bcae64b2188987": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "add",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "1f344ee1c26ea177b167cffda34be2a64f722244bda16d762fcfdac6e5ba2388"
+              },
+              "oa_warp_mse_94693bd84b891c8cd487": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    1,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 1024
+                },
+                "registers": 18,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "mse",
+                  "output": []
+                },
+                "text_sha256": "72d57f61d0b72a2bb84d68d4bc353cc7a37c229305b2f6ffc202f9f18b037003"
+              }
+            },
+            "numerical_contract": "FP16 RNE operands and FP32 tensor accumulation/output; straight-through cast derivative; deterministic shape-selected FP32 reductions",
+            "plan_sha256": "8285c626fd67f8e50138ba02e857c5d99e82700c1913c476b80eda09fedee474",
+            "schema": 1,
+            "source_sha256": "889a79a8b674c51f24fdb7fffb018e70387a92c488403cc10676047cbb0b71ef",
+            "steps": [
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_688d3469089cff7f1e9a",
+                "inputs": [
+                  "x",
+                  "parameter:q.weight",
+                  "parameter:q.bias"
+                ],
+                "kernel": "linear",
+                "output": "q",
+                "phase": "forward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_688d3469089cff7f1e9a",
+                "inputs": [
+                  "x",
+                  "parameter:k.weight",
+                  "parameter:k.bias"
+                ],
+                "kernel": "linear",
+                "output": "k",
+                "phase": "forward",
+                "tensor": true
+              },
+              {
+                "attrs": {},
+                "entry": "oa_model_f82e18bcae64b2188987",
+                "inputs": [
+                  "q",
+                  "k"
+                ],
+                "kernel": "add",
+                "output": "add",
+                "phase": "forward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_688d3469089cff7f1e9a",
+                "inputs": [
+                  "x",
+                  "parameter:v.weight",
+                  "parameter:v.bias"
+                ],
+                "kernel": "linear",
+                "output": "v",
+                "phase": "forward",
+                "tensor": true
+              },
+              {
+                "attrs": {},
+                "entry": "oa_model_f82e18bcae64b2188987",
+                "inputs": [
+                  "add",
+                  "v"
+                ],
+                "kernel": "add",
+                "output": "add_1",
+                "phase": "forward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_bbd581b60485806bd5d3",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:v.weight"
+                ],
+                "kernel": "linear_dx",
+                "output": "_oa_grad_linear_dx_2",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_496496c1e21b6ad91a82",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "kernel": "linear_dw",
+                "output": "_oa_grad_linear_dw_3",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_bias_reduce_e6910ba607e040735c85",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "kernel": "bias_grad",
+                "output": "_oa_grad_bias_grad_4",
+                "phase": "backward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_bbd581b60485806bd5d3",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:k.weight"
+                ],
+                "kernel": "linear_dx",
+                "output": "_oa_grad_linear_dx_5",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {},
+                "entry": "oa_model_f82e18bcae64b2188987",
+                "inputs": [
+                  "_oa_grad_linear_dx_2",
+                  "_oa_grad_linear_dx_5"
+                ],
+                "kernel": "add",
+                "output": "_oa_grad_add_6",
+                "phase": "backward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_496496c1e21b6ad91a82",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "kernel": "linear_dw",
+                "output": "_oa_grad_linear_dw_7",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_bias_reduce_e6910ba607e040735c85",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "kernel": "bias_grad",
+                "output": "_oa_grad_bias_grad_8",
+                "phase": "backward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_bbd581b60485806bd5d3",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:q.weight"
+                ],
+                "kernel": "linear_dx",
+                "output": "_oa_grad_linear_dx_9",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {},
+                "entry": "oa_model_f82e18bcae64b2188987",
+                "inputs": [
+                  "_oa_grad_add_6",
+                  "_oa_grad_linear_dx_9"
+                ],
+                "kernel": "add",
+                "output": "_oa_grad_add_10",
+                "phase": "backward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_496496c1e21b6ad91a82",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "kernel": "linear_dw",
+                "output": "_oa_grad_linear_dw_11",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_bias_reduce_e6910ba607e040735c85",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "kernel": "bias_grad",
+                "output": "_oa_grad_bias_grad_12",
+                "phase": "backward"
+              }
+            ],
+            "tensor_kernels": {
+              "oa_pack_44e3892e24d27131cf34": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "de04676472a7b38e48492c5a1f1d69723946871eee3aec018e9c4af23d123263",
+                "entry": "oa_pack_44e3892e24d27131cf34",
+                "launch": {
+                  "grid": [
+                    1,
+                    128,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_pack_44e3892e24d27131cf34/native.cubin",
+                "op": "pack_f16_rne",
+                "registers": 24,
+                "signature": {
+                  "input_dtype": "f32",
+                  "nan": "canonical_quiet_preserve_sign",
+                  "op": "pack_f16_rne",
+                  "output_dtype": "f16",
+                  "shape": [
+                    128,
+                    128
+                  ],
+                  "transpose": true
+                },
+                "source_sha256": "103fdddbe6bf4e4102070bf2acd9f6a12475afc3361bc5b96ebe1aa56a399196",
+                "text_sha256": "5d7f4d1811119f78bcaca6420984952a3d1c16470d67b4acedb36ede883f28d7"
+              },
+              "oa_pack_d4f4cdb177288a1facc6": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "609d5dd9d1464c6b0c1115ef7777fc0b39e9d34f1b96cb73b4ca2045978a14db",
+                "entry": "oa_pack_d4f4cdb177288a1facc6",
+                "launch": {
+                  "grid": [
+                    1,
+                    128,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_pack_d4f4cdb177288a1facc6/native.cubin",
+                "op": "pack_f16_rne",
+                "registers": 24,
+                "signature": {
+                  "input_dtype": "f32",
+                  "nan": "canonical_quiet_preserve_sign",
+                  "op": "pack_f16_rne",
+                  "output_dtype": "f16",
+                  "shape": [
+                    128,
+                    128
+                  ],
+                  "transpose": false
+                },
+                "source_sha256": "e0c30fc099d3a84de204bbf4de869f661d1015de9102e6a50aa2bf1fe3e6ba83",
+                "text_sha256": "74ce8dd0eb3ce9f923b82d34e8a65e05b38490215f51a85eec54cf84290b96e5"
+              },
+              "oa_tensor_496496c1e21b6ad91a82_gemm": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "73d74ca5d79e816ff94c70d1c3bd72200c7a57e86b102fb02d78c24a5e5ac4af",
+                "entry": "oa_tensor_496496c1e21b6ad91a82_gemm",
+                "launch": {
+                  "grid": [
+                    2,
+                    2,
+                    1
+                  ],
+                  "smem": 32768,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_tensor_496496c1e21b6ad91a82_gemm/native.cubin",
+                "op": "linear_dw",
+                "registers": 72,
+                "signature": {
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear_dw",
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  }
+                },
+                "source_sha256": "38fab24f1657e502482b810895f79f5da63a7b23bfdf06229430868dd501dec9",
+                "text_sha256": "00997a4f4985903972f12406ef938014145d7fbdc001b0493cd19b91bba6013d"
+              },
+              "oa_tensor_688d3469089cff7f1e9a_gemm_bias": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "7fcdcfd8d0609efbc0df2dd9f9b6307bea0045aa22a9caaa23d5cb2bd9a5eef3",
+                "entry": "oa_tensor_688d3469089cff7f1e9a_gemm_bias",
+                "launch": {
+                  "grid": [
+                    2,
+                    2,
+                    1
+                  ],
+                  "smem": 32768,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_tensor_688d3469089cff7f1e9a_gemm_bias/native.cubin",
+                "op": "linear",
+                "registers": 72,
+                "signature": {
+                  "epilogue": "fp32_bias_after_accumulation",
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear",
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  }
+                },
+                "source_sha256": "e921da298abeb97abb999199d1631aa651c3df2fe9b3332ddc87040f22c0539f",
+                "text_sha256": "7a0b68a11a759b6b3182aca22104d3be6cf830c98d5534d4796ee2746aaf8d39"
+              },
+              "oa_tensor_bbd581b60485806bd5d3_gemm": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "5a4e7b219fe8c63362ee801fc81a7171e0d6f7fb71fd08edefb8f03de235cfd4",
+                "entry": "oa_tensor_bbd581b60485806bd5d3_gemm",
+                "launch": {
+                  "grid": [
+                    2,
+                    2,
+                    1
+                  ],
+                  "smem": 32768,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_tensor_bbd581b60485806bd5d3_gemm/native.cubin",
+                "op": "linear_dx",
+                "registers": 72,
+                "signature": {
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear_dx",
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  }
+                },
+                "source_sha256": "33950f1ff01777e2a5e16acd94ddd5f09114d524dade94e1afc7b3136f6b1a22",
+                "text_sha256": "00997a4f4985903972f12406ef938014145d7fbdc001b0493cd19b91bba6013d"
+              }
+            },
+            "tensor_recipes": {
+              "oa_tensor_496496c1e21b6ad91a82": {
+                "signature": {
+                  "cast_derivative": "straight_through_identity",
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear_dw",
+                  "output": [
+                    128,
+                    128
+                  ],
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  },
+                  "policy": "model_small_grid_tile64"
+                },
+                "stages": [
+                  {
+                    "entry": "oa_pack_44e3892e24d27131cf34",
+                    "inputs": [
+                      "a0"
+                    ],
+                    "output": "oa_tensor_496496c1e21b6ad91a82_packed_a"
+                  },
+                  {
+                    "entry": "oa_pack_44e3892e24d27131cf34",
+                    "inputs": [
+                      "a1"
+                    ],
+                    "output": "oa_tensor_496496c1e21b6ad91a82_packed_b"
+                  },
+                  {
+                    "entry": "oa_tensor_496496c1e21b6ad91a82_gemm",
+                    "inputs": [
+                      "oa_tensor_496496c1e21b6ad91a82_packed_a",
+                      "oa_tensor_496496c1e21b6ad91a82_packed_b"
+                    ],
+                    "output": "output"
+                  }
+                ],
+                "workspaces": {
+                  "oa_tensor_496496c1e21b6ad91a82_packed_a": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  },
+                  "oa_tensor_496496c1e21b6ad91a82_packed_b": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  }
+                }
+              },
+              "oa_tensor_688d3469089cff7f1e9a": {
+                "signature": {
+                  "cast_derivative": "straight_through_identity",
+                  "epilogue": "fp32_bias_after_accumulation",
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128
+                    ]
+                  ],
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear",
+                  "output": [
+                    128,
+                    128
+                  ],
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  },
+                  "policy": "model_small_grid_tile64"
+                },
+                "stages": [
+                  {
+                    "entry": "oa_pack_d4f4cdb177288a1facc6",
+                    "inputs": [
+                      "a0"
+                    ],
+                    "output": "oa_tensor_345dfd289c2f1f4d8284_packed_a"
+                  },
+                  {
+                    "entry": "oa_pack_d4f4cdb177288a1facc6",
+                    "inputs": [
+                      "a1"
+                    ],
+                    "output": "oa_tensor_345dfd289c2f1f4d8284_packed_b"
+                  },
+                  {
+                    "entry": "oa_tensor_688d3469089cff7f1e9a_gemm_bias",
+                    "inputs": [
+                      "oa_tensor_345dfd289c2f1f4d8284_packed_a",
+                      "oa_tensor_345dfd289c2f1f4d8284_packed_b",
+                      "a2"
+                    ],
+                    "output": "output"
+                  }
+                ],
+                "workspaces": {
+                  "oa_tensor_345dfd289c2f1f4d8284_packed_a": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  },
+                  "oa_tensor_345dfd289c2f1f4d8284_packed_b": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  }
+                }
+              },
+              "oa_tensor_bbd581b60485806bd5d3": {
+                "signature": {
+                  "cast_derivative": "straight_through_identity",
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear_dx",
+                  "output": [
+                    128,
+                    128
+                  ],
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  },
+                  "policy": "model_small_grid_tile64"
+                },
+                "stages": [
+                  {
+                    "entry": "oa_pack_d4f4cdb177288a1facc6",
+                    "inputs": [
+                      "a0"
+                    ],
+                    "output": "oa_tensor_bbd581b60485806bd5d3_packed_a"
+                  },
+                  {
+                    "entry": "oa_pack_44e3892e24d27131cf34",
+                    "inputs": [
+                      "a1"
+                    ],
+                    "output": "oa_tensor_bbd581b60485806bd5d3_packed_b"
+                  },
+                  {
+                    "entry": "oa_tensor_bbd581b60485806bd5d3_gemm",
+                    "inputs": [
+                      "oa_tensor_bbd581b60485806bd5d3_packed_a",
+                      "oa_tensor_bbd581b60485806bd5d3_packed_b"
+                    ],
+                    "output": "output"
+                  }
+                ],
+                "workspaces": {
+                  "oa_tensor_bbd581b60485806bd5d3_packed_a": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  },
+                  "oa_tensor_bbd581b60485806bd5d3_packed_b": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "candidate": {
+            "arch": "sm_80",
+            "backend": "openassembler-native",
+            "cubin": "native/cubin/native.cubin",
+            "cubin_sha256": "966082aa83b233c7bcae539a4baaa566d44c8e7661cc5635a14a87c19dec6bb8",
+            "kernels": {
+              "oa_bias_reduce_e6910ba607e040735c85": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    4,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 18,
+                "signature": {
+                  "attrs": {
+                    "k": 128,
+                    "m": 128,
+                    "n": 128
+                  },
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "bias_grad",
+                  "output": [
+                    128
+                  ]
+                },
+                "text_sha256": "39cac67a19659f4565ee2f4d101dd91d25080d7d69771649bd04ee7126f8a2f9"
+              },
+              "oa_model_1c5dd070e3d4ea6332be": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {
+                    "value": 0.0
+                  },
+                  "inputs": [],
+                  "op": "fill",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "c99f298d321593b926346508a3588562a1a87d56ea781cb1093743186326dbad"
+              },
+              "oa_model_5c8bcd9826dea6b50f6c": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "mse_grad",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "dd8d254c34c36d6f61d0ec9921d41bfdb8c28264835601bd295d18b0a41c1e62"
+              },
+              "oa_model_9041d4b00506e40c21fb": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {
+                    "value": 1.0
+                  },
+                  "inputs": [],
+                  "op": "fill",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "9b737124b805b577c3a33da61e55abd79e774c9e628a138f1a50f3cca5028e75"
+              },
+              "oa_model_a579391d1133ed131aa8": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    1,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128
+                    ],
+                    [
+                      128
+                    ]
+                  ],
+                  "op": "sgd",
+                  "output": [
+                    128
+                  ]
+                },
+                "text_sha256": "30b6c5c5ae826ccbab74cfd5dbb1fefa76be3a2dec978adae8bb79e897a4fc51"
+              },
+              "oa_model_c4bd493e3ea4447c0f2f": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "sgd",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "de4ccf05fbbe3d9f0c9ffd29c965253ed347e4d37998df3f9ec40563946d6772"
+              },
+              "oa_model_f82e18bcae64b2188987": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "registers": 16,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "add",
+                  "output": [
+                    128,
+                    128
+                  ]
+                },
+                "text_sha256": "1f344ee1c26ea177b167cffda34be2a64f722244bda16d762fcfdac6e5ba2388"
+              },
+              "oa_warp_mse_94693bd84b891c8cd487": {
+                "compiled_by": "openassembler",
+                "launch": {
+                  "grid": [
+                    1,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 1024
+                },
+                "registers": 18,
+                "signature": {
+                  "attrs": {},
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "op": "mse",
+                  "output": []
+                },
+                "text_sha256": "72d57f61d0b72a2bb84d68d4bc353cc7a37c229305b2f6ffc202f9f18b037003"
+              }
+            },
+            "numerical_contract": "FP16 RNE operands and FP32 tensor accumulation/output; straight-through cast derivative; deterministic shape-selected FP32 reductions",
+            "plan_sha256": "8285c626fd67f8e50138ba02e857c5d99e82700c1913c476b80eda09fedee474",
+            "schema": 1,
+            "source_sha256": "889a79a8b674c51f24fdb7fffb018e70387a92c488403cc10676047cbb0b71ef",
+            "steps": [
+              {
+                "entry": "oa_projection_ad8579b20ef263c58231",
+                "inputs": [
+                  "x",
+                  "parameter:q.weight",
+                  "parameter:q.bias",
+                  "parameter:k.weight",
+                  "parameter:k.bias",
+                  "parameter:v.weight",
+                  "parameter:v.bias"
+                ],
+                "kernel": "projection_sum3",
+                "output": "add_1",
+                "phase": "forward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_bbd581b60485806bd5d3",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:v.weight"
+                ],
+                "kernel": "linear_dx",
+                "output": "_oa_grad_linear_dx_2",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_496496c1e21b6ad91a82",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "kernel": "linear_dw",
+                "output": "_oa_grad_linear_dw_3",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_bias_reduce_e6910ba607e040735c85",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "kernel": "bias_grad",
+                "output": "_oa_grad_bias_grad_4",
+                "phase": "backward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_bbd581b60485806bd5d3",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:k.weight"
+                ],
+                "kernel": "linear_dx",
+                "output": "_oa_grad_linear_dx_5",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {},
+                "entry": "oa_model_f82e18bcae64b2188987",
+                "inputs": [
+                  "_oa_grad_linear_dx_2",
+                  "_oa_grad_linear_dx_5"
+                ],
+                "kernel": "add",
+                "output": "_oa_grad_add_6",
+                "phase": "backward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_496496c1e21b6ad91a82",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "kernel": "linear_dw",
+                "output": "_oa_grad_linear_dw_7",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_bias_reduce_e6910ba607e040735c85",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "kernel": "bias_grad",
+                "output": "_oa_grad_bias_grad_8",
+                "phase": "backward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_bbd581b60485806bd5d3",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "parameter:q.weight"
+                ],
+                "kernel": "linear_dx",
+                "output": "_oa_grad_linear_dx_9",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {},
+                "entry": "oa_model_f82e18bcae64b2188987",
+                "inputs": [
+                  "_oa_grad_add_6",
+                  "_oa_grad_linear_dx_9"
+                ],
+                "kernel": "add",
+                "output": "_oa_grad_add_10",
+                "phase": "backward"
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_tensor_496496c1e21b6ad91a82",
+                "inputs": [
+                  "_oa_grad_seed_1",
+                  "x"
+                ],
+                "kernel": "linear_dw",
+                "output": "_oa_grad_linear_dw_11",
+                "phase": "backward",
+                "tensor": true
+              },
+              {
+                "attrs": {
+                  "k": 128,
+                  "m": 128,
+                  "n": 128
+                },
+                "entry": "oa_bias_reduce_e6910ba607e040735c85",
+                "inputs": [
+                  "_oa_grad_seed_1"
+                ],
+                "kernel": "bias_grad",
+                "output": "_oa_grad_bias_grad_12",
+                "phase": "backward"
+              }
+            ],
+            "tensor_kernels": {
+              "oa_pack_44e3892e24d27131cf34": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "de04676472a7b38e48492c5a1f1d69723946871eee3aec018e9c4af23d123263",
+                "entry": "oa_pack_44e3892e24d27131cf34",
+                "launch": {
+                  "grid": [
+                    1,
+                    128,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_pack_44e3892e24d27131cf34/native.cubin",
+                "op": "pack_f16_rne",
+                "registers": 24,
+                "signature": {
+                  "input_dtype": "f32",
+                  "nan": "canonical_quiet_preserve_sign",
+                  "op": "pack_f16_rne",
+                  "output_dtype": "f16",
+                  "shape": [
+                    128,
+                    128
+                  ],
+                  "transpose": true
+                },
+                "source_sha256": "103fdddbe6bf4e4102070bf2acd9f6a12475afc3361bc5b96ebe1aa56a399196",
+                "text_sha256": "5d7f4d1811119f78bcaca6420984952a3d1c16470d67b4acedb36ede883f28d7"
+              },
+              "oa_pack_d4f4cdb177288a1facc6": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "609d5dd9d1464c6b0c1115ef7777fc0b39e9d34f1b96cb73b4ca2045978a14db",
+                "entry": "oa_pack_d4f4cdb177288a1facc6",
+                "launch": {
+                  "grid": [
+                    1,
+                    128,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_pack_d4f4cdb177288a1facc6/native.cubin",
+                "op": "pack_f16_rne",
+                "registers": 24,
+                "signature": {
+                  "input_dtype": "f32",
+                  "nan": "canonical_quiet_preserve_sign",
+                  "op": "pack_f16_rne",
+                  "output_dtype": "f16",
+                  "shape": [
+                    128,
+                    128
+                  ],
+                  "transpose": false
+                },
+                "source_sha256": "e0c30fc099d3a84de204bbf4de869f661d1015de9102e6a50aa2bf1fe3e6ba83",
+                "text_sha256": "74ce8dd0eb3ce9f923b82d34e8a65e05b38490215f51a85eec54cf84290b96e5"
+              },
+              "oa_projection_ad8579b20ef263c58231_gemm": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "981826ba3c50eeab7fafa20a6305653c9e3cbcc6a7cdedd8029e0709b031d5d3",
+                "entry": "oa_projection_ad8579b20ef263c58231_gemm",
+                "launch": {
+                  "grid": [
+                    2,
+                    6,
+                    1
+                  ],
+                  "smem": 32768,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_projection_ad8579b20ef263c58231_gemm/native.cubin",
+                "op": "projection_product",
+                "registers": 72,
+                "signature": {
+                  "op": "projection_product",
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 384,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  }
+                },
+                "source_sha256": "bf7c3a6e34183d513ac158a655c6b2c1d60555703a35c8e996987581ee0438c0",
+                "text_sha256": "6a1447a21ce916c7b1fa47d5ad68582214a22bd40e17cdd7aaab94c5ba0d6af0"
+              },
+              "oa_projection_ad8579b20ef263c58231_stack_weights": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "dbf386b0f697aac4fdaafc7c346f9019f8128386a8a3835e08cb3d1e10e442f8",
+                "entry": "oa_projection_ad8579b20ef263c58231_stack_weights",
+                "launch": {
+                  "grid": [
+                    1,
+                    128,
+                    3
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_projection_ad8579b20ef263c58231_stack_weights/native.cubin",
+                "op": "pack_f16_rne",
+                "registers": 30,
+                "signature": {
+                  "input_dtype": "f32",
+                  "nan": "canonical_quiet_preserve_sign",
+                  "op": "pack_f16_rne",
+                  "output_dtype": "f16",
+                  "shape": [
+                    128,
+                    128
+                  ],
+                  "stacked": 3,
+                  "transpose": false
+                },
+                "source_sha256": "140888f1f06fcc949884ab8d02f505688b595a944f73c421ff43db336fe63241",
+                "text_sha256": "d7e373b422e49847663ff64c35e20eadb02df8d715e747ff3dab2548484f4e4d"
+              },
+              "oa_projection_ad8579b20ef263c58231_sum": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "168c28bcec8c91a0bed9e2d104b4198d91b94b043d3ba62f1291ef15012de0df",
+                "entry": "oa_projection_ad8579b20ef263c58231_sum",
+                "launch": {
+                  "grid": [
+                    128,
+                    1,
+                    1
+                  ],
+                  "smem": 0,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_projection_ad8579b20ef263c58231_sum/native.cubin",
+                "op": "projection_sum",
+                "registers": 16,
+                "signature": {
+                  "math": "f16_rne_f32_accum",
+                  "op": "projection_sum3",
+                  "shape": [
+                    128,
+                    128
+                  ],
+                  "sum_order": "(q+bq)+(k+bk), then +(v+bv)"
+                },
+                "source_sha256": "630bae760e54a9c01f4b4a7077489fae334b0d5ba5c5976a62a09911679df7dc",
+                "text_sha256": "4e3972210a2e6db56cd5cb47db3c6013f66ee677e8a44547762627dd41f06e46"
+              },
+              "oa_tensor_496496c1e21b6ad91a82_gemm": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "73d74ca5d79e816ff94c70d1c3bd72200c7a57e86b102fb02d78c24a5e5ac4af",
+                "entry": "oa_tensor_496496c1e21b6ad91a82_gemm",
+                "launch": {
+                  "grid": [
+                    2,
+                    2,
+                    1
+                  ],
+                  "smem": 32768,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_tensor_496496c1e21b6ad91a82_gemm/native.cubin",
+                "op": "linear_dw",
+                "registers": 72,
+                "signature": {
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear_dw",
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  }
+                },
+                "source_sha256": "38fab24f1657e502482b810895f79f5da63a7b23bfdf06229430868dd501dec9",
+                "text_sha256": "00997a4f4985903972f12406ef938014145d7fbdc001b0493cd19b91bba6013d"
+              },
+              "oa_tensor_688d3469089cff7f1e9a_gemm_bias": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "7fcdcfd8d0609efbc0df2dd9f9b6307bea0045aa22a9caaa23d5cb2bd9a5eef3",
+                "entry": "oa_tensor_688d3469089cff7f1e9a_gemm_bias",
+                "launch": {
+                  "grid": [
+                    2,
+                    2,
+                    1
+                  ],
+                  "smem": 32768,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_tensor_688d3469089cff7f1e9a_gemm_bias/native.cubin",
+                "op": "linear",
+                "registers": 72,
+                "signature": {
+                  "epilogue": "fp32_bias_after_accumulation",
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear",
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  }
+                },
+                "source_sha256": "e921da298abeb97abb999199d1631aa651c3df2fe9b3332ddc87040f22c0539f",
+                "text_sha256": "7a0b68a11a759b6b3182aca22104d3be6cf830c98d5534d4796ee2746aaf8d39"
+              },
+              "oa_tensor_bbd581b60485806bd5d3_gemm": {
+                "compiled_by": "openassembler",
+                "cubin_sha256": "5a4e7b219fe8c63362ee801fc81a7171e0d6f7fb71fd08edefb8f03de235cfd4",
+                "entry": "oa_tensor_bbd581b60485806bd5d3_gemm",
+                "launch": {
+                  "grid": [
+                    2,
+                    2,
+                    1
+                  ],
+                  "smem": 32768,
+                  "threads": 128
+                },
+                "module": "native_tensor/oa_tensor_bbd581b60485806bd5d3_gemm/native.cubin",
+                "op": "linear_dx",
+                "registers": 72,
+                "signature": {
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear_dx",
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  }
+                },
+                "source_sha256": "33950f1ff01777e2a5e16acd94ddd5f09114d524dade94e1afc7b3136f6b1a22",
+                "text_sha256": "00997a4f4985903972f12406ef938014145d7fbdc001b0493cd19b91bba6013d"
+              }
+            },
+            "tensor_recipes": {
+              "oa_projection_ad8579b20ef263c58231": {
+                "signature": {
+                  "math": "f16_rne_f32_accum",
+                  "op": "projection_sum3",
+                  "shape": [
+                    128,
+                    128
+                  ],
+                  "sum_order": "(q+bq)+(k+bk), then +(v+bv)"
+                },
+                "stages": [
+                  {
+                    "entry": "oa_pack_d4f4cdb177288a1facc6",
+                    "inputs": [
+                      "a0"
+                    ],
+                    "output": "oa_projection_ad8579b20ef263c58231_a"
+                  },
+                  {
+                    "entry": "oa_projection_ad8579b20ef263c58231_stack_weights",
+                    "inputs": [
+                      "a1",
+                      "a3",
+                      "a5"
+                    ],
+                    "output": "oa_projection_ad8579b20ef263c58231_b"
+                  },
+                  {
+                    "entry": "oa_projection_ad8579b20ef263c58231_gemm",
+                    "inputs": [
+                      "oa_projection_ad8579b20ef263c58231_a",
+                      "oa_projection_ad8579b20ef263c58231_b"
+                    ],
+                    "output": "oa_projection_ad8579b20ef263c58231_products"
+                  },
+                  {
+                    "entry": "oa_projection_ad8579b20ef263c58231_sum",
+                    "inputs": [
+                      "oa_projection_ad8579b20ef263c58231_products",
+                      "a2",
+                      "a4",
+                      "a6"
+                    ],
+                    "output": "output"
+                  }
+                ],
+                "workspaces": {
+                  "oa_projection_ad8579b20ef263c58231_a": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  },
+                  "oa_projection_ad8579b20ef263c58231_b": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      384,
+                      128
+                    ]
+                  },
+                  "oa_projection_ad8579b20ef263c58231_products": {
+                    "alignment": 16,
+                    "dtype": "f32",
+                    "shape": [
+                      128,
+                      384
+                    ]
+                  }
+                }
+              },
+              "oa_tensor_496496c1e21b6ad91a82": {
+                "signature": {
+                  "cast_derivative": "straight_through_identity",
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear_dw",
+                  "output": [
+                    128,
+                    128
+                  ],
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  },
+                  "policy": "model_small_grid_tile64"
+                },
+                "stages": [
+                  {
+                    "entry": "oa_pack_44e3892e24d27131cf34",
+                    "inputs": [
+                      "a0"
+                    ],
+                    "output": "oa_tensor_496496c1e21b6ad91a82_packed_a"
+                  },
+                  {
+                    "entry": "oa_pack_44e3892e24d27131cf34",
+                    "inputs": [
+                      "a1"
+                    ],
+                    "output": "oa_tensor_496496c1e21b6ad91a82_packed_b"
+                  },
+                  {
+                    "entry": "oa_tensor_496496c1e21b6ad91a82_gemm",
+                    "inputs": [
+                      "oa_tensor_496496c1e21b6ad91a82_packed_a",
+                      "oa_tensor_496496c1e21b6ad91a82_packed_b"
+                    ],
+                    "output": "output"
+                  }
+                ],
+                "workspaces": {
+                  "oa_tensor_496496c1e21b6ad91a82_packed_a": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  },
+                  "oa_tensor_496496c1e21b6ad91a82_packed_b": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  }
+                }
+              },
+              "oa_tensor_688d3469089cff7f1e9a": {
+                "signature": {
+                  "cast_derivative": "straight_through_identity",
+                  "epilogue": "fp32_bias_after_accumulation",
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128
+                    ]
+                  ],
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear",
+                  "output": [
+                    128,
+                    128
+                  ],
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  },
+                  "policy": "model_small_grid_tile64"
+                },
+                "stages": [
+                  {
+                    "entry": "oa_pack_d4f4cdb177288a1facc6",
+                    "inputs": [
+                      "a0"
+                    ],
+                    "output": "oa_tensor_345dfd289c2f1f4d8284_packed_a"
+                  },
+                  {
+                    "entry": "oa_pack_d4f4cdb177288a1facc6",
+                    "inputs": [
+                      "a1"
+                    ],
+                    "output": "oa_tensor_345dfd289c2f1f4d8284_packed_b"
+                  },
+                  {
+                    "entry": "oa_tensor_688d3469089cff7f1e9a_gemm_bias",
+                    "inputs": [
+                      "oa_tensor_345dfd289c2f1f4d8284_packed_a",
+                      "oa_tensor_345dfd289c2f1f4d8284_packed_b",
+                      "a2"
+                    ],
+                    "output": "output"
+                  }
+                ],
+                "workspaces": {
+                  "oa_tensor_345dfd289c2f1f4d8284_packed_a": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  },
+                  "oa_tensor_345dfd289c2f1f4d8284_packed_b": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  }
+                }
+              },
+              "oa_tensor_bbd581b60485806bd5d3": {
+                "signature": {
+                  "cast_derivative": "straight_through_identity",
+                  "inputs": [
+                    [
+                      128,
+                      128
+                    ],
+                    [
+                      128,
+                      128
+                    ]
+                  ],
+                  "math_mode": "f16_rne_f32_accum",
+                  "op": "linear_dx",
+                  "output": [
+                    128,
+                    128
+                  ],
+                  "plan": {
+                    "address_init": "original",
+                    "arch": "sm_80",
+                    "cta_order": "m_fast",
+                    "dtype": "f16",
+                    "epilogue": "none",
+                    "fragment_schedule": "source",
+                    "k": 128,
+                    "layout": "rcr",
+                    "m": 128,
+                    "n": 128,
+                    "output_dtype": "f32",
+                    "pointer_advance": "late",
+                    "pointer_mode": "legacy",
+                    "schedule": "stagepair",
+                    "tile": "64x64"
+                  },
+                  "policy": "model_small_grid_tile64"
+                },
+                "stages": [
+                  {
+                    "entry": "oa_pack_d4f4cdb177288a1facc6",
+                    "inputs": [
+                      "a0"
+                    ],
+                    "output": "oa_tensor_bbd581b60485806bd5d3_packed_a"
+                  },
+                  {
+                    "entry": "oa_pack_44e3892e24d27131cf34",
+                    "inputs": [
+                      "a1"
+                    ],
+                    "output": "oa_tensor_bbd581b60485806bd5d3_packed_b"
+                  },
+                  {
+                    "entry": "oa_tensor_bbd581b60485806bd5d3_gemm",
+                    "inputs": [
+                      "oa_tensor_bbd581b60485806bd5d3_packed_a",
+                      "oa_tensor_bbd581b60485806bd5d3_packed_b"
+                    ],
+                    "output": "output"
+                  }
+                ],
+                "workspaces": {
+                  "oa_tensor_bbd581b60485806bd5d3_packed_a": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  },
+                  "oa_tensor_bbd581b60485806bd5d3_packed_b": {
+                    "alignment": 16,
+                    "dtype": "f16",
+                    "shape": [
+                      128,
+                      128
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "returncode": 0,
+  "source_sha256": {
+    "openassembler/build.py": "a14b0a58e20215946e12a70ec4e5d60765ee15404c84250e22a34e875c1d3ae3",
+    "openassembler/runner.py": "d904b870ceb556ebdf04c47d7c85f92fb69ff4089fe567597582be15e7f19e54",
+    "openassembler/transport.py": "547b63cb68f492dc95cad1962eaf4940a0909461bd2b48ecdf89dc7d58ee488e",
+    "openassembler/diagnostics.py": "51b24290963e88ad8904fca21e90f04e065f9a0066ccfae896578f9f09c92aaf",
+    "openassembler/rowwise_dispatch.py": "f54d2e5068de37e61b7e3fac2f7439a09dc06a2828345497dc15426c51a1bd74",
+    "openassembler/gemm.py": "18df53657e291ac839b482ac7ec3e6c8d7334d93f8b2c8c8beb49c68c9b927bb",
+    "openassembler/gemm_tune.py": "fbb5b9c047990e09d8808dadad885c6c219383e6ad0512f35a95222367150f08",
+    "openassembler/native_ownership.py": "1e58196bd4f9586bfc0234e07f3c220fa3ba46a533fa9edbc225f3c36c8b5848",
+    "openassembler/frontend.py": "2a79dc3f270ebb8583d53035ab2fd5b516487745dd337b310da1aabeb3369fb1",
+    "openassembler/__init__.py": "74d11fd8fcfaed0c46234d00cce97ca03778ba3478aca6ad449b5852f08b1cb8",
+    "openassembler/gemm_promotion.py": "c3253baf912f33c59f02949d6b4be4db8e99ea74f2e4a93cf666447058241da7",
+    "openassembler/compilation_database.py": "9903a23a0f2e3a9edfb3d828341032a8f32e8c73795c87cbf450fbc44c60937f",
+    "openassembler/build_modal.py": "0b2ac5914af577a64872b75e4b1d9264eb15b44a2aaeee0539e35fbebe33f900",
+    "openassembler/gemm_dispatch.py": "aca37670abeb40f80af8ec45d8a6ae7579ad08a2edcddff4f95c2a6996a37ae0",
+    "openassembler/cli.py": "7859f98c855ff45f2b2886daaac938ecc617f3e130a925fd0f34d7ca9e0bf0f8",
+    "openassembler/remote_build.py": "e3529b21e334a99af14375db0ad589f9602572a03d535d9814b1f52619d9c47d",
+    "openassembler/workflow.py": "7aa877f5df658fd1585d937ca12cf3ca1dd328cdc4622a615523bf7782cfafdb",
+    "openassembler/oracle.py": "0fe750850feb93692d2a49a1f634f042f8abb226e362bc60cad3ad6e67130626",
+    "openassembler/gemm_tune_modal.py": "f5ae5826ef2f0bceccd997a73b75fb9a31cb24cf7252c8fb27e0d0b2ba761f7a",
+    "openassembler/verify.py": "62c5db20281ade0a4bbcc2f64c47779427e4c029d482d5197381e1429a32d01c",
+    "openassembler/repository.py": "f4e1db8635212a6eb052ba2344c5e6787ce9205253074ebe86ffc1125b948686",
+    "openassembler/rowwise.py": "475b61a9f59e4629586e95ca305ee5798dbbf358f65e8260e31894487c0d2314",
+    "openassembler/cppfront.py": "f81b4bf02cc4f708466dedbc6753803866160e8d1018661d55ea724540b92ba3",
+    "openassembler/__main__.py": "1c8cc0014757550f4b2e1f1d35af3d12ce8eaf6636d3ac162b001ba218bf2f6d",
+    "openassembler/project.py": "1cf2f286bf73f11cea9ecfa5a675303309d4e526019d29855457c5482e7ab87b",
+    "openassembler/ui/repl.py": "11e8611ee68dd9ec89f788fc0372a300e7f90246c8414542563130dd64952a18",
+    "openassembler/ui/__init__.py": "5f4c1b4f2079591935cd23e152f9d7bef5be8183010d91c77d789fe637ced8ea",
+    "openassembler/ui/logo.py": "78f73b632eb97706477de464213803c118829de2759c414e1006e9d99e31e1be",
+    "openassembler/ui/banner.py": "dcd01063e3c49a883f9af45324ae74bebf6ac3a4016376ef65ef4e201811c1b3",
+    "openassembler/ui/colors.py": "d7e6ec97c52fc6ffad6ce969e5eef8207ada5057d5bceac72466c80a56d0347e",
+    "openassembler/kernels/gemm.py": "e779ef9e6e09a62f3822d96b657386ccc9bacd95f6deca36b6d3d9dc49feb036",
+    "openassembler/kernels/__init__.py": "0b7694564460b96acabaeb138d3856e08fcfc91d0a08764e4124b75231e304f7",
+    "openassembler/kernels/_gemm64.py": "883f1e51eaaf65e3729dbbf256f7901d118e10dce66d8595b8cab1e09c55e81d",
+    "openassembler/kernels/reductions.py": "acef807ca573a2805acba477926b6fca5608682a54d40f650666767c28f95852",
+    "openassembler/emu/fp.py": "650b040866848d3ec4c520a351caa4a834617c4ba515ca451db06fad58688e8e",
+    "openassembler/emu/operands.py": "800507473fa3619dd3105570f8bb911b9f9ca96563ed0081b8a34eb4c17cb64c",
+    "openassembler/emu/__init__.py": "22794895d04b8cad24c79902987a9238da727fcaf2060eb763fa8459d98b1677",
+    "openassembler/emu/tensor.py": "2000285e5ede67cea8dd2ba5215391b5b8afa4cbf4cd630e30fbf1ee1d877bcb",
+    "openassembler/emu/ops.py": "a09ea6ce364685303686c868993b05e515401c67a0436a6529f01f2815fa8887",
+    "openassembler/emu/machine.py": "d27253ba85d82241af0ba7647ae8cd7a0b7878f65b51c6634778ee81eb5da108",
+    "openassembler/emu/probe.py": "5cb86c75c70d49ccb8dda38d729311d38c6487f34b7425e759e6c99028495d83",
+    "openassembler/emu/program.py": "456029c96fed68bb71f6606aa00d94ba9dc5d571812cb62385c2340e9bd0a5d5",
+    "openassembler/modelfront/worker.py": "a1e1638384ea0f7a0ae867493b98096e08829d1c9fb4f495792a2e0e01a4e905",
+    "openassembler/modelfront/kernels_optimizer.py": "698f727f37fc8ca52a01869268b83ae7c1bf4fc06de713e03cf8cbecf330b1c6",
+    "openassembler/modelfront/kernels_training.py": "e8c3c04aa1d864d6a254456335b9d27e1c6736c27c6b19925306407b64ced711",
+    "openassembler/modelfront/checkpoint.py": "22bec0e7c2e12161d809757d929345a8fc814f9c0cc897bf668b90e4e942c536",
+    "openassembler/modelfront/kernels_nn.py": "f4e2964bee23520621cb3d379a8c093cf44ca01d0d858628eefae46c2aafb3eb",
+    "openassembler/modelfront/discovery.py": "93e34729cd45d8fd020bef38d44aaab37b68eed3f698877f970eac2df789ef9e",
+    "openassembler/modelfront/kernels_tensor.py": "cebe13f9691655b6e8b08f908444e4c06254c723c481eb14aeae137ed518655c",
+    "openassembler/modelfront/graph.py": "4173b183fbbbd605b55a5deb1a4b1b9e2fde9e8cb11ae749864dfd07cf5c84c4",
+    "openassembler/modelfront/kernels_tensor_batched.py": "1a459c3ee49543eef3d0ac1af29f073ec95af12e14120832bc79fa4c69aedf7a",
+    "openassembler/modelfront/optimization.py": "2d82fa8788c92470a96e6182a6621c7cf859e0d16f30024628cb7631088e9b8e",
+    "openassembler/modelfront/frontend.py": "fec5d3cddafd0b10de781a94ca7936c988e8f73c421cd7149d507e37539fb1fd",
+    "openassembler/modelfront/__init__.py": "d12413300234d26f9d87f8424946ee6f879b6a42fed9de3a536899596deb15d7",
+    "openassembler/modelfront/modal_app.py": "34242a078c8437ac9eb73e7522376f2e4c4bee4e2283c4d7217db451c23783ea",
+    "openassembler/modelfront/runtime.py": "aad96e5a33e02d0cf07e8330f76a35dc1003eedd63fc8ab21b9b57ce283e98a8",
+    "openassembler/modelfront/kernels_conv.py": "b2bef67e849b4fa74b1c2ad3d70e6bab5376fbcda85e27ba54e699380f28e1d5",
+    "openassembler/modelfront/kernels_batched.py": "b9b0700af60b7a6d4eebefaa15b13e8f37dc44fd45ca71cde7e9ea62e9bc9abc",
+    "openassembler/modelfront/replay.py": "c322a60712027e42c0e060ae5b262bff34e9bb440ad1f1449f9be22744db81de",
+    "openassembler/modelfront/tensor_schedule.py": "5291aff3d7c88414183981547cc4af5256492f6b2b713b1ba00d58cb4556ff5d",
+    "openassembler/modelfront/autograd.py": "6a231d8a52d46e9dbbfb2c1f3b12d348a6857673af85a6ad479dd1e1f8fe914f",
+    "openassembler/modelfront/kernels.py": "ebba911b7943d52d42dbaf951b8c942cc66892502bdbfcc27aadf568e7e94b00",
+    "openassembler/modelfront/reference.py": "f544b0211957e0d4db7c79715b4fa9ffa8ae9213e4edf24c123deb240b6fab35",
+    "openassembler/modelfront/optimizer.py": "9f654e53db708201b1e09ad2d580338b4f4cba18d83ae144317caba406e81b11",
+    "openassembler/modelfront/kernels_loss.py": "25c24bcc0b8ed6b28b9e2651cc0a1bf2a751239db2aa94c05e64331dd8a3a1b3",
+    "openassembler/modelfront/kernels_tensor_dual.py": "262cdaabc188abf874ed40bc45f2cc567a567679fb9ec3e80fc687da5270c649",
+    "openassembler/modelfront/tensor_epilogue.py": "6f0406b9d4d9363a19bd01cb2ade4d12a45ff96b8b1bb992b74a9f26ed2d184b",
+    "openassembler/modelfront/kernels_matmul.py": "43756ecd0bc946e66443a4be854b69136fc38dde526f2b28a4d2746126a1aeb0",
+    "openassembler/modelfront/decode.py": "89622910462f65fcace6acff7f5f56cc0ccada2b15359adb4cfe771ef8af31f7",
+    "openassembler/modelfront/kernels_semantics.py": "0e147975a80634e9aa6de5932482777b7349c76f6d1c1c7c379997a71de162d1",
+    "openassembler/modelfront/profiling.py": "313db2a71d6f4b6044af3e25f915319c7c099d9313ccc71e4b321883a9353f06",
+    "openassembler/modelfront/kernels_concat.py": "644a09a57892682a6b97228062db6dfc34fb5db3c83acea781939adea456fedc",
+    "openassembler/modelfront/model_cache.py": "a608cc20cb16e8598ba40742b519dd792203cb4fe0f62807c961be05e31cc1b2",
+    "openassembler/gpu/cuda_driver.py": "a6dbd3bc6b0420ae43d6c26973bb468b5ddecdd9c03de61780346477815909c8",
+    "openassembler/gpu/batch.py": "a68f270e9ccbc6268438d7b156f27a7e486a7e191b353eedf14dc9998eac77a4",
+    "openassembler/gpu/__init__.py": "5c20d8549f39f88b5c8efec6f6c91dd9c9c4ed3cf6f8f2f7314b4cf7831110a1",
+    "openassembler/gpu/modal_app.py": "b38b55c7fae2f172a25ea59e741e0c25f5479f7d99488db93dd554b06b5bdb50",
+    "openassembler/ptx/link.py": "ae59d8efc26346321432aa6ba846562ab79686197bcacdefdbf6f2f4761f9a9e",
+    "openassembler/ptx/inlining.py": "f8248afa14788ec171f807fb69aad8c758bcf8ee3d76f2496a664e6ed659338b",
+    "openassembler/ptx/semantics.py": "cdb4eec804911a548c6bd36411023026b488c4b2210d2f8bcf38861b73d57369",
+    "openassembler/ptx/__init__.py": "795691db5fb416d0d1ac34094884c254cef88b465489ce758dbb74fb26997998",
+    "openassembler/ptx/semantics_fp.py": "dcd7d92edbd6985de2f47a00c86ff9dd0ed8687e8bcd38aa67749815f455a832",
+    "openassembler/ptx/interp.py": "1c229dbf583b829ee11130bb5276f006c236abbbfc89cc7dd08c20a214b840ab",
+    "openassembler/ptx/parse.py": "e49d36ca6a0940d9185f19673134cda9c1ae7b4d204afbba05b1a56dc92ce101",
+    "openassembler/isa/encode.py": "3007cc85cb393ba0af14161f9bbd486e874e18faaefe79fd6ab8badb0f780c84",
+    "openassembler/isa/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "openassembler/isa/word.py": "1e4bd5ae3c482c3296a58f938dea85339526476c5c2a0c5c088c6bc07a9131e8",
+    "openassembler/pyfront/primitives.py": "9ae7e9bf9449bdf6a3472daafd427703d150ee1b7e62dd4041172c206ebeb756",
+    "openassembler/pyfront/__init__.py": "7baab80ed697f0d9a375b651b07854e6d304ee4b1e192c14a1240d077531d3ee",
+    "openassembler/pyfront/types.py": "c9ad24416e0d79047705983600fdedbc8e9cbc2bc6137b191ebbb98fdf8279a6",
+    "openassembler/pyfront/return_flow.py": "a96532f392428a51a778ee88f7ae498f3fca44a076292eacdde6c2b613251a00",
+    "openassembler/pyfront/intrinsics.py": "0efe0cf0b91a4e57cce844bf550fca8b04dfe2811c6d3c287862fda2b888e31a",
+    "openassembler/pyfront/compile.py": "f2d6751c7478fb3418d3258d8b1e2e7c421a60b8c1d528cd12d9234b780c18a6",
+    "openassembler/pyfront/modules.py": "902cca5b0083fbe4ccfeb539f5da2055e9f9c3ad61f300cebb9a1b2be23dbe5f",
+    "openassembler/pyfront/helpers.py": "4be0fdab259c82ef2728b0295d2d0f31c219e01cdcd5a19723177df08a716f0d",
+    "openassembler/pyfront/buffers.py": "2bea9d6aed6c6708416ceaf6378d4e4c968b362e9eb8b8ac335e9031a4db9c30",
+    "openassembler/pyfront/static_values.py": "1fea97d108270aa50a52259aab1849c660303511883b051814be77ace9e52acd",
+    "openassembler/backend/spill.py": "1c7c66b544398638e110e9962d675cda8fbd73dfd6c955d06790f8a5801194f3",
+    "openassembler/backend/pressure.py": "a85915e81587f2c4dbc3db8d3c482b6e4c63e4fd56c8a244329e4ec447d4e1d5",
+    "openassembler/backend/unroll.py": "47bc6999b3b6ac41e2e8d0b2176bd33f1dfd5d010b8e4aafb713adcd3d17c453",
+    "openassembler/backend/__init__.py": "db0ce3f4987c6190f6c2e6013a400787ce7a16c1e62816c9adc537fd508aa495",
+    "openassembler/backend/tensor_encoding.py": "885730c203401d42bef163b93dc8df69db3e75feedf47fabafe9dced34c056eb",
+    "openassembler/backend/naive.py": "fc84e723a0536e58ebbf96c6314aca3713a2f3d1f946ec646ae68225a2d244a7",
+    "openassembler/backend/tensor.py": "ec407b272e2323267bf30396b970bddd2e2571bdb132cf44a4ee8aa72d8decb7",
+    "openassembler/backend/compile.py": "30810920b1d563e81bd647f27011e737af1326c26b95664d67908a4332d39698",
+    "openassembler/backend/storage.py": "d9c1e070f075a062352c311c9ac9caee25fa03c07518778aea44735df8a4a957",
+    "openassembler/backend/sched.py": "bb8b7e7f48f86c1768874938d24cf1a6c3a11304bce33d8289ce1e06fbe05f73",
+    "openassembler/backend/contracts.py": "cd984f0b99d6db3f0b34ffc6ffdb4843fbdc337de951b545759cec1a58cf196f",
+    "openassembler/backend/fragments.py": "0ed402508df118a74a7134c4c82add23fed615975073c171898e006e6819e176",
+    "openassembler/backend/ra.py": "17ba70d1ba40e76851083dc81d1e1aa240c35aaa3f9dc4f7f11d0141fe916c17",
+    "openassembler/container/__init__.py": "0593c682966fdca026aad58b2c613bc72130d2f991e77f2968ae40a2f9235bc1",
+    "openassembler/container/cubin.py": "4118f7124090e942a535ab7e0cae71cc12bb21deef8e9d83c16e4932be93bfdb",
+    "openassembler/container/elf.py": "d996eca5fab4efcc9034c8a44bd8554e4bb07a0aeb225839a30e98e7c0cc129d",
+    "openassembler/container/nvinfo.py": "0e0e4e4a419f095ef96aeea165330809adb9957d0e82e471fced15c171c10210",
+    "openassembler/fastmm/plan.py": "97ac7d9cb0fef28c73880ee2f7918f8398b57ff75d7a68e90eeef7fbddd501ce",
+    "openassembler/fastmm/factors.py": "7411135cba31863206b265126059963611c16bdc82aa842aa86b86ea09d45861",
+    "openassembler/fastmm/__init__.py": "9213bac95b7f440450be0e0e8a24a20f163f5e52ad2d74b3c77f7a1254d4a408",
+    "openassembler/fastmm/kernels.py": "d93435508bda92ba55bcd4af7b92a9c7e93419a937844e202de73f357135db8a",
+    "openassembler/opt/divconst.py": "fa29f618e10e06a98d6792a1e752e98a2c07f472884fd63ce9ef3d5f9f18773e",
+    "openassembler/opt/__init__.py": "8ca712dcb26058a07e5ad303f5b3e810cdc853711050b1cc3291b4e9679214b0",
+    "openassembler/torchfront/worker.py": "2c0867a4a14697c6e327a8b7a13838e440694274905a82ce086e087f7b5260dd",
+    "openassembler/torchfront/frontend.py": "68ee59e30c5c5060cb0e72cbfc931d07c435834ad071e37e14868b61a6e05ac4",
+    "openassembler/torchfront/__init__.py": "d20ac464d16215e07836d0d449864bc85a947bafa36338cce371646624d12562",
+    "openassembler/torchfront/archive.py": "186bfa4ebdddb51fa475c43f488e5f2a4ee0d1b1ece9a9a67631bb1fa392b5ee",
+    "openassembler/kernels/native_model_matrix_dispatch.json": "98abc1a542efc2eb705223014d1ee56aad52bdf80f40f2d474d104a82bf56965",
+    "openassembler/kernels/sm80_gemm_dispatch.json": "000d29db423937986ca70c11668f9d6ff296c35f67081722396c654a67de5d44",
+    "openassembler/kernels/sm80_rowwise_dispatch.json": "afa1775d844f5c883caabec4826c644e898c6c4c36f46c998cf7b2cf9572765b",
+    "openassembler/backend/ptxas_fragments.json": "15a5263e189be6dfe19f04a9c37ee683eba60ff84b4cc07d7fe25992cb849edf",
+    "specs/sm_80/synth_templates.json": "dabae8aa91bd5e6e02ea3da38ca60a37d2af36dae2370530a11c92377c4cd59d",
+    "specs/sm_80/memory_templates.json": "fd5d82f733456058348e62fc66983ad648ef96247b8d371e3cd78fef109fef5f",
+    "specs/sm_80/bitflip.json": "1d03d8838c9e4992edd9a0ed2b247e9f1774730a7172e175bf4975554d78da0d",
+    "specs/sm_80/synth_fieldmaps.json": "10100a9b31d6110e9aba29446003c1f0d261f9ca859ea4bde423c5ed33a7f2e1",
+    "specs/sm_80/arithmetic_templates.json": "1c3fc5163ab05bc4305260c12d51bfc270ab83d89fbb487fcbe5854c9179bfe1",
+    "tools/stall_holdout.py": "7b2847b4a5751f0068632f912f6eee30fdedbd9e2130abdd26188b0d4da68620",
+    "tools/bitflip.py": "5835b6eca2e4e672bf94e12e677a7a64f6f7280ba83a9b6a6158a656feb7b826",
+    "tools/fastmm_import.py": "54bd3a8c3c877cb9218e26d3402b15894bfa67f48006decc97c42cad82d5aa09",
+    "tools/check_docs.py": "46e7ae5b069216d50af77f14bcd203736784b678c28a30871f90d17b668eec36",
+    "tools/cli_benchmark.py": "9b4f7f920f5ddb5183e879a0248f385be96e2a0731893726d9b83a18eafbe015",
+    "tools/mlp_build.py": "b82e360c6f9f879cfa57a95c33a5bf23ca667e1ee2bc270d18ae43a976a7358e",
+    "tools/mlp_run.py": "1ab3017e3057a19d15ea9d5e1a1e838625101884273208f7322f08495a1890b8",
+    "tools/encoder_eval.py": "207ea7652633cba037fe996adf0231e1c47a8e5ae0d084f64c183f37bbf77471",
+    "tools/gpu_bisect.py": "4d321c588cd56d009de70736e6e2dbc464723904e4c3a0d334c877f731fdbe2a",
+    "tools/ptxas_fragments.py": "bb9a3b2c5316f909b9efdac1b5dfdbbad7f891b91d8265e00bd4ad12eb6e4122",
+    "tools/diff_emu.py": "c13dba88f8c19e8de8097213a467385976b8a340c913ba50b13dcb3fa36c43f7",
+    "tools/mine_latency.py": "6372f47c7ed24b25c6de23f4953cdc556cb94d078fd7f99d316de00b43517053",
+    "tools/predict_stall.py": "4e1114f6ca4d96a3301073789f59c2273cb451879eb39cb5a52c9925ac80ead8",
+    "tools/fit_mma.py": "7924343e4a8eb7de6d1e6c658c7ae3e480e34328560550888428a66666289cc0",
+    "tools/build_corpus.py": "6eb390ed8d306166ea76b18f717b5ac02c0811c9bf24581d2f67428a52e2bbe6",
+    "tools/sb_policy.py": "70f613dcd5f05c4af7cb5ac321750c72497816bc45114e8fd306e5e84dbafcc8",
+    "tools/ptx_probes.py": "d2d8c4793af35fe3ceaca40c0495209dcbbe0a104568f8987a5fdd4b00c35aa6",
+    "tools/gpu_modal.py": "7b4060ef4d5f7e6d841ceed1745eab0221fa164b2c01f5fbf6499bbf63ab75e4",
+    "tools/fit_mma_nominal.py": "3359654c841a2ae45af29321dd51ed0860fd0ea5b499045d516e01f98f8a175d",
+    "tools/nn_study.py": "c53882d2b09726ed5c1c730fa3da231ae75698f0d7c79b9bd3b6cd898953418d",
+    "tools/compile_check.py": "56382fde627f057fdc2f58a2f6224c14beceefa4a09a0028aa1f04d56ae5e89c",
+    "tools/verify_divconst_exhaustive.py": "b190175ac4399201ac63903d6b2f59040a2133b67de8036c9a7cd9bdcf08f76f",
+    "tools/prove_divconst.py": "a463b699fe1978065bcd31849f5cc6309e2aa99b1b04c0dcabf706cc9ff531f0",
+    "tools/reencode_cubin.py": "f4f9d62b3d50eabc8dd3e575f7d8244cee021c3bc3bd91dc47ba2208941ebde8",
+    "tools/div_const_survey.py": "44ee26846adbe15fcf3a3dc29194492853456d6c7b2b54317051d0ee37e807bf",
+    "tools/gpu_run.py": "07814e6aeb36658253c3cca76422a06372c554fe8900665b986829903016f8a8",
+    "tools/gpu_common.py": "33d8f20bfad092ac76123a6c622c2dced604332c7841fa8a45540b241db778bc",
+    "tools/fastmm_build.py": "6abb4b97e911ecb78e0c257829503b710eff501f5f650df3b0a9f0f81ecb0253",
+    "tools/gpu_replay.py": "01a4f6688138f7e3d5544c931c2b9e9269e6a343d5ad7747cdd7222b17a763d3",
+    "tools/lat_sweep.py": "03261db8a3c39af3b895d9e40dae76838e49c47cf9cae00a71bc8cbf690895ec",
+    "tools/bench_kernels.py": "e59d7de406c528049f2256a0b3fc0af2c2b30fc4e088554d2839cdfc3735822e",
+    "tools/bench_build.py": "067c9ca0a7dd43ca39baa27623136bab70ff91709ecb845c0580512f037c403f",
+    "tools/fastmm_run.py": "fedbfb37176a960882de7cbb384334a5d0c8373c57bc3c4b7d9876075d27549b",
+    "corpus/sm_80/pairs.jsonl": "c619303020b016b27eb8b93eb68652563f11c7a7a78bf7eaba4eca5d172bb491",
+    "corpus/sm_80/machine_model.json": "4361d09abc0a24d350d07dbf480cebecddc06d18af15428e7dafd0acc6c660bf",
+    "env/cuda.sh": "3fa52c80dc061b07c541e5206dce74d38a81bb67709821c79687de6f602cda23",
+    "examples/native_attention_model/model.py": "a924592a4613b3e488c0fceb1ef82d7b186c82c812e91a1ebe3b64610672e628",
+    "exp/weaknesses/bf16_verification.py": "0c6946c950b102fabc05a816e5595cccd9a0a562bcdf4cc428a81954cf3b06fb",
+    "pyproject.toml": "04477f770965c69137d1ca90355369005a736279fe7b3dbf7ee7dfda952c3acc",
+    "tests/test_model_kernels.py": "8359b983f58a952e7bb6be14a1dfb70661a639acb97c13dc367090ffafde6fb4",
+    "tests/test_cli_rowwise.py": "614cc0d42897e6c3329deae7eec9c3f55683dd2a8934b7753d94601a304d7c87",
+    "tests/backend_harness.py": "442d2005630812aa87dc2ec3d678779fa803272f2936bf7c8b14b0f95e97e5bc",
+    "tests/test_model_discovery.py": "a7ddf07a96721008096b13ad0294f4b2766a6273298c0a6a5aad42df9c17d240",
+    "tests/test_pyfront_shared_wide.py": "74a9a8ea26fa0d20418c1063fb51136facbac16818506dc344459a2fb2b9a0d7",
+    "tests/test_backend.py": "b992559b964e7adeda4a6ecea3e53f41ead2c3fca4ad25729f6d9fadae39af36",
+    "tests/test_backend_spill_groups.py": "4d2891b7e203d9c6054e364acda7b95ccc2586132bd100215fe6fdf512c01e8d",
+    "tests/test_decode_specialization.py": "c85e99e7af13301a51665c4b476d76d733fbb87b07328aa6ac89487ad18f5136",
+    "tests/test_pyfront_static_loops.py": "9b110a740c863aa2f7a4a945f36212ff7f87419ca812cb7f85ecc1865a34c512",
+    "tests/test_diagnostics.py": "bc1151d7b034f32d3fb62a24f5a441888be6edd6eeadc5d1b9b0cbf70a84b762",
+    "tests/test_gpu_truth.py": "6db97d1a2be7ede921cb7e8fccf6bd7bf6d74399ce566381e55b7d9e9c927f13",
+    "tests/test_pyfront_static_values.py": "25f7b10e35eea39788f7d581ebeff015160519de93aaef51ec257de66a9643b3",
+    "tests/test_model_profile_distributions.py": "28a3d0f9534b46c07519b477f2a10eec3b62bae203592d3048561889f7dd2c34",
+    "tests/test_backend_memory_widths.py": "212f2a796cf6f496dd5379d2e503499400f4573c7e8fc40cb31b4926f9fcd6d5",
+    "tests/test_model_frontend.py": "4acb3e752c9d196d0b44cb6dbb169a9c44d771ee02cb6abca39ac0ddfc2e8283",
+    "tests/test_narrow_parameters.py": "e4313e08659b865c42957684c00f7ce7891799dee1a0a7978e5f3f9665cfd275",
+    "tests/test_model_optimizer_options.py": "411b55726ca231a3ab17819e73026cb6df557b585b5397430cf7d2f683b3264d",
+    "tests/test_ptx_constant_expressions.py": "1c5ed86f75d803c57cf11dbbe2671b1dc5f8f3b5e6c7393391dc9c00c11b0db9",
+    "tests/test_gemm_codegen.py": "7c8d449074e49e1857caaac1b1354e90a1068df3fc77a101d4dc2722097cfcee",
+    "tests/test_pyfront_semantics.py": "220574cc0809868f681730279a00a8d22518aa4fe414a571c3d5d3cf58eb3d58",
+    "tests/test_pyfront_primitives.py": "72b5f7f7bc35109fa12100ecbf515adc15f87c24d1ee90e43ef30e1df88b9d80",
+    "tests/test_backend_shared_widths.py": "20ce5372925a4bf907677a38651606ff9af24e8d3189018e32934404f9822def",
+    "tests/test_model_batched_tensor.py": "c1aa61a0a7d3e7ef0f9de1c1f91e3f56abd3784aab02794db9c82f2cea650cef",
+    "tests/test_repository_frontend_selection.py": "23688d68f9314398b0b4b06010d986ed69ffa9af7164a330c84eef694008abd5",
+    "tests/test_pyfront_module_helpers.py": "6a1416b185a84536a6a0bc20e9cb682b7fdb75c1f091ac4d810efceb8e428e56",
+    "tests/test_model_training_kernels.py": "2c583f035e92ec639e78e7e2bb62315f9a6e9de3df0bb43de10dc7c15ffcc83c",
+    "tests/test_pyfront_static.py": "bbc8ccff6988e9a0569a15155eb9d16c359c7b542676b97927c1cd419fdea7cf",
+    "tests/test_runner_wide.py": "0459cfe5c766315cc7a6d11517c419c8371688a051c244844b4574d8abc9241a",
+    "tests/test_model_tensor.py": "99d5857e76e20f63f1783a01d3fd02d425b3cb22889025cfdca9b8758d801bd6",
+    "tests/test_pyfront_boolean_values.py": "bd24a0b331aced2465b11c2ee7032d567160d6d585ff84b1fe2996997aede6a9",
+    "tests/test_verify.py": "a13c03b30582bdd96c6dd87800a9404011138a9165fa5b7ce024dd8c215982db",
+    "tests/test_ptx_device_linkage.py": "ce6676cf940170b1d15a8dd0ebd4bdb84c24457319524167cab683065c124a39",
+    "tests/test_model_cache_tools.py": "bff66257ed10a005571500d52cc34495d3884e9540db6648672d16bb28e9a3f6",
+    "tests/test_pyfront_boolean_storage_contracts.py": "8d9acdb9d42d2c3df2a370a64e92aa8e1467c0e0d6a039256058205d9450a2ea",
+    "tests/test_compile_measurements.py": "b66de76e59fb5f7228632829370d2b60a4305e99ff7d5338d89efc201dcb977a",
+    "tests/test_backend_pressure.py": "7f96c61bbb289b72606fafa68f47c041792c68d768cf2d0769f59276e6e83891",
+    "tests/test_verify_typed.py": "735eb355f24bdf8b87bc82631036f4b9d8c29b20957a66576b20a28b842b0829",
+    "tests/test_fastmm.py": "c1f58cbebcd32ca688e2a2e9cc805f79bda4064bbe3a02fb69ccc69c57bf925e",
+    "tests/test_model_conv2d.py": "91675aae43aa1988bd98c0a900ab508eb1e5569d97aaf4425a3d14a07d3fd389",
+    "tests/test_model_checkpoints.py": "67f0511dfef5f5e1c0a4b7c96513032de6a85e1ab51e5453ddcc1a8b7cebcef3",
+    "tests/test_pyfront_buffers.py": "d384e55a1d6255207f3d4e2141fdf7dc348930253ceb390b7564fece75722fe9",
+    "tests/test_native_predicate_paths.py": "3e2e8b6f3fa9430226a0816cd707989923aa7b83ae4c9172e675e26358c5175a",
+    "tests/test_backend_loops.py": "750265165584f62822d0e5d65314c1aecf3b038e3216d34c0dc371c36402fb20",
+    "tests/__init__.py": "75e7dc9b09555fa445a8836e79169d8ceb0d8feca2b76930edc44fd7384edfcf",
+    "tests/native_fixture.py": "f9306d2f9344265d48c5d17998f7a312d43463696681e91089bf15d69b2d86ac",
+    "tests/test_model_optimization.py": "cf92766db8f6977c820bc4f65c09fc0d3f783f0a0e87b43c1d23352b70ac1f1b",
+    "tests/test_pyfront_wide.py": "e26130c6a30ab4377f075ef36fe5d730427bc85d7c07afe69b1e8f63a13b25f6",
+    "tests/test_model_semantics.py": "67017a80aa022e5608081e0c185d54d8faf29f6e1d4dd057889640f16e1ed5e2",
+    "tests/test_reduction_codegen.py": "ec03225744ab4221a403b9cbf539fa6d21a480fdc6cc275ee84362e2e2eb35f6",
+    "tests/test_cli_compile.py": "ebcd42b0044a9ba09ee221e0e19aeeb429bca91bf64203c4e206b3d5720ae3dd",
+    "tests/test_pyfront_helpers.py": "a361abd4de2e7aa722b0e0ecfe6d2dd339909e0e4ab9b23dbbf156c62bd96c31",
+    "tests/test_rowwise_dispatch.py": "105af4764b45eec69afc4920fd686009ba4a2f8566c742584095b0cd0e2eb8f6",
+    "tests/test_homebrew_layout.py": "65a63bbaa12afa5f886fc58172994e9cf0f9b8a3e3e2fc61b35adb1527398aeb",
+    "tests/test_model_graph.py": "23999243cffcd3169651513460189474f5a83807599f62076686ff8df041f757",
+    "tests/test_backend_atomics.py": "5011c900715219e178ba1b7fde4b4153413302ece301cc49510ed57f67a9d437",
+    "tests/test_backend_spilling.py": "a56ed28dba5d66427dfbc3c42981050c6ad43fe7ce554d6fa1082274589294dd",
+    "tests/pyfront_threeway.py": "060c2447cc920a11bc53c1b3b8fa62b4cdb0c26235b5d6c3c23319e615d40330",
+    "tests/test_emu.py": "ac6debf3979b8fa283f665503592013eb6a3a3c0e136623ee38c6f13c7f1fc8f",
+    "tests/test_runner.py": "1424452a13dcd7f30d9f940624be189f39d007577e28bf6fb28748a6ed948756",
+    "tests/test_backend_wide.py": "2761cfb3d3658a7d55dd6a41a8b1c42b84da6d433f40ac5554e1cb6cdfeb6624",
+    "tests/test_pyfront.py": "959794b4796e20b4deda3d0dbaee710556517bd7333049a18af3daab5f91d57b",
+    "tests/test_pyfront_boolean_helpers.py": "77d0032efb58ce40acaa9bbf62399aeaa93277eac50b0607d0b2dabe88989a8d",
+    "tests/test_cli_gemm.py": "4ee574b56eb98087efff67ae26ab046c865266fefdd6f2a5816a350a02ec6c2a",
+    "tests/test_runtime_indexing.py": "555d610e55a18065878ec0092d4ca9f6720aba082b4447d6f6523820a850d4e2",
+    "tests/test_gemm_dispatch.py": "5c290623cde2b3bd692a37c321d352a6af293719bd617c2eab5029e95d888ce1",
+    "tests/test_native_ownership.py": "57ae761b22a5cc3eb10ff8a2b0fd8ad116629c22c7a2ea95aa858c3b102da7e1",
+    "tests/test_pyfront_comparison_chains.py": "4f88fd510d9aa0341091070d7e912a7420646c476ea1cac36ff3d45607f9063e",
+    "tests/test_cppfront.py": "effce61460c512067ebd845989cf25a7f0c4bd34afb8b13631e31a40cba57039",
+    "tests/test_ptx_float_literals.py": "781f3393e0eff81bcad90e84a589ca6d9f4436a84e0d9c2d8bc3dc99b12cebbf",
+    "tests/test_model_tensor_epilogue.py": "ddb59fc3509c99c81b974e35e097d945d4ff76071a50bd1eb2b2a3b48bba1060",
+    "tests/test_backend_wide_select.py": "1c710a38a7fd22eed074860395846839b24be9289b68febaacb7366c963cf14b",
+    "tests/test_torchfront.py": "c8a64525fc034a5cc11730388c5946fab71f3cd1b085969026ceb852aedf4e21",
+    "tests/test_backend_shuffles.py": "4d71e5e6f29859f381cf73ee1e267e8b79c8a069b6e11c0f25433d1f4244cf7d",
+    "tests/test_gemm_promotion.py": "39870ad3972e4e35a31985a7427402a7b71e5288db442ad483d1d00c58bbbde9",
+    "tests/test_backend_tensor.py": "4f83883faf680414c91d84a287b0804bcc6fd269afeefebe9ec61fb4a2e0ed60",
+    "tests/test_integration.py": "d7156e83c1dffca28ef490a91c071152c6464cc611db9d4c250c0a8fa1ba4af2",
+    "tests/test_pyfront_range_control.py": "d846a436e8a1017d4835f392b8ddc27fc8a8acc630534b87eced0d5613c65548",
+    "tests/test_parameter_pointer_abi.py": "5e24a5323a440db4b109752047561729af5fbac0a97bf4ca376b6e86f19b37da",
+    "tests/test_model_profiling.py": "b6438b08574b572ab1bc888f4847f498f5d716bc40f4fd484e97682e09b1d490",
+    "tests/test_backend_wide_multiply.py": "da907f6824782b4835a76829be02b792f7603598982ff821323edcdadf69f068",
+    "tests/test_ptx_device_functions.py": "68628350eb7772ba9624f1d8108734d69f9ce6a08ac255462dea07b4722f9f59",
+    "tests/test_interp_barrier.py": "318feb615abaa1d290eccb27c29eaca5d4efcb94202a0118d114b346a313135e",
+    "tests/test_backend_local_storage.py": "48d18d681a57d48279bfc11898fcebd20572e4419548503f9f4d9300fd31a0ae",
+    "tests/test_pyfront_helper_control.py": "38352542c6597abe5c47fbaa8c599cb1d686a73dd18b7dda735949ffbbf13fad",
+    "tests/test_model_runtime.py": "f3f68a9f7288eafdf75a5088bcc50b4da96f1adc9f7ecfd1059522b9269b68df",
+    "tests/test_ptx_entries.py": "e3c5456c17e5286febf9e2fc5e574e2af4c4e90cf7b220fb3c06c8add6b4b146",
+    "tests/test_backend_contracts.py": "4fdde69e51861b9c891bcb0bb3828cae0d2415d0d581af7479f16f395b586b86",
+    "tests/test_repo_workflow.py": "8d1da105903ad0a5b45b3f221843a1b574f47fefe445b07d4edf1cc303bcb143",
+    "tests/test_compilation_database.py": "f5ddbaac27bad8322771b3628147a93d33a37c40e297253b735d597da8e2e5ce",
+    "tests/test_word.py": "bc8cc7b0c8b5cbe8c18f95ff23c16d3c1a836f2407edbda8d7396017b7b2d4c5",
+    "tests/test_tensor_pointer_homes.py": "72d490b35815f94c3dfb64edb0b6264c6987df6b64a7a47084afa793cc5d0590",
+    "tests/test_model_batch_broadcast.py": "eb0b792b4ee3f55b8b4dcb020055dedc9faacb30d306bb39c42479e8bb168ae8",
+    "tests/test_model_tensor_schedule.py": "d5db6561c0cc0ad45f835461f08606f0ea9a6741954ca4748eeb2149df3ede13",
+    "tests/test_gemm_tune.py": "f4f41cf3a7b6e6c662a2d31e4fd45b44b46143219f0ed28340df24ec42eee315",
+    "tests/test_model_operators.py": "853f16bb3c9d14e12ea44fd3b82818d52a053ac483fe760cf8da953d149fe30a",
+    "tests/test_pyfront_boolean_storage.py": "c7653de8e11e6b7d3bb35e6eb9fc1bed9472cfa4c4e5c36c3580f35987fc36bd",
+    "tests/test_torchfront_numerics.py": "a909a89a2624180029e53cec0ddfdd6a95d8f724916aa40c3e98a74e1929615c",
+    "tests/test_welcome.py": "080426464f6f1e8aa878f02ff77abebbfd7bbc05b9d61a6c8626186877173e1a",
+    "tests/test_backend_ops.py": "bb4070418a0c4dfbbf74941ca5fb5252131714bc4190fc122a2d197565d25e73",
+    "tests/test_gemm_tile64.py": "662b711153fe74aafd3eb5f230f77cb7218bdf8d6058c80defd82d432a978542",
+    "tests/test_pyfront_helper_returns.py": "dcd58dec8f0ca275c0a84a071d59e1c9dd438d5d102c2071ac2b0565f1434ee0",
+    "tests/test_pyfront_boolean_parameters.py": "0dae50b537b914ef6d134080b23a275045f5422167122c85fa40a0566a0f30ca",
+    "tests/test_backend_atomic_ordering.py": "530c2f33dcacdfb049636df0324379c00d5b627b7384a00a1293adee5d2ceb88",
+    "tests/test_source_diagnostics.py": "b47d777f09fafb65695bc9beefe9f8ae741b50e128a605006f8e86695cb258d7",
+    "exp/ml_suite/packing_campaign.py": "4deec3f072336fe714b0da64975e019cbdd8a599714209764bb3b108ebe6eb9f",
+    "exp/ml_suite/cache_campaign.py": "bf4f23e360e5aad51f45779ab188ddd297254eb55cc0b013f5e94fe7ad8a4dc2",
+    "exp/ml_suite/tasks.py": "2f9b6899c6e9e44c9c0e1c01b04ee3489813f030866de6d4f412e2f7b54b8168",
+    "exp/ml_suite/matrices.py": "970961732cd184fc43fa6bb622a16eb012e51189ad2b0263406708397218680e",
+    "exp/ml_suite/engines.py": "1cf3d462dc924cc20c3a848f8d4054c51cfca5e301124409ce89de18de5c9d6e",
+    "exp/ml_suite/matrix_graph_campaign.py": "474b44aca4a3b8bc8eecf08cd2729b9cf5a390b162d073446b88bca940b5ec03",
+    "exp/ml_suite/torch_eager.py": "949ff0776b3833ae7f408f2cfe96585635d546b8cfb4ede2654bfa0ed740b894",
+    "exp/ml_suite/matrix_campaign.py": "011b2cbf0062d2efb618f4d3c63c7853b60e3ba8dba2142a1851a0e5020ff823",
+    "exp/ml_suite/bench_campaign.py": "48bda83dadffc60848dcb25a450574792a6612606f1ceb8c29dee19a5f995125",
+    "exp/ml_suite/common.py": "d0daca7854cc4a9b2c74bcc29c302ca9f0fbabb442e0d57c1b00d279845ee7c8",
+    "exp/ml_suite/cache_candidate.py": "f01d4bd21bf2357940ed8ecb475d0370a5a9d5dc380d70f739de7658d89ede0b",
+    "exp/ml_suite/triton_ops.py": "d72d7c28b7cdcf285016943424e0a01791a30b00a08eae3ed3de164d9abeebf1",
+    "exp/ml_suite/modal_run.py": "56c387322c47cf8214957646c6090cb7695114058651442ccc2e894425f021e9",
+    "exp/ml_suite/matrix_candidates.py": "f3b96f5631afe7f5d02c71ae5c390b6b1c32ba68b2df29551e168289e3ee538e",
+    "exp/ml_suite/loss_candidate.py": "7cb826bac09fba7b44e35e4b22dfa5feff21f9517c3a68274af04178d37376c3",
+    "exp/ml_suite/loss_campaign.py": "b2bec4247de60954da790d230108a2f7beaf22449b9acf1f6d426e845ced3857",
+    "exp/ml_suite/packing_candidate.py": "610d16ae8599b35004f87ac14e4f87bb5df1cb82712b034efbbfa01464b748c1",
+    "examples/native_model/model.py": "a4423454e7767f679d45bbf77d53aff94fe8c10da5e7b7a498021b88ad4a9130",
+    "examples/native_tensor_model/model.py": "40ce81f5f74911fe8f49850207806d16e008c89c6a0ca368817e56d9eb9efb62",
+    "exp/model_perf/audit_pack_reuse.py": "3e3eaaa98a52e9e3665ec4c0b05fd6086ea96461a6d64de76861a95073e0d0db",
+    "exp/model_perf/allocator_gate.py": "924442e917806d1dc0056fc53b58d98a23a76b881076332c6565b41deb3831a0",
+    "exp/model_perf/memory_order_gate.py": "3f4f8bbaad7987fca238d47a78a5901d51d36bdfe14b370b1064f50cf079bc37",
+    "exp/model_perf/baseline_kernels.py": "64fb75762562a9e0206574c2ff83d7395712f949a053aee947a5a3a9d3d09646",
+    "exp/model_perf/allocator_candidate.py": "b847c072410817eee42ce0a954f465e54c38c7d198c2ddbe5ac1e63dc843e0b1",
+    "exp/model_perf/retain_kernel_research.py": "ca838589abbb58bdd46ec6e73543cdbea31a4b31648b6a55c0d0703dd9ab302a",
+    "exp/model_perf/gemm_gate.py": "cb660808b1b1f1f5ad1e9a52371136ba7d46f5a0b3f1e0636af8f32232e7a8ae",
+    "exp/model_perf/native_pack.py": "4cd4173e3a76e97ea2b3e25f399845b124ef4dc012f2d1b1c123d23f61441bfc",
+    "exp/model_perf/projection_composition.py": "2a06fc1abc16c1f44bf685370c9f0a68c0023bb37d70125d50424b02938b9241",
+    "exp/model_perf/bias_fusion.py": "1fbf5604756f3afb52c27de541da4133a1ca768472634373669cce6d714bc3ed",
+    "exp/model_perf/native_pack_gate.py": "469d61b7198b12eded0f05e61977de235f8da210588e038c27d7faa6919c0dac",
+    "exp/model_perf/campaign.py": "1affb982082c3a749dc7904a7ea5b20d74015b92327e54b4b1dbc71a0f6d1beb",
+    "exp/model_perf/allocator_build_gate.py": "15b54ddefde10509362ef6111240372398ef78d0838df6c321db450849478c14",
+    "exp/model_perf/bias_epilogue_gate.py": "780971e4753475ff150b335552d408e8639d56251ed6a0da40fb00121bd2ac3e",
+    "exp/model_perf/cache_candidate.py": "c6b03b18f32e80aa965906cb8c3728dfa73a8aa70805dabbef7df382b5534834",
+    "exp/model_perf/allocator_continuity.py": "edc1e3831a303355258d68ee0871bd2a7fcdb156360706de8383db2852a608cb",
+    "exp/model_perf/candidate.py": "906d794712ca83a34f4b0373bd219b20418cfcb67efa18a25c198ca5fa4262ce",
+    "exp/model_perf/modal_run.py": "5c1d4f7dc1a6eadcd537a8c4c4cb3228f55cc96bbc50292378252623bdd141da",
+    "exp/model_perf/operators.py": "7c86a38bfc7b77920ad47a592ff175001f07e4beef7660858e2b54f2550c8165",
+    "exp/model_perf/cache_gate.py": "f5acf178f775dcc3aa965a3e38478b9dfc79c09033dbd36a546055118bd79d30",
+    "exp/model_perf/baseline_tensor.py": "f17da1abacadeac78f516f3bf55531a4ecad48150ec936c49ac632879f5acdd8",
+    "exp/model_perf/pack_reuse.py": "ce6431a4d7d87b870186cc7a5a0b11eff2faa3f59652e95780b3a5628f70027f",
+    "exp/model_perf/test_cache.py": "9d727aac911eae38d27ca2ecb27e8dc2a8a8388319d81308756629dc16709ece"
+  }
+}

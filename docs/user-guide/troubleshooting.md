@@ -1,14 +1,20 @@
 # Troubleshoot builds and execution
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Start by inspecting the source repository and selected frontend:
 
-    openassembler inspect /path/to/repo --json
+    inspect /path/to/repo --json
 
 Inspection reads source but does not import user code or prove that each
 operation will compile.
 
 | Symptom | What to check |
 |---|---|
+| ModuleNotFoundError after brew install | A stale Python launcher may shadow Homebrew. In your regular terminal, use deactivate, then launch openassembler again. See [Homebrew PATH troubleshooting](../HOMEBREW.md#an-old-python-environment-shadows-homebrew). |
+| zsh: bad pattern with --backend | Pass one value such as --backend modal; do not paste a bracketed list. Start openassembler, then enter compile/run/cnr without the executable prefix. |
 | Unsupported Python/PTX operation | Read the source location in the diagnostic. Discovery or parser acceptance does not promise native lowering. Check the [compiler contracts](../compiler/README.md); there is no vendor fallback. |
 | ptxas, nvdisasm or nvcc not found | Local builds need toolkit tools; CUDA C/C++ also needs nvcc. On macOS, start Colima and use the installed CUDA wrapper. For remote builds, test tool paths on the selected host. See [dependencies](../architecture/dependencies.md). |
 | Modal command fails before build | Run modal setup and check the authenticated account. A dry-run inspects a plan; it does not validate credentials or submit a build. |

@@ -1,5 +1,9 @@
 # Build and execute a repository
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 The [compiler research and implementation hub](compiler/README.md) tracks
 whole-application coverage and measured memory/latency tradeoffs. Current source
 discovery includes bounded quoted local headers for CUDA qualifier macros.
@@ -21,9 +25,9 @@ under the examples directory for current work.
 The same source path works with all three commands:
 
 ```sh
-openassembler compile /path/to/repo --backend modal --verify
-openassembler run /path/to/repo --backend modal
-openassembler cnr /path/to/repo --backend modal --verify
+compile /path/to/repo --backend modal --verify
+run /path/to/repo --backend modal
+cnr /path/to/repo --backend modal --verify
 ```
 
 `compile` creates a build. `run` only executes a saved build. `cnr` compiles
@@ -42,8 +46,8 @@ discovery. Filenames are unrestricted; a `model.py`/TOML directory layout is
 not required. The inferred route compiles forward inference, while explicit
 configuration retains supported training and numerical-policy choices.
 
-`openassembler REPO` is shorthand for `compile REPO`; `compile` and `cnr`
-without a path use the current directory. Start with `openassembler inspect
+`REPO` is shorthand for `compile REPO` inside the shell; `compile` and `cnr`
+without a path use the current directory. Start with `inspect
 REPO --json` for a static coverage report. Build failures save
 `REPO/output/compile-error.json` (or the custom output root), including available
 native kernel errors. Dry runs write nothing and do not submit jobs. The report
@@ -90,9 +94,9 @@ example_inputs = (torch.randn(17, 8),)
 Save it under any Python filename in a repository, then use:
 
 ```sh
-openassembler compile /path/to/repo --backend modal --verify
-openassembler run /path/to/repo --backend modal
-openassembler cnr /path/to/repo --backend user@a100 --verify
+compile /path/to/repo --backend modal --verify
+run /path/to/repo --backend modal
+cnr /path/to/repo --backend user@a100 --verify
 ```
 
 Discovery reads source ASTs without importing Torch or user modules. It recognizes
@@ -110,8 +114,8 @@ Multiple models, constructors, or shapes require explicit selection. If no batch
 or sequence length is present in the source, discovery does not invent one:
 
 ```sh
-openassembler compile /path/to/repo --entrypoint models/network.py:Net --input-shapes '[[128,64]]' --backend modal --verify
-openassembler cnr /path/to/repo --entrypoint models/network.py:Net --input-shapes '[[128,64]]' --backend local --verify
+compile /path/to/repo --entrypoint models/network.py:Net --input-shapes '[[128,64]]' --backend modal --verify
+cnr /path/to/repo --entrypoint models/network.py:Net --input-shapes '[[128,64]]' --backend local --verify
 ```
 
 These flags also override an existing `[model]` entrypoint/shapes for that build;
@@ -173,8 +177,8 @@ dynamic or unobserved shapes, layouts, dtypes, custom ops and optimizers reject;
 there is no vendor GPU fallback. See the [native model guide](research/ideas/native-model-bridge.md).
 
 ```sh
-openassembler cnr /path/to/my_repo --frontend model --backend modal --verify
-openassembler run /path/to/my_repo --backend user@a100 --verify-application
+cnr /path/to/my_repo --frontend model --backend modal --verify
+run /path/to/my_repo --backend user@a100 --verify-application
 ```
 
 Static repository discovery separately compiles independent CUDA/C/C++/PTX and
@@ -208,10 +212,10 @@ Single-file builds retain the default `./output`. A custom build root is
 relative to the invoking shell, not the source repository:
 
 ```sh
-openassembler compile /path/to/repo --out-dir /path/to/build --backend modal
-openassembler run /path/to/repo --out-dir /path/to/build --backend modal
+compile /path/to/repo --out-dir /path/to/build --backend modal
+run /path/to/repo --out-dir /path/to/build --backend modal
 # An explicit artifact directory also works, including copied bundles:
-openassembler run /path/to/build --backend modal
+run /path/to/build --backend modal
 ```
 
 `run REPO` checks recorded source ownership and selects only that repository's
@@ -234,8 +238,8 @@ client. Authenticate it once, then compile your repository:
 
 ```sh
 modal setup
-openassembler cnr /path/to/repo --backend modal --verify --dry-run
-openassembler cnr /path/to/repo --backend modal --verify
+cnr /path/to/repo --backend modal --verify --dry-run
+cnr /path/to/repo --backend modal --verify
 ```
 
 The `modal` executable can belong to a separate environment, but must be on
@@ -302,11 +306,11 @@ the host is CPU constrained. `--dump-ptx` intentionally uses the serial path
 so PTX output remains readable and ordered.
 
 ```sh
-openassembler compile /path/to/repo --backend training-a100 --verify
-openassembler run /path/to/repo --backend training-a100
-openassembler cnr /path/to/repo --backend training-a100 --verify
+compile /path/to/repo --backend training-a100 --verify
+run /path/to/repo --backend training-a100
+cnr /path/to/repo --backend training-a100 --verify
 # Equivalent explicit spelling, also usable to change an application's saved host:
-openassembler run /path/to/repo --backend ssh --host training-a100
+run /path/to/repo --backend ssh --host training-a100
 ```
 
 SSH aliases, `user@host` and bracketed IPv6 destinations are supported. Configure
@@ -322,9 +326,9 @@ the repository is local to that host:
 ```sh
 ssh training-a100
 cd /path/to/OpenAssembler
-openassembler compile /path/to/my_repo --backend local --verify
-openassembler run /path/to/my_repo --backend local
-openassembler cnr /path/to/my_repo --backend local --verify
+compile /path/to/my_repo --backend local --verify
+run /path/to/my_repo --backend local
+cnr /path/to/my_repo --backend local --verify
 ```
 
 Local native compilation does not require a GPU, but execution and application
@@ -340,7 +344,7 @@ application workers provide their documented build/capture timeouts.
 For advanced workflows, separate the build and run destinations:
 
 ```sh
-openassembler cnr /path/to/my_repo --build-backend modal --backend training-a100
+cnr /path/to/my_repo --build-backend modal --backend training-a100
 ```
 
 This still requires compatible application runtime versions across destinations.

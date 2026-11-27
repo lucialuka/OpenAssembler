@@ -24,10 +24,10 @@ def digest(data):
     return sha256(data).hexdigest()
 
 
-def prior_identity(module, paths, old_ra):
+def prior_identity(module, paths, old_sources):
     result = sha256()
     for name, path in sorted(paths.items()):
-        data = old_ra if name == 'openassembler/backend/ra.py' else path.read_bytes()
+        data = old_sources.get(name, path.read_bytes())
         result.update(name.encode() + b'\0' + data + b'\0')
     if module is rd:
         for name, data in sorted(rd._runtime_source_sections().items()):
@@ -35,9 +35,10 @@ def prior_identity(module, paths, old_ra):
     return result.hexdigest()
 
 
-def main(output, update):
+def main(output, update, driver_stream=False, baseline='HEAD'):
     tables = {'gemm': json.loads(gd.TABLE.read_text()), 'rowwise': json.loads(rd.TABLE.read_text())}
-    old_ra = subprocess.check_output(['git', 'show', 'HEAD:openassembler/backend/ra.py'])
+    baseline = subprocess.check_output(['git', 'rev-parse', baseline], text=True).strip()
+    old_ra = subprocess.check_output(['git', 'show', baseline + ':openassembler/backend/ra.py'])
     new_ra = Path(ra.__file__).read_bytes()
 
     def without_intervals(source):
@@ -54,16 +55,33 @@ def main(output, update):
     exec(ast.unparse(frozen_function), namespace)
     original_intervals = namespace['_intervals']
     inputs = {'gemm': gd.compiler_inputs(), 'rowwise': rd.identity_inputs()}
-    previous = {key: prior_identity(module, inputs[key], old_ra)
+    old_sources = {'openassembler/backend/ra.py': old_ra}
+    if driver_stream:
+        name = 'openassembler/gpu/cuda_driver.py'
+        old_sources[name] = subprocess.check_output(['git', 'show', baseline + ':' + name])
+        expected = old_sources[name].decode().replace(
+            '        cu.cuMemsetD8_v2.argtypes = [u64, C.c_ubyte, sz]',
+            '        cu.cuMemsetD8_v2.argtypes = [u64, C.c_ubyte, sz]\n        cu.cuMemsetD8Async.argtypes = [u64, C.c_ubyte, sz, vp]')
+        current_driver = Path(name).read_text()
+        method = next(n for n in ast.walk(ast.parse(current_driver))
+                      if isinstance(n, ast.FunctionDef) and n.name == 'memset_async')
+        lines = current_driver.splitlines(keepends=True)
+        removed = ''.join(lines[:method.lineno-1] + lines[method.end_lineno:])
+        assert removed.replace('\n\n\n', '\n\n') == expected.replace('\n\n\n', '\n\n')
+    previous = {key: prior_identity(module, inputs[key], old_sources)
                 for key, module in [('gemm', gd), ('rowwise', rd)]}
     current = {'gemm': gd.compiler_identity(), 'rowwise': rd.compiler_identity()}
     assert all(table['compiler_identity'] in (previous[key], current[key])
                for key, table in tables.items()), previous
     proof = {'created_utc': datetime.now(timezone.utc).isoformat(), 'passed': False,
+             'baseline_commit': baseline,
              'previous_compiler_identity': previous, 'current_compiler_identity': current,
              'scope': 'Exact code, controls, labels, exits, registers and retained native text under the interval scan change',
              'sources': {name: digest(path.read_bytes()) for paths in inputs.values() for name, path in paths.items()},
              'baseline_ra_sha256': digest(old_ra), 'checks': []}
+    if driver_stream:
+        proof['scope'] = 'Exact native policy continuity after adding a stream-ordered driver memset entry point'
+        proof['baseline_driver_sha256'] = digest(old_sources['openassembler/gpu/cuda_driver.py'])
     checked = {}
 
     def compare(source, entry, config, binary):
@@ -148,5 +166,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--update', action='store_true')
+    parser.add_argument('--driver-stream', action='store_true')
+    parser.add_argument('--baseline', default='HEAD')
     args = parser.parse_args()
-    main(args.output, args.update)
+    main(args.output, args.update, args.driver_stream, args.baseline)

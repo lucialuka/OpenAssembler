@@ -1,5 +1,9 @@
 # Naive scalar matrix-multiplication baseline
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: tested-not-selected
 
 The example remains source for a compiler baseline. Its retained byte-exact
@@ -37,12 +41,12 @@ Requirements: Python 3.12+, CUDA 12.8 tools, and a compatible GPU/driver or
 authenticated Modal client for execution. From the repository root:
 
 ```sh
-openassembler compile examples/nn_ops.py --kernel matmul --out-dir output_scalar_matmul
+compile examples/nn_ops.py --kernel matmul --out-dir output_scalar_matmul
 .venv/bin/python tools/nn_study.py --dry-run --out-dir output_nn_study
 .venv/bin/python tools/nn_study.py --backend modal --budget 180 --rounds 3 --reps 20 \
   --out-dir output_nn_study
 # Separately, the validated full-tile tensor route:
-openassembler gemm --m 128 --n 128 --k 128 --dtype f16 --out-dir output_tensor_gemm
+gemm --m 128 --n 128 --k 128 --dtype f16 --out-dir output_tensor_gemm
 ```
 
 The eight-family driver supplies the actual small matmul buffers and layout;

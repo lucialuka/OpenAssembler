@@ -1,6 +1,10 @@
 # Repository compiler research and implementation
 
-The target is `openassembler compile PATH`: preserve the CPU application and
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
+The target is `compile PATH`: preserve the CPU application and
 compile its GPU computation to OpenAssembler-owned A100/SM80 cubins. CPU host
 execution is part of the design. OA-only is the default GPU policy; unsupported
 GPU computation fails explicitly. A dependency's vendor kernel does not count

@@ -1,5 +1,9 @@
 # Typed scalar device helpers
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 G04 blocked reusable numeric kernel code: the static Python frontend rejected
@@ -247,8 +251,8 @@ byte/native/ownership proof and documentation. General G04/G42, mutable captures
 arbitrary packages and application host effects remain open.
 
 ```sh
-openassembler compile kernels.py --python-source-root . --out-dir output
-openassembler compile kernels.py --python-source-root . --build-backend modal --out-dir output_remote
+compile kernels.py --python-source-root . --out-dir output
+compile kernels.py --python-source-root . --build-backend modal --out-dir output_remote
 python compiler_exp/gap_closure/python_module_helpers/promotion/offline.py
 python compiler_exp/gap_closure/python_module_helpers/promotion/negative_controls.py
 python compiler_exp/gap_closure/python_module_helpers/promotion/oracle_probe.py

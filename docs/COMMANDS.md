@@ -1,5 +1,9 @@
 # OpenAssembler command reference
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 PTX definitions may use bare, visible or weak entries and supported launch
 directives. Required block dimensions and maximum thread counts are enforced by
 the runner; aggregate parameter ABIs and unsupported headers reject explicitly.
@@ -50,9 +54,9 @@ changed inputs and workspace guards. `--budget` bounds each worker stage;
 `--job-timeout` and standalone launch selectors do not apply to model plans.
 
 ```sh
-openassembler cnr examples/native_model --backend modal --verify
-openassembler cnr examples/native_tensor_model --backend modal --verify
-openassembler run examples/native_model --backend user@a100 --verify-application
+cnr examples/native_model --backend modal --verify
+cnr examples/native_tensor_model --backend modal --verify
+run examples/native_model --backend user@a100 --verify-application
 ```
 
 ## Find a command
@@ -62,31 +66,30 @@ openassembler run examples/native_model --backend user@a100 --verify-application
 | `openassembler` | Open the interactive command shell. |
 | `openassembler --help` | List the top-level commands. |
 | `openassembler --version` | Print the installed OpenAssembler version. |
-| `openassembler welcome` | Display the installation welcome once for this user; later calls are silent. |
-| `openassembler [SRC]` / `openassembler compile [SRC]` | Compile discovered OA kernels or a configured/inferred native Python model graph. |
-| `openassembler gemm ...` | Generate and compile a checked native A100 FP16/BF16 GEMM. |
-| `openassembler rowwise ...` | Generate and compile cooperative native FP32 softmax or LayerNorm. |
-| `openassembler run [PATH]` | Execute existing kernel cubins or replay a bundled OA-native model. |
-| `openassembler cnr [SRC]` | Compile, then run the outputs built by this invocation. |
-| `openassembler verify CUBIN PTX --kernel NAME` | Compare a probe-ABI cubin's emulated SASS with the PTX interpreter. |
-| `openassembler corpus` | Build the instruction-probe corpus with NVIDIA's tools. |
-| `openassembler check` | Compile/check the existing probe corpus with an OpenAssembler backend. |
-| `openassembler bench` | Build the scalar optimization-level microbenchmark cubins. |
-| `openassembler fastmm build` | Build research kernels for direct/Strassen/AlphaTensor plans. |
-| `openassembler fastmm run` | Run the fast-matrix-multiplication research plans on Modal. |
-| `openassembler gpu run` | Execute the probe corpus on local/SSH/Modal hardware. |
-| `openassembler benchmark` | Describe or execute the CLI integration matrix. |
-| `openassembler status` | Print the first summary table from `docs/STATUS.md`, or its opening text when no table exists. |
+| `[SRC]` / `compile [SRC]` / `compiler [SRC]` | Compile discovered OA kernels or a configured/inferred native Python model graph. |
+| `gemm ...` | Generate and compile a checked native A100 FP16/BF16 GEMM. |
+| `rowwise ...` | Generate and compile cooperative native FP32 softmax or LayerNorm. |
+| `run [PATH]` | Execute existing kernel cubins or replay a bundled OA-native model. |
+| `cnr [SRC]` | Compile, then run the outputs built by this invocation. |
+| `verify CUBIN PTX --kernel NAME` | Compare a probe-ABI cubin's emulated SASS with the PTX interpreter. |
+| `corpus` | Build the instruction-probe corpus with NVIDIA's tools. |
+| `check` | Compile/check the existing probe corpus with an OpenAssembler backend. |
+| `bench` | Build the scalar optimization-level microbenchmark cubins. |
+| `fastmm build` | Build research kernels for direct/Strassen/AlphaTensor plans. |
+| `fastmm run` | Run the fast-matrix-multiplication research plans on Modal. |
+| `gpu run` | Execute the probe corpus on local/SSH/Modal hardware. |
+| `benchmark` | Describe or execute the CLI integration matrix. |
+| `status` | Print the first summary table from `docs/STATUS.md`, or its opening text when no table exists. |
 
 Every parser level accepts `-h` / `--help`, including
-`openassembler fastmm --help`, `openassembler fastmm run --help` and
-`openassembler gpu run --help`. `fastmm` requires `build` or `run`; `gpu`
+`fastmm --help`, `fastmm run --help` and
+`gpu run --help`. `fastmm` requires `build` or `run`; `gpu`
 requires `run`. Flags belong after their command, for example
-`openassembler compile kernel.ptx --verify`, not `openassembler --verify compile ...`.
+`compile kernel.ptx --verify`.
 
 ## `inspect`: static repository coverage
 
-`openassembler inspect [SRC] [--json]` defaults to the current directory and
+`inspect [SRC] [--json]` defaults to the current directory and
 never imports user code, compiles, or contacts a GPU. It reports the selected
 frontend, native kernel candidates, other files with skip reasons, and build
 system hints. `--json` emits the complete inventory. Exit 0 means a configured
@@ -96,7 +99,7 @@ candidates, exact shape/constructor evidence, scope, and unresolved ambiguity.
 This is discovery, not proof that every source construct is compilable.
 
 A literal existing source path is also accepted directly:
-`openassembler my_repo --backend modal --verify`. This is exactly `compile
+`my_repo --backend modal --verify`. This is exactly `compile
 my_repo` and works in the interactive shell. Explicit command names keep their
 meaning. `compile` and `cnr` without SRC use the current directory; `run` still
 loads saved artifacts.
@@ -111,10 +114,10 @@ contain source excerpts or paths.
 
 ## Interactive shell
 
-The logo is displayed once per user, shared with `openassembler welcome` and
-Homebrew post-installation. Subsequent shells retain the tips box without repeating
-the logo. Help/version/JSON commands and ordinary piped output do not consume it.
-The marker is `${XDG_STATE_HOME:-$HOME/.local/state}/openassembler/welcome-shown`.
+The logo appears once at the start of every interactive session, only when
+`openassembler` is invoked without arguments on a terminal. It adapts to terminal
+width. Installation, direct command invocations and piped sessions show no logo.
+No persistent welcome marker is used.
 
 Run `openassembler` with no arguments. Enter the same commands without the
 leading executable name:
@@ -130,16 +133,29 @@ exit
 | Shell input | Behavior |
 |---|---|
 | `help` or `?` | Show CLI command help and the shell built-ins. |
+| `help compile` | Show a command's flags; nested help such as `help gpu run` also works. |
+| `compiler PATH ...` | Alias for `compile PATH ...`. |
+| `cd PATH` / `pwd` | Change or display the workspace; quote paths with spaces. |
 | `clear` | Clear the terminal display. |
 | `exit`, `quit` or `q` | Leave the shell. Ctrl-D also leaves it. |
 | `<command> --help` | Show that command's flags; for example `compile --help`. |
 | Ctrl-C at the prompt | Cancel the current input and keep the shell open. |
 
+Use a trailing backslash to continue a command on the next line, as in the
+multiline examples below. Lines can include trailing `# comments`.
 The shell uses ordinary quoted argument parsing; it is not an operating-system
 shell and does not execute pipes, redirection or arbitrary Python. When
 `readline` is available it remembers up to 1,000 history entries in
-`~/.openassembler_history` and completes top-level command names. The built-in
-`help` accepts no command argument: use `compile --help`, not `help compile`.
+`~/.openassembler_history` and completes command names, subcommands, flags,
+backend choices and paths. History failures do not prevent exit. Commands show
+their status and elapsed time; `--dry-run` is labelled as a plan and `--json`
+receives no status decoration. Ctrl-C during work interrupts it and returns to
+the prompt. `clear` does not repeat the logo.
+
+Direct terminal invocations such as `openassembler compile PATH --backend modal`
+remain available for scripts and automation. Inside the shell, use only
+`compile PATH --backend modal`. Piped command sessions omit prompts and the
+welcome screen and return the last command's exit status.
 
 ## `compile`: kernel files, source trees and native model graphs
 
@@ -157,11 +173,11 @@ adaptive training require direct execution.
 
 
 ```sh
-openassembler compile examples/div_by_const.ptx -o division --verify
-openassembler compile examples/vector_add.py --out-dir output_python
-openassembler compile examples/vector_add.cu -I include --nvcc-flag=-DTILE=32 --out-dir output_cuda
-openassembler compile my_kernel_repo/ --out-dir output_repo
-openassembler compile examples/native_model --frontend model --verify --backend modal
+compile examples/div_by_const.ptx -o division --verify
+compile examples/vector_add.py --out-dir output_python
+compile examples/vector_add.cu -I include --nvcc-flag=-DTILE=32 --out-dir output_cuda
+compile my_kernel_repo/ --out-dir output_repo
+compile examples/native_model --frontend model --verify --backend modal
 ```
 
 `SRC` defaults to the current directory. A standalone `.ptx` file goes to the native backend; a
@@ -178,8 +194,8 @@ and `model-discovery.json` under the selected output root. Missing or ambiguous
 models/shapes can be resolved without creating a configuration file:
 
 ```sh
-openassembler compile my_repo --entrypoint models/net.py:Net --input-shapes '[[128,64]]' --backend modal --verify
-openassembler cnr my_repo --entrypoint models/net.py:Net --input-shapes '[[128,64]]' --backend user@a100 --verify
+compile my_repo --entrypoint models/net.py:Net --input-shapes '[[128,64]]' --backend modal --verify
+cnr my_repo --entrypoint models/net.py:Net --input-shapes '[[128,64]]' --backend user@a100 --verify
 ```
 
 `--entrypoint FILE:FACTORY` names a repository-relative Python file and callable
@@ -272,15 +288,15 @@ ptxas references are deployment inputs. Output publication obeys writer locks.
 ## `gemm`: checked native A100 tensor GEMM
 
 ```sh
-openassembler gemm --m 128 --n 512 --k 512 --dtype f16 --out-dir output_auto
-openassembler gemm --m 128 --n 512 --k 512 --tile 64x64 --out-dir output_tile64
-openassembler gemm --m 1024 --n 4096 --k 1024 --dispatch manual --out-dir output_control
-openassembler gemm --m 1024 --n 4096 --k 1024 --dtype f16 --pointer-mode direct --out-dir output_gemm
-openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order morton8 --out-dir output_morton
-openassembler gemm --m 16384 --n 4096 --k 4096 --cta-order grouped_n8 --out-dir output_grouped_n
-openassembler gemm --m 1024 --n 4096 --k 1024 --fragment-schedule load_next --out-dir output_load_next
-openassembler gemm --m 128 --n 512 --k 512 --tile 64x64 --copy-address-init reuse --pointer-mode direct --pointer-advance early --out-dir output_copy_reuse
-openassembler gemm --m 4096 --n 4096 --k 4096 --dtype bf16 --epilogue bias_residual_relu --out-dir output_fused
+gemm --m 128 --n 512 --k 512 --dtype f16 --out-dir output_auto
+gemm --m 128 --n 512 --k 512 --tile 64x64 --out-dir output_tile64
+gemm --m 1024 --n 4096 --k 1024 --dispatch manual --out-dir output_control
+gemm --m 1024 --n 4096 --k 1024 --dtype f16 --pointer-mode direct --out-dir output_gemm
+gemm --m 16384 --n 4096 --k 4096 --cta-order morton8 --out-dir output_morton
+gemm --m 16384 --n 4096 --k 4096 --cta-order grouped_n8 --out-dir output_grouped_n
+gemm --m 1024 --n 4096 --k 1024 --fragment-schedule load_next --out-dir output_load_next
+gemm --m 128 --n 512 --k 512 --tile 64x64 --copy-address-init reuse --pointer-mode direct --pointer-advance early --out-dir output_copy_reuse
+gemm --m 4096 --n 4096 --k 4096 --dtype bf16 --epilogue bias_residual_relu --out-dir output_fused
 ```
 
 The operation is `C = A @ B.T`: contiguous `A[M,K]` and `B[N,K]` FP16/BF16
@@ -345,9 +361,9 @@ To compare the current admitted native policies on a particular A100 and keep
 the result for a later compile:
 
 ```sh
-openassembler gemm --m 128 --n 512 --k 512 --autotune modal \
+gemm --m 128 --n 512 --k 512 --autotune modal \
   --tuning-record output/tuning/128-512-512-f16.json --out-dir output/tuned
-openassembler gemm --m 128 --n 512 --k 512 \
+gemm --m 128 --n 512 --k 512 \
   --tuning-record output/tuning/128-512-512-f16.json --out-dir output/reused
 ```
 
@@ -373,11 +389,11 @@ tensor policy; describe an actual launch with `run --spec`.
 ## `rowwise`: cooperative FP32 softmax and LayerNorm
 
 ```sh
-openassembler rowwise --op softmax --rows 1024 --width 512 --out-dir output_softmax
-openassembler rowwise --op layernorm --rows 129 --width 127 --epsilon 1e-5 --out-dir output_norm
-openassembler rowwise --op softmax --rows 7 --width 33 --emit-only --out-dir generated
-openassembler rowwise --op layernorm --rows 4096 --width 32 --dispatch auto --emit-only --out-dir generated_norm
-openassembler rowwise --op layernorm --rows 4096 --width 32 --dispatch manual --warps-per-cta 2 --emit-only --out-dir generated_norm2
+rowwise --op softmax --rows 1024 --width 512 --out-dir output_softmax
+rowwise --op layernorm --rows 129 --width 127 --epsilon 1e-5 --out-dir output_norm
+rowwise --op softmax --rows 7 --width 33 --emit-only --out-dir generated
+rowwise --op layernorm --rows 4096 --width 32 --dispatch auto --emit-only --out-dir generated_norm
+rowwise --op layernorm --rows 4096 --width 32 --dispatch manual --warps-per-cta 2 --emit-only --out-dir generated_norm2
 ```
 
 Both operators read/write contiguous FP32 `[rows,width]`, with four-byte-aligned
@@ -418,10 +434,10 @@ the installed exact table, with manual geometry available for new experiments.
 ## `run`: saved native kernel binaries or model replay
 
 ```sh
-openassembler run output_gemm --backend modal --budget 300 --job-timeout 120
-openassembler run output_softmax --backend modal --dry-run
-openassembler run output_repo --source kernels/ops.ptx --kernel relu --spec launch.json --backend user@host
-openassembler run examples/native_model --backend modal --verify-application
+run output_gemm --backend modal --budget 300 --job-timeout 120
+run output_softmax --backend modal --dry-run
+run output_repo --source kernels/ops.ptx --kernel relu --spec launch.json --backend user@host
+run examples/native_model --backend modal --verify-application
 ```
 
 `PATH` accepts a source repository/file or an existing build directory.
@@ -543,10 +559,10 @@ defaults to all buffers. Spec-level `reps` overrides the CLI repetition count.
 ## `cnr`: compile and run OA artifacts
 
 ```sh
-openassembler cnr examples/vector_add.py --spec examples/run_spec.json --backend modal --out-dir output_cnr
-openassembler cnr examples/vector_add.cu --backend user@host --out-dir output_cnr
-openassembler cnr examples/div_by_const.ptx --verify --dry-run --out-dir output_cnr
-openassembler cnr examples/native_model --frontend model --verify --backend modal
+cnr examples/vector_add.py --spec examples/run_spec.json --backend modal --out-dir output_cnr
+cnr examples/vector_add.cu --backend user@host --out-dir output_cnr
+cnr examples/div_by_const.ptx --verify --dry-run --out-dir output_cnr
+cnr examples/native_model --frontend model --verify --backend modal
 ```
 
 `SRC` defaults to the current directory. `cnr` accepts the compilation-option table and the shared
@@ -556,8 +572,8 @@ manifest entries. It does **not** expose `run`-only `--source`, `--from-results`
 `--application`, `--app-arg`, or `--verify-application` flags.
 
 The complete option spellings are also valid with the command prefix:
-`openassembler compile --frontend native` and
-`openassembler cnr --frontend torch`.
+`compile --frontend native` and
+`cnr --frontend torch`.
 
 `--frontend native` selects static kernel discovery and OpenAssembler compilation;
 `--frontend model`/`torch` selects the configured native model route.
@@ -572,7 +588,7 @@ its own budget; a `cnr` budget is not a combined end-to-end wall-time cap.
 ## `verify`: a compiled probe under emulation
 
 ```sh
-openassembler verify corpus/sm_80/cubin/ENTRY.cubin corpus/sm_80/ptx/ENTRY.ptx --kernel ENTRY --trials 6
+verify corpus/sm_80/cubin/ENTRY.cubin corpus/sm_80/ptx/ENTRY.ptx --kernel ENTRY --trials 6
 ```
 
 Both positional paths and `--kernel NAME` are required. `--trials N` defaults
@@ -587,9 +603,9 @@ approximation rules. An emulator pass alone is not hardware timing validation.
 ## Corpus, checker and scalar benchmark builds
 
 ```sh
-openassembler corpus --arch sm_80
-openassembler check --compiler ra --only div --trials 6
-openassembler bench --arch sm_80
+corpus --arch sm_80
+check --compiler ra --only div --trials 6
+bench --arch sm_80
 ```
 
 | Command | Options and defaults | Result |
@@ -612,9 +628,9 @@ other previously built native probe cubins in that directory.
 ## `gpu run`: real-hardware probe validation
 
 ```sh
-openassembler gpu run --which ptxas --only add --backend local --trials 4
-openassembler gpu run --which ours --only div --backend user@host --budget 300
-openassembler gpu run --which ours --backend modal --gpu A100-40GB --dry-run
+gpu run --which ptxas --only add --backend local --trials 4
+gpu run --which ours --only div --backend user@host --budget 300
+gpu run --which ours --backend modal --gpu A100-40GB --dry-run
 ```
 
 | Option | Default | Meaning |
@@ -638,9 +654,9 @@ driver's fixed function lifetime.
 ## `fastmm`: low-rank matrix-multiplication research
 
 ```sh
-openassembler fastmm build --arch sm_80 --variant opt
-openassembler fastmm build --only sgemm,lincomb --variant sched
-openassembler fastmm run --n 4096 --schemes strassen_2x2x2,at_2x2x2,naive_2x2x2 --gpu A100-40GB --budget 400 --dry-run
+fastmm build --arch sm_80 --variant opt
+fastmm build --only sgemm,lincomb --variant sched
+fastmm run --n 4096 --schemes strassen_2x2x2,at_2x2x2,naive_2x2x2 --gpu A100-40GB --budget 400 --dry-run
 ```
 
 ### `fastmm build`
@@ -674,15 +690,15 @@ research kernels; it is **not** the native FP16/BF16 Tensor Core `gemm` command
 and does not establish an AlphaTensor training speedup. Numerical checks and
 sample coverage are those of the research driver. Extra switches exposed by
 `tools/fastmm_run.py` directly, such as its internal variant/seed controls,
-are not public `openassembler fastmm run` options.
+are not public `fastmm run` options.
 The current fastmm Modal driver clamps its worker budget at 600 seconds.
 
 ## `benchmark`: CLI integration matrix
 
 ```sh
-openassembler benchmark --out-dir output/cli-benchmark
-openassembler benchmark --execute --backend modal --build-backend modal --budget 300
-openassembler benchmark --execute --backend local --build-backend local --skip-optional
+benchmark --out-dir output/cli-benchmark
+benchmark --execute --backend modal --build-backend modal --budget 300
+benchmark --execute --backend local --build-backend local --skip-optional
 ```
 
 | Option | Default | Meaning |
@@ -703,7 +719,7 @@ still apply to the rows being executed.
 
 ## `status`, diagnostics and exit behavior
 
-`openassembler status` has no command-specific options. It displays the first
+`status` has no command-specific options. It displays the first
 Markdown table in `docs/STATUS.md` and points to the full document. It does not
 reprofile the GPU or run a new test suite.
 

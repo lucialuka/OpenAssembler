@@ -1,5 +1,9 @@
 # CUDA C/C++ frontend through nvcc PTX
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 Static repository discovery now follows a bounded quoted local-header closure
@@ -47,10 +51,10 @@ Requirements: Python 3.12+, CUDA 12.8 nvcc/ptxas/nvdisasm and nvcc's compatible
 host compiler. No GPU is required merely to compile.
 
 ```sh
-openassembler compile examples/vector_add.cu --verify --out-dir output_cuda
-openassembler compile examples/vector_add.cu -I examples \
+compile examples/vector_add.cu --verify --out-dir output_cuda
+compile examples/vector_add.cu -I examples \
   --nvcc-flag=-std=c++17 --out-dir output_cuda_flags
-openassembler run output_cuda --backend modal --budget 300 --job-timeout 60
+run output_cuda --backend modal --budget 300 --job-timeout 60
 .venv/bin/python -m pytest -q tests/test_cppfront.py tests/test_cli_compile.py
 ```
 

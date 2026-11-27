@@ -1,5 +1,9 @@
 # Repository discovery, manifests and safe artifact publication
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 The [compiler program](../../compiler/README.md) distinguishes current source
@@ -68,13 +72,13 @@ toolkit. Repository-native compilation needs ptxas/nvdisasm; CUDA files also
 need nvcc and its host compiler. Actual execution needs a GPU.
 
 ```sh
-openassembler compile examples/mlp --out-dir output_repository
-openassembler run output_repository --backend modal --dry-run
-openassembler inspect examples/native_attention_model --json
-openassembler cnr examples/native_attention_model --backend modal --verify --no-sass
+compile examples/mlp --out-dir output_repository
+run output_repository --backend modal --dry-run
+inspect examples/native_attention_model --json
+cnr examples/native_attention_model --backend modal --verify --no-sass
 .venv/bin/python -m pytest -q tests/test_cli_compile.py tests/test_runner.py \
   tests/test_integration.py tests/test_torchfront.py tests/test_repo_workflow.py
-openassembler benchmark --help
+benchmark --help
 ```
 
 The first `run --dry-run` inspects proposed launches; it does not execute or

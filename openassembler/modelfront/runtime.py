@@ -317,8 +317,8 @@ class Runtime:
         tensor = backing.narrow(0, pad, count).view(shape)
         self._allocations.append(backing)
         start, end = backing.data_ptr(), backing.data_ptr()+16+count*itemsize
-        self._driver.memset(start, 0xA5, 16)
-        self._driver.memset(end, 0xA5, 16)
+        self._driver.memset_async(start, 0xA5, 16, self._stream_id)
+        self._driver.memset_async(end, 0xA5, 16, self._stream_id)
         self._guards.append((start,end))
         return tensor
 
@@ -329,9 +329,9 @@ class Runtime:
         self.synchronize()
         with self._context_scope():
             for tensor in [*self.buffers.values(), *(v for x in self._training.values() for v in x.values())]:
-                self._driver.memset(tensor.data_ptr(), 0xFF, tensor.numel()*tensor.element_size())
+                self._driver.memset_async(tensor.data_ptr(), 0xFF, tensor.numel()*tensor.element_size(), self._stream_id)
             for tensor in self._tensor_workspaces.values():
-                self._driver.memset(tensor.data_ptr(),0xFF,tensor.numel()*tensor.element_size())
+                self._driver.memset_async(tensor.data_ptr(),0xFF,tensor.numel()*tensor.element_size(),self._stream_id)
 
     def check_canaries(self):
         """Synchronize and verify both ends of every private workspace allocation."""
@@ -630,7 +630,7 @@ class Runtime:
                     if name not in self._optimizer_state:
                         pair={k:self._allocate(spec["shape"]) for k in optimizer_state_keys(options)}
                         with self._context_scope():
-                            for value in pair.values():self._driver.memset(value.data_ptr(),0,value.numel()*4)
+                            for value in pair.values():self._driver.memset_async(value.data_ptr(),0,value.numel()*4,self._stream_id)
                         self._optimizer_state[name]=pair
                     pair=self._optimizer_state[name]
                     correction=(lr/(1-options["beta1"]**step),math.sqrt(1-options["beta2"]**step))

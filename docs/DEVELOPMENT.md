@@ -1,5 +1,9 @@
 # Development, evidence and documentation conventions
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Use [STATUS.md](STATUS.md) for architecture and current limits,
 [COMMANDS.md](COMMANDS.md) for complete CLI syntax, and the
 [research catalogue](research/README.md) for per-feature methods and commands.
@@ -114,7 +118,7 @@ is the [42-contract A100 replay](../exp/dispatch_tuning/RESULTS.md); the
 selection/replay contract. Neither establishes full native-model acceleration.
 
 The probe corpus is generated build output. If a dossier requires it, run its
-documented `openassembler corpus` preparation before the relevant checks.
+documented `corpus` preparation before the relevant checks.
 Do not turn an unavailable toolkit, unmodeled instruction or skipped test into
 a passing hardware result.
 
@@ -268,8 +272,8 @@ Source cleanup does not require deleting local environments or user run output.
 
 ## Current repository compiler checks
 
-Start with `openassembler inspect REPO --json`, then compile the supported
-sources or configured model with `openassembler REPO --verify`. Omitted paths
+Start with `inspect REPO --json`, then compile the supported
+sources or configured model with `compile REPO --verify`. Omitted paths
 for `compile` and `cnr` mean the current directory. Failed builds save
 `compile-error.json` in the selected output root; include it and a minimal
 reproducer in bug reports. Dry runs and disabled vendor frontend rejection do

@@ -1,5 +1,9 @@
 # Repository compiler and codebase audit
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 The November 19 [semantic and diagnostic review](compiler/semantic-acceptance.md)
 supersedes any assumption that mnemonic acceptance establishes scalar semantic
 support. Signed saturation and predicate FTZ are repaired; unknown contracts
@@ -75,10 +79,10 @@ attention remain unsupported.
 ## Reproduce or report a failure
 
 ```sh
-openassembler inspect /path/to/repo --json
+inspect /path/to/repo --json
 openassembler /path/to/repo --backend modal --verify --no-sass
-openassembler cnr /path/to/repo --backend user@a100 --verify
-openassembler run /path/to/repo --backend user@a100
+cnr /path/to/repo --backend user@a100 --verify
+run /path/to/repo --backend user@a100
 ```
 
 `compile` and `cnr` default to the current directory. On a failed build, inspect

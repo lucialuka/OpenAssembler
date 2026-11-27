@@ -47,7 +47,7 @@ def workspace_plan(plan,steps,recipes):
                 base=local[spec['base']]
                 local[name]={'allocation':base['allocation'],'shape':spec['shape'],'offset':spec['offset']}
         bindings[step['output']]=local;pack_slots[step['output']]=packs
-    if not any(pack_slots.values()) and not any(
+    if not any(spec['dtype'] == 'f32' for spec in allocations.values()) and not any(pack_slots.values()) and not any(
             stage.op == 'round_f16_f32' for recipe in recipes.values() for stage in recipe.stages):
         return None
     return {'allocations':allocations,'bindings':bindings,'pack_slots':pack_slots}

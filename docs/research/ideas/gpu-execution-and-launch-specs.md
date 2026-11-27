@@ -1,5 +1,9 @@
 # GPU execution, explicit launch specifications and fault isolation
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 Status: implemented
 
 Compiled kernels can run locally, on Modal or through an SSH transport. Current
@@ -89,14 +93,14 @@ local/SSH hardware needs a compatible driver. The optional Modal client may
 live in a separate environment.
 
 ```sh
-openassembler compile examples/vector_add.py --verify --out-dir output_vector
-openassembler run output_vector --spec examples/run_spec.json --backend modal --dry-run
-openassembler run output_vector --spec examples/run_spec.json --backend modal \
+compile examples/vector_add.py --verify --out-dir output_vector
+run output_vector --spec examples/run_spec.json --backend modal --dry-run
+run output_vector --spec examples/run_spec.json --backend modal \
   --budget 60 --job-timeout 20
 # On a Linux GPU machine:
-openassembler run output_vector --spec examples/run_spec.json --backend local
+run output_vector --spec examples/run_spec.json --backend local
 # Replace this placeholder with a configured Linux GPU host:
-openassembler run output_vector --spec examples/run_spec.json --backend user@gpu-host
+run output_vector --spec examples/run_spec.json --backend user@gpu-host
 .venv/bin/python -m pytest -q tests/test_runner.py tests/test_cli_gemm.py tests/test_cli_rowwise.py
 ```
 

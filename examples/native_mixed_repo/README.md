@@ -1,8 +1,12 @@
 # Native mixed repository example
 
+CLI examples below run inside the shell started with `openassembler`; enter
+commands such as `compile`, `run` and `cnr` without repeating the executable name.
+Homebrew, Python, Modal and SSH setup commands run in your regular terminal.
+
 ```sh
-openassembler cnr examples/native_mixed_repo --backend modal --verify
-openassembler run examples/native_mixed_repo --backend user@a100 --verify-application
+cnr examples/native_mixed_repo --backend modal --verify
+run examples/native_mixed_repo --backend user@a100 --verify-application
 ```
 
 The Python model is captured on CPU and compiled through the OA graph backend.

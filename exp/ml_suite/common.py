@@ -54,7 +54,8 @@ def guarded(driver, shape, dtype=torch.float32):
     import math
     padding=16//torch.empty([],dtype=dtype).element_size()
     backing=torch.empty(math.prod(shape)+padding*2,device='cuda',dtype=dtype)
-    driver.memset(backing.data_ptr(),0xA5,backing.numel()*backing.element_size())
+    driver.memset_async(backing.data_ptr(),0xA5,backing.numel()*backing.element_size(),
+                        torch.cuda.current_stream().cuda_stream)
     return backing,backing[padding:-padding].view(shape)
 
 

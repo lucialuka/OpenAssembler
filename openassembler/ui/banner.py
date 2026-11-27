@@ -1,87 +1,54 @@
-"""The splash banner: the exact OPENASSEMBLER wordmark art (openassembler.ui.logo)
-above a bordered status/tips box -- the same two pieces as Claude Code's own
-welcome screen, just stacked instead of side by side since our wordmark is
-wider than Claude's small glyph.
-"""
+"""A compact, responsive welcome for each interactive OpenAssembler session."""
 
 from __future__ import annotations
 
+from pathlib import Path
 import re
 import shutil
+import textwrap
 
 from openassembler import __version__
 from openassembler.ui.colors import supports_color
 from openassembler.ui.logo import LINES as LOGO_LINES
 
 _ANSI = re.compile(r"\x1b\[[0-9;]*m")
+COMPACT_LOGO = ("  ▄██▄  ▄██▄", "  █  █  █  █", "  ▀██▀  █▀▀█")
 
 
-def _strip(s: str) -> str:
-    return _ANSI.sub("", s)
+def _strip(text: str) -> str:
+    return _ANSI.sub("", text)
 
 
-def _wrap(text: str, width: int) -> list[str]:
-    words, lines, cur = text.split(), [], ""
-    for w in words:
-        if cur and len(cur) + 1 + len(w) > width:
-            lines.append(cur)
-            cur = w
-        else:
-            cur = f"{cur} {w}" if cur else w
-    if cur:
-        lines.append(cur)
-    return lines or [""]
-
-
-TIPS = [
-    "Compiles supported Python models, Python @kernel functions, CUDA C / C++"
-    " (__global__) and PTX to native NVIDIA SASS and cubins (A100 / SM80).",
-    "`compile kernel.cu` writes output/cubin/kernel.cubin + output/sass/kernel.sass"
-    " (+ manifest.json). `-o NAME` renames it, `--out-dir DIR` moves output/,"
-    " `--verify` checks it against the PTX reference interpreter.",
-    "`compile REPO`, `run REPO`, `cnr REPO`: build, reuse, or build and run."
-    " Directory outputs live in REPO/output/{cubin,sass}; --out-dir overrides it.",
-    "Model repositories use a configured or automatically discovered CPU model"
-    " and exact input shapes. `inspect REPO --json` explains discovery without"
-    " running user code. Triton/Inductor and vendor GPU fallback are disabled.",
-    "`gemm --m 128 --n 128 --k 128` builds a specialized A100 FP16/BF16 tensor GEMM.",
-    "`run` executes saved OA cubins on a GPU; models retain their launch plan."
-    " `--backend local|modal|user@host`, `--spec`, `--dry-run`.",
-    "All three repository commands accept --backend local|modal|user@host."
-    " In an SSH terminal on the GPU host, use local. --dry-run only plans work.",
-    "`cnr SRC` = compile and run in one step.",
-    "`status` prints the headline results; `help` lists every command;"
-    " `<command> --help` shows its flags.",
-]
-
-
-def logo_lines(color: bool | None = None) -> list[str]:
-    """The literal wordmark art, or its plain (uncolored) text if color is
-    disabled -- same visible shape either way."""
+def logo_lines(color: bool | None = None, width: int = 140) -> list[str]:
     if color is None:
         color = supports_color()
-    return list(LOGO_LINES) if color else [_strip(l) for l in LOGO_LINES]
+    if width >= max(len(_strip(line)) for line in LOGO_LINES):
+        return list(LOGO_LINES) if color else [_strip(line) for line in LOGO_LINES]
+    return [f"\033[36m{line}\033[0m" if color else line for line in COMPACT_LOGO]
 
 
 def render(width: int | None = None, include_logo: bool = True) -> str:
-    cols = width or shutil.get_terminal_size(fallback=(80, 24)).columns
-    cols = max(60, min(cols, 140))
-    color = supports_color()
-
-    out = []
+    cols = max(20, min(width if width is not None else shutil.get_terminal_size((80, 24)).columns, 140))
+    inner = cols - 4
+    out = [""]
     if include_logo:
+        out.extend(logo_lines(width=cols))
         out.append("")
-        out += logo_lines(color)
-        out.append("")
-
-    inner = cols - 2
-    header = f"openassembler v{__version__} · Python / CUDA C / C++ → SASS"
-    out.append(f"╭{'─' * inner}╮")
-    out.append(f"│{header.center(inner)}│")
-    out.append(f"│{' ' * inner}│")
-    out.append(f"│{'Tips for getting started'.ljust(inner)}│")
-    for tip in TIPS:
-        for line in _wrap(tip, inner - 2):
-            out.append(f"│  {line.ljust(inner - 2)}│")
-    out.append(f"╰{'─' * inner}╯")
+    out.append("╭" + "─" * (cols - 2) + "╮")
+    for text in (
+        f"OpenAssembler v{__version__}",
+        "Python · CUDA C/C++ · PTX → NVIDIA SASS",
+        "",
+        f"Workspace: {Path.cwd()}",
+        "",
+        "compile PATH --backend modal --verify",
+        "run PATH --backend modal",
+        "cnr PATH --backend modal --verify",
+        "",
+        "Backends: modal, local, or user@host",
+        "help · Tab complete · ↑ history · exit",
+    ):
+        for line in textwrap.wrap(text, inner) or [""]:
+            out.append(f"│ {line.ljust(inner)} │")
+    out.append("╰" + "─" * (cols - 2) + "╯")
     return "\n".join(out)

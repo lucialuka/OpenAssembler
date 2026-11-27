@@ -683,11 +683,12 @@ performance comparison. Automatic setup compiles forward inference only; it does
 not add custom extension lowering, arbitrary host training, Adam, cross-entropy,
 dynamic shapes or unsupported operators.
 
-The welcome logo is persistent once per user across Homebrew post-installation,
-ordinary terminal commands and interactive shells. Help/version/JSON output stays
-clean. Plain `git clone` cannot execute repository code; source setup uses
-`openassembler welcome`. The formula now follows `main` and includes the retained
-third-party fast-matmul data. No Homebrew release was published by this change.
+The welcome logo appears on every interactive launch with `openassembler`.
+Inside the shell, enter `compile`, `run` or `cnr` without the executable prefix;
+`exit` returns to the terminal. Installation and direct commands, including
+help/version/JSON output, show no logo. The formula follows `main` and includes
+the retained third-party fast-matmul data. Local source changes reach Homebrew
+users after publication to the tapped repository.
 
 ## November 14 FP16 batched products and repository workflow
 
