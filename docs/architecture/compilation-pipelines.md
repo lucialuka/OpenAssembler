@@ -6,7 +6,7 @@ kernels are distinct. A stage shown for one route may not appear in another.
 ## Standalone source
 
 <p align="center">
-  <img src="../../figs/OA_arch1.png" alt="OpenAssembler Architecture" width="400" />
+  <img src="../../figs/OA_arch1.png" alt="OpenAssembler Architecture" width="700" />
 </p>
 
 
