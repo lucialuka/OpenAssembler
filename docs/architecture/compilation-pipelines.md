@@ -5,12 +5,10 @@ kernels are distinct. A stage shown for one route may not appear in another.
 
 ## Standalone source
 
-    PTX source --------------------------+
-    Typed Python -> Python subset -> PTX +-> parse/link -> OA selection,allocation, 
-    CUDA C/C++ -> nvcc emits PTX -------+           |       scheduling and encoding
-                                                    |
-                                                    v
-    A100 execution <- CUDA driver <- cubin with OA executable text
+<p align="center">
+  <img src="../../figs/OA_arch1.png" alt="OpenAssembler Architecture" width="400" />
+</p>
+
 
 The pyfront frontend statically parses supported Python syntax and emits PTX;
 it does not run the kernel function as Python. CUDA C/C++ uses nvcc only to
