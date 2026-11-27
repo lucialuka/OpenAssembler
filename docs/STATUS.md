@@ -686,7 +686,7 @@ dynamic shapes or unsupported operators.
 The welcome logo appears on every interactive launch with `openassembler`.
 Inside the shell, enter `compile`, `run` or `cnr` without the executable prefix;
 `exit` returns to the terminal. Installation and direct commands, including
-help/version/JSON output, show no logo. The formula follows `main` and includes
+help/version/JSON output, show no logo. The formula pins a source commit and includes
 the retained third-party fast-matmul data. Local source changes reach Homebrew
 users after publication to the tapped repository.
 

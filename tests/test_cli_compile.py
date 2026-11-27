@@ -19,11 +19,10 @@ needs_toolkit = pytest.mark.skipif(not all(oracle.available(t) for t in ("ptxas"
 
 
 def test_version_and_startup_commands(capsys):
-    assert __version__ == "0.2.0"
     with pytest.raises(SystemExit) as e:
         main(["--version"])
     assert e.value.code == 0
-    assert "0.2.0" in capsys.readouterr().out
+    assert __version__ in capsys.readouterr().out
     with pytest.raises(SystemExit) as e:
         main(["compile", "--help"])
     assert e.value.code == 0
@@ -93,7 +92,7 @@ def test_single_compile_writes_cubin_sass_and_manifest(tmp_path, capsys):
     manifest = json.loads((tmp_path / "manifest.json").read_text())
     assert cubin.is_file() and sass.is_file()
     assert ".text.div_by_const" in sass.read_text() and "IMAD.HI" in sass.read_text()
-    assert manifest["openassembler"] == "0.2.0"
+    assert manifest["openassembler"] == __version__
     assert manifest["entries"][0]["cubin"] == "cubin/quotient.cubin"
     assert manifest["entries"][0]["sass"] == "sass/quotient.sass"
     assert manifest["entries"][0]["kernels"][0]["verify"] == "ok"

@@ -25,10 +25,11 @@ If an active virtual environment selects a broken `.venv/bin/openassembler`,
 run `deactivate` in your terminal or use `"$(brew --prefix openassembler)/bin/openassembler"`.
 See [PATH troubleshooting](../HOMEBREW.md#an-old-python-environment-shadows-homebrew).
 
-The formula currently installs a moving repository branch, not an immutable
-release. The version command reports the installed package version, not its
-source commit. For reproducible builds or bug reports, record the formula and
-repository revisions separately. See the [Homebrew guide](../HOMEBREW.md).
+The formula installs a pinned source commit with a verified checksum. Its
+compiler and runtime are independent of your ML project's Python environment.
+Open a terminal in your ML repository and type `openassembler`; omitted source
+paths in `inspect`, `compile` and `cnr` select that directory. See the
+[Homebrew guide](../HOMEBREW.md#use-your-own-ml-repository).
 
 ## Choose where work runs
 

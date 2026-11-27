@@ -1,4 +1,4 @@
-"""OpenAssembler 0.2.0: a Python / CUDA C / C++ (and PTX) to NVIDIA SASS compiler with its own backend.
+"""OpenAssembler: a Python / CUDA C / C++ (and PTX) to NVIDIA SASS compiler with its own backend.
 
     openassembler SRC [--backend modal|user@host] [--verify]  # compile a source or repo
     openassembler inspect [SRC] [--json]                # static coverage

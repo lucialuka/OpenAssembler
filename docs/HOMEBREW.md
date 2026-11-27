@@ -17,6 +17,10 @@ checkout, Python virtual environment and manual `pip install` are unnecessary.
 The explicit formula name also avoids ambiguity if older OpenAssembler taps are
 already registered.
 
+The SM80 encoder table is a required compiler input, included as a verified
+formula resource. `brew test lucialuka/openassembler/openassembler` checks that
+the installed encoder loads and encodes an instruction without needing CUDA.
+
 ## Why the tap is needed
 
 `brew install openassembler` works only when Homebrew can already resolve that
@@ -36,17 +40,42 @@ openassembler --version
 openassembler --help
 ```
 
-The current checked-in formula downloads the repository's `main` branch and
-labels it version 0.2.0; it does not pin a released source archive or the current
-local checkout. Check `Formula/openassembler.rb` before relying on a particular
-compiler/table revision. Local changes take effect for new installations after
-they are published to that repository.
+The formula pins a source commit and verifies its SHA-256 checksum. This avoids
+reusing an older cached `main` archive when the formula changes. Check
+`Formula/openassembler.rb` for the installed compiler revision. Maintainers must
+update the commit, checksum and package version together when publishing an update.
+Local working-tree changes reach other users after publication and a formula update.
 
 Start the interactive shell by typing `openassembler` in your terminal. Its
 logo appears on every interactive launch, followed by a workspace and command
 guide. Enter `compile`, `run` or `cnr` at the prompt, and `exit` to leave.
 Installation, direct commands, help, version and piped output show no logo.
 An old `welcome-shown` marker has no effect and can be removed.
+
+## Use your own ML repository
+
+Open a terminal in your repository and type:
+
+```sh
+openassembler
+```
+
+The shell keeps that directory as its workspace. It uses Homebrew's Python and
+bundled compiler data, so no checkout of OpenAssembler, editable install, or
+activation of an OpenAssembler Python environment is needed. Your ML project's
+virtual environment can stay active. At the OpenAssembler prompt:
+
+```text
+inspect --json
+compile --backend modal --verify
+run --backend modal
+exit
+```
+
+Omitting the source path selects the current repository. Standalone kernels may
+need a launch specification for `run`; model repositories retain their launch
+plan. Modal authentication (`modal setup`) is a one-time setup in your regular
+terminal. SSH and local execution retain their documented host requirements.
 
 ## An old Python environment shadows Homebrew
 
@@ -76,6 +105,24 @@ reinstalling alone will not fix imports; use the Homebrew launcher directly or
 run `PYTHONPATH="$PWD" .venv/bin/openassembler` from the checkout.
 Setting `HOMEBREW_NO_PATH_SHADOW_CHECK` only hides the warning; it does not change
 which executable your shell selects.
+
+If you keep multiple Python installations with their own `openassembler` command,
+you can make the Homebrew command take precedence without deactivating your ML
+environment. Add this once to your shell startup file (`~/.zshrc` for zsh or
+`~/.bashrc` for Bash), replacing the prefix for your Homebrew installation:
+
+```sh
+alias openassembler='/opt/homebrew/opt/openassembler/bin/openassembler'
+```
+
+Apple Silicon Homebrew normally uses `/opt/homebrew`; Intel macOS uses
+`/usr/local`, and Linux commonly uses `/home/linuxbrew/.linuxbrew`. The stable
+`opt` path continues to resolve after Homebrew upgrades.
+
+If `brew` reports the formula in both the old `qingyang-lucas-fang/openassembler`
+tap and `lucialuka/openassembler`, and your installed package belongs to the
+latter, remove the unused tap with `brew untap qingyang-lucas-fang/openassembler`.
+Use `brew info lucialuka/openassembler/openassembler` to check its source.
 
 The formula does not install the repository's full `exp/` evidence archive or
 `testcases/` tree. Documentation links to those paths describe research in a
@@ -133,6 +180,8 @@ an existing toolkit on `PATH` or `OPENASSEMBLER_CUDA_HOME` is also supported.
 
 ## Optional PyTorch application runtime
 
+The formula includes Modal's optional CONNECT/SOCKS proxy helper, so its
+subprocess can use macOS system proxies or standard proxy environment variables.
 Application capture through Modal uses the pinned PyTorch image and does not
 require local Torch. SSH capture requires PyTorch 2.7.1 and CUDA 12.8 on the
 remote host. Contributors running local CPU model tests should use the isolated

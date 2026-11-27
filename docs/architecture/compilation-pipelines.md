@@ -6,8 +6,8 @@ kernels are distinct. A stage shown for one route may not appear in another.
 ## Standalone source
 
     PTX source --------------------------+
-    Typed Python -> Python subset -> PTX +-> parse/link -> OA selection,
-    CUDA C/C++ -> nvcc emits PTX -------+   allocation, scheduling and encoding
+    Typed Python -> Python subset -> PTX +-> parse/link -> OA selection,allocation, 
+    CUDA C/C++ -> nvcc emits PTX -------+           |       scheduling and encoding
                                                     |
                                                     v
     A100 execution <- CUDA driver <- cubin with OA executable text

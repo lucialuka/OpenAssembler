@@ -46,7 +46,12 @@ openassembler
 ```
 
 The logo appears each time you open the interactive shell. At its prompt, enter
-commands directly. From a source checkout, try the vector-add example on Modal:
+commands directly. In your own ML repository, omit the path to use the current
+directory: `inspect`, `compile --backend modal --verify`, then
+`run --backend modal`. Your ML environment can stay active; OpenAssembler uses
+its installed compiler runtime. See [using your own repository](docs/HOMEBREW.md#use-your-own-ml-repository).
+
+From a source checkout, try the vector-add example on Modal:
 
 ```bash
 compile examples/vector_add.py --backend modal --out-dir output/first-kernel --verify

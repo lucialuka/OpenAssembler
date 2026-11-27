@@ -90,8 +90,8 @@ selects the intended formula under Homebrew's tap trust rules.
 
 Universal `brew install openassembler` requires acceptance into `homebrew/core`.
 It cannot be enabled by a local formula or README edit. Before submitting a
-formula, replace the moving-branch archive with an immutable stable release and
-SHA-256, and meet Homebrew's [core formula requirements](https://docs.brew.sh/Acceptable-Formulae).
+formula, use a stable release archive (the current formula pins a source commit
+with SHA-256), and meet Homebrew's [core formula requirements](https://docs.brew.sh/Acceptable-Formulae).
 Publishing a tap, release or core submission is a separate action from editing
 the current repository; do not describe it as already available.
 
