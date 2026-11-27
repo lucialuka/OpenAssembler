@@ -11,6 +11,15 @@ allocates registers, schedules dependencies and encodes GPU machine code.
 Production execution loads OpenAssembler-owned cubins through the CUDA driver.
 
 <h4 align="center"> Python 3.12+ · Linux and macOS · Apache 2.0 </h4>
+<p align="center">
+ <a href="https://www.star-history.com/lucialuka/openassembler">
+  <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank" />
+   <img alt="Star History Rank" src="https://api.star-history.com/badge?repo=lucialuka/OpenAssembler&type=rank" />
+  </picture>
+ </a>
+</p>
 
 ## Quick start
 
@@ -131,3 +140,13 @@ regressions in tests/, and retained experiments in exp/. See the
 when changing supported behavior or evidence.
 
 Licensed under [Apache 2.0](LICENSE). See [NOTICE](NOTICE) for attribution.
+
+## Star History 
+
+<a href="https://www.star-history.com/?repos=lucialuka%2Fopenassembler&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=lucialuka/openassembler&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=lucialuka/openassembler&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=lucialuka/openassembler&type=date&legend=top-left" />
+ </picture>
+</a>
